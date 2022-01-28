@@ -1,0 +1,32 @@
+string(STRIP "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE)
+string(TOUPPER "${CMAKE_BUILD_TYPE}" CBT)
+
+if (NOT CMAKE_BUILD_TYPE)
+  message(STATUS "Setting build type to Release.")
+  set(CMAKE_BUILD_TYPE "Release" CACHE
+      STRING "Choose build type: Release, Debug, or Testing." FORCE)
+else ()
+  if (NOT CBT MATCHES "Testing" AND NOT CBT MATCHES "Release" AND NOT CBT MATCHES "Debug")
+    message(FATAL_ERROR "CMAKE_BUILD_TYPE is not valid. Please choose Testing, Debug, or Release")
+  endif ()
+endif ()
+
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+  set(COMPILER "GNUCLANG")
+else ()
+  message(FATAL_ERROR "Compiler is not supported (yet). Please use GNU or Clang")
+endif()
+
+if (${COMPILER} STREQUAL "GNUCLANG")
+  set (BUILD_TYPE_COMPILER_FLAGS_BASE "-Wall -Werror -pedantic --std=c++11" CACHE STRING "Gnu Clang base set of compiler flags" FORCE)
+endif ()
+
+if (CBT STREQUAL "Testing" AND ${COMPILER} STREQUAL "GNUCLANG")
+  set (BUILD_TYPE_COMPILE_FLAGS "-O0 -fprofile-arcs -ftest-coverage" CACHE STRING "Testing Gnu Clang compile flags"  FORCE)
+  set (BUILD_TYPE_LINK_FLAGS    "-lgcov" CACHE STRING "Testing Gnu Clang link flags"  FORCE)
+elseif (CBT STREQUAL "Debug" AND ${COMPILER} STREQUAL "GNUCLANG")
+  set (BUILD_TYPE_COMPILE_FLAGS "-Og -fsanitize=address,bounds" CACHE STRING "Debug Gnu Clang compile flags"  FORCE)
+elseif (CBT STREQUAL "Release" AND ${COMPILER} STREQUAL "GNUCLANG")
+  set (BUILD_TYPE_COMPILE_FLAGS "-O2 -flto" CACHE STRING "Release Gnu Clang compile flags" FORCE)
+  set (BUILD_TYPE_LINK_FLAGS "-flto" CACHE STRING "Release Gnu Clang link flags"  FORCE)
+endif ()
