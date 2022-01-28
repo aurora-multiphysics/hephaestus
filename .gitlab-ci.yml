@@ -1,5 +1,4 @@
-# image: ubuntu:latest
-image: git.ccfe.ac.uk:4567/soft-eng-group/rse/skeleton-repositories/c-plus-plus
+image: ubuntu:latest
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
@@ -61,7 +60,7 @@ integration_tests:
   artifacts:
     paths:
     - build/integration_test_coverage
-    expire_in: 1 week    
+    expire_in: 1 week
 
 regression_tests:
   <<: *coverage_template
@@ -78,7 +77,7 @@ format_tests:
   stage: test
   script:
     - find ./{test,src}/ -iname *.h -o -iname *.cpp -o -iname *.hpp | xargs clang-format-8 -style=file | clang-format-diff-8 > out.txt
-    - if [[ -s out.txt ]]; then false; fi 
+    - if [[ -s out.txt ]]; then false; fi
   allow_failure: true
 
 # Code quality
@@ -86,7 +85,7 @@ cyclomatic_complexity:
   stage: quality
   script:
     - python /home/lizard/lizard.py --CCN=15 --length=100 --arguments=10 src
-    
+
 static_analysis:
   stage: quality
   script:
@@ -95,7 +94,7 @@ static_analysis:
     paths:
     - cppcheck.out
     expire_in: 1 week
-    
+
 similarity:
   stage: quality
   script:
@@ -104,8 +103,8 @@ similarity:
     paths:
     - similarity.out
     expire_in: 1 week
-    
-    
+
+
 flaws:
   stage: security
   script:
