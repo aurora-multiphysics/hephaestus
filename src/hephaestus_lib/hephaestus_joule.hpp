@@ -108,6 +108,7 @@
 #include <iostream>
 #include <fstream>
 #include "joule_solver.hpp"
+#include "boundary_conditions.hpp"
 
 using namespace std;
 using namespace mfem;
@@ -289,68 +290,52 @@ int joule_solve(int argc, char *argv[])
    Mesh *mesh;
    mesh = new Mesh(mesh_file, 1, 1);
    int dim = mesh->Dimension();
+   int max_attr = mesh->bdr_attributes.Max();
 
    // 5. Assign the boundary conditions
-   Array<int> ess_bdr(mesh->bdr_attributes.Max());
-   Array<int> thermal_ess_bdr(mesh->bdr_attributes.Max());
-   Array<int> poisson_ess_bdr(mesh->bdr_attributes.Max());
-   if (strcmp(problem,"coil")==0)
-   {
-      // BEGIN CODE FOR THE COIL PROBLEM
-      // For the coil in a box problem we have surfaces 1) coil end (+),
-      // 2) coil end (-), 3) five sides of box, 4) side of box with coil BC
 
-      ess_bdr = 0;
-      ess_bdr[0] = 1; // boundary attribute 4 (index 3) is fixed
-      ess_bdr[1] = 1; // boundary attribute 4 (index 3) is fixed
-      ess_bdr[2] = 1; // boundary attribute 4 (index 3) is fixed
-      ess_bdr[3] = 1; // boundary attribute 4 (index 3) is fixed
+   std::vector<BCMap> bc_maps({
+      BCMap(std::string("curl_bc"), Array<int>({1,2,3}), max_attr),
+      BCMap(std::string("thermal_bc"), Array<int>({1,2}), max_attr),
+      BCMap(std::string("poisson_bc"), Array<int>({1,2}), max_attr),
+   });
 
-      // Same as above, but this is for the thermal operator for HDiv
-      // formulation the essential BC is the flux
+   // if (strcmp(problem,"coil")==0)
+   // {
+   //    // BEGIN CODE FOR THE COIL PROBLEM
+   //    // For the coil in a box problem we have surfaces 1) coil end (+),
+   //    // 2) coil end (-), 3) five sides of box, 4) side of box with coil BC
+   //    std::vector<BCMap> bc_maps({
+   //       BCMap(std::string("curl_bc"), Array<int>({1,2,3,4}), max_attr),
+   //       BCMap(std::string("thermal_bc"), Array<int>({1,3}), max_attr),
+   //       BCMap(std::string("poisson_bc"), Array<int>({1,2,3}), max_attr),
+   //    });
+   //    // END CODE FOR THE COIL PROBLEM
+   // }
+   // else if (strcmp(problem,"rod")==0)
+   // {
+   //    std::vector<BCMap> bc_maps({
+   //       BCMap(std::string("curl_bc"), Array<int>({1,2,3}), max_attr),
+   //       BCMap(std::string("thermal_bc"), Array<int>({1,2}), max_attr),
+   //       BCMap(std::string("poisson_bc"), Array<int>({1,2}), max_attr),
+   //    });
+   //    // END CODE FOR THE STRAIGHT ROD PROBLEM
+   // }
+   // else
+   // {
+   //    cerr << "Problem " << problem << " not recognized\n";
+   //    mfem_error();
+   // }
 
-      thermal_ess_bdr = 0;
-      thermal_ess_bdr[2] = 1; // boundary attribute 4 (index 3) is fixed
-
-      // Same as above, but this is for the poisson eq for H1 formulation the
-      // essential BC is the value of Phi
-
-      poisson_ess_bdr = 0;
-      poisson_ess_bdr[0] = 1; // boundary attribute 1 (index 0) is fixed
-      poisson_ess_bdr[1] = 1; // boundary attribute 2 (index 1) is fixed
-      // END CODE FOR THE COIL PROBLEM
-   }
-   else if (strcmp(problem,"rod")==0)
-   {
-      // BEGIN CODE FOR THE STRAIGHT ROD PROBLEM
-      // the boundary conditions below are for the straight rod problem
-
-      ess_bdr = 0;
-      ess_bdr[0] = 1; // boundary attribute 1 (index 0) is fixed (front)
-      ess_bdr[1] = 1; // boundary attribute 2 (index 1) is fixed (rear)
-      ess_bdr[2] = 1; // boundary attribute 3 (index 2) is fixed (outer)
-
-      // Same as above, but this is for the thermal operator.  For HDiv
-      // formulation the essential BC is the flux, which is zero on the front
-      // and sides. Note the Natural BC is T = 0 on the outer surface.
-
-      thermal_ess_bdr = 0;
-      thermal_ess_bdr[0] = 1; // boundary attribute 1 (index 0) is fixed (front)
-      thermal_ess_bdr[1] = 1; // boundary attribute 2 (index 1) is fixed (rear)
-
-      // Same as above, but this is for the poisson eq for H1 formulation the
-      // essential BC is the value of Phi
-
-      poisson_ess_bdr = 0;
-      poisson_ess_bdr[0] = 1; // boundary attribute 1 (index 0) is fixed (front)
-      poisson_ess_bdr[1] = 1; // boundary attribute 2 (index 1) is fixed (back)
-      // END CODE FOR THE STRAIGHT ROD PROBLEM
-   }
-   else
-   {
-      cerr << "Problem " << problem << " not recognized\n";
-      mfem_error();
-   }
+   Array<int> ess_bdr = bc_maps[0].markers;
+   Array<int> thermal_ess_bdr = bc_maps[1].markers;
+   Array<int> poisson_ess_bdr = bc_maps[2].markers;
+   // for (std::size_t i = 0; i < bc_maps.size(); i++){
+   //    BCMap bc_map = bc_maps[i];
+   //    if (strcmp(bc_map.name.c_str(),"curl_bc")==0) {ess_bdr = bc_map.markers;}
+   //    if (strcmp(bc_map.name.c_str(),"thermal_bc")==0) {thermal_ess_bdr = bc_map.markers;}
+   //    if (strcmp(bc_map.name.c_str(),"curl_bc")==0) {poisson_ess_bdr = bc_map.markers;}
+   // }
 
    // The following is required for mesh refinement
    mesh->EnsureNCMesh();
