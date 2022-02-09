@@ -108,6 +108,7 @@
 #include <iostream>
 #include <fstream>
 #include "joule_solver.hpp"
+#include "inputs.hpp"
 #include "boundary_conditions.hpp"
 
 using namespace std;
@@ -127,7 +128,7 @@ int electromagnetics::STATIC_COND        = 0;
 
 
 
-int joule_solve(int argc, char *argv[])
+int joule_solve(int argc, char *argv[], Inputs inputs)
 {
    // 1. Initialize MPI.
    // MPI_Session mpi(argc, argv);
@@ -294,11 +295,11 @@ int joule_solve(int argc, char *argv[])
 
    // 5. Assign the boundary conditions
 
-   std::vector<BCMap> bc_maps({
-      BCMap(std::string("curl_bc"), Array<int>({1,2,3}), max_attr),
-      BCMap(std::string("thermal_bc"), Array<int>({1,2}), max_attr),
-      BCMap(std::string("poisson_bc"), Array<int>({1,2}), max_attr),
-   });
+   // std::vector<BCMap> bc_maps({
+   //    BCMap(std::string("curl_bc"), Array<int>({1,2,3})),
+   //    BCMap(std::string("thermal_bc"), Array<int>({1,2})),
+   //    BCMap(std::string("poisson_bc"), Array<int>({1,2})),
+   // });
 
    // if (strcmp(problem,"coil")==0)
    // {
@@ -327,9 +328,10 @@ int joule_solve(int argc, char *argv[])
    //    mfem_error();
    // }
 
-   Array<int> ess_bdr = bc_maps[0].markers;
-   Array<int> thermal_ess_bdr = bc_maps[1].markers;
-   Array<int> poisson_ess_bdr = bc_maps[2].markers;
+   std::vector<BCMap> bc_maps = inputs.bc_maps;
+   Array<int> ess_bdr = bc_maps[0].getMarkers(*mesh);
+   Array<int> thermal_ess_bdr = bc_maps[1].getMarkers(*mesh);
+   Array<int> poisson_ess_bdr = bc_maps[2].getMarkers(*mesh);
    // for (std::size_t i = 0; i < bc_maps.size(); i++){
    //    BCMap bc_map = bc_maps[i];
    //    if (strcmp(bc_map.name.c_str(),"curl_bc")==0) {ess_bdr = bc_map.markers;}

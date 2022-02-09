@@ -1,3 +1,4 @@
+#pragma once
 #include <memory>
 #include <iostream>
 #include <fstream>
@@ -13,9 +14,10 @@ class BCMap
 {
     public:
     BCMap(const std::string & bc_name,
-          Array<int> boundary_ids,
-          int num_boundaries);
+          Array<int> boundary_ids);
+    Array<int> getMarkers(Mesh & mesh);
 
     std::string name;
+    Array<int> bdr_attributes;
     Array<int> markers;
 };
