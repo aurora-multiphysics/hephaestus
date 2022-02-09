@@ -112,9 +112,6 @@
 #include "boundary_conditions.hpp"
 
 using namespace std;
-using namespace mfem;
-using namespace mfem::common;
-using namespace mfem::electromagnetics;
 
 void display_banner(ostream & os);
 
@@ -123,8 +120,8 @@ static double sj_ = 0.0;
 static double wj_ = 0.0;
 
 // Initialize variables used in joule_solver.cpp
-int electromagnetics::SOLVER_PRINT_LEVEL = 0;
-int electromagnetics::STATIC_COND        = 0;
+int mfem::electromagnetics::SOLVER_PRINT_LEVEL = 0;
+int mfem::electromagnetics::STATIC_COND        = 0;
 
 
 
@@ -142,7 +139,8 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
    if (myid == 0) { display_banner(cout); }
 
    // 2. Parse command-line options.
-   const char *mesh_file = "cylinder-hex.mesh";
+   const char *mesh_file = inputs._mesh_file.c_str();
+   const char *problem = inputs._problem_type.c_str();
    int ser_ref_levels = 0;
    int par_ref_levels = 0;
    int order = 2;
@@ -161,11 +159,8 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
    const char *basename = "Joule";
    int amr = 0;
    int debug = 0;
-   const char *problem = "rod";
 
-   OptionsParser args(argc, argv);
-   args.AddOption(&mesh_file, "-m", "--mesh",
-                  "Mesh file to use.");
+   mfem::OptionsParser args(argc, argv);
    args.AddOption(&ser_ref_levels, "-rs", "--refine-serial",
                   "Number of times to refine the mesh uniformly in serial.");
    args.AddOption(&par_ref_levels, "-rp", "--refine-parallel",
@@ -198,14 +193,12 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
                   "Print results (grid functions) to disk.");
    args.AddOption(&amr, "-amr", "--amr",
                   "Enable AMR");
-   args.AddOption(&STATIC_COND, "-sc", "--static-condensation",
+   args.AddOption(&mfem::electromagnetics::STATIC_COND, "-sc", "--static-condensation",
                   "Enable static condensation");
    args.AddOption(&debug, "-debug", "--debug",
                   "Print matrices and vectors to disk");
-   args.AddOption(&SOLVER_PRINT_LEVEL, "-hl", "--hypre-print-level",
+   args.AddOption(&mfem::electromagnetics::SOLVER_PRINT_LEVEL, "-hl", "--hypre-print-level",
                   "Hypre print level");
-   args.AddOption(&problem, "-p", "--problem",
-                  "Name of problem to run");
    args.Parse();
    if (!args.Good())
    {
@@ -253,7 +246,7 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
    else
    {
       cerr << "Problem " << problem << " not recognized\n";
-      mfem_error();
+      mfem::mfem_error();
    }
 
    if (strcmp(problem,"rod")==0 || strcmp(problem,"coil")==0)
@@ -278,7 +271,7 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
    else
    {
       cerr << "Problem " << problem << " not recognized\n";
-      mfem_error();
+      mfem::mfem_error();
    }
 
    if (myid == 0)
@@ -288,17 +281,17 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
    // 4. Read the serial mesh from the given mesh file on all processors. We can
    //    handle triangular, quadrilateral, tetrahedral and hexahedral meshes
    //    with the same code.
-   Mesh *mesh;
-   mesh = new Mesh(mesh_file, 1, 1);
+   mfem::Mesh *mesh;
+   mesh = new mfem::Mesh(mesh_file, 1, 1);
    int dim = mesh->Dimension();
    int max_attr = mesh->bdr_attributes.Max();
 
    // 5. Assign the boundary conditions
 
    // std::vector<BCMap> bc_maps({
-   //    BCMap(std::string("curl_bc"), Array<int>({1,2,3})),
-   //    BCMap(std::string("thermal_bc"), Array<int>({1,2})),
-   //    BCMap(std::string("poisson_bc"), Array<int>({1,2})),
+   //    BCMap(std::string("curl_bc"), mfem::Array<int>({1,2,3})),
+   //    BCMap(std::string("thermal_bc"), mfem::Array<int>({1,2})),
+   //    BCMap(std::string("poisson_bc"), mfem::Array<int>({1,2})),
    // });
 
    // if (strcmp(problem,"coil")==0)
@@ -307,31 +300,31 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
    //    // For the coil in a box problem we have surfaces 1) coil end (+),
    //    // 2) coil end (-), 3) five sides of box, 4) side of box with coil BC
    //    std::vector<BCMap> bc_maps({
-   //       BCMap(std::string("curl_bc"), Array<int>({1,2,3,4}), max_attr),
-   //       BCMap(std::string("thermal_bc"), Array<int>({1,3}), max_attr),
-   //       BCMap(std::string("poisson_bc"), Array<int>({1,2,3}), max_attr),
+   //       BCMap(std::string("curl_bc"), mfem::Array<int>({1,2,3,4}), max_attr),
+   //       BCMap(std::string("thermal_bc"), mfem::Array<int>({1,3}), max_attr),
+   //       BCMap(std::string("poisson_bc"), mfem::Array<int>({1,2,3}), max_attr),
    //    });
    //    // END CODE FOR THE COIL PROBLEM
    // }
    // else if (strcmp(problem,"rod")==0)
    // {
    //    std::vector<BCMap> bc_maps({
-   //       BCMap(std::string("curl_bc"), Array<int>({1,2,3}), max_attr),
-   //       BCMap(std::string("thermal_bc"), Array<int>({1,2}), max_attr),
-   //       BCMap(std::string("poisson_bc"), Array<int>({1,2}), max_attr),
+   //       BCMap(std::string("curl_bc"), mfem::Array<int>({1,2,3}), max_attr),
+   //       BCMap(std::string("thermal_bc"), mfem::Array<int>({1,2}), max_attr),
+   //       BCMap(std::string("poisson_bc"), mfem::Array<int>({1,2}), max_attr),
    //    });
    //    // END CODE FOR THE STRAIGHT ROD PROBLEM
    // }
    // else
    // {
    //    cerr << "Problem " << problem << " not recognized\n";
-   //    mfem_error();
+   //    mfem::mfem_error();
    // }
 
    std::vector<BCMap> bc_maps = inputs.bc_maps;
-   Array<int> ess_bdr = bc_maps[0].getMarkers(*mesh);
-   Array<int> thermal_ess_bdr = bc_maps[1].getMarkers(*mesh);
-   Array<int> poisson_ess_bdr = bc_maps[2].getMarkers(*mesh);
+   mfem::Array<int> ess_bdr = bc_maps[0].getMarkers(*mesh);
+   mfem::Array<int> thermal_ess_bdr = bc_maps[1].getMarkers(*mesh);
+   mfem::Array<int> poisson_ess_bdr = bc_maps[2].getMarkers(*mesh);
    // for (std::size_t i = 0; i < bc_maps.size(); i++){
    //    BCMap bc_map = bc_maps[i];
    //    if (strcmp(bc_map.name.c_str(),"curl_bc")==0) {ess_bdr = bc_map.markers;}
@@ -349,17 +342,17 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
    // 6. Define the ODE solver used for time integration. Several implicit
    //    methods are available, including singly diagonal implicit Runge-Kutta
    //    (SDIRK).
-   ODESolver *ode_solver;
+   mfem::ODESolver *ode_solver;
    switch (ode_solver_type)
    {
       // Implicit L-stable methods
-      case 1:  ode_solver = new BackwardEulerSolver; break;
-      case 2:  ode_solver = new SDIRK23Solver(2); break;
-      case 3:  ode_solver = new SDIRK33Solver; break;
+      case 1:  ode_solver = new mfem::BackwardEulerSolver; break;
+      case 2:  ode_solver = new mfem::SDIRK23Solver(2); break;
+      case 3:  ode_solver = new mfem::SDIRK33Solver; break;
       // Implicit A-stable methods (not L-stable)
-      case 22: ode_solver = new ImplicitMidpointSolver; break;
-      case 23: ode_solver = new SDIRK23Solver; break;
-      case 34: ode_solver = new SDIRK34Solver; break;
+      case 22: ode_solver = new mfem::ImplicitMidpointSolver; break;
+      case 23: ode_solver = new mfem::SDIRK23Solver; break;
+      case 34: ode_solver = new mfem::SDIRK34Solver; break;
       default:
          if (myid == 0)
          {
@@ -388,7 +381,7 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
    // 8. Define a parallel mesh by a partitioning of the serial mesh. Refine
    //    this mesh further in parallel to increase the resolution. Once the
    //    parallel mesh is defined, the serial mesh can be deleted.
-   ParMesh *pmesh = new ParMesh(MPI_COMM_WORLD, *mesh);
+   mfem::ParMesh *pmesh = new mfem::ParMesh(MPI_COMM_WORLD, *mesh);
    delete mesh;
    for (int lev = 0; lev < par_ref_levels; lev++)
    {
@@ -406,7 +399,7 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
    //    i.e. this is not based on any error estimator.
    if (amr == 1)
    {
-      Array<int> ref_list;
+      mfem::Array<int> ref_list;
       int numElems = pmesh->GetNE();
       for (int ielem = 0; ielem < numElems; ielem++)
       {
@@ -454,23 +447,23 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
 
    // L2 contains discontinuous "cell-center" finite elements, type 2 is
    // "positive"
-   L2_FECollection L2FEC(order-1, dim);
+   mfem::L2_FECollection L2FEC(order-1, dim);
 
    // ND contains Nedelec "edge-centered" vector finite elements with continuous
    // tangential component.
-   ND_FECollection HCurlFEC(order, dim);
+   mfem::ND_FECollection HCurlFEC(order, dim);
 
    // RT contains Raviart-Thomas "face-centered" vector finite elements with
    // continuous normal component.
-   RT_FECollection HDivFEC(order-1, dim);
+   mfem::RT_FECollection HDivFEC(order-1, dim);
 
    // H1 contains continuous "node-centered" Lagrange finite elements.
-   H1_FECollection HGradFEC(order, dim);
+   mfem::H1_FECollection HGradFEC(order, dim);
 
-   ParFiniteElementSpace    L2FESpace(pmesh, &L2FEC);
-   ParFiniteElementSpace HCurlFESpace(pmesh, &HCurlFEC);
-   ParFiniteElementSpace  HDivFESpace(pmesh, &HDivFEC);
-   ParFiniteElementSpace  HGradFESpace(pmesh, &HGradFEC);
+   mfem::ParFiniteElementSpace    L2FESpace(pmesh, &L2FEC);
+   mfem::ParFiniteElementSpace HCurlFESpace(pmesh, &HCurlFEC);
+   mfem::ParFiniteElementSpace  HDivFESpace(pmesh, &HDivFEC);
+   mfem::ParFiniteElementSpace  HGradFESpace(pmesh, &HGradFEC);
 
    if (myid == 0)
    {
@@ -496,7 +489,7 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
    int Vsize_rt = HDivFESpace.GetVSize();
    int Vsize_h1 = HGradFESpace.GetVSize();
 
-   // the big BlockVector stores the fields as
+   // the big mfem::BlockVector stores the fields as
    //    0 Temperature
    //    1 Temperature Flux
    //    2 P field
@@ -504,7 +497,7 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
    //    4 B field
    //    5 Joule Heating
 
-   Array<int> true_offset(7);
+   mfem::Array<int> true_offset(7);
    true_offset[0] = 0;
    true_offset[1] = true_offset[0] + Vsize_l2;
    true_offset[2] = true_offset[1] + Vsize_rt;
@@ -513,13 +506,13 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
    true_offset[5] = true_offset[4] + Vsize_rt;
    true_offset[6] = true_offset[5] + Vsize_l2;
 
-   // The BlockVector is a large contiguous chunk of memory for storing required
+   // The mfem::BlockVector is a large contiguous chunk of memory for storing required
    // data for the hypre vectors, in this case: the temperature L2, the T-flux
    // HDiv, the E-field HCurl, and the B-field HDiv, and scalar potential P.
-   BlockVector F(true_offset);
+   mfem::BlockVector F(true_offset);
 
    // grid functions E, B, T, F, P, and w which is the Joule heating
-   ParGridFunction E_gf, B_gf, T_gf, F_gf, w_gf, P_gf;
+   mfem::ParGridFunction E_gf, B_gf, T_gf, F_gf, w_gf, P_gf;
    T_gf.MakeRef(&L2FESpace,F,   true_offset[0]);
    F_gf.MakeRef(&HDivFESpace,F, true_offset[1]);
    P_gf.MakeRef(&HGradFESpace,F,true_offset[2]);
@@ -531,12 +524,12 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
       cout << "\nFESpaces Initialised" << endl;
    }
    // 13. Get the boundary conditions, set up the exact solution grid functions
-   //     These VectorCoefficients have an Eval function.  Note that e_exact and
-   //     b_exact in this case are exact analytical solutions, taking a 3-vector
+   //     These VectorCoefficients have an Eval function.  Note that mfem::electromagnetics::e_exact and
+   //     mfem::electromagnetics::b_exact in this case are exact analytical solutions, taking a 3-vector
    //     point as input and returning a 3-vector field
-   VectorFunctionCoefficient E_exact(3, e_exact);
-   VectorFunctionCoefficient B_exact(3, b_exact);
-   FunctionCoefficient T_exact(t_exact);
+   mfem::VectorFunctionCoefficient E_exact(3, mfem::electromagnetics::e_exact);
+   mfem::VectorFunctionCoefficient B_exact(3, mfem::electromagnetics::b_exact);
+   mfem::FunctionCoefficient T_exact(mfem::electromagnetics::t_exact);
    E_exact.SetTime(0.0);
    B_exact.SetTime(0.0);
 
@@ -546,7 +539,7 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
    }
    // 14. Initialize the Diffusion operator, the GLVis visualization and print
    //     the initial energies.
-   MagneticDiffusionEOperator oper(true_offset[6], L2FESpace, HCurlFESpace,
+   mfem::electromagnetics::MagneticDiffusionEOperator oper(true_offset[6], L2FESpace, HCurlFESpace,
                                    HDivFESpace, HGradFESpace,
                                    ess_bdr, thermal_ess_bdr, poisson_ess_bdr,
                                    mu, sigmaMap, TcapMap, InvTcapMap,
@@ -559,7 +552,7 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
    // This function initializes all the fields to zero or some provided IC
    oper.Init(F);
 
-   socketstream vis_T, vis_E, vis_B, vis_w, vis_P;
+   mfem::socketstream vis_T, vis_E, vis_B, vis_w, vis_P;
    char vishost[] = "localhost";
    int  visport   = 19916;
    if (visualization)
@@ -578,29 +571,29 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
       int Ww = 350, Wh = 350; // window size
       int offx = Ww+10, offy = Wh+45; // window offsets
 
-      VisualizeField(vis_P, vishost, visport,
+      mfem::common::VisualizeField(vis_P, vishost, visport,
                      P_gf, "Electric Potential (Phi)", Wx, Wy, Ww, Wh);
       Wx += offx;
 
-      VisualizeField(vis_E, vishost, visport,
+      mfem::common::VisualizeField(vis_E, vishost, visport,
                      E_gf, "Electric Field (E)", Wx, Wy, Ww, Wh);
       Wx += offx;
 
-      VisualizeField(vis_B, vishost, visport,
+      mfem::common::VisualizeField(vis_B, vishost, visport,
                      B_gf, "Magnetic Field (B)", Wx, Wy, Ww, Wh);
       Wx = 0;
       Wy += offy;
 
-      VisualizeField(vis_w, vishost, visport,
+      mfem::common::VisualizeField(vis_w, vishost, visport,
                      w_gf, "Joule Heating", Wx, Wy, Ww, Wh);
 
       Wx += offx;
 
-      VisualizeField(vis_T, vishost, visport,
+      mfem::common::VisualizeField(vis_T, vishost, visport,
                      T_gf, "Temperature", Wx, Wy, Ww, Wh);
    }
    // VisIt visualization
-   VisItDataCollection visit_dc(basename, pmesh);
+   mfem::VisItDataCollection visit_dc(basename, pmesh);
    if ( visit )
    {
       visit_dc.RegisterField("E", &E_gf);
@@ -719,26 +712,26 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
             int Ww = 350, Wh = 350; // window size
             int offx = Ww+10, offy = Wh+45; // window offsets
 
-            VisualizeField(vis_P, vishost, visport,
+            mfem::common::VisualizeField(vis_P, vishost, visport,
                            P_gf, "Electric Potential (Phi)", Wx, Wy, Ww, Wh);
             Wx += offx;
 
-            VisualizeField(vis_E, vishost, visport,
+            mfem::common::VisualizeField(vis_E, vishost, visport,
                            E_gf, "Electric Field (E)", Wx, Wy, Ww, Wh);
             Wx += offx;
 
-            VisualizeField(vis_B, vishost, visport,
+            mfem::common::VisualizeField(vis_B, vishost, visport,
                            B_gf, "Magnetic Field (B)", Wx, Wy, Ww, Wh);
 
             Wx = 0;
             Wy += offy;
 
-            VisualizeField(vis_w, vishost, visport,
+            mfem::common::VisualizeField(vis_w, vishost, visport,
                            w_gf, "Joule Heating", Wx, Wy, Ww, Wh);
 
             Wx += offx;
 
-            VisualizeField(vis_T, vishost, visport,
+            mfem::common::VisualizeField(vis_T, vishost, visport,
                            T_gf, "Temperature", Wx, Wy, Ww, Wh);
          }
 
@@ -776,32 +769,32 @@ namespace mfem
 namespace electromagnetics
 {
 
-void edot_bc(const Vector &x, Vector &E)
+void edot_bc(const mfem::Vector &x, mfem::Vector &E)
 {
    E = 0.0;
 }
 
-void e_exact(const Vector &x, double t, Vector &E)
+void e_exact(const mfem::Vector &x, double t, mfem::Vector &E)
 {
    E[0] = 0.0;
    E[1] = 0.0;
    E[2] = 0.0;
 }
 
-void b_exact(const Vector &x, double t, Vector &B)
+void b_exact(const mfem::Vector &x, double t, mfem::Vector &B)
 {
    B[0] = 0.0;
    B[1] = 0.0;
    B[2] = 0.0;
 }
 
-double t_exact(const Vector &x)
+double t_exact(const mfem::Vector &x)
 {
    double T = 0.0;
    return T;
 }
 
-double p_bc(const Vector &x, double t)
+double p_bc(const mfem::Vector &x, double t)
 {
    // the value
    double T;

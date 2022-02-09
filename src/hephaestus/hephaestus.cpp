@@ -26,6 +26,6 @@ int main(int argc, char *argv[])
       BCMap(std::string("poisson_bc"), Array<int>({1,2})),
    });
 
-   Inputs inputs(bc_maps);
+   Inputs inputs(std::string("rod"), std::string("cylinder-hex-q2.gen"), bc_maps);
    joule_solve(argc, argv, inputs);
 }

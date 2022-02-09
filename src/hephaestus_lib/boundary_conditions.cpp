@@ -2,13 +2,13 @@
 
 
 BCMap::BCMap(const std::string & bc_name,
-    Array<int> bdr_attr)
+    mfem::Array<int> bdr_attr)
     :name(bc_name),
     bdr_attributes(bdr_attr)
 {
 }
 
-Array<int> BCMap::getMarkers(Mesh & mesh)
+mfem::Array<int> BCMap::getMarkers(mfem::Mesh & mesh)
 {
     mfem::common::AttrToMarker(mesh.bdr_attributes.Max(), bdr_attributes, markers);
     return markers;
