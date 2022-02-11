@@ -323,10 +323,17 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs)
 
 
    hephaestus::MaterialMap material_map(inputs.material_map);
-   std::map<int, double> sigmaMap(material_map.getBlockPropertyMap(std::string("sigma")));
-   std::map<int, double> InvTcondMap(material_map.getBlockPropertyMap(std::string("InvTconductivity")));
-   std::map<int, double> TcapMap(material_map.getBlockPropertyMap(std::string("Tcapacity")));
-   std::map<int, double> InvTcapMap(material_map.getBlockPropertyMap(std::string("InvTcapacity")));
+   std::map<int, double> sigmaMap(material_map.getBlockPropertyMap(std::string("electrical_conductivity")));
+   std::map<int, double> TcapMap(material_map.getBlockPropertyMap(std::string("heat_capacity")));
+   std::map<int, double> TcondMap(material_map.getBlockPropertyMap(std::string("thermal_conductivity")));
+
+   std::map<int, double> InvTcondMap(TcondMap);
+   std::map<int, double> InvTcapMap(TcapMap);
+   for (unsigned int i = 0; i < TcondMap.size(); ++i)
+   {
+      InvTcapMap[i] = 1.0/TcapMap[i];
+      InvTcondMap[i] = 1.0/TcondMap[i];
+   }
 
    if (myid == 0)
    {

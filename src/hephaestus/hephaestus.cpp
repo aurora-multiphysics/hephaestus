@@ -44,16 +44,14 @@ int main(int argc, char *argv[])
    TcapAir      = 1.0    * Tcapacity;
 
    hephaestus::Material copper("copper", 1);
-   copper.setMaterialProperty(std::string("sigma"), sigma);
-   copper.setMaterialProperty(std::string("InvTconductivity"), 1.0/Tconductivity);
-   copper.setMaterialProperty(std::string("Tcapacity"), Tcapacity);
-   copper.setMaterialProperty(std::string("InvTcapacity"), 1.0/Tcapacity);
+   copper.setMaterialProperty(std::string("electrical_conductivity"), sigma);
+   copper.setMaterialProperty(std::string("thermal_conductivity"), Tconductivity);
+   copper.setMaterialProperty(std::string("heat_capacity"), Tcapacity);
 
    hephaestus::Material air("air", 2);
-   air.setMaterialProperty(std::string("sigma"), sigmaAir);
-   air.setMaterialProperty(std::string("InvTconductivity"), 1.0/TcondAir);
-   air.setMaterialProperty(std::string("Tcapacity"), TcapAir);
-   air.setMaterialProperty(std::string("InvTcapacity"), 1.0/TcapAir);
+   air.setMaterialProperty(std::string("electrical_conductivity"), sigmaAir);
+   air.setMaterialProperty(std::string("thermal_conductivity"), TcondAir);
+   air.setMaterialProperty(std::string("heat_capacity"), TcapAir);
 
    hephaestus::MaterialMap material_map(std::vector<hephaestus::Material>({copper, air}));
 
