@@ -12,10 +12,12 @@ class Inputs
 {
     public:
     Inputs(const std::string & mesh_file,
+        const int order,
         const BCMap & boundary_conditions,
         const MaterialMap & materials);
 
     std::string _mesh_file;
+    int _order;
     BCMap bc_map;
     MaterialMap material_map;
 };

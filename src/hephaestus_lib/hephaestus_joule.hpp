@@ -143,7 +143,7 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs)
    const char *mesh_file = inputs._mesh_file.c_str();
    int ser_ref_levels = 0;
    int par_ref_levels = 0;
-   int order = 2;
+   int order = inputs._order;
    int ode_solver_type = 1;
    double t_final = 100.0;
    double dt = 0.5;
@@ -165,8 +165,8 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs)
                   "Number of times to refine the mesh uniformly in serial.");
    args.AddOption(&par_ref_levels, "-rp", "--refine-parallel",
                   "Number of times to refine the mesh uniformly in parallel.");
-   args.AddOption(&order, "-o", "--order",
-                  "Order (degree) of the finite elements.");
+   // args.AddOption(&order, "-o", "--order",
+   //                "Order (degree) of the finite elements.");
    args.AddOption(&ode_solver_type, "-s", "--ode-solver",
                   "ODE solver: 1 - Backward Euler, 2 - SDIRK2, 3 - SDIRK3\n\t."
                   "\t   22 - Mid-Point, 23 - SDIRK23, 34 - SDIRK34.");
@@ -225,102 +225,18 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs)
            << endl;
    }
 
-   // 3. Here material properties are assigned to mesh attributes.  This code is
-   //    not general, it is assumed the mesh has 3 regions each with a different
-   //    integer attribute: 1, 2 or 3.
-   //
-   //       The coil problem has three regions: 1) coil, 2) air, 3) the rod.
-   //       The rod problem has two regions: 1) rod, 2) air.
-   //
-   //    We can use the same material maps for both problems.
 
-
-   // double sigmaAir;
-   // double TcondAir;
-   // double TcapAir;
-   // if (strcmp(problem,"rod")==0 || strcmp(problem,"coil")==0)
-   // {
-   //    sigmaAir     = 1.0e-6 * sigma;
-   //    TcondAir     = 1.0e6  * Tconductivity;
-   //    TcapAir      = 1.0    * Tcapacity;
-   // }
-   // else
-   // {
-   //    cerr << "Problem " << problem << " not recognized\n";
-   //    mfem::mfem_error();
-   // }
-
-
-   // if (strcmp(problem,"rod")==0 || strcmp(problem,"coil")==0)
-   // {
-
-   //    sigmaMap.insert(pair<int, double>(1, sigma));
-   //    sigmaMap.insert(pair<int, double>(2, sigmaAir));
-   //    sigmaMap.insert(pair<int, double>(3, sigmaAir));
-
-   //    InvTcondMap.insert(pair<int, double>(1, 1.0/Tconductivity));
-   //    InvTcondMap.insert(pair<int, double>(2, 1.0/TcondAir));
-   //    InvTcondMap.insert(pair<int, double>(3, 1.0/TcondAir));
-
-   //    TcapMap.insert(pair<int, double>(1, Tcapacity));
-   //    TcapMap.insert(pair<int, double>(2, TcapAir));
-   //    TcapMap.insert(pair<int, double>(3, TcapAir));
-
-   //    InvTcapMap.insert(pair<int, double>(1, 1.0/Tcapacity));
-   //    InvTcapMap.insert(pair<int, double>(2, 1.0/TcapAir));
-   //    InvTcapMap.insert(pair<int, double>(3, 1.0/TcapAir));
-   // }
-   // else
-   // {
-   //    cerr << "Problem " << problem << " not recognized\n";
-   //    mfem::mfem_error();
-   // }
-
-
-   // 4. Read the serial mesh from the given mesh file on all processors. We can
+   // 3. Read the serial mesh from the given mesh file on all processors. We can
    //    handle triangular, quadrilateral, tetrahedral and hexahedral meshes
    //    with the same code.
    mfem::Mesh *mesh;
    mesh = new mfem::Mesh(mesh_file, 1, 1);
    int dim = mesh->Dimension();
    int max_attr = mesh->bdr_attributes.Max();
-
-   // 5. Assign the boundary conditions
-
-   // std::vector<BoundaryCondition> bc_maps({
-   //    BoundaryCondition(std::string("curl_bc"), mfem::Array<int>({1,2,3})),
-   //    BoundaryCondition(std::string("thermal_bc"), mfem::Array<int>({1,2})),
-   //    BoundaryCondition(std::string("poisson_bc"), mfem::Array<int>({1,2})),
-   // });
-
-   // if (strcmp(problem,"coil")==0)
-   // {
-   //    // BEGIN CODE FOR THE COIL PROBLEM
-   //    // For the coil in a box problem we have surfaces 1) coil end (+),
-   //    // 2) coil end (-), 3) five sides of box, 4) side of box with coil BC
-   //    std::vector<BoundaryCondition> bc_maps({
-   //       BoundaryCondition(std::string("curl_bc"), mfem::Array<int>({1,2,3,4}), max_attr),
-   //       BoundaryCondition(std::string("thermal_bc"), mfem::Array<int>({1,3}), max_attr),
-   //       BoundaryCondition(std::string("poisson_bc"), mfem::Array<int>({1,2,3}), max_attr),
-   //    });
-   //    // END CODE FOR THE COIL PROBLEM
-   // }
-   // else if (strcmp(problem,"rod")==0)
-   // {
-   //    std::vector<BoundaryCondition> bc_maps({
-   //       BoundaryCondition(std::string("curl_bc"), mfem::Array<int>({1,2,3}), max_attr),
-   //       BoundaryCondition(std::string("thermal_bc"), mfem::Array<int>({1,2}), max_attr),
-   //       BoundaryCondition(std::string("poisson_bc"), mfem::Array<int>({1,2}), max_attr),
-   //    });
-   //    // END CODE FOR THE STRAIGHT ROD PROBLEM
-   // }
-   // else
-   // {
-   //    cerr << "Problem " << problem << " not recognized\n";
-   //    mfem::mfem_error();
-   // }
+   mesh->EnsureNCMesh(); // Required for mesh refinement
 
 
+   // 4. Assign materials
    hephaestus::MaterialMap material_map(inputs.material_map);
    std::map<int, double> sigmaMap(material_map.getBlockPropertyMap(std::string("electrical_conductivity")));
    std::map<int, double> TcapMap(material_map.getBlockPropertyMap(std::string("heat_capacity")));
@@ -339,25 +255,17 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs)
       cout << "\nMaterial properties applied" << endl;
    }
 
+
+   // 5. Assign boundary conditions
    hephaestus::BCMap bc_map = inputs.bc_map;
    mfem::Array<int> ess_bdr = bc_map.getBC(std::string("curl_bc")).getMarkers(*mesh);
    mfem::Array<int> thermal_ess_bdr = bc_map.getBC(std::string("thermal_bc")).getMarkers(*mesh);
    mfem::Array<int> poisson_ess_bdr = bc_map.getBC(std::string("poisson_bc")).getMarkers(*mesh);
 
-   // The following is required for mesh refinement
-   mesh->EnsureNCMesh();
-
    if (myid == 0)
    {
       cout << "\nBoundary conditions applied" << endl;
    }
-
-   // for (std::size_t i = 0; i < bc_maps.size(); i++){
-   //    BoundaryCondition bc_map = bc_maps[i];
-   //    if (strcmp(bc_map.name.c_str(),"curl_bc")==0) {ess_bdr = bc_map.markers;}
-   //    if (strcmp(bc_map.name.c_str(),"thermal_bc")==0) {thermal_ess_bdr = bc_map.markers;}
-   //    if (strcmp(bc_map.name.c_str(),"curl_bc")==0) {poisson_ess_bdr = bc_map.markers;}
-   // }
 
 
    // 6. Define the ODE solver used for time integration. Several implicit
