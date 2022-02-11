@@ -20,6 +20,9 @@ double Material::getMaterialProperty(std::string property_name)
     return properties[property_name];
 }
 
+MaterialMap::MaterialMap()
+{
+}
 
 MaterialMap::MaterialMap(std::vector<Material> mats)
     :materials(mats)

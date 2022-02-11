@@ -26,6 +26,7 @@ class Material
 class MaterialMap
 {
     public:
+    MaterialMap();
     MaterialMap(std::vector<Material> mats);
 
     std::map<int, double> getBlockPropertyMap(std::string property_name);
