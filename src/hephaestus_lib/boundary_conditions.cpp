@@ -1,15 +1,37 @@
 #include "boundary_conditions.hpp"
 
-
-BCMap::BCMap(const std::string & bc_name,
-    mfem::Array<int> bdr_attr)
-    :name(bc_name),
-    bdr_attributes(bdr_attr)
+namespace hephaestus
+{
+BoundaryCondition::BoundaryCondition()
 {
 }
 
-mfem::Array<int> BCMap::getMarkers(mfem::Mesh & mesh)
+BoundaryCondition::BoundaryCondition(const std::string & boundary_name,
+    mfem::Array<int> boundary_ids)
+    :name(boundary_name),
+    bdr_attributes(boundary_ids)
+{
+}
+
+mfem::Array<int> BoundaryCondition::getMarkers(mfem::Mesh & mesh)
 {
     mfem::common::AttrToMarker(mesh.bdr_attributes.Max(), bdr_attributes, markers);
     return markers;
+}
+
+BCMap::BCMap()
+{
+}
+
+void BCMap::setBC(std::string bc_name, BoundaryCondition bc)
+{
+    bc_map.insert(std::pair<std::string, BoundaryCondition>(bc_name, bc));
+}
+
+BoundaryCondition BCMap::getBC(std::string bc_name)
+{
+    return bc_map[bc_name];
+}
+
+
 }

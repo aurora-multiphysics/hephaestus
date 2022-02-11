@@ -110,6 +110,7 @@
 #include "joule_solver.hpp"
 #include "inputs.hpp"
 #include "boundary_conditions.hpp"
+#include "materials.hpp"
 
 using namespace std;
 
@@ -125,7 +126,7 @@ int mfem::electromagnetics::STATIC_COND        = 0;
 
 
 
-int joule_solve(int argc, char *argv[], Inputs inputs)
+int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs)
 {
    // 1. Initialize MPI.
    // MPI_Session mpi(argc, argv);
@@ -148,9 +149,9 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
    double t_final = 100.0;
    double dt = 0.5;
    double mu = 1.0;
-   double sigma = 2.0*M_PI*10;
-   double Tcapacity = 1.0;
-   double Tconductivity = 0.01;
+   // double sigma = 2.0*M_PI*10;
+   // double Tcapacity = 1.0;
+   // double Tconductivity = 0.01;
    double freq = 1.0/60.0;
    bool visualization = true;
    bool visit = true;
@@ -176,8 +177,8 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
                   "Time step.");
    args.AddOption(&mu, "-mu", "--permeability",
                   "Magnetic permeability coefficient.");
-   args.AddOption(&sigma, "-cnd", "--sigma",
-                  "Conductivity coefficient.");
+   // args.AddOption(&sigma, "-cnd", "--sigma",
+   //                "Conductivity coefficient.");
    args.AddOption(&freq, "-f", "--frequency",
                   "Frequency of oscillation.");
    args.AddOption(&visualization, "-vis", "--visualization", "-no-vis",
@@ -214,7 +215,8 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
    }
 
    mj_  = mu;
-   sj_  = sigma;
+   // sj_  = sigma;
+   sj_ = 2.0*M_PI*10;
    wj_  = 2.0*M_PI*freq;
 
    if (myid == 0)
@@ -233,51 +235,49 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
    //
    //    We can use the same material maps for both problems.
 
-   std::map<int, double> sigmaMap, InvTcondMap, TcapMap, InvTcapMap;
-   double sigmaAir;
-   double TcondAir;
-   double TcapAir;
-   if (strcmp(problem,"rod")==0 || strcmp(problem,"coil")==0)
-   {
-      sigmaAir     = 1.0e-6 * sigma;
-      TcondAir     = 1.0e6  * Tconductivity;
-      TcapAir      = 1.0    * Tcapacity;
-   }
-   else
-   {
-      cerr << "Problem " << problem << " not recognized\n";
-      mfem::mfem_error();
-   }
 
-   if (strcmp(problem,"rod")==0 || strcmp(problem,"coil")==0)
-   {
+   // double sigmaAir;
+   // double TcondAir;
+   // double TcapAir;
+   // if (strcmp(problem,"rod")==0 || strcmp(problem,"coil")==0)
+   // {
+   //    sigmaAir     = 1.0e-6 * sigma;
+   //    TcondAir     = 1.0e6  * Tconductivity;
+   //    TcapAir      = 1.0    * Tcapacity;
+   // }
+   // else
+   // {
+   //    cerr << "Problem " << problem << " not recognized\n";
+   //    mfem::mfem_error();
+   // }
 
-      sigmaMap.insert(pair<int, double>(1, sigma));
-      sigmaMap.insert(pair<int, double>(2, sigmaAir));
-      sigmaMap.insert(pair<int, double>(3, sigmaAir));
 
-      InvTcondMap.insert(pair<int, double>(1, 1.0/Tconductivity));
-      InvTcondMap.insert(pair<int, double>(2, 1.0/TcondAir));
-      InvTcondMap.insert(pair<int, double>(3, 1.0/TcondAir));
+   // if (strcmp(problem,"rod")==0 || strcmp(problem,"coil")==0)
+   // {
 
-      TcapMap.insert(pair<int, double>(1, Tcapacity));
-      TcapMap.insert(pair<int, double>(2, TcapAir));
-      TcapMap.insert(pair<int, double>(3, TcapAir));
+   //    sigmaMap.insert(pair<int, double>(1, sigma));
+   //    sigmaMap.insert(pair<int, double>(2, sigmaAir));
+   //    sigmaMap.insert(pair<int, double>(3, sigmaAir));
 
-      InvTcapMap.insert(pair<int, double>(1, 1.0/Tcapacity));
-      InvTcapMap.insert(pair<int, double>(2, 1.0/TcapAir));
-      InvTcapMap.insert(pair<int, double>(3, 1.0/TcapAir));
-   }
-   else
-   {
-      cerr << "Problem " << problem << " not recognized\n";
-      mfem::mfem_error();
-   }
+   //    InvTcondMap.insert(pair<int, double>(1, 1.0/Tconductivity));
+   //    InvTcondMap.insert(pair<int, double>(2, 1.0/TcondAir));
+   //    InvTcondMap.insert(pair<int, double>(3, 1.0/TcondAir));
 
-   if (myid == 0)
-   {
-      cout << "\nMaterial properties applied" << endl;
-   }
+   //    TcapMap.insert(pair<int, double>(1, Tcapacity));
+   //    TcapMap.insert(pair<int, double>(2, TcapAir));
+   //    TcapMap.insert(pair<int, double>(3, TcapAir));
+
+   //    InvTcapMap.insert(pair<int, double>(1, 1.0/Tcapacity));
+   //    InvTcapMap.insert(pair<int, double>(2, 1.0/TcapAir));
+   //    InvTcapMap.insert(pair<int, double>(3, 1.0/TcapAir));
+   // }
+   // else
+   // {
+   //    cerr << "Problem " << problem << " not recognized\n";
+   //    mfem::mfem_error();
+   // }
+
+
    // 4. Read the serial mesh from the given mesh file on all processors. We can
    //    handle triangular, quadrilateral, tetrahedral and hexahedral meshes
    //    with the same code.
@@ -288,10 +288,10 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
 
    // 5. Assign the boundary conditions
 
-   // std::vector<BCMap> bc_maps({
-   //    BCMap(std::string("curl_bc"), mfem::Array<int>({1,2,3})),
-   //    BCMap(std::string("thermal_bc"), mfem::Array<int>({1,2})),
-   //    BCMap(std::string("poisson_bc"), mfem::Array<int>({1,2})),
+   // std::vector<BoundaryCondition> bc_maps({
+   //    BoundaryCondition(std::string("curl_bc"), mfem::Array<int>({1,2,3})),
+   //    BoundaryCondition(std::string("thermal_bc"), mfem::Array<int>({1,2})),
+   //    BoundaryCondition(std::string("poisson_bc"), mfem::Array<int>({1,2})),
    // });
 
    // if (strcmp(problem,"coil")==0)
@@ -299,19 +299,19 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
    //    // BEGIN CODE FOR THE COIL PROBLEM
    //    // For the coil in a box problem we have surfaces 1) coil end (+),
    //    // 2) coil end (-), 3) five sides of box, 4) side of box with coil BC
-   //    std::vector<BCMap> bc_maps({
-   //       BCMap(std::string("curl_bc"), mfem::Array<int>({1,2,3,4}), max_attr),
-   //       BCMap(std::string("thermal_bc"), mfem::Array<int>({1,3}), max_attr),
-   //       BCMap(std::string("poisson_bc"), mfem::Array<int>({1,2,3}), max_attr),
+   //    std::vector<BoundaryCondition> bc_maps({
+   //       BoundaryCondition(std::string("curl_bc"), mfem::Array<int>({1,2,3,4}), max_attr),
+   //       BoundaryCondition(std::string("thermal_bc"), mfem::Array<int>({1,3}), max_attr),
+   //       BoundaryCondition(std::string("poisson_bc"), mfem::Array<int>({1,2,3}), max_attr),
    //    });
    //    // END CODE FOR THE COIL PROBLEM
    // }
    // else if (strcmp(problem,"rod")==0)
    // {
-   //    std::vector<BCMap> bc_maps({
-   //       BCMap(std::string("curl_bc"), mfem::Array<int>({1,2,3}), max_attr),
-   //       BCMap(std::string("thermal_bc"), mfem::Array<int>({1,2}), max_attr),
-   //       BCMap(std::string("poisson_bc"), mfem::Array<int>({1,2}), max_attr),
+   //    std::vector<BoundaryCondition> bc_maps({
+   //       BoundaryCondition(std::string("curl_bc"), mfem::Array<int>({1,2,3}), max_attr),
+   //       BoundaryCondition(std::string("thermal_bc"), mfem::Array<int>({1,2}), max_attr),
+   //       BoundaryCondition(std::string("poisson_bc"), mfem::Array<int>({1,2}), max_attr),
    //    });
    //    // END CODE FOR THE STRAIGHT ROD PROBLEM
    // }
@@ -321,16 +321,22 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
    //    mfem::mfem_error();
    // }
 
-   std::vector<BCMap> bc_maps = inputs.bc_maps;
-   mfem::Array<int> ess_bdr = bc_maps[0].getMarkers(*mesh);
-   mfem::Array<int> thermal_ess_bdr = bc_maps[1].getMarkers(*mesh);
-   mfem::Array<int> poisson_ess_bdr = bc_maps[2].getMarkers(*mesh);
-   // for (std::size_t i = 0; i < bc_maps.size(); i++){
-   //    BCMap bc_map = bc_maps[i];
-   //    if (strcmp(bc_map.name.c_str(),"curl_bc")==0) {ess_bdr = bc_map.markers;}
-   //    if (strcmp(bc_map.name.c_str(),"thermal_bc")==0) {thermal_ess_bdr = bc_map.markers;}
-   //    if (strcmp(bc_map.name.c_str(),"curl_bc")==0) {poisson_ess_bdr = bc_map.markers;}
-   // }
+
+   hephaestus::MaterialMap material_map(inputs.material_map);
+   std::map<int, double> sigmaMap(material_map.getBlockPropertyMap(std::string("sigma")));
+   std::map<int, double> InvTcondMap(material_map.getBlockPropertyMap(std::string("InvTconductivity")));
+   std::map<int, double> TcapMap(material_map.getBlockPropertyMap(std::string("Tcapacity")));
+   std::map<int, double> InvTcapMap(material_map.getBlockPropertyMap(std::string("InvTcapacity")));
+
+   if (myid == 0)
+   {
+      cout << "\nMaterial properties applied" << endl;
+   }
+
+   hephaestus::BCMap bc_map = inputs.bc_map;
+   mfem::Array<int> ess_bdr = bc_map.getBC(std::string("curl_bc")).getMarkers(*mesh);
+   mfem::Array<int> thermal_ess_bdr = bc_map.getBC(std::string("thermal_bc")).getMarkers(*mesh);
+   mfem::Array<int> poisson_ess_bdr = bc_map.getBC(std::string("poisson_bc")).getMarkers(*mesh);
 
    // The following is required for mesh refinement
    mesh->EnsureNCMesh();
@@ -339,6 +345,15 @@ int joule_solve(int argc, char *argv[], Inputs inputs)
    {
       cout << "\nBoundary conditions applied" << endl;
    }
+
+   // for (std::size_t i = 0; i < bc_maps.size(); i++){
+   //    BoundaryCondition bc_map = bc_maps[i];
+   //    if (strcmp(bc_map.name.c_str(),"curl_bc")==0) {ess_bdr = bc_map.markers;}
+   //    if (strcmp(bc_map.name.c_str(),"thermal_bc")==0) {thermal_ess_bdr = bc_map.markers;}
+   //    if (strcmp(bc_map.name.c_str(),"curl_bc")==0) {poisson_ess_bdr = bc_map.markers;}
+   // }
+
+
    // 6. Define the ODE solver used for time integration. Several implicit
    //    methods are available, including singly diagonal implicit Runge-Kutta
    //    (SDIRK).
