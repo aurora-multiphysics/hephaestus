@@ -55,6 +55,6 @@ int main(int argc, char *argv[])
 
    hephaestus::MaterialMap material_map(std::vector<hephaestus::Material>({copper, air}));
 
-   hephaestus::Inputs inputs(std::string("rod"), std::string("cylinder-hex-q2.gen"), bc_map, material_map);
+   hephaestus::Inputs inputs(std::string("cylinder-hex-q2.gen"), bc_map, material_map);
    joule_solve(argc, argv, inputs);
 }

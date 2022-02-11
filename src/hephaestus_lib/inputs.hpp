@@ -11,12 +11,10 @@ namespace hephaestus{
 class Inputs
 {
     public:
-    Inputs(const std::string & problem_type,
-        const std::string & mesh_file,
+    Inputs(const std::string & mesh_file,
         const BCMap & boundary_conditions,
         const MaterialMap & materials);
 
-    std::string _problem_type;
     std::string _mesh_file;
     BCMap bc_map;
     MaterialMap material_map;

@@ -141,7 +141,6 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs)
 
    // 2. Parse command-line options.
    const char *mesh_file = inputs._mesh_file.c_str();
-   const char *problem = inputs._problem_type.c_str();
    int ser_ref_levels = 0;
    int par_ref_levels = 0;
    int order = 2;
