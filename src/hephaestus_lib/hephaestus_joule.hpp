@@ -17,7 +17,8 @@
 // heating.
 //
 // This version has electrostatic potential, Phi, which is a source term in the
-// EM diffusion equation. The potential itself is driven by essential BC's
+// EM diffusion equation. -sigma grad Phi represents the source current density.
+// The potential itself is driven by essential BC's
 //
 //               Div sigma Grad Phi = 0
 //               sigma E  =  Curl B/mu - sigma grad Phi
@@ -39,9 +40,11 @@
 // The voltage BC condition is essential BC on attribute 1 (front) and 2 (rear)
 // given by function p_bc() at bottom of this file.
 //
-// The E-field boundary condition specifies the essential BC (n cross E) on
-// attribute 1 (front) and 2 (rear) given by function edot_bc at bottom of this
-// file. The E-field can be set on attribute 3 also.
+// The E-field boundary condition specifies the Dirichlet BC on the tangential
+// component of the electric field on a boundary (n cross E) via
+// its time derivative dE/dt.
+// The natural boundary condition, where no specific BC is applied, is
+// curl H x n = 0 (zero tangential current density on a boundary).
 //
 // The thermal boundary condition for the flux F is the natural BC on attribute 1
 // (front) and 2 (rear). This means that dT/dt = 0 on the boundaries, and the
@@ -258,9 +261,10 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs)
 
    // 5. Assign boundary conditions
    hephaestus::BCMap bc_map = inputs.bc_map;
-   mfem::Array<int> ess_bdr = bc_map.getBC(std::string("curl_bc")).getMarkers(*mesh);
-   mfem::Array<int> thermal_ess_bdr = bc_map.getBC(std::string("thermal_bc")).getMarkers(*mesh);
-   mfem::Array<int> poisson_ess_bdr = bc_map.getBC(std::string("poisson_bc")).getMarkers(*mesh);
+   mfem::Array<int> ess_bdr = bc_map.getBC(std::string("tangential_dEdt")).getMarkers(*mesh);
+   mfem::Array<int> thermal_ess_bdr = bc_map.getBC(std::string("thermal_flux")).getMarkers(*mesh);
+   mfem::Array<int> poisson_ess_bdr = bc_map.getBC(std::string("electric_potential")).getMarkers(*mesh);
+   std::function<double(const mfem::Vector&, double)> p_bc = bc_map.getBC(std::string("electric_potential")).scalar_func ;
 
    if (myid == 0)
    {
@@ -471,7 +475,7 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs)
    mfem::electromagnetics::MagneticDiffusionEOperator oper(true_offset[6], L2FESpace, HCurlFESpace,
                                    HDivFESpace, HGradFESpace,
                                    ess_bdr, thermal_ess_bdr, poisson_ess_bdr,
-                                   mu, sigmaMap, TcapMap, InvTcapMap,
+                                   mu, p_bc, sigmaMap, TcapMap, InvTcapMap,
                                    InvTcondMap);
 
    if (myid == 0)
@@ -723,21 +727,21 @@ double t_exact(const mfem::Vector &x)
    return T;
 }
 
-double p_bc(const mfem::Vector &x, double t)
-{
-   // the value
-   double T;
-   if (x[2] < 0.0)
-   {
-      T = 1.0;
-   }
-   else
-   {
-      T = -1.0;
-   }
+// double p_bc(const mfem::Vector &x, double t)
+// {
+//    // the value
+//    double T;
+//    if (x[2] < 0.0)
+//    {
+//       T = 1.0;
+//    }
+//    else
+//    {
+//       T = -1.0;
+//    }
 
-   return T*cos(wj_ * t);
-}
+//    return T*cos(wj_ * t);
+// }
 
 } // namespace electromagnetics
 

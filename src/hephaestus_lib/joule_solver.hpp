@@ -37,7 +37,7 @@ extern int        STATIC_COND;
 void edot_bc(const Vector &x, Vector &E);
 void e_exact(const Vector &x, double t, Vector &E);
 void b_exact(const Vector &x, double t, Vector &B);
-double p_bc(const Vector &x, double t);
+// double p_bc(const Vector &x, double t);
 double t_exact(const Vector &x);
 
 // A Coefficient is an object with a function Eval that returns a double.  A
@@ -131,6 +131,12 @@ protected:
    // temporary work vectors
    ParGridFunction *v0, *v1, *v2;
 
+   // void edot_bc(const Vector &x, Vector &E);
+   // double p_bc(const Vector &x, double t);
+   std::function<double(const mfem::Vector&, double)> p_bc;
+   // std::function<void(const mfem::Vector&, double, double&)> p_bc;
+   // std::function<void(const mfem::Vector&, double, mfem::Vector&)> edot_bc,
+
    // HypreSolver is derived from Solver, which is derived from Operator. So a
    // HypreSolver object has a Mult() operator, which is actually the solver
    // operation y = A^-1 x i.e. multiplication by A^-1.
@@ -184,6 +190,8 @@ public:
                               Array<int> &thermal_ess_bdr,
                               Array<int> &poisson_ess_bdr,
                               double mu,
+                              std::function<double(const mfem::Vector&, double)> _p_bc,
+                              // std::function<void(const mfem::Vector&, double, mfem::Vector&)> edot_bc,
                               std::map<int, double> sigmaAttMap,
                               std::map<int, double> TcapacityAttMap,
                               std::map<int, double> InvTcapAttMap,

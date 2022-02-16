@@ -15,15 +15,34 @@ using namespace mfem;
 using namespace mfem::common;
 using namespace mfem::electromagnetics;
 
+double potential(const mfem::Vector &x, double t)
+{
+   wj_  = 2.0*M_PI/60.0;
+   // the value
+   double T;
+   if (x[2] < 0.0)
+   {
+      T = 1.0;
+   }
+   else
+   {
+      T = -1.0;
+   }
+
+   return T*cos(wj_ * t);
+}
 
 int main(int argc, char *argv[])
 {
    MPI_Session mpi(argc, argv);
 
    hephaestus::BCMap bc_map;
-   bc_map.setBC(std::string("curl_bc"), hephaestus::BoundaryCondition(std::string("boundary_1"), Array<int>({1,2,3})));
-   bc_map.setBC(std::string("thermal_bc"), hephaestus::BoundaryCondition(std::string("boundary_2"), Array<int>({1,2})));
-   bc_map.setBC(std::string("poisson_bc"), hephaestus::BoundaryCondition(std::string("boundary_3"), Array<int>({1,2})));
+   bc_map.setBC(std::string("tangential_dEdt"), hephaestus::BoundaryCondition(std::string("boundary_1"), Array<int>({1,2,3})));
+   bc_map.setBC(std::string("thermal_flux"), hephaestus::BoundaryCondition(std::string("boundary_2"), Array<int>({1,2})));
+   hephaestus::BoundaryCondition poisson_bc(std::string("boundary_3"), Array<int>({1,2}));
+   poisson_bc.scalar_func = potential;
+   bc_map.setBC(std::string("electric_potential"), poisson_bc);
+
 
    // std::vector<hephaestus::BoundaryCondition> bc_maps({
    //    hephaestus::BoundaryCondition(std::string("curl_bc"), Array<int>({1,2,3})),

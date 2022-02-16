@@ -33,6 +33,8 @@ MagneticDiffusionEOperator::MagneticDiffusionEOperator(
    Array<int> &thermal_ess_bdr_arg,
    Array<int> &poisson_ess_bdr_arg,
    double mu_coef,
+   std::function<double(const mfem::Vector&, double)> _p_bc,
+   // std::function<void(const mfem::Vector&, double, mfem::Vector&)> _edot_bc,
    std::map<int, double> sigmaAttMap,
    std::map<int, double> TcapacityAttMap,
    std::map<int, double> InvTcapAttMap,
@@ -52,6 +54,8 @@ MagneticDiffusionEOperator::MagneticDiffusionEOperator(
      dsp_m1(NULL), pcg_m1(NULL), dsp_m2(NULL), pcg_m2(NULL),
      mu(mu_coef), dt_A1(-1.0), dt_A2(-1.0)
 {
+
+   p_bc = _p_bc;
    ess_bdr.SetSize(ess_bdr_arg.Size());
    for (int i=0; i<ess_bdr_arg.Size(); i++)
    {

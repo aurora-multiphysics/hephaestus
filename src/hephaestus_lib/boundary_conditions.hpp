@@ -2,7 +2,6 @@
 #include <memory>
 #include <iostream>
 #include <fstream>
-#include "joule_solver.hpp"
 #include "mesh_extras.hpp"
 
 
@@ -18,6 +17,8 @@ class BoundaryCondition
     mfem::Array<int> getMarkers(mfem::Mesh & mesh);
 
     std::string name;
+    std::function<double(const mfem::Vector&, double)> scalar_func;
+    std::function<void(const mfem::Vector&, double, mfem::Vector&)> vector_func;
     mfem::Array<int> bdr_attributes;
     mfem::Array<int> markers;
 };
