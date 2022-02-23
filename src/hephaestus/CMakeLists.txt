@@ -13,6 +13,3 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(${PROJECT_NAME} PUBLIC ${Boost_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}-lib ${MFEM_LIBRARIES} ${MFEM_COMMON_LIBRARY} -lrt)
 target_link_libraries(${PROJECT_NAME} PUBLIC ${Boost_LIBRARIES} ${TEST_LIBRARIES} )
-
-
-

@@ -119,10 +119,6 @@ using namespace std;
 
 void display_banner(ostream & os);
 
-static double mj_ = 0.0;
-static double sj_ = 0.0;
-static double wj_ = 0.0;
-
 // Initialize variables used in joule_solver.cpp
 int mfem::electromagnetics::SOLVER_PRINT_LEVEL = 0;
 int mfem::electromagnetics::STATIC_COND        = 0;
@@ -143,6 +139,7 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs)
    if (myid == 0) { display_banner(cout); }
 
    // 2. Parse command-line options.
+   const char *formulation = "Joule";
    const char *mesh_file = inputs._mesh_file.c_str();
    int ser_ref_levels = 0;
    int par_ref_levels = 0;
@@ -151,10 +148,6 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs)
    double t_final = 100.0;
    double dt = 0.5;
    double mu = 1.0;
-   // double sigma = 2.0*M_PI*10;
-   // double Tcapacity = 1.0;
-   // double Tconductivity = 0.01;
-   double freq = 1.0/60.0;
    bool visualization = true;
    bool visit = true;
    int vis_steps = 1;
@@ -164,6 +157,8 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs)
    int debug = 0;
 
    mfem::OptionsParser args(argc, argv);
+   args.AddOption(&formulation, "-form", "--formulation",
+                  "Name of formulation to use during solve.");
    args.AddOption(&ser_ref_levels, "-rs", "--refine-serial",
                   "Number of times to refine the mesh uniformly in serial.");
    args.AddOption(&par_ref_levels, "-rp", "--refine-parallel",
@@ -179,10 +174,6 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs)
                   "Time step.");
    args.AddOption(&mu, "-mu", "--permeability",
                   "Magnetic permeability coefficient.");
-   // args.AddOption(&sigma, "-cnd", "--sigma",
-   //                "Conductivity coefficient.");
-   args.AddOption(&freq, "-f", "--frequency",
-                  "Frequency of oscillation.");
    args.AddOption(&visualization, "-vis", "--visualization", "-no-vis",
                   "--no-visualization",
                   "Enable or disable GLVis visualization.");
@@ -215,19 +206,6 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs)
    {
       args.PrintOptions(cout);
    }
-
-   mj_  = mu;
-   // sj_  = sigma;
-   sj_ = 2.0*M_PI*10;
-   wj_  = 2.0*M_PI*freq;
-
-   if (myid == 0)
-   {
-      cout << "\nSkin depth sqrt(2.0/(wj*mj*sj)) = " << sqrt(2.0/(wj_*mj_*sj_))
-           << "\nSkin depth sqrt(2.0*dt/(mj*sj)) = " << sqrt(2.0*dt/(mj_*sj_))
-           << endl;
-   }
-
 
    // 3. Read the serial mesh from the given mesh file on all processors. We can
    //    handle triangular, quadrilateral, tetrahedral and hexahedral meshes
@@ -726,22 +704,6 @@ double t_exact(const mfem::Vector &x)
    double T = 0.0;
    return T;
 }
-
-// double p_bc(const mfem::Vector &x, double t)
-// {
-//    // the value
-//    double T;
-//    if (x[2] < 0.0)
-//    {
-//       T = 1.0;
-//    }
-//    else
-//    {
-//       T = -1.0;
-//    }
-
-//    return T*cos(wj_ * t);
-// }
 
 } // namespace electromagnetics
 

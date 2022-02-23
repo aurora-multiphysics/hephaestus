@@ -8,7 +8,7 @@
 #include <memory>
 #include <iostream>
 #include <fstream>
-#include "hephaestus_joule.hpp"
+#include "hephaestus.hpp"
 
 using namespace std;
 using namespace mfem;
@@ -17,7 +17,7 @@ using namespace mfem::electromagnetics;
 
 double potential(const mfem::Vector &x, double t)
 {
-   wj_  = 2.0*M_PI/60.0;
+   double wj_ (2.0*M_PI/60.0);
    // the value
    double T;
    if (x[2] < 0.0)
@@ -32,23 +32,14 @@ double potential(const mfem::Vector &x, double t)
    return T*cos(wj_ * t);
 }
 
-int main(int argc, char *argv[])
+hephaestus::Inputs joule_example_inputs()
 {
-   MPI_Session mpi(argc, argv);
-
    hephaestus::BCMap bc_map;
    bc_map.setBC(std::string("tangential_dEdt"), hephaestus::BoundaryCondition(std::string("boundary_1"), Array<int>({1,2,3})));
    bc_map.setBC(std::string("thermal_flux"), hephaestus::BoundaryCondition(std::string("boundary_2"), Array<int>({1,2})));
    hephaestus::BoundaryCondition poisson_bc(std::string("boundary_3"), Array<int>({1,2}));
    poisson_bc.scalar_func = potential;
    bc_map.setBC(std::string("electric_potential"), poisson_bc);
-
-
-   // std::vector<hephaestus::BoundaryCondition> bc_maps({
-   //    hephaestus::BoundaryCondition(std::string("curl_bc"), Array<int>({1,2,3})),
-   //    hephaestus::BoundaryCondition(std::string("thermal_bc"), Array<int>({1,2})),
-   //    hephaestus::BoundaryCondition(std::string("poisson_bc"), Array<int>({1,2})),
-   // });
 
    double sigma = 2.0*M_PI*10;
    double Tcapacity = 1.0;
@@ -74,6 +65,49 @@ int main(int argc, char *argv[])
 
    hephaestus::MaterialMap material_map(std::vector<hephaestus::Material>({copper, air}));
 
-   hephaestus::Inputs inputs(std::string("cylinder-hex-q2.gen"), 2, bc_map, material_map);
-   joule_solve(argc, argv, inputs);
+   hephaestus::Inputs inputs(std::string("cylinder-hex-q2.gen"), std::string("Joule"), 2, bc_map, material_map);
+   return inputs;
+}
+
+int main(int argc, char *argv[])
+{
+   MPI_Session mpi(argc, argv);
+   int myid;
+   MPI_Comm_rank(MPI_COMM_WORLD, &myid);
+
+   // Parse command line arguments
+   const char *formulation = "None";
+   mfem::OptionsParser args(argc, argv);
+   args.AddOption(&formulation, "-form", "--formulation",
+                  "Name of formulation to use during solve.");
+   args.Parse();
+   if (!args.Good())
+   {
+      if (myid == 0)
+      {
+         args.PrintUsage(cout);
+      }
+      return 1;
+   }
+
+   // Create example inputs based on formulation name
+   hephaestus::Inputs inputs;
+   if (strcmp(formulation,"Joule")==0)
+   {
+      inputs = joule_example_inputs();
+   }
+   else if (strcmp(formulation,"None")==0)
+   {
+      std::cout<<"Formulation name not provided. \n";
+      exit(0);
+   }
+   else
+   {
+      std::cout<<"Formulation name " << formulation << " not recognised. \n";
+      exit(0);
+   }
+
+   // Launch
+   run_hephaestus(argc, argv, inputs);
+
 }
