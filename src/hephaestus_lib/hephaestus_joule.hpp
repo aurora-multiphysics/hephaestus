@@ -114,6 +114,7 @@
 #include "inputs.hpp"
 #include "boundary_conditions.hpp"
 #include "materials.hpp"
+#include "executioner.hpp"
 
 using namespace std;
 
@@ -145,8 +146,8 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs)
    int par_ref_levels = 0;
    int order = inputs._order;
    int ode_solver_type = 1;
-   double t_final = 100.0;
-   double dt = 0.5;
+   double t_final = inputs.executioner.t_final;
+   double dt = inputs.executioner.dt;
    double mu = 1.0;
    bool visualization = true;
    bool visit = true;
@@ -163,15 +164,9 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs)
                   "Number of times to refine the mesh uniformly in serial.");
    args.AddOption(&par_ref_levels, "-rp", "--refine-parallel",
                   "Number of times to refine the mesh uniformly in parallel.");
-   // args.AddOption(&order, "-o", "--order",
-   //                "Order (degree) of the finite elements.");
    args.AddOption(&ode_solver_type, "-s", "--ode-solver",
                   "ODE solver: 1 - Backward Euler, 2 - SDIRK2, 3 - SDIRK3\n\t."
                   "\t   22 - Mid-Point, 23 - SDIRK23, 34 - SDIRK34.");
-   args.AddOption(&t_final, "-tf", "--t-final",
-                  "Final time; start time is 0.");
-   args.AddOption(&dt, "-dt", "--time-step",
-                  "Time step.");
    args.AddOption(&mu, "-mu", "--permeability",
                   "Magnetic permeability coefficient.");
    args.AddOption(&visualization, "-vis", "--visualization", "-no-vis",

@@ -65,7 +65,8 @@ hephaestus::Inputs joule_example_inputs()
 
    hephaestus::MaterialMap material_map(std::vector<hephaestus::Material>({copper, air}));
 
-   hephaestus::Inputs inputs(std::string("cylinder-hex-q2.gen"), std::string("Joule"), 2, bc_map, material_map);
+   hephaestus::Executioner executioner(std::string("transient"), 0.5, 100.0);
+   hephaestus::Inputs inputs(std::string("cylinder-hex-q2.gen"), std::string("Joule"), 2, bc_map, material_map, executioner);
    return inputs;
 }
 
