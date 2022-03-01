@@ -26,17 +26,8 @@ class BoundaryCondition
     mfem::Array<int> markers;
 
     virtual void applyBC(mfem::LinearForm& b){};
-    virtual void applyBC(mfem::ComplexLinearForm& b)
-    {
-    };
-    virtual void applyBC(mfem::ParComplexLinearForm& b)
-    {
-        std::cout <<"usshs type3" << std::endl;
-    };
-    virtual void testecho()
-    {
-        std::cout <<"usshs";
-    };
+    virtual void applyBC(mfem::ComplexLinearForm& b){};
+    virtual void applyBC(mfem::ParComplexLinearForm& b){};
 };
 
 class NeumannBC : public BoundaryCondition
@@ -52,43 +43,17 @@ class NeumannBC : public BoundaryCondition
 
     virtual void applyBC(mfem::LinearForm& b) override
     {
-        std::cout <<"lagagaga type1";
-
         b.AddBoundaryIntegrator(lfi_re, markers);
     };
     virtual void applyBC(mfem::ComplexLinearForm& b) override
     {
-        std::cout <<"lagagaga type2";
-
         b.AddBoundaryIntegrator(lfi_re, lfi_im, markers);
     };
     virtual void applyBC(mfem::ParComplexLinearForm& b) override
     {
-        std::cout <<"lagagaga type3";
         b.AddBoundaryIntegrator(lfi_re, lfi_im, markers);
     };
-    virtual void testecho() override
-    {
-        std::cout <<"lagagaga";
-    };
 };
-
-// class ComplexRobinBC : public BoundaryCondition
-// {
-//     public:
-//     ComplexRobinBC(const std::string & boundary_name,
-//           mfem::Array<int> boundary_ids);
-
-//     BilinearFormIntegrator integrator_re; //Neumann term
-//     BilinearFormIntegrator integrator_im; //Neumann term
-
-//     Coefficient robin_coef_re;
-//     Coefficient robin_coef_im;
-
-//     VectorCoefficient ;
-
-//     applyNeumannBC(ParSesquilinearForm );
-// }
 
 class BCMap
 {

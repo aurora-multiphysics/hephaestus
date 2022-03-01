@@ -178,16 +178,6 @@ void RWTE10(const Vector &x, vector<complex<double>> &E)
    double V = InnerProduct(a1Vec, a2xa3);
    k_a*=M_PI/V; k_c*=k_.imag()/a3Vec.Norml2();
 
-   // std::cout << "mu0=" <<mu0_<<std::endl;
-   // std::cout << "eps0=" <<epsilon0_<<std::endl;
-   // std::cout << "pi=" <<M_PI<<std::endl;
-   // std::cout << "kc=" <<kc<<std::endl;
-   // std::cout << "k0=" <<k0<<std::endl;
-
-   // std::cout << "omega=" <<omega_<<std::endl;
-   // std::cout << "|k|=" <<k0*k0-kc*kc<<std::endl;
-
-
    Vector E_hat;
    cross_product(k_c, k_a, E_hat);
    E_hat *= 1.0/E_hat.Norml2();
@@ -400,15 +390,6 @@ int hertz_solve(int argc, char *argv[], hephaestus::Inputs inputs)
    // Robin coefficient, but already handled here.
    Coefficient * etaInvCoef = new ConstantCoefficient(-k_.imag()/(mu0_*omega_));
 
-   std::cout << "mu0=" <<mu0_<<std::endl;
-   std::cout << "eps0=" <<epsilon0_<<std::endl;
-   std::cout << "pi=" <<M_PI<<std::endl;
-   std::cout << "kc=" <<kc<<std::endl;
-   std::cout << "k0=" <<k0<<std::endl;
-
-   std::cout << "omega=" <<omega_<<std::endl;
-   std::cout << "|k|=" <<k0*k0-kc*kc<<std::endl;
-
    // a->AddBoundaryIntegrator(
    //    new VectorFEMassIntegrator(negkRealCoef),
    //    new VectorFEMassIntegrator(negkImagCoef),
@@ -425,19 +406,13 @@ int hertz_solve(int argc, char *argv[], hephaestus::Inputs inputs)
    hephaestus::BCMap bc_map = inputs.bc_map;
 
    hephaestus::BoundaryCondition waveguide_ports(std::string("robin_1"), Array<int>({1,2}));
-
    Array<int> wgi_in_attr(1);
    wgi_in_attr[0]=1;
    hephaestus::NeumannBC waveguide_in(std::string("wgi"), wgi_in_attr);
    VectorFunctionCoefficient UReal(pmesh.SpaceDimension(), RWTE10_real);
    VectorFunctionCoefficient UImag(pmesh.SpaceDimension(), RWTE10_imag);
-
-   // mfem::VectorFEBoundaryTangentLFIntegrator u_re(UReal);
-   // mfem::VectorFEBoundaryTangentLFIntegrator u_im(UImag);
    waveguide_in.lfi_re  = new mfem::VectorFEBoundaryTangentLFIntegrator(UReal);
    waveguide_in.lfi_im  = new mfem::VectorFEBoundaryTangentLFIntegrator(UImag);
-   // std::cout<<"MAX ATTRIBUTES"<<pmesh.bdr_attributes.Max();
-   // waveguide_in.markers = waveguide_in.getMarkers(pmesh);
    waveguide_in.markers.SetSize(pmesh.bdr_attributes.Max());
    waveguide_in.markers = 0;
    waveguide_in.markers[1] = 1;
@@ -448,23 +423,8 @@ int hertz_solve(int argc, char *argv[], hephaestus::Inputs inputs)
 
    abcs = Array<int>({1,2});
 
-   // abcs = mfem::Array<int>({2,3});
-
-   std::cout << waveguide_in.markers <<std::endl;
-   std::cout << waveguide_in.bdr_attributes <<std::endl;
-
-
-   waveguide_in.testecho();
-
    bc_map.bc_map.insert(std::pair<std::string, hephaestus::NeumannBC *>(std::string("Neumann"), new hephaestus::NeumannBC(waveguide_in)));
-   // bc_map.setBC(std::string("Neumann"), waveguide_in);
-   std::cout << "setBC" <<std::endl;
    hephaestus::NeumannBC *test_bc = static_cast<hephaestus::NeumannBC *>(bc_map.bc_map["Neumann"]);
-
-   // Book* the_old_book = static_cast<hephaestus::NeumannBC *>(old_book)
-   static_cast<hephaestus::NeumannBC*>(bc_map.bc_map["Neumann"])->testecho();
-   // test_bc->testecho();
-   std::cout << "getBC funcs" <<std::endl;
 
    std::function<void(const mfem::Vector&, mfem::Vector&)> e_bc_r = bc_map.getBC(std::string("tangential_E")).vector_func;
    std::function<void(const mfem::Vector&, mfem::Vector&)> e_bc_i = bc_map.getBC(std::string("tangential_E")).vector_func_im;
