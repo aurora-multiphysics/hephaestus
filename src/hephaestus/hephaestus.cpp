@@ -70,6 +70,47 @@ hephaestus::Inputs joule_example_inputs()
    return inputs;
 }
 
+void e_bc_r(const Vector &x, Vector &E)
+{
+   E.SetSize(3);
+   E = 0.0;
+}
+
+void e_bc_i(const Vector &x, Vector &E)
+{
+   E.SetSize(3);
+   E = 0.0;
+}
+
+hephaestus::Inputs hertz_example_inputs()
+{
+   hephaestus::BCMap bc_map;
+
+   // dirichlet
+   hephaestus::BoundaryCondition e_bc(std::string("boundary_1"), Array<int>({1,2}));
+   e_bc.vector_func = e_bc_r;
+   e_bc.vector_func_im = e_bc_i;
+   bc_map.setBC(std::string("tangential_E"), e_bc);
+
+   //robin
+
+
+   static double mu = 1.25663706e-6;
+   static double epsilon = 8.85418782e-12;
+   static double sigma = 0.0;
+
+   hephaestus::Material copper("air", 1);
+   copper.setMaterialProperty(std::string("complex_electrical_conductivity"), sigma);
+   copper.setMaterialProperty(std::string("complex_permeability"), mu);
+   copper.setMaterialProperty(std::string("complex_permittivity"), epsilon);
+
+   hephaestus::MaterialMap material_map(std::vector<hephaestus::Material>({copper}));
+
+   hephaestus::Executioner executioner(std::string("transient"), 0.5, 100.0);
+   hephaestus::Inputs inputs(std::string("irises.g"), std::string("Hertz"), 2, bc_map, material_map, executioner);
+   return inputs;
+}
+
 int main(int argc, char *argv[])
 {
    MPI_Session mpi(argc, argv);
@@ -96,6 +137,10 @@ int main(int argc, char *argv[])
    if (strcmp(formulation,"Joule")==0)
    {
       inputs = joule_example_inputs();
+   }
+   else if (strcmp(formulation,"Hertz")==0)
+   {
+      inputs = hertz_example_inputs();
    }
    else if (strcmp(formulation,"None")==0)
    {

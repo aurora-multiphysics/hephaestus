@@ -118,8 +118,6 @@
 
 using namespace std;
 
-void display_banner(ostream & os);
-
 // Initialize variables used in joule_solver.cpp
 int mfem::electromagnetics::SOLVER_PRINT_LEVEL = 0;
 int mfem::electromagnetics::STATIC_COND        = 0;
@@ -134,10 +132,6 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs)
 
    int myid;
    MPI_Comm_rank(MPI_COMM_WORLD, &myid);
-
-
-   // print the cool banner
-   if (myid == 0) { display_banner(cout); }
 
    // 2. Parse command-line options.
    const char *formulation = "Joule";
@@ -703,14 +697,3 @@ double t_exact(const mfem::Vector &x)
 } // namespace electromagnetics
 
 } // namespace mfem
-
-void display_banner(ostream & os)
-{
-   os << "     ____.            .__             " << endl
-      << "    |    | ____  __ __|  |   ____     " << endl
-      << "    |    |/  _ \\|  |  \\  | _/ __ \\ " << endl
-      << "/\\__|    (  <_> )  |  /  |_\\  ___/  " << endl
-      << "\\________|\\____/|____/|____/\\___  >" << endl
-      << "                                \\/   " << endl
-      << flush;
-}
