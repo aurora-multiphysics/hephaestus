@@ -547,6 +547,23 @@ HertzSolver::Solve()
       }
       break;
 #endif
+#ifdef MFEM_USE_MUMPS
+      case MUMPS:
+      {
+         if ( myid_ == 0 && logging_ > 0 )
+         {
+            cout << "MUMPS Solver Requested" << endl;
+         }
+         HypreParMatrix *A_hpm = A1.As<ComplexHypreParMatrix>()->GetSystemMatrix();
+         MUMPSSolver mumps;
+         mumps.SetPrintLevel(0);
+         mumps.SetMatrixSymType(MUMPSSolver::MatType::UNSYMMETRIC);
+         mumps.SetOperator(*A_hpm);
+         mumps.Mult(RHS,E);
+      }
+      break;
+#endif
+
       default:
          break;
    };

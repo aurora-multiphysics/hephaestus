@@ -219,11 +219,11 @@ int hertz_solve(int argc, char *argv[], hephaestus::Inputs inputs)
    // Parse command-line options.
    const char *formulation = "Hertz";
    const char *mesh_file = "./irises.g";
-   int order = 2;
+   int order = 1;
    int maxit = 1;
    int serial_ref_levels = 0;
    int parallel_ref_levels = 0;
-   int sol = 2;
+   int sol = 6;
    int prec = 4;
    bool herm_conv = false;
    bool visualization = true;
@@ -263,7 +263,10 @@ int hertz_solve(int argc, char *argv[], hephaestus::Inputs inputs)
 #ifdef MFEM_USE_STRUMPACK
                   ", 5 - STRUMPACK"
 #endif
-                 );
+#ifdef MFEM_USE_MUMPS
+                  ", 6 - MUMPS"
+#endif
+);
    args.AddOption(&solOpts.maxIter, "-sol-it", "--solver-iterations",
                   "Maximum number of solver iterations.");
    args.AddOption(&solOpts.kDim, "-sol-k-dim", "--solver-krylov-dimension",

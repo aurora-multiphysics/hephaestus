@@ -74,7 +74,8 @@ public:
       FGMRES    =  2,
       MINRES    =  3,
       SUPERLU   =  4,
-      STRUMPACK =  5
+      STRUMPACK =  5,
+      MUMPS     =  6
    };
 
    HertzSolver(ParMesh & pmesh, int order, double freq,
