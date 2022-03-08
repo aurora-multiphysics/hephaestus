@@ -424,7 +424,7 @@ int hertz_solve(int argc, char *argv[], hephaestus::Inputs inputs)
    dbcs = 0;
    dbcs[0]=1;
 
-   abcs = Array<int>({1,2});
+   abcs = Array<int>({2,3});
 
    bc_map.bc_map.insert(std::pair<std::string, hephaestus::NeumannBC *>(std::string("Neumann"), new hephaestus::NeumannBC(waveguide_in)));
    hephaestus::NeumannBC *test_bc = static_cast<hephaestus::NeumannBC *>(bc_map.bc_map["Neumann"]);
