@@ -32,4 +32,16 @@ IntegratedBC::IntegratedBC(const std::string &boundary_name,
                            mfem::Array<int> boundary_ids)
     : BoundaryCondition(boundary_name, boundary_ids) {}
 
+void IntegratedBC::applyBC(mfem::LinearForm &b) {
+  b.AddBoundaryIntegrator(lfi_re, markers);
+}
+
+void IntegratedBC::applyBC(mfem::ComplexLinearForm &b) {
+  b.AddBoundaryIntegrator(lfi_re, lfi_im, markers);
+}
+
+void IntegratedBC::applyBC(mfem::ParComplexLinearForm &b) {
+  b.AddBoundaryIntegrator(lfi_re, lfi_im, markers);
+}
+
 }  // namespace hephaestus

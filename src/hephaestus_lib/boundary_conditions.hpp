@@ -36,15 +36,9 @@ class IntegratedBC : public BoundaryCondition {
   mfem::LinearFormIntegrator *lfi_re;
   mfem::LinearFormIntegrator *lfi_im;
 
-  virtual void applyBC(mfem::LinearForm &b) override {
-    b.AddBoundaryIntegrator(lfi_re, markers);
-  };
-  virtual void applyBC(mfem::ComplexLinearForm &b) override {
-    b.AddBoundaryIntegrator(lfi_re, lfi_im, markers);
-  };
-  virtual void applyBC(mfem::ParComplexLinearForm &b) override {
-    b.AddBoundaryIntegrator(lfi_re, lfi_im, markers);
-  };
+  virtual void applyBC(mfem::LinearForm &b) override;
+  virtual void applyBC(mfem::ComplexLinearForm &b) override;
+  virtual void applyBC(mfem::ParComplexLinearForm &b) override;
 };
 
 class BCMap {
