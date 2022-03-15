@@ -16,22 +16,20 @@
 
 #ifdef MFEM_USE_MPI
 
-#include <memory>
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <memory>
 
-namespace mfem
-{
+namespace mfem {
 
-namespace electromagnetics
-{
+namespace electromagnetics {
 
 // Some global variable for convenience
-const double       SOLVER_TOL = 1.0e-9;
-const int       SOLVER_MAX_IT = 1000;
+const double SOLVER_TOL = 1.0e-9;
+const int SOLVER_MAX_IT = 1000;
 // Initialized in joule.cpp and used in joule_solver.cpp:
 extern int SOLVER_PRINT_LEVEL;
-extern int        STATIC_COND;
+extern int STATIC_COND;
 
 // These are defined in joule.cpp
 void edot_bc(const Vector &x, Vector &E);
@@ -44,35 +42,36 @@ double t_exact(const Vector &x);
 // MeshDependentCoefficient returns a different value depending upon the given
 // mesh attribute, i.e. a "material property".
 // Somewhat inefficiently, this is achieved using a GridFunction.
-class MeshDependentCoefficient: public Coefficient
-{
-private:
-   std::map<int, double> *materialMap;
-   double scaleFactor;
-public:
-   MeshDependentCoefficient(const std::map<int, double> &inputMap,
-                            double scale = 1.0);
-   MeshDependentCoefficient(const MeshDependentCoefficient &cloneMe);
-   virtual double Eval(ElementTransformation &T, const IntegrationPoint &ip);
-   void SetScaleFactor(const double &scale) { scaleFactor = scale; }
-   virtual ~MeshDependentCoefficient()
-   {
-      if (materialMap != NULL) { delete materialMap; }
-   }
+class MeshDependentCoefficient : public Coefficient {
+ private:
+  std::map<int, double> *materialMap;
+  double scaleFactor;
+
+ public:
+  MeshDependentCoefficient(const std::map<int, double> &inputMap,
+                           double scale = 1.0);
+  MeshDependentCoefficient(const MeshDependentCoefficient &cloneMe);
+  virtual double Eval(ElementTransformation &T, const IntegrationPoint &ip);
+  void SetScaleFactor(const double &scale) { scaleFactor = scale; }
+  virtual ~MeshDependentCoefficient() {
+    if (materialMap != NULL) {
+      delete materialMap;
+    }
+  }
 };
 
 // This Coefficient is a product of a GridFunction and MeshDependentCoefficient
 // for example if T (temperature) is a GridFunction and c (heat capacity) is a
 // MeshDependentCoefficient, this function can compute c*T.
-class ScaledGFCoefficient: public GridFunctionCoefficient
-{
-private:
-   MeshDependentCoefficient mdc;
-public:
-   ScaledGFCoefficient(GridFunction *gf, MeshDependentCoefficient &input_mdc);
-   virtual double Eval(ElementTransformation &T, const IntegrationPoint &ip);
-   void SetMDC(const MeshDependentCoefficient &input_mdc) { mdc = input_mdc; }
-   virtual ~ScaledGFCoefficient() {}
+class ScaledGFCoefficient : public GridFunctionCoefficient {
+ private:
+  MeshDependentCoefficient mdc;
+
+ public:
+  ScaledGFCoefficient(GridFunction *gf, MeshDependentCoefficient &input_mdc);
+  virtual double Eval(ElementTransformation &T, const IntegrationPoint &ip);
+  void SetMDC(const MeshDependentCoefficient &input_mdc) { mdc = input_mdc; }
+  virtual ~ScaledGFCoefficient() {}
 };
 
 /**
@@ -104,153 +103,147 @@ public:
    Class MagneticDiffusionEOperator represents the right-hand side of the above
    system of ODEs.
 */
-class MagneticDiffusionEOperator : public TimeDependentOperator
-{
-protected:
-   // These ParFiniteElementSpace objects provide degree-of-freedom mappings.
-   // To create these you must provide the mesh and the definition of the FE
-   // space. These objects are used to create hypre vectors to store the DOFs,
-   // they are used to create grid functions to perform FEM interpolation, and
-   // they are used by bilinear forms.
-   ParFiniteElementSpace &L2FESpace;
-   ParFiniteElementSpace &HCurlFESpace;
-   ParFiniteElementSpace &HDivFESpace;
-   ParFiniteElementSpace &HGradFESpace;
+class MagneticDiffusionEOperator : public TimeDependentOperator {
+ protected:
+  // These ParFiniteElementSpace objects provide degree-of-freedom mappings.
+  // To create these you must provide the mesh and the definition of the FE
+  // space. These objects are used to create hypre vectors to store the DOFs,
+  // they are used to create grid functions to perform FEM interpolation, and
+  // they are used by bilinear forms.
+  ParFiniteElementSpace &L2FESpace;
+  ParFiniteElementSpace &HCurlFESpace;
+  ParFiniteElementSpace &HDivFESpace;
+  ParFiniteElementSpace &HGradFESpace;
 
-   // ParBilinearForms are used to create sparse matrices representing discrete
-   // linear operators.
-   ParBilinearForm *a0, *a1, *a2, *m1, *m2, *m3, *s1, *s2;
-   ParDiscreteLinearOperator *grad, *curl;
-   ParMixedBilinearForm *weakDiv, *weakDivC, *weakCurl;
+  // ParBilinearForms are used to create sparse matrices representing discrete
+  // linear operators.
+  ParBilinearForm *a0, *a1, *a2, *m1, *m2, *m3, *s1, *s2;
+  ParDiscreteLinearOperator *grad, *curl;
+  ParMixedBilinearForm *weakDiv, *weakDivC, *weakCurl;
 
-   // Hypre matrices and vectors for 1-form systems A1 X1 = B1 and 2-form
-   // systems A2 = X2 = B2
-   HypreParMatrix *A0, *A1, *A2, *M1, *M2, *M3;
-   Vector *X0, *X1, *X2, *B0, *B1, *B2, *B3;
+  // Hypre matrices and vectors for 1-form systems A1 X1 = B1 and 2-form
+  // systems A2 = X2 = B2
+  HypreParMatrix *A0, *A1, *A2, *M1, *M2, *M3;
+  Vector *X0, *X1, *X2, *B0, *B1, *B2, *B3;
 
-   // temporary work vectors
-   ParGridFunction *v0, *v1, *v2;
+  // temporary work vectors
+  ParGridFunction *v0, *v1, *v2;
 
-   // void edot_bc(const Vector &x, Vector &E);
-   // double p_bc(const Vector &x, double t);
-   std::function<double(const mfem::Vector&, double)> p_bc;
-   // std::function<void(const mfem::Vector&, double, double&)> p_bc;
-   // std::function<void(const mfem::Vector&, double, mfem::Vector&)> edot_bc,
+  // void edot_bc(const Vector &x, Vector &E);
+  // double p_bc(const Vector &x, double t);
+  std::function<double(const mfem::Vector &, double)> p_bc;
+  // std::function<void(const mfem::Vector&, double, double&)> p_bc;
+  // std::function<void(const mfem::Vector&, double, mfem::Vector&)> edot_bc,
 
-   // HypreSolver is derived from Solver, which is derived from Operator. So a
-   // HypreSolver object has a Mult() operator, which is actually the solver
-   // operation y = A^-1 x i.e. multiplication by A^-1.
-   // HyprePCG is a wrapper for hypre's preconditioned conjugate gradient.
-   mutable HypreSolver * amg_a0;
-   mutable HyprePCG    * pcg_a0;
-   mutable HypreSolver * ads_a2;
-   mutable HyprePCG    * pcg_a2;
-   mutable HypreSolver * ams_a1;
-   mutable HyprePCG    * pcg_a1;
-   mutable HypreSolver * dsp_m3;
-   mutable HyprePCG    * pcg_m3;
-   mutable HypreSolver * dsp_m1;
-   mutable HyprePCG    * pcg_m1;
-   mutable HypreSolver * dsp_m2;
-   mutable HyprePCG    * pcg_m2;
+  // HypreSolver is derived from Solver, which is derived from Operator. So a
+  // HypreSolver object has a Mult() operator, which is actually the solver
+  // operation y = A^-1 x i.e. multiplication by A^-1.
+  // HyprePCG is a wrapper for hypre's preconditioned conjugate gradient.
+  mutable HypreSolver *amg_a0;
+  mutable HyprePCG *pcg_a0;
+  mutable HypreSolver *ads_a2;
+  mutable HyprePCG *pcg_a2;
+  mutable HypreSolver *ams_a1;
+  mutable HyprePCG *pcg_a1;
+  mutable HypreSolver *dsp_m3;
+  mutable HyprePCG *pcg_m3;
+  mutable HypreSolver *dsp_m1;
+  mutable HyprePCG *pcg_m1;
+  mutable HypreSolver *dsp_m2;
+  mutable HyprePCG *pcg_m2;
 
-   mutable Array<int> ess_bdr;
-   mutable Array<int> ess_bdr_vdofs;
-   mutable Array<int> thermal_ess_bdr;
-   mutable Array<int> thermal_ess_bdr_vdofs;
-   mutable Array<int> poisson_ess_bdr;
-   mutable Array<int> poisson_ess_bdr_vdofs;
+  mutable Array<int> ess_bdr;
+  mutable Array<int> ess_bdr_vdofs;
+  mutable Array<int> thermal_ess_bdr;
+  mutable Array<int> thermal_ess_bdr_vdofs;
+  mutable Array<int> poisson_ess_bdr;
+  mutable Array<int> poisson_ess_bdr_vdofs;
 
-   MeshDependentCoefficient *sigma, *Tcapacity, *InvTcap, *InvTcond;
-   double mu, dt_A1, dt_A2;
+  MeshDependentCoefficient *sigma, *Tcapacity, *InvTcap, *InvTcond;
+  double mu, dt_A1, dt_A2;
 
-   // The method builA2 creates the ParBilinearForm a2, the HypreParMatrix A2,
-   // and the solver and preconditioner pcg_a2 and amg_a2. The other build
-   // functions do similar things.
-   void buildA0(MeshDependentCoefficient &sigma);
-   void buildA1(double muInv, MeshDependentCoefficient &sigma, double dt);
-   void buildA2(MeshDependentCoefficient &InvTcond,
-                MeshDependentCoefficient &InvTcap, double dt);
-   void buildM1(MeshDependentCoefficient &sigma);
-   void buildM2(MeshDependentCoefficient &alpha);
-   void buildM3(MeshDependentCoefficient &Tcap);
-   void buildS1(double muInv);
-   void buildS2(MeshDependentCoefficient &alpha);
-   void buildGrad();
-   void buildCurl(double muInv);
-   void buildDiv( MeshDependentCoefficient &InvTcap);
+  // The method builA2 creates the ParBilinearForm a2, the HypreParMatrix A2,
+  // and the solver and preconditioner pcg_a2 and amg_a2. The other build
+  // functions do similar things.
+  void buildA0(MeshDependentCoefficient &sigma);
+  void buildA1(double muInv, MeshDependentCoefficient &sigma, double dt);
+  void buildA2(MeshDependentCoefficient &InvTcond,
+               MeshDependentCoefficient &InvTcap, double dt);
+  void buildM1(MeshDependentCoefficient &sigma);
+  void buildM2(MeshDependentCoefficient &alpha);
+  void buildM3(MeshDependentCoefficient &Tcap);
+  void buildS1(double muInv);
+  void buildS2(MeshDependentCoefficient &alpha);
+  void buildGrad();
+  void buildCurl(double muInv);
+  void buildDiv(MeshDependentCoefficient &InvTcap);
 
-public:
-   MagneticDiffusionEOperator(int len,
-                              ParFiniteElementSpace &L2FES,
-                              ParFiniteElementSpace &HCurlFES,
-                              ParFiniteElementSpace &HDivFES,
-                              ParFiniteElementSpace &HGradFES,
-                              Array<int> &ess_bdr,
-                              Array<int> &thermal_ess_bdr,
-                              Array<int> &poisson_ess_bdr,
-                              double mu,
-                              std::function<double(const mfem::Vector&, double)> _p_bc,
-                              // std::function<void(const mfem::Vector&, double, mfem::Vector&)> edot_bc,
-                              std::map<int, double> sigmaAttMap,
-                              std::map<int, double> TcapacityAttMap,
-                              std::map<int, double> InvTcapAttMap,
-                              std::map<int, double> InvTcondAttMap
-                             );
+ public:
+  MagneticDiffusionEOperator(
+      int len, ParFiniteElementSpace &L2FES, ParFiniteElementSpace &HCurlFES,
+      ParFiniteElementSpace &HDivFES, ParFiniteElementSpace &HGradFES,
+      Array<int> &ess_bdr, Array<int> &thermal_ess_bdr,
+      Array<int> &poisson_ess_bdr, double mu,
+      std::function<double(const mfem::Vector &, double)> _p_bc,
+      // std::function<void(const mfem::Vector&, double, mfem::Vector&)>
+      // edot_bc,
+      std::map<int, double> sigmaAttMap, std::map<int, double> TcapacityAttMap,
+      std::map<int, double> InvTcapAttMap,
+      std::map<int, double> InvTcondAttMap);
 
-   // Initialize the fields. This is where restart would go to.
-   void Init(Vector &vx);
+  // Initialize the fields. This is where restart would go to.
+  void Init(Vector &vx);
 
-   // class TimeDependentOperator is derived from Operator, and class Operator
-   // has the virtual function Mult(x,y) which computes y = A x for some matrix
-   // A, or more generally a nonlinear operator y = A(x).
-   virtual void Mult(const Vector &vx, Vector &dvx_dt) const;
+  // class TimeDependentOperator is derived from Operator, and class Operator
+  // has the virtual function Mult(x,y) which computes y = A x for some matrix
+  // A, or more generally a nonlinear operator y = A(x).
+  virtual void Mult(const Vector &vx, Vector &dvx_dt) const;
 
-   // Solve the Backward-Euler equation: k = f(x + dt*k, t), for the unknown
-   // slope k. This is the only requirement for high-order SDIRK implicit
-   // integration. This is a virtual function of class TimeDependentOperator.
-   virtual void ImplicitSolve(const double dt, const Vector &x, Vector &k);
+  // Solve the Backward-Euler equation: k = f(x + dt*k, t), for the unknown
+  // slope k. This is the only requirement for high-order SDIRK implicit
+  // integration. This is a virtual function of class TimeDependentOperator.
+  virtual void ImplicitSolve(const double dt, const Vector &x, Vector &k);
 
-   // Compute B^T M2 B, where M2 is the HDiv mass matrix with permeability
-   // coefficient.
-   // double MagneticEnergy(ParGridFunction &B_gf) const;
+  // Compute B^T M2 B, where M2 is the HDiv mass matrix with permeability
+  // coefficient.
+  // double MagneticEnergy(ParGridFunction &B_gf) const;
 
-   // Compute E^T M1 E, where M1 is the HCurl mass matrix with conductivity
-   // coefficient.
-   double ElectricLosses(ParGridFunction &E_gf) const;
+  // Compute E^T M1 E, where M1 is the HCurl mass matrix with conductivity
+  // coefficient.
+  double ElectricLosses(ParGridFunction &E_gf) const;
 
-   // E is the input, w is the output which is L2 heating.
-   void GetJouleHeating(ParGridFunction &E_gf, ParGridFunction &w_gf) const;
+  // E is the input, w is the output which is L2 heating.
+  void GetJouleHeating(ParGridFunction &E_gf, ParGridFunction &w_gf) const;
 
-   void SetTime(const double t_);
+  void SetTime(const double t_);
 
-   // Write all the hypre matrices and vectors to disk.
-   void Debug(const char *basefilename, double time);
+  // Write all the hypre matrices and vectors to disk.
+  void Debug(const char *basefilename, double time);
 
-   virtual ~MagneticDiffusionEOperator();
+  virtual ~MagneticDiffusionEOperator();
 };
 
 // A Coefficient is an object with a function Eval that returns a double. The
 // JouleHeatingCoefficient object will contain a reference to the electric field
 // grid function, and the conductivity sigma, and returns sigma E dot E at a
 // point.
-class JouleHeatingCoefficient: public Coefficient
-{
-private:
-   ParGridFunction &E_gf;
-   MeshDependentCoefficient sigma;
-public:
-   JouleHeatingCoefficient(const MeshDependentCoefficient &sigma_,
-                           ParGridFunction &E_gf_)
+class JouleHeatingCoefficient : public Coefficient {
+ private:
+  ParGridFunction &E_gf;
+  MeshDependentCoefficient sigma;
+
+ public:
+  JouleHeatingCoefficient(const MeshDependentCoefficient &sigma_,
+                          ParGridFunction &E_gf_)
       : E_gf(E_gf_), sigma(sigma_) {}
-   virtual double Eval(ElementTransformation &T, const IntegrationPoint &ip);
-   virtual ~JouleHeatingCoefficient() {}
+  virtual double Eval(ElementTransformation &T, const IntegrationPoint &ip);
+  virtual ~JouleHeatingCoefficient() {}
 };
 
-} // namespace electromagnetics
+}  // namespace electromagnetics
 
-} // namespace mfem
+}  // namespace mfem
 
-#endif // MFEM_USE_MPI
+#endif  // MFEM_USE_MPI
 
-#endif // MFEM_JOULE_SOLVER
+#endif  // MFEM_JOULE_SOLVER

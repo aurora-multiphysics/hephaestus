@@ -5,155 +5,149 @@
 // This miniapp is intended to provide a configurable interface to MFEM-based
 // finite element solvers for electromagnetics problems.
 
-#include <memory>
-#include <iostream>
-#include <fstream>
 #include "hephaestus.hpp"
+
+#include <fstream>
+#include <iostream>
+#include <memory>
 
 using namespace std;
 using namespace mfem;
 using namespace mfem::common;
 using namespace mfem::electromagnetics;
 
-double potential(const mfem::Vector &x, double t)
-{
-   double wj_ (2.0*M_PI/60.0);
-   // the value
-   double T;
-   if (x[2] < 0.0)
-   {
-      T = 1.0;
-   }
-   else
-   {
-      T = -1.0;
-   }
+double potential(const mfem::Vector &x, double t) {
+  double wj_(2.0 * M_PI / 60.0);
+  // the value
+  double T;
+  if (x[2] < 0.0) {
+    T = 1.0;
+  } else {
+    T = -1.0;
+  }
 
-   return T*cos(wj_ * t);
+  return T * cos(wj_ * t);
 }
 
-hephaestus::Inputs joule_example_inputs()
-{
-   hephaestus::BCMap bc_map;
-   bc_map.setBC(std::string("tangential_dEdt"), hephaestus::BoundaryCondition(std::string("boundary_1"), Array<int>({1,2,3})));
-   bc_map.setBC(std::string("thermal_flux"), hephaestus::BoundaryCondition(std::string("boundary_2"), Array<int>({1,2})));
-   hephaestus::BoundaryCondition poisson_bc(std::string("boundary_3"), Array<int>({1,2}));
-   poisson_bc.scalar_func = potential;
-   bc_map.setBC(std::string("electric_potential"), poisson_bc);
+hephaestus::Inputs joule_example_inputs() {
+  hephaestus::BCMap bc_map;
+  bc_map.setBC(std::string("tangential_dEdt"),
+               hephaestus::BoundaryCondition(std::string("boundary_1"),
+                                             Array<int>({1, 2, 3})));
+  bc_map.setBC(std::string("thermal_flux"),
+               hephaestus::BoundaryCondition(std::string("boundary_2"),
+                                             Array<int>({1, 2})));
+  hephaestus::BoundaryCondition poisson_bc(std::string("boundary_3"),
+                                           Array<int>({1, 2}));
+  poisson_bc.scalar_func = potential;
+  bc_map.setBC(std::string("electric_potential"), poisson_bc);
 
-   double sigma = 2.0*M_PI*10;
-   double Tcapacity = 1.0;
-   double Tconductivity = 0.01;
+  double sigma = 2.0 * M_PI * 10;
+  double Tcapacity = 1.0;
+  double Tconductivity = 0.01;
 
-   double sigmaAir;
-   double TcondAir;
-   double TcapAir;
+  double sigmaAir;
+  double TcondAir;
+  double TcapAir;
 
-   sigmaAir     = 1.0e-6 * sigma;
-   TcondAir     = 1.0e6  * Tconductivity;
-   TcapAir      = 1.0    * Tcapacity;
+  sigmaAir = 1.0e-6 * sigma;
+  TcondAir = 1.0e6 * Tconductivity;
+  TcapAir = 1.0 * Tcapacity;
 
-   hephaestus::Material copper("copper", 1);
-   copper.setMaterialProperty(std::string("electrical_conductivity"), sigma);
-   copper.setMaterialProperty(std::string("thermal_conductivity"), Tconductivity);
-   copper.setMaterialProperty(std::string("heat_capacity"), Tcapacity);
+  hephaestus::Material copper("copper", 1);
+  copper.setMaterialProperty(std::string("electrical_conductivity"), sigma);
+  copper.setMaterialProperty(std::string("thermal_conductivity"),
+                             Tconductivity);
+  copper.setMaterialProperty(std::string("heat_capacity"), Tcapacity);
 
-   hephaestus::Material air("air", 2);
-   air.setMaterialProperty(std::string("electrical_conductivity"), sigmaAir);
-   air.setMaterialProperty(std::string("thermal_conductivity"), TcondAir);
-   air.setMaterialProperty(std::string("heat_capacity"), TcapAir);
+  hephaestus::Material air("air", 2);
+  air.setMaterialProperty(std::string("electrical_conductivity"), sigmaAir);
+  air.setMaterialProperty(std::string("thermal_conductivity"), TcondAir);
+  air.setMaterialProperty(std::string("heat_capacity"), TcapAir);
 
-   hephaestus::MaterialMap material_map(std::vector<hephaestus::Material>({copper, air}));
+  hephaestus::MaterialMap material_map(
+      std::vector<hephaestus::Material>({copper, air}));
 
-   hephaestus::Executioner executioner(std::string("transient"), 0.5, 100.0);
-   hephaestus::Inputs inputs(std::string("cylinder-hex-q2.gen"), std::string("Joule"), 2, bc_map, material_map, executioner);
-   return inputs;
+  hephaestus::Executioner executioner(std::string("transient"), 0.5, 100.0);
+  hephaestus::Inputs inputs(std::string("cylinder-hex-q2.gen"),
+                            std::string("Joule"), 2, bc_map, material_map,
+                            executioner);
+  return inputs;
 }
 
-void e_bc_r(const Vector &x, Vector &E)
-{
-   E.SetSize(3);
-   E = 0.0;
+void e_bc_r(const Vector &x, Vector &E) {
+  E.SetSize(3);
+  E = 0.0;
 }
 
-void e_bc_i(const Vector &x, Vector &E)
-{
-   E.SetSize(3);
-   E = 0.0;
+void e_bc_i(const Vector &x, Vector &E) {
+  E.SetSize(3);
+  E = 0.0;
 }
 
-hephaestus::Inputs hertz_example_inputs()
-{
-   hephaestus::BCMap bc_map;
+hephaestus::Inputs hertz_example_inputs() {
+  hephaestus::BCMap bc_map;
 
-   // dirichlet
-   hephaestus::BoundaryCondition e_bc(std::string("boundary_1"), Array<int>({1,2}));
-   e_bc.vector_func = e_bc_r;
-   e_bc.vector_func_im = e_bc_i;
-   bc_map.setBC(std::string("tangential_E"), e_bc);
+  // dirichlet
+  hephaestus::BoundaryCondition e_bc(std::string("boundary_1"),
+                                     Array<int>({1, 2}));
+  e_bc.vector_func = e_bc_r;
+  e_bc.vector_func_im = e_bc_i;
+  bc_map.setBC(std::string("tangential_E"), e_bc);
 
-   //robin
+  // robin
 
+  static double mu = 1.25663706e-6;
+  static double epsilon = 8.85418782e-12;
+  static double sigma = 0.0;
 
-   static double mu = 1.25663706e-6;
-   static double epsilon = 8.85418782e-12;
-   static double sigma = 0.0;
+  hephaestus::Material copper("air", 1);
+  copper.setMaterialProperty(std::string("complex_electrical_conductivity"),
+                             sigma);
+  copper.setMaterialProperty(std::string("complex_permeability"), mu);
+  copper.setMaterialProperty(std::string("complex_permittivity"), epsilon);
 
-   hephaestus::Material copper("air", 1);
-   copper.setMaterialProperty(std::string("complex_electrical_conductivity"), sigma);
-   copper.setMaterialProperty(std::string("complex_permeability"), mu);
-   copper.setMaterialProperty(std::string("complex_permittivity"), epsilon);
+  hephaestus::MaterialMap material_map(
+      std::vector<hephaestus::Material>({copper}));
 
-   hephaestus::MaterialMap material_map(std::vector<hephaestus::Material>({copper}));
-
-   hephaestus::Executioner executioner(std::string("transient"), 0.5, 100.0);
-   hephaestus::Inputs inputs(std::string("irises.g"), std::string("Hertz"), 2, bc_map, material_map, executioner);
-   return inputs;
+  hephaestus::Executioner executioner(std::string("transient"), 0.5, 100.0);
+  hephaestus::Inputs inputs(std::string("irises.g"), std::string("Hertz"), 2,
+                            bc_map, material_map, executioner);
+  return inputs;
 }
 
-int main(int argc, char *argv[])
-{
-   MPI_Session mpi(argc, argv);
-   int myid;
-   MPI_Comm_rank(MPI_COMM_WORLD, &myid);
+int main(int argc, char *argv[]) {
+  MPI_Session mpi(argc, argv);
+  int myid;
+  MPI_Comm_rank(MPI_COMM_WORLD, &myid);
 
-   // Parse command line arguments
-   const char *formulation = "None";
-   mfem::OptionsParser args(argc, argv);
-   args.AddOption(&formulation, "-form", "--formulation",
-                  "Name of formulation to use during solve.");
-   args.Parse();
-   if (!args.Good())
-   {
-      if (myid == 0)
-      {
-         args.PrintUsage(cout);
-      }
-      return 1;
-   }
+  // Parse command line arguments
+  const char *formulation = "None";
+  mfem::OptionsParser args(argc, argv);
+  args.AddOption(&formulation, "-form", "--formulation",
+                 "Name of formulation to use during solve.");
+  args.Parse();
+  if (!args.Good()) {
+    if (myid == 0) {
+      args.PrintUsage(cout);
+    }
+    return 1;
+  }
 
-   // Create example inputs based on formulation name
-   hephaestus::Inputs inputs;
-   if (strcmp(formulation,"Joule")==0)
-   {
-      inputs = joule_example_inputs();
-   }
-   else if (strcmp(formulation,"Hertz")==0)
-   {
-      inputs = hertz_example_inputs();
-   }
-   else if (strcmp(formulation,"None")==0)
-   {
-      std::cout<<"Formulation name not provided. \n";
-      exit(0);
-   }
-   else
-   {
-      std::cout<<"Formulation name " << formulation << " not recognised. \n";
-      exit(0);
-   }
+  // Create example inputs based on formulation name
+  hephaestus::Inputs inputs;
+  if (strcmp(formulation, "Joule") == 0) {
+    inputs = joule_example_inputs();
+  } else if (strcmp(formulation, "Hertz") == 0) {
+    inputs = hertz_example_inputs();
+  } else if (strcmp(formulation, "None") == 0) {
+    std::cout << "Formulation name not provided. \n";
+    exit(0);
+  } else {
+    std::cout << "Formulation name " << formulation << " not recognised. \n";
+    exit(0);
+  }
 
-   // Launch
-   run_hephaestus(argc, argv, inputs);
-
+  // Launch
+  run_hephaestus(argc, argv, inputs);
 }
