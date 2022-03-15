@@ -43,11 +43,11 @@ double t_exact(const Vector &x);
 // mesh attribute, i.e. a "material property".
 // Somewhat inefficiently, this is achieved using a GridFunction.
 class MeshDependentCoefficient : public Coefficient {
- private:
+private:
   std::map<int, double> *materialMap;
   double scaleFactor;
 
- public:
+public:
   MeshDependentCoefficient(const std::map<int, double> &inputMap,
                            double scale = 1.0);
   MeshDependentCoefficient(const MeshDependentCoefficient &cloneMe);
@@ -64,10 +64,10 @@ class MeshDependentCoefficient : public Coefficient {
 // for example if T (temperature) is a GridFunction and c (heat capacity) is a
 // MeshDependentCoefficient, this function can compute c*T.
 class ScaledGFCoefficient : public GridFunctionCoefficient {
- private:
+private:
   MeshDependentCoefficient mdc;
 
- public:
+public:
   ScaledGFCoefficient(GridFunction *gf, MeshDependentCoefficient &input_mdc);
   virtual double Eval(ElementTransformation &T, const IntegrationPoint &ip);
   void SetMDC(const MeshDependentCoefficient &input_mdc) { mdc = input_mdc; }
@@ -104,7 +104,7 @@ class ScaledGFCoefficient : public GridFunctionCoefficient {
    system of ODEs.
 */
 class MagneticDiffusionEOperator : public TimeDependentOperator {
- protected:
+protected:
   // These ParFiniteElementSpace objects provide degree-of-freedom mappings.
   // To create these you must provide the mesh and the definition of the FE
   // space. These objects are used to create hypre vectors to store the DOFs,
@@ -178,7 +178,7 @@ class MagneticDiffusionEOperator : public TimeDependentOperator {
   void buildCurl(double muInv);
   void buildDiv(MeshDependentCoefficient &InvTcap);
 
- public:
+public:
   MagneticDiffusionEOperator(
       int len, ParFiniteElementSpace &L2FES, ParFiniteElementSpace &HCurlFES,
       ParFiniteElementSpace &HDivFES, ParFiniteElementSpace &HGradFES,
@@ -228,11 +228,11 @@ class MagneticDiffusionEOperator : public TimeDependentOperator {
 // grid function, and the conductivity sigma, and returns sigma E dot E at a
 // point.
 class JouleHeatingCoefficient : public Coefficient {
- private:
+private:
   ParGridFunction &E_gf;
   MeshDependentCoefficient sigma;
 
- public:
+public:
   JouleHeatingCoefficient(const MeshDependentCoefficient &sigma_,
                           ParGridFunction &E_gf_)
       : E_gf(E_gf_), sigma(sigma_) {}
@@ -240,10 +240,10 @@ class JouleHeatingCoefficient : public Coefficient {
   virtual ~JouleHeatingCoefficient() {}
 };
 
-}  // namespace electromagnetics
+} // namespace electromagnetics
 
-}  // namespace mfem
+} // namespace mfem
 
-#endif  // MFEM_USE_MPI
+#endif // MFEM_USE_MPI
 
-#endif  // MFEM_JOULE_SOLVER
+#endif // MFEM_JOULE_SOLVER

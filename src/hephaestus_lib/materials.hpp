@@ -9,8 +9,8 @@
 namespace hephaestus {
 
 class Material {
- public:
-  Material(const std::string& material_name, int material_block_id);
+public:
+  Material(const std::string &material_name, int material_block_id);
 
   std::string name;
   int block_id;
@@ -21,7 +21,7 @@ class Material {
 };
 
 class MaterialMap {
- public:
+public:
   MaterialMap();
   MaterialMap(std::vector<Material> mats);
 
@@ -30,4 +30,4 @@ class MaterialMap {
   std::vector<Material> materials;
 };
 
-}  // namespace hephaestus
+} // namespace hephaestus

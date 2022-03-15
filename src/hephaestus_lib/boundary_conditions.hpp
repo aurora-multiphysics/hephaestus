@@ -8,7 +8,7 @@
 namespace hephaestus {
 
 class BoundaryCondition {
- public:
+public:
   BoundaryCondition();
   BoundaryCondition(const std::string &boundary_name,
                     mfem::Array<int> boundary_ids);
@@ -29,7 +29,7 @@ class BoundaryCondition {
 };
 
 class IntegratedBC : public BoundaryCondition {
- public:
+public:
   IntegratedBC();
   IntegratedBC(const std::string &boundary_name, mfem::Array<int> boundary_ids);
 
@@ -42,7 +42,7 @@ class IntegratedBC : public BoundaryCondition {
 };
 
 class BCMap {
- public:
+public:
   BCMap();
 
   void setBC(std::string bc_name, BoundaryCondition bc);
@@ -51,4 +51,4 @@ class BCMap {
   std::map<std::string, hephaestus::BoundaryCondition *> bc_map;
 };
 
-}  // namespace hephaestus
+} // namespace hephaestus

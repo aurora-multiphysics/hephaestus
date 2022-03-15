@@ -11,11 +11,11 @@
 namespace hephaestus {
 
 class Inputs {
- public:
+public:
   Inputs(){};
-  Inputs(const std::string& mesh_file, const std::string& formulation,
-         const int order, const BCMap& boundary_conditions,
-         const MaterialMap& materials, const Executioner& executioner_);
+  Inputs(const std::string &mesh_file, const std::string &formulation,
+         const int order, const BCMap &boundary_conditions,
+         const MaterialMap &materials, const Executioner &executioner_);
 
   std::string _mesh_file;
   std::string _formulation;
@@ -25,4 +25,4 @@ class Inputs {
   Executioner executioner;
 };
 
-}  // namespace hephaestus
+} // namespace hephaestus

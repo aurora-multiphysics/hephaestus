@@ -31,55 +31,16 @@ MagneticDiffusionEOperator::MagneticDiffusionEOperator(
     std::map<int, double> sigmaAttMap, std::map<int, double> TcapacityAttMap,
     std::map<int, double> InvTcapAttMap, std::map<int, double> InvTcondAttMap)
 
-    : TimeDependentOperator(stateVectorLen, 0.0),
-      L2FESpace(L2FES),
-      HCurlFESpace(HCurlFES),
-      HDivFESpace(HDivFES),
-      HGradFESpace(HGradFES),
-      a0(NULL),
-      a1(NULL),
-      a2(NULL),
-      m1(NULL),
-      m2(NULL),
-      m3(NULL),
-      s1(NULL),
-      s2(NULL),
-      grad(NULL),
-      curl(NULL),
-      weakDiv(NULL),
-      weakDivC(NULL),
-      weakCurl(NULL),
-      A0(NULL),
-      A1(NULL),
-      A2(NULL),
-      M1(NULL),
-      M2(NULL),
-      M3(NULL),
-      X0(NULL),
-      X1(NULL),
-      X2(NULL),
-      B0(NULL),
-      B1(NULL),
-      B2(NULL),
-      B3(NULL),
-      v0(NULL),
-      v1(NULL),
-      v2(NULL),
-      amg_a0(NULL),
-      pcg_a0(NULL),
-      ads_a2(NULL),
-      pcg_a2(NULL),
-      ams_a1(NULL),
-      pcg_a1(NULL),
-      dsp_m3(NULL),
-      pcg_m3(NULL),
-      dsp_m1(NULL),
-      pcg_m1(NULL),
-      dsp_m2(NULL),
-      pcg_m2(NULL),
-      mu(mu_coef),
-      dt_A1(-1.0),
-      dt_A2(-1.0) {
+    : TimeDependentOperator(stateVectorLen, 0.0), L2FESpace(L2FES),
+      HCurlFESpace(HCurlFES), HDivFESpace(HDivFES), HGradFESpace(HGradFES),
+      a0(NULL), a1(NULL), a2(NULL), m1(NULL), m2(NULL), m3(NULL), s1(NULL),
+      s2(NULL), grad(NULL), curl(NULL), weakDiv(NULL), weakDivC(NULL),
+      weakCurl(NULL), A0(NULL), A1(NULL), A2(NULL), M1(NULL), M2(NULL),
+      M3(NULL), X0(NULL), X1(NULL), X2(NULL), B0(NULL), B1(NULL), B2(NULL),
+      B3(NULL), v0(NULL), v1(NULL), v2(NULL), amg_a0(NULL), pcg_a0(NULL),
+      ads_a2(NULL), pcg_a2(NULL), ams_a1(NULL), pcg_a1(NULL), dsp_m3(NULL),
+      pcg_m3(NULL), dsp_m1(NULL), pcg_m1(NULL), dsp_m2(NULL), pcg_m2(NULL),
+      mu(mu_coef), dt_A1(-1.0), dt_A2(-1.0) {
   p_bc = _p_bc;
   ess_bdr.SetSize(ess_bdr_arg.Size());
   for (int i = 0; i < ess_bdr_arg.Size(); i++) {
@@ -1045,7 +1006,7 @@ double MeshDependentCoefficient::Eval(ElementTransformation &T,
   if (it != materialMap->end()) {
     value = it->second;
   } else {
-    value = 0.0;  // avoid compile warning
+    value = 0.0; // avoid compile warning
     std::cerr << "MeshDependentCoefficient attribute " << thisAtt
               << " not found" << std::endl;
     mfem_error();
@@ -1063,8 +1024,8 @@ double ScaledGFCoefficient::Eval(ElementTransformation &T,
   return mdc.Eval(T, ip) * GridFunctionCoefficient::Eval(T, ip);
 }
 
-}  // namespace electromagnetics
+} // namespace electromagnetics
 
-}  // namespace mfem
+} // namespace mfem
 
-#endif  // MFEM_USE_MPI
+#endif // MFEM_USE_MPI

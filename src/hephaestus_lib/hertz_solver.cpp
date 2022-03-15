@@ -34,48 +34,20 @@ HertzSolver::HertzSolver(
     std::function<void(const mfem::Vector &, mfem::Vector &)> e_i_bc,
     void (*j_r_src)(const Vector &, Vector &),
     void (*j_i_src)(const Vector &, Vector &))
-    : myid_(0),
-      num_procs_(1),
-      order_(order),
-      logging_(1),
-      sol_(sol),
-      solOpts_(sOpts),
-      prec_(prec),
-      conv_(conv),
-      ownsEtaInv_(etaInvCoef == NULL),
-      freq_(freq),
-      pmesh_(&pmesh),
-      HCurlFESpace_(NULL),
-      a1_(NULL),
-      b1_(NULL),
-      e_(NULL),
-      e_t_(NULL),
-      j_(NULL),
-      jd_(NULL),
-      bc_map_(bc_map),
-      epsCoef_(&epsCoef),
-      muInvCoef_(&muInvCoef),
-      sigmaCoef_(sigmaCoef),
-      etaInvCoef_(etaInvCoef),
+    : myid_(0), num_procs_(1), order_(order), logging_(1), sol_(sol),
+      solOpts_(sOpts), prec_(prec), conv_(conv),
+      ownsEtaInv_(etaInvCoef == NULL), freq_(freq), pmesh_(&pmesh),
+      HCurlFESpace_(NULL), a1_(NULL), b1_(NULL), e_(NULL), e_t_(NULL), j_(NULL),
+      jd_(NULL), bc_map_(bc_map), epsCoef_(&epsCoef), muInvCoef_(&muInvCoef),
+      sigmaCoef_(sigmaCoef), etaInvCoef_(etaInvCoef),
       omegaCoef_(new ConstantCoefficient(2.0 * M_PI * freq_)),
       negOmegaCoef_(new ConstantCoefficient(-2.0 * M_PI * freq_)),
       omega2Coef_(new ConstantCoefficient(pow(2.0 * M_PI * freq_, 2))),
       negOmega2Coef_(new ConstantCoefficient(-pow(2.0 * M_PI * freq_, 2))),
-      massCoef_(NULL),
-      posMassCoef_(NULL),
-      lossCoef_(NULL),
-      abcCoef_(NULL),
-      posAbcCoef_(NULL),
-      jrCoef_(NULL),
-      jiCoef_(NULL),
-      erCoef_(NULL),
-      eiCoef_(NULL),
-      j_r_src_(j_r_src),
-      j_i_src_(j_i_src),
-      e_r_bc_(e_r_bc),
-      e_i_bc_(e_i_bc),
-      dbcs_(&dbcs),
-      visit_dc_(NULL) {
+      massCoef_(NULL), posMassCoef_(NULL), lossCoef_(NULL), abcCoef_(NULL),
+      posAbcCoef_(NULL), jrCoef_(NULL), jiCoef_(NULL), erCoef_(NULL),
+      eiCoef_(NULL), j_r_src_(j_r_src), j_i_src_(j_i_src), e_r_bc_(e_r_bc),
+      e_i_bc_(e_i_bc), dbcs_(&dbcs), visit_dc_(NULL) {
   // Initialize MPI variables
   MPI_Comm_size(pmesh_->GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh_->GetComm(), &myid_);
@@ -340,47 +312,47 @@ void HertzSolver::Solve() {
 
   if (sol_ == FGMRES || sol_ == MINRES) {
     switch (prec_) {
-      case INVALID_PC:
-        if (myid_ == 0 && logging_ > 0) {
-          cout << "No Preconditioner Requested" << endl;
-        }
-        break;
-      case DIAG_SCALE:
-        if (myid_ == 0 && logging_ > 0) {
-          cout << "Diagonal Scaling Preconditioner Requested" << endl;
-        }
-        pcr = new HypreDiagScale(dynamic_cast<HypreParMatrix &>(*PCOp.Ptr()));
-        break;
-      case PARASAILS:
-        if (myid_ == 0 && logging_ > 0) {
-          cout << "ParaSails Preconditioner Requested" << endl;
-        }
-        pcr = new HypreParaSails(dynamic_cast<HypreParMatrix &>(*PCOp.Ptr()));
-        dynamic_cast<HypreParaSails *>(pcr)->SetSymmetry(1);
-        break;
-      case EUCLID:
-        if (myid_ == 0 && logging_ > 0) {
-          cout << "Euclid Preconditioner Requested" << endl;
-        }
-        pcr = new HypreEuclid(dynamic_cast<HypreParMatrix &>(*PCOp.Ptr()));
-        if (solOpts_.euLvl != 1) {
-          HypreSolver *pc = dynamic_cast<HypreSolver *>(pcr);
-          HYPRE_EuclidSetLevel(*pc, solOpts_.euLvl);
-        }
-        break;
-      case AMS:
-        if (myid_ == 0 && logging_ > 0) {
-          cout << "AMS Preconditioner Requested" << endl;
-        }
-        pcr = new HypreAMS(dynamic_cast<HypreParMatrix &>(*PCOp.Ptr()),
-                           HCurlFESpace_);
-        break;
-      default:
-        MFEM_ABORT("Requested preconditioner is not available.");
-        break;
+    case INVALID_PC:
+      if (myid_ == 0 && logging_ > 0) {
+        cout << "No Preconditioner Requested" << endl;
+      }
+      break;
+    case DIAG_SCALE:
+      if (myid_ == 0 && logging_ > 0) {
+        cout << "Diagonal Scaling Preconditioner Requested" << endl;
+      }
+      pcr = new HypreDiagScale(dynamic_cast<HypreParMatrix &>(*PCOp.Ptr()));
+      break;
+    case PARASAILS:
+      if (myid_ == 0 && logging_ > 0) {
+        cout << "ParaSails Preconditioner Requested" << endl;
+      }
+      pcr = new HypreParaSails(dynamic_cast<HypreParMatrix &>(*PCOp.Ptr()));
+      dynamic_cast<HypreParaSails *>(pcr)->SetSymmetry(1);
+      break;
+    case EUCLID:
+      if (myid_ == 0 && logging_ > 0) {
+        cout << "Euclid Preconditioner Requested" << endl;
+      }
+      pcr = new HypreEuclid(dynamic_cast<HypreParMatrix &>(*PCOp.Ptr()));
+      if (solOpts_.euLvl != 1) {
+        HypreSolver *pc = dynamic_cast<HypreSolver *>(pcr);
+        HYPRE_EuclidSetLevel(*pc, solOpts_.euLvl);
+      }
+      break;
+    case AMS:
+      if (myid_ == 0 && logging_ > 0) {
+        cout << "AMS Preconditioner Requested" << endl;
+      }
+      pcr = new HypreAMS(dynamic_cast<HypreParMatrix &>(*PCOp.Ptr()),
+                         HCurlFESpace_);
+      break;
+    default:
+      MFEM_ABORT("Requested preconditioner is not available.");
+      break;
     }
-    pci = new ScaledOperator(
-        pcr, (conv_ == ComplexOperator::HERMITIAN) ? -1.0 : 1.0);
+    pci = new ScaledOperator(pcr, (conv_ == ComplexOperator::HERMITIAN) ? -1.0
+                                                                        : 1.0);
 
     if (pcr) {
       BDP = new BlockDiagonalPreconditioner(blockTrueOffsets_);
@@ -405,100 +377,100 @@ void HertzSolver::Solve() {
   // mumps.Mult(RHS,E);
 
   switch (sol_) {
-    case GMRES: {
-      if (myid_ == 0 && logging_ > 0) {
-        cout << "GMRES Solver Requested" << endl;
-      }
-      GMRESSolver gmres(HCurlFESpace_->GetComm());
-      gmres.SetOperator(*A1.Ptr());
-      gmres.SetRelTol(solOpts_.relTol);
-      gmres.SetMaxIter(solOpts_.maxIter);
-      gmres.SetKDim(solOpts_.kDim);
-      gmres.SetPrintLevel(solOpts_.printLvl);
+  case GMRES: {
+    if (myid_ == 0 && logging_ > 0) {
+      cout << "GMRES Solver Requested" << endl;
+    }
+    GMRESSolver gmres(HCurlFESpace_->GetComm());
+    gmres.SetOperator(*A1.Ptr());
+    gmres.SetRelTol(solOpts_.relTol);
+    gmres.SetMaxIter(solOpts_.maxIter);
+    gmres.SetKDim(solOpts_.kDim);
+    gmres.SetPrintLevel(solOpts_.printLvl);
 
-      gmres.Mult(RHS, E);
-    } break;
-    case FGMRES: {
-      if (myid_ == 0 && logging_ > 0) {
-        cout << "FGMRES Solver Requested" << endl;
-      }
-      FGMRESSolver fgmres(HCurlFESpace_->GetComm());
-      if (BDP) {
-        fgmres.SetPreconditioner(*BDP);
-      }
-      fgmres.SetOperator(*A1.Ptr());
-      fgmres.SetRelTol(solOpts_.relTol);
-      fgmres.SetMaxIter(solOpts_.maxIter);
-      fgmres.SetKDim(solOpts_.kDim);
-      fgmres.SetPrintLevel(solOpts_.printLvl);
+    gmres.Mult(RHS, E);
+  } break;
+  case FGMRES: {
+    if (myid_ == 0 && logging_ > 0) {
+      cout << "FGMRES Solver Requested" << endl;
+    }
+    FGMRESSolver fgmres(HCurlFESpace_->GetComm());
+    if (BDP) {
+      fgmres.SetPreconditioner(*BDP);
+    }
+    fgmres.SetOperator(*A1.Ptr());
+    fgmres.SetRelTol(solOpts_.relTol);
+    fgmres.SetMaxIter(solOpts_.maxIter);
+    fgmres.SetKDim(solOpts_.kDim);
+    fgmres.SetPrintLevel(solOpts_.printLvl);
 
-      fgmres.Mult(RHS, E);
-    } break;
-    case MINRES: {
-      if (myid_ == 0 && logging_ > 0) {
-        cout << "MINRES Solver Requested" << endl;
-      }
-      MINRESSolver minres(HCurlFESpace_->GetComm());
-      if (BDP) {
-        minres.SetPreconditioner(*BDP);
-      }
-      minres.SetOperator(*A1.Ptr());
-      minres.SetRelTol(solOpts_.relTol);
-      minres.SetMaxIter(solOpts_.maxIter);
-      minres.SetPrintLevel(solOpts_.printLvl);
+    fgmres.Mult(RHS, E);
+  } break;
+  case MINRES: {
+    if (myid_ == 0 && logging_ > 0) {
+      cout << "MINRES Solver Requested" << endl;
+    }
+    MINRESSolver minres(HCurlFESpace_->GetComm());
+    if (BDP) {
+      minres.SetPreconditioner(*BDP);
+    }
+    minres.SetOperator(*A1.Ptr());
+    minres.SetRelTol(solOpts_.relTol);
+    minres.SetMaxIter(solOpts_.maxIter);
+    minres.SetPrintLevel(solOpts_.printLvl);
 
-      minres.Mult(RHS, E);
-    } break;
+    minres.Mult(RHS, E);
+  } break;
 #ifdef MFEM_USE_SUPERLU
-    case SUPERLU: {
-      if (myid_ == 0 && logging_ > 0) {
-        cout << "SuperLU Solver Requested" << endl;
-      }
-      ComplexHypreParMatrix *A1Z = A1.As<ComplexHypreParMatrix>();
-      HypreParMatrix *A1C = A1Z->GetSystemMatrix();
-      SuperLURowLocMatrix A_SuperLU(*A1C);
-      SuperLUSolver solver(MPI_COMM_WORLD);
-      solver.SetOperator(A_SuperLU);
-      solver.Mult(RHS, E);
-      delete A1C;
-    } break;
+  case SUPERLU: {
+    if (myid_ == 0 && logging_ > 0) {
+      cout << "SuperLU Solver Requested" << endl;
+    }
+    ComplexHypreParMatrix *A1Z = A1.As<ComplexHypreParMatrix>();
+    HypreParMatrix *A1C = A1Z->GetSystemMatrix();
+    SuperLURowLocMatrix A_SuperLU(*A1C);
+    SuperLUSolver solver(MPI_COMM_WORLD);
+    solver.SetOperator(A_SuperLU);
+    solver.Mult(RHS, E);
+    delete A1C;
+  } break;
 #endif
 #ifdef MFEM_USE_STRUMPACK
-    case STRUMPACK: {
-      if (myid_ == 0 && logging_ > 0) {
-        cout << "STRUMPACK Solver Requested" << endl;
-      }
-      ComplexHypreParMatrix *A1Z = A1.As<ComplexHypreParMatrix>();
-      HypreParMatrix *A1C = A1Z->GetSystemMatrix();
-      STRUMPACKRowLocMatrix A_STRUMPACK(*A1C);
-      STRUMPACKSolver solver(0, NULL, MPI_COMM_WORLD);
-      solver.SetPrintFactorStatistics(true);
-      solver.SetPrintSolveStatistics(false);
-      solver.SetKrylovSolver(strumpack::KrylovSolver::DIRECT);
-      solver.SetReorderingStrategy(strumpack::ReorderingStrategy::METIS);
-      solver.DisableMatching();
-      solver.SetOperator(A_STRUMPACK);
-      solver.SetFromCommandLine();
-      solver.Mult(RHS, E);
-      delete A1C;
-    } break;
+  case STRUMPACK: {
+    if (myid_ == 0 && logging_ > 0) {
+      cout << "STRUMPACK Solver Requested" << endl;
+    }
+    ComplexHypreParMatrix *A1Z = A1.As<ComplexHypreParMatrix>();
+    HypreParMatrix *A1C = A1Z->GetSystemMatrix();
+    STRUMPACKRowLocMatrix A_STRUMPACK(*A1C);
+    STRUMPACKSolver solver(0, NULL, MPI_COMM_WORLD);
+    solver.SetPrintFactorStatistics(true);
+    solver.SetPrintSolveStatistics(false);
+    solver.SetKrylovSolver(strumpack::KrylovSolver::DIRECT);
+    solver.SetReorderingStrategy(strumpack::ReorderingStrategy::METIS);
+    solver.DisableMatching();
+    solver.SetOperator(A_STRUMPACK);
+    solver.SetFromCommandLine();
+    solver.Mult(RHS, E);
+    delete A1C;
+  } break;
 #endif
 #ifdef MFEM_USE_MUMPS
-    case MUMPS: {
-      if (myid_ == 0 && logging_ > 0) {
-        cout << "MUMPS Solver Requested" << endl;
-      }
-      HypreParMatrix *A_hpm = A1.As<ComplexHypreParMatrix>()->GetSystemMatrix();
-      MUMPSSolver mumps;
-      mumps.SetPrintLevel(0);
-      mumps.SetMatrixSymType(MUMPSSolver::MatType::UNSYMMETRIC);
-      mumps.SetOperator(*A_hpm);
-      mumps.Mult(RHS, E);
-    } break;
+  case MUMPS: {
+    if (myid_ == 0 && logging_ > 0) {
+      cout << "MUMPS Solver Requested" << endl;
+    }
+    HypreParMatrix *A_hpm = A1.As<ComplexHypreParMatrix>()->GetSystemMatrix();
+    MUMPSSolver mumps;
+    mumps.SetPrintLevel(0);
+    mumps.SetMatrixSymType(MUMPSSolver::MatType::UNSYMMETRIC);
+    mumps.SetOperator(*A_hpm);
+    mumps.Mult(RHS, E);
+  } break;
 #endif
 
-    default:
-      break;
+  default:
+    break;
   };
 
   tic_toc.Stop();
@@ -604,9 +576,9 @@ void HertzSolver::DisplayToGLVis() {
   char vishost[] = "localhost";
   int visport = 19916;
 
-  int Wx = 0, Wy = 0;                  // window position
-  int Ww = 350, Wh = 350;              // window size
-  int offx = Ww + 10, offy = Wh + 45;  // window offsets
+  int Wx = 0, Wy = 0;                 // window position
+  int Ww = 350, Wh = 350;             // window size
+  int offx = Ww + 10, offy = Wh + 45; // window offsets
 
   VisualizeField(*socks_["Er"], vishost, visport, e_->real(),
                  "Electric Field, Re(E)", Wx, Wy, Ww, Wh);
@@ -616,7 +588,7 @@ void HertzSolver::DisplayToGLVis() {
                  "Electric Field, Im(E)", Wx, Wy, Ww, Wh);
 
   Wx = 0;
-  Wy += offy;  // next line
+  Wy += offy; // next line
 
   if (j_) {
     j_->ProjectCoefficient(*jrCoef_, *jiCoef_);
@@ -629,7 +601,7 @@ void HertzSolver::DisplayToGLVis() {
   }
 
   Wx = 0;
-  Wy += offy;  // next line
+  Wy += offy; // next line
 
   if (myid_ == 0) {
     cout << " done." << endl;
@@ -682,8 +654,8 @@ void HertzSolver::DisplayAnimationToGLVis() {
   }
 }
 
-}  // namespace electromagnetics
+} // namespace electromagnetics
 
-}  // namespace mfem
+} // namespace mfem
 
-#endif  // MFEM_USE_MPI
+#endif // MFEM_USE_MPI

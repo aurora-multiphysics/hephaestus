@@ -6,9 +6,9 @@
 namespace hephaestus {
 
 class Executioner {
- public:
+public:
   Executioner() {}
-  Executioner(const std::string& executioner_type, const double time_step,
+  Executioner(const std::string &executioner_type, const double time_step,
               const double end_time);
 
   std::string type;
@@ -16,4 +16,4 @@ class Executioner {
   double t_final;
 };
 
-}  // namespace hephaestus
+} // namespace hephaestus

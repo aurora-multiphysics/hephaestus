@@ -52,7 +52,7 @@ struct SolverOptions {
 
 // class SurfaceCurrent;
 class HertzSolver {
- public:
+public:
   enum PrecondType {
     INVALID_PC = -1,
     DIAG_SCALE = 1,
@@ -71,16 +71,16 @@ class HertzSolver {
     MUMPS = 6
   };
 
-  HertzSolver(ParMesh& pmesh, int order, double freq, HertzSolver::SolverType s,
-              SolverOptions& sOpts, HertzSolver::PrecondType p,
-              ComplexOperator::Convention conv, Coefficient& epsCoef,
-              Coefficient& muInvCoef, Coefficient* sigmaCoef,
-              Coefficient* etaInvCoef, hephaestus::BCMap bc_map,
-              Array<int>& abcs, Array<int>& dbcs,
-              std::function<void(const mfem::Vector&, mfem::Vector&)> e_r_bc,
-              std::function<void(const mfem::Vector&, mfem::Vector&)> e_i_bc,
-              void (*j_r_src)(const Vector&, Vector&),
-              void (*j_i_src)(const Vector&, Vector&));
+  HertzSolver(ParMesh &pmesh, int order, double freq, HertzSolver::SolverType s,
+              SolverOptions &sOpts, HertzSolver::PrecondType p,
+              ComplexOperator::Convention conv, Coefficient &epsCoef,
+              Coefficient &muInvCoef, Coefficient *sigmaCoef,
+              Coefficient *etaInvCoef, hephaestus::BCMap bc_map,
+              Array<int> &abcs, Array<int> &dbcs,
+              std::function<void(const mfem::Vector &, mfem::Vector &)> e_r_bc,
+              std::function<void(const mfem::Vector &, mfem::Vector &)> e_i_bc,
+              void (*j_r_src)(const Vector &, Vector &),
+              void (*j_i_src)(const Vector &, Vector &));
   ~HertzSolver();
 
   HYPRE_Int GetProblemSize();
@@ -93,9 +93,9 @@ class HertzSolver {
 
   void Solve();
 
-  void GetErrorEstimates(Vector& errors);
+  void GetErrorEstimates(Vector &errors);
 
-  void RegisterVisItFields(VisItDataCollection& visit_dc);
+  void RegisterVisItFields(VisItDataCollection &visit_dc);
 
   void WriteVisItFields(int it = 0);
 
@@ -105,14 +105,14 @@ class HertzSolver {
 
   void DisplayAnimationToGLVis();
 
- private:
+private:
   int myid_;
   int num_procs_;
   int order_;
   int logging_;
 
   SolverType sol_;
-  SolverOptions& solOpts_;
+  SolverOptions &solOpts_;
   PrecondType prec_;
 
   ComplexOperator::Convention conv_;
@@ -121,68 +121,68 @@ class HertzSolver {
 
   double freq_;
 
-  ParMesh* pmesh_;
+  ParMesh *pmesh_;
 
-  ND_ParFESpace* HCurlFESpace_;
+  ND_ParFESpace *HCurlFESpace_;
 
   Array<HYPRE_Int> blockTrueOffsets_;
 
-  ParSesquilinearForm* a1_;
-  ParBilinearForm* b1_;
+  ParSesquilinearForm *a1_;
+  ParBilinearForm *b1_;
 
-  ParComplexGridFunction* e_;  // Complex electric field (HCurl)
-  ParGridFunction* e_t_;       // Real electric field (HCurl)
-  ParComplexGridFunction* j_;  // Complex current density (HCurl)
+  ParComplexGridFunction *e_; // Complex electric field (HCurl)
+  ParGridFunction *e_t_;      // Real electric field (HCurl)
+  ParComplexGridFunction *j_; // Complex current density (HCurl)
 
-  ParComplexLinearForm* jd_;  // Dual of complex current density (HCurl)
+  ParComplexLinearForm *jd_; // Dual of complex current density (HCurl)
 
-  hephaestus::BCMap bc_map_;  //
+  hephaestus::BCMap bc_map_; //
 
-  Coefficient* epsCoef_;     // Dielectric Material Coefficient
-  Coefficient* muInvCoef_;   // Dia/Paramagnetic Material Coefficient
-  Coefficient* sigmaCoef_;   // Electrical Conductivity Coefficient
-  Coefficient* etaInvCoef_;  // Admittance Coefficient
+  Coefficient *epsCoef_;    // Dielectric Material Coefficient
+  Coefficient *muInvCoef_;  // Dia/Paramagnetic Material Coefficient
+  Coefficient *sigmaCoef_;  // Electrical Conductivity Coefficient
+  Coefficient *etaInvCoef_; // Admittance Coefficient
 
-  Coefficient* omegaCoef_;      // omega expressed as a Coefficient
-  Coefficient* negOmegaCoef_;   // -omega expressed as a Coefficient
-  Coefficient* omega2Coef_;     // omega^2 expressed as a Coefficient
-  Coefficient* negOmega2Coef_;  // -omega^2 expressed as a Coefficient
-  Coefficient* massCoef_;       // -omega^2 epsilon
-  Coefficient* posMassCoef_;    // omega^2 epsilon
-  Coefficient* lossCoef_;       // -omega sigma
-  Coefficient* abcCoef_;        // -omega eta^{-1}
-  Coefficient* posAbcCoef_;     // omega eta^{-1}
+  Coefficient *omegaCoef_;     // omega expressed as a Coefficient
+  Coefficient *negOmegaCoef_;  // -omega expressed as a Coefficient
+  Coefficient *omega2Coef_;    // omega^2 expressed as a Coefficient
+  Coefficient *negOmega2Coef_; // -omega^2 expressed as a Coefficient
+  Coefficient *massCoef_;      // -omega^2 epsilon
+  Coefficient *posMassCoef_;   // omega^2 epsilon
+  Coefficient *lossCoef_;      // -omega sigma
+  Coefficient *abcCoef_;       // -omega eta^{-1}
+  Coefficient *posAbcCoef_;    // omega eta^{-1}
 
-  VectorCoefficient* jrCoef_;  // Volume Current Density Function
-  VectorCoefficient* jiCoef_;  // Volume Current Density Function
-  VectorCoefficient* erCoef_;  // Electric Field Boundary Condition
-  VectorCoefficient* eiCoef_;  // Electric Field Boundary Condition
+  VectorCoefficient *jrCoef_; // Volume Current Density Function
+  VectorCoefficient *jiCoef_; // Volume Current Density Function
+  VectorCoefficient *erCoef_; // Electric Field Boundary Condition
+  VectorCoefficient *eiCoef_; // Electric Field Boundary Condition
 
-  void (*j_r_src_)(const Vector&, Vector&);
-  void (*j_i_src_)(const Vector&, Vector&);
+  void (*j_r_src_)(const Vector &, Vector &);
+  void (*j_i_src_)(const Vector &, Vector &);
 
   // Array of 0's and 1's marking the location of absorbing surfaces
   Array<int> abc_marker_;
 
   // Array of 0's and 1's marking the location of Dirichlet boundaries
   Array<int> dbc_marker_;
-  std::function<void(const mfem::Vector&, mfem::Vector&)> e_r_bc_;
-  std::function<void(const mfem::Vector&, mfem::Vector&)> e_i_bc_;
+  std::function<void(const mfem::Vector &, mfem::Vector &)> e_r_bc_;
+  std::function<void(const mfem::Vector &, mfem::Vector &)> e_i_bc_;
 
-  Array<int>* dbcs_;
+  Array<int> *dbcs_;
   Array<int> ess_bdr_;
   Array<int> ess_bdr_tdofs_;
   Array<int> non_k_bdr_;
 
-  VisItDataCollection* visit_dc_;
+  VisItDataCollection *visit_dc_;
 
-  std::map<std::string, socketstream*> socks_;
+  std::map<std::string, socketstream *> socks_;
 };
 
-}  // namespace electromagnetics
+} // namespace electromagnetics
 
-}  // namespace mfem
+} // namespace mfem
 
-#endif  // MFEM_USE_MPI
+#endif // MFEM_USE_MPI
 
-#endif  // MFEM_HERTZ_SOLVER
+#endif // MFEM_HERTZ_SOLVER

@@ -96,17 +96,17 @@ using namespace mfem::electromagnetics;
 // Permittivity Functions
 Coefficient *SetupPermittivityCoefficient();
 
-static Vector pw_eps_(0);     // Piecewise permittivity values
-static Vector ds_params_(0);  // Center, Radius, and Permittivity
+static Vector pw_eps_(0);    // Piecewise permittivity values
+static Vector ds_params_(0); // Center, Radius, and Permittivity
 //                               of dielectric sphere
 double dielectric_sphere(const Vector &);
 
 // Permeability Function
 Coefficient *SetupInvPermeabilityCoefficient();
 
-static Vector pw_mu_(0);      // Piecewise permeability values
-static Vector pw_mu_inv_(0);  // Piecewise inverse permeability values
-static Vector ms_params_(0);  // Center, Inner and Outer Radii, and
+static Vector pw_mu_(0);     // Piecewise permeability values
+static Vector pw_mu_inv_(0); // Piecewise inverse permeability values
+static Vector ms_params_(0); // Center, Inner and Outer Radii, and
 //                               Permeability of magnetic shell
 double magnetic_shell(const Vector &);
 double magnetic_shell_inv(const Vector &x) { return 1.0 / magnetic_shell(x); }
@@ -114,8 +114,8 @@ double magnetic_shell_inv(const Vector &x) { return 1.0 / magnetic_shell(x); }
 // Conductivity Functions
 Coefficient *SetupConductivityCoefficient();
 
-static Vector pw_sigma_(0);   // Piecewise conductivity values
-static Vector cs_params_(0);  // Center, Radius, and Conductivity
+static Vector pw_sigma_(0);  // Piecewise conductivity values
+static Vector cs_params_(0); // Center, Radius, and Conductivity
 //                               of conductive sphere
 double conductive_sphere(const Vector &);
 
@@ -123,11 +123,11 @@ double conductive_sphere(const Vector &);
 Coefficient *SetupAdmittanceCoefficient(const Mesh &mesh,
                                         const Array<int> &abcs);
 
-static Vector pw_eta_(0);      // Piecewise impedance values
-static Vector pw_eta_inv_(0);  // Piecewise inverse impedance values
+static Vector pw_eta_(0);     // Piecewise impedance values
+static Vector pw_eta_inv_(0); // Piecewise inverse impedance values
 
 // Current Density Function
-static Vector do_params_(0);  // Axis Start, Axis End, Rod Radius,
+static Vector do_params_(0); // Axis Start, Axis End, Rod Radius,
 //                               Total Current of Rod
 void dipole_oscillator(const Vector &x, Vector &j);
 void j_src(const Vector &x, Vector &j) { dipole_oscillator(x, j); }
@@ -137,7 +137,7 @@ void j_src(const Vector &x, Vector &j) { dipole_oscillator(x, j); }
 // void e_bc_r(const Vector &x, Vector &E);
 // void e_bc_i(const Vector &x, Vector &E);
 
-static double freq_ = 1.59154943092;  // 10/2pi
+static double freq_ = 1.59154943092; // 10/2pi
 
 // double port_length_vector[3] = {24.76e-2, 0.0, 0.0};
 // double port_width_vector[3] = {0.0, 12.38e-2, 0.0};
@@ -693,8 +693,8 @@ void dipole_oscillator(const Vector &x, Vector &j) {
   j.SetSize(x.Size());
   j = 0.0;
 
-  Vector v(x.Size());   // Normalized Axis vector
-  Vector xu(x.Size());  // x vector relative to the axis end-point
+  Vector v(x.Size());  // Normalized Axis vector
+  Vector xu(x.Size()); // x vector relative to the axis end-point
 
   xu = x;
 

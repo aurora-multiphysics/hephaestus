@@ -197,7 +197,7 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   mesh = new mfem::Mesh(mesh_file, 1, 1);
   int dim = mesh->Dimension();
   int max_attr = mesh->bdr_attributes.Max();
-  mesh->EnsureNCMesh();  // Required for mesh refinement
+  mesh->EnsureNCMesh(); // Required for mesh refinement
 
   // 4. Assign materials
   hephaestus::MaterialMap material_map(inputs.material_map);
@@ -239,32 +239,32 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   //    (SDIRK).
   mfem::ODESolver *ode_solver;
   switch (ode_solver_type) {
-    // Implicit L-stable methods
-    case 1:
-      ode_solver = new mfem::BackwardEulerSolver;
-      break;
-    case 2:
-      ode_solver = new mfem::SDIRK23Solver(2);
-      break;
-    case 3:
-      ode_solver = new mfem::SDIRK33Solver;
-      break;
-    // Implicit A-stable methods (not L-stable)
-    case 22:
-      ode_solver = new mfem::ImplicitMidpointSolver;
-      break;
-    case 23:
-      ode_solver = new mfem::SDIRK23Solver;
-      break;
-    case 34:
-      ode_solver = new mfem::SDIRK34Solver;
-      break;
-    default:
-      if (myid == 0) {
-        cout << "Unknown ODE solver type: " << ode_solver_type << '\n';
-      }
-      delete mesh;
-      return 3;
+  // Implicit L-stable methods
+  case 1:
+    ode_solver = new mfem::BackwardEulerSolver;
+    break;
+  case 2:
+    ode_solver = new mfem::SDIRK23Solver(2);
+    break;
+  case 3:
+    ode_solver = new mfem::SDIRK33Solver;
+    break;
+  // Implicit A-stable methods (not L-stable)
+  case 22:
+    ode_solver = new mfem::ImplicitMidpointSolver;
+    break;
+  case 23:
+    ode_solver = new mfem::SDIRK23Solver;
+    break;
+  case 34:
+    ode_solver = new mfem::SDIRK34Solver;
+    break;
+  default:
+    if (myid == 0) {
+      cout << "Unknown ODE solver type: " << ode_solver_type << '\n';
+    }
+    delete mesh;
+    return 3;
   }
   if (myid == 0) {
     cout << "\nODE solver applied" << endl;
@@ -457,9 +457,9 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
     vis_P.precision(8);
     vis_w.precision(8);
 
-    int Wx = 0, Wy = 0;                  // window position
-    int Ww = 350, Wh = 350;              // window size
-    int offx = Ww + 10, offy = Wh + 45;  // window offsets
+    int Wx = 0, Wy = 0;                 // window position
+    int Ww = 350, Wh = 350;             // window size
+    int offx = Ww + 10, offy = Wh + 45; // window offsets
 
     mfem::common::VisualizeField(vis_P, vishost, visport, P_gf,
                                  "Electric Potential (Phi)", Wx, Wy, Ww, Wh);
@@ -589,9 +589,9 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
       MPI_Barrier(pmesh->GetComm());
 
       if (visualization) {
-        int Wx = 0, Wy = 0;                  // window position
-        int Ww = 350, Wh = 350;              // window size
-        int offx = Ww + 10, offy = Wh + 45;  // window offsets
+        int Wx = 0, Wy = 0;                 // window position
+        int Ww = 350, Wh = 350;             // window size
+        int offx = Ww + 10, offy = Wh + 45; // window offsets
 
         mfem::common::VisualizeField(vis_P, vishost, visport, P_gf,
                                      "Electric Potential (Phi)", Wx, Wy, Ww,
@@ -665,6 +665,6 @@ double t_exact(const mfem::Vector &x) {
   return T;
 }
 
-}  // namespace electromagnetics
+} // namespace electromagnetics
 
-}  // namespace mfem
+} // namespace mfem

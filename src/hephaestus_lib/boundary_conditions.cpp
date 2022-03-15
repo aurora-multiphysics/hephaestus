@@ -44,4 +44,4 @@ void IntegratedBC::applyBC(mfem::ParComplexLinearForm &b) {
   b.AddBoundaryIntegrator(lfi_re, lfi_im, markers);
 }
 
-}  // namespace hephaestus
+} // namespace hephaestus

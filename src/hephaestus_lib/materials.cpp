@@ -2,7 +2,7 @@
 
 namespace hephaestus {
 
-Material::Material(const std::string& material_name, int material_block_id)
+Material::Material(const std::string &material_name, int material_block_id)
     : name(material_name), block_id(material_block_id) {}
 
 void Material::setMaterialProperty(std::string property_name,
@@ -19,8 +19,8 @@ MaterialMap::MaterialMap() {}
 
 MaterialMap::MaterialMap(std::vector<Material> mats) : materials(mats) {}
 
-std::map<int, double> MaterialMap::getBlockPropertyMap(
-    std::string property_name) {
+std::map<int, double>
+MaterialMap::getBlockPropertyMap(std::string property_name) {
   std::map<int, double> block_property_map;
   int block_id;
   double property_value;
@@ -33,4 +33,4 @@ std::map<int, double> MaterialMap::getBlockPropertyMap(
   return block_property_map;
 }
 
-}  // namespace hephaestus
+} // namespace hephaestus
