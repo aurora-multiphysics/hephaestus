@@ -411,7 +411,7 @@ int hertz_solve(int argc, char *argv[], hephaestus::Inputs inputs)
    hephaestus::BoundaryCondition waveguide_ports(std::string("robin_1"), Array<int>({1,2}));
    Array<int> wgi_in_attr(1);
    wgi_in_attr[0]=1;
-   hephaestus::NeumannBC waveguide_in(std::string("wgi"), wgi_in_attr);
+   hephaestus::IntegratedBC waveguide_in(std::string("wgi"), wgi_in_attr);
    VectorFunctionCoefficient UReal(pmesh.SpaceDimension(), RWTE10_real);
    VectorFunctionCoefficient UImag(pmesh.SpaceDimension(), RWTE10_imag);
    waveguide_in.lfi_re  = new mfem::VectorFEBoundaryTangentLFIntegrator(UReal);
@@ -426,8 +426,8 @@ int hertz_solve(int argc, char *argv[], hephaestus::Inputs inputs)
 
    abcs = Array<int>({2,3});
 
-   bc_map.bc_map.insert(std::pair<std::string, hephaestus::NeumannBC *>(std::string("Neumann"), new hephaestus::NeumannBC(waveguide_in)));
-   hephaestus::NeumannBC *test_bc = static_cast<hephaestus::NeumannBC *>(bc_map.bc_map["Neumann"]);
+   bc_map.bc_map.insert(std::pair<std::string, hephaestus::IntegratedBC *>(std::string("Neumann"), new hephaestus::IntegratedBC(waveguide_in)));
+   hephaestus::IntegratedBC *test_bc = static_cast<hephaestus::IntegratedBC *>(bc_map.bc_map["Neumann"]);
 
    std::function<void(const mfem::Vector&, mfem::Vector&)> e_bc_r = bc_map.getBC(std::string("tangential_E")).vector_func;
    std::function<void(const mfem::Vector&, mfem::Vector&)> e_bc_i = bc_map.getBC(std::string("tangential_E")).vector_func_im;

@@ -30,11 +30,11 @@ class BoundaryCondition
     virtual void applyBC(mfem::ParComplexLinearForm& b){};
 };
 
-class NeumannBC : public BoundaryCondition
+class IntegratedBC : public BoundaryCondition
 {
     public:
-    NeumannBC();
-    NeumannBC(const std::string & boundary_name,
+    IntegratedBC();
+    IntegratedBC(const std::string & boundary_name,
           mfem::Array<int> boundary_ids);
 
 

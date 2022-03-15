@@ -36,11 +36,11 @@ BoundaryCondition BCMap::getBC(std::string bc_name)
     return *test_bc;
 }
 
-NeumannBC::NeumannBC()
+IntegratedBC::IntegratedBC()
 {
 }
 
-NeumannBC::NeumannBC(const std::string & boundary_name, mfem::Array<int> boundary_ids)
+IntegratedBC::IntegratedBC(const std::string & boundary_name, mfem::Array<int> boundary_ids)
 :BoundaryCondition(boundary_name, boundary_ids)
 {
 }

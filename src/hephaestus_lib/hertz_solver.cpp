@@ -254,7 +254,7 @@ HertzSolver::HertzSolver(ParMesh & pmesh, int order, double freq,
                             new VectorFEDomainLFIntegrator(*jiCoef_));
 
    //add NeumannBC
-   dynamic_cast<hephaestus::NeumannBC*>(bc_map.bc_map["Neumann"])->applyBC(*jd_);
+   dynamic_cast<hephaestus::IntegratedBC*>(bc_map.bc_map["Neumann"])->applyBC(*jd_);
    // jd_->real().Vector::operator=(0.0);
    // jd_->imag().Vector::operator=(0.0);
 }
