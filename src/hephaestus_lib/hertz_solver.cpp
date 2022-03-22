@@ -188,8 +188,7 @@ HertzSolver::HertzSolver(
                            new VectorFEDomainLFIntegrator(*jiCoef_));
 
   // add IntegratedBC
-  dynamic_cast<hephaestus::IntegratedBC *>(bc_map.bc_map["Neumann"])
-      ->applyBC(*jd_);
+  dynamic_cast<hephaestus::IntegratedBC *>(bc_map["Neumann"])->applyBC(*jd_);
   // jd_->real().Vector::operator=(0.0);
   // jd_->imag().Vector::operator=(0.0);
 }

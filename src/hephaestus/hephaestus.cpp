@@ -31,20 +31,15 @@ double potential(const mfem::Vector &x, double t) {
 
 hephaestus::Inputs joule_example_inputs() {
   hephaestus::BCMap bc_map;
-  bc_map.setBC(std::string("tangential_dEdt"),
-               hephaestus::BoundaryCondition(std::string("boundary_1"),
-                                             Array<int>({1, 2, 3})));
-  bc_map.setBC(std::string("thermal_flux"),
-               hephaestus::BoundaryCondition(std::string("boundary_2"),
-                                             Array<int>({1, 2})));
-  hephaestus::FunctionDirichletBC poisson_bc(std::string("boundary_3"),
-                                             Array<int>({1, 2}));
+  bc_map["tangential_dEdt"] = new hephaestus::BoundaryCondition(
+      std::string("boundary_1"), Array<int>({1, 2, 3}));
 
-  poisson_bc.coeff = new mfem::FunctionCoefficient(potential);
-  bc_map.bc_map.insert(
-      std::pair<std::string, hephaestus::FunctionDirichletBC *>(
-          std::string("electric_potential"),
-          new hephaestus::FunctionDirichletBC(poisson_bc)));
+  bc_map["thermal_flux"] = new hephaestus::BoundaryCondition(
+      std::string("boundary_2"), Array<int>({1, 2}));
+
+  bc_map["electric_potential"] = new hephaestus::FunctionDirichletBC(
+      std::string("boundary_3"), Array<int>({1, 2}),
+      new mfem::FunctionCoefficient(potential));
 
   double sigma = 2.0 * M_PI * 10;
   double Tcapacity = 1.0;
@@ -98,11 +93,7 @@ hephaestus::Inputs hertz_example_inputs() {
   e_bc.vector_func = e_bc_r;
   e_bc.vector_func_im = e_bc_i;
 
-  bc_map.bc_map.insert(
-      std::pair<std::string, hephaestus::VectorFunctionDirichletBC *>(
-          std::string("tangential_E"),
-          new hephaestus::VectorFunctionDirichletBC(e_bc)));
-  // bc_map.setBC(std::string("tangential_E"), e_bc);
+  bc_map["tangential_E"] = new hephaestus::VectorFunctionDirichletBC(e_bc);
 
   hephaestus::Material air("air", 1);
   air.setMaterialProperty(std::string("real_electrical_conductivity"), 0.0);

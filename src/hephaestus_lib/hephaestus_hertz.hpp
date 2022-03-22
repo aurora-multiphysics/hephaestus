@@ -420,14 +420,14 @@ int hertz_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
 
   abcs = Array<int>({2, 3});
 
-  bc_map.bc_map.insert(std::pair<std::string, hephaestus::IntegratedBC *>(
-      std::string("Neumann"), new hephaestus::IntegratedBC(waveguide_in)));
+  bc_map["Neumann"] = new hephaestus::IntegratedBC(waveguide_in);
+
   hephaestus::IntegratedBC *test_bc =
-      static_cast<hephaestus::IntegratedBC *>(bc_map.bc_map["Neumann"]);
+      static_cast<hephaestus::IntegratedBC *>(bc_map["Neumann"]);
 
   hephaestus::VectorFunctionDirichletBC *tangential_E_bc =
       dynamic_cast<hephaestus::VectorFunctionDirichletBC *>(
-          bc_map.bc_map["tangential_E"]);
+          bc_map["tangential_E"]);
 
   std::function<void(const mfem::Vector &, mfem::Vector &)> e_bc_r =
       tangential_E_bc->vector_func;

@@ -20,11 +20,25 @@ FunctionDirichletBC::FunctionDirichletBC(const std::string &boundary_name,
                                          mfem::Array<int> boundary_ids)
     : BoundaryCondition(boundary_name, boundary_ids) {}
 
+FunctionDirichletBC::FunctionDirichletBC(const std::string &boundary_name,
+                                         mfem::Array<int> boundary_ids,
+                                         mfem::FunctionCoefficient *coeff_,
+                                         mfem::FunctionCoefficient *coeff_im_)
+    : BoundaryCondition(boundary_name, boundary_ids), coeff(coeff_),
+      coeff_im(coeff_im_) {}
+
 VectorFunctionDirichletBC::VectorFunctionDirichletBC() {}
 
 VectorFunctionDirichletBC::VectorFunctionDirichletBC(
     const std::string &boundary_name, mfem::Array<int> boundary_ids)
     : BoundaryCondition(boundary_name, boundary_ids) {}
+
+VectorFunctionDirichletBC::VectorFunctionDirichletBC(
+    const std::string &boundary_name, mfem::Array<int> boundary_ids,
+    mfem::VectorFunctionCoefficient *vec_coeff_,
+    mfem::VectorFunctionCoefficient *vec_coeff_im_)
+    : BoundaryCondition(boundary_name, boundary_ids), vec_coeff(vec_coeff_),
+      vec_coeff_im(vec_coeff_im_) {}
 
 IntegratedBC::IntegratedBC() {}
 
@@ -44,16 +58,17 @@ void IntegratedBC::applyBC(mfem::ParComplexLinearForm &b) {
   b.AddBoundaryIntegrator(lfi_re, lfi_im, markers);
 }
 
-BCMap::BCMap() {}
+// BCMap::BCMap()
+//  : {}
 
-void BCMap::setBC(std::string bc_name, BoundaryCondition bc) {
-  bc_map.insert(std::pair<std::string, BoundaryCondition *>(
-      bc_name, new BoundaryCondition(bc)));
-}
+// void BCMap::setBC(std::string bc_name, BoundaryCondition bc) {
+//   bc_map.insert(std::pair<std::string, BoundaryCondition *>(
+//       bc_name, new BoundaryCondition(bc)));
+// }
 
-BoundaryCondition BCMap::getBC(std::string bc_name) {
-  BoundaryCondition *test_bc = bc_map[bc_name];
-  return *test_bc;
-}
+// BoundaryCondition BCMap::getBC(std::string bc_name) {
+//   BoundaryCondition *test_bc = bc_map[bc_name];
+//   return *test_bc;
+// }
 
 } // namespace hephaestus
