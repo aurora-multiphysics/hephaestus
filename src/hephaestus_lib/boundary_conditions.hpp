@@ -15,17 +15,38 @@ public:
   mfem::Array<int> getMarkers(mfem::Mesh &mesh);
 
   std::string name;
-  std::function<double(const mfem::Vector &, double)> scalar_func;
-  std::function<double(const mfem::Vector &, double)> scalar_func_im;
-  std::function<void(const mfem::Vector &, mfem::Vector &)> vector_func;
-  std::function<void(const mfem::Vector &, mfem::Vector &)> vector_func_im;
-
   mfem::Array<int> bdr_attributes;
   mfem::Array<int> markers;
 
   virtual void applyBC(mfem::LinearForm &b){};
   virtual void applyBC(mfem::ComplexLinearForm &b){};
   virtual void applyBC(mfem::ParComplexLinearForm &b){};
+};
+
+class FunctionDirichletBC : public BoundaryCondition {
+public:
+  FunctionDirichletBC();
+  FunctionDirichletBC(const std::string &boundary_name,
+                      mfem::Array<int> boundary_ids);
+
+  std::function<double(const mfem::Vector &, double)> scalar_func;
+  std::function<double(const mfem::Vector &, double)> scalar_func_im;
+
+  mfem::FunctionCoefficient *coeff;
+  mfem::FunctionCoefficient *coeff_im;
+};
+
+class VectorFunctionDirichletBC : public BoundaryCondition {
+public:
+  VectorFunctionDirichletBC();
+  VectorFunctionDirichletBC(const std::string &boundary_name,
+                            mfem::Array<int> boundary_ids);
+
+  std::function<void(const mfem::Vector &, mfem::Vector &)> vector_func;
+  std::function<void(const mfem::Vector &, mfem::Vector &)> vector_func_im;
+
+  mfem::VectorFunctionCoefficient *vec_coeff;
+  mfem::VectorFunctionCoefficient *vec_coeff_im;
 };
 
 class IntegratedBC : public BoundaryCondition {

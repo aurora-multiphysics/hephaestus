@@ -37,10 +37,14 @@ hephaestus::Inputs joule_example_inputs() {
   bc_map.setBC(std::string("thermal_flux"),
                hephaestus::BoundaryCondition(std::string("boundary_2"),
                                              Array<int>({1, 2})));
-  hephaestus::BoundaryCondition poisson_bc(std::string("boundary_3"),
-                                           Array<int>({1, 2}));
-  poisson_bc.scalar_func = potential;
-  bc_map.setBC(std::string("electric_potential"), poisson_bc);
+  hephaestus::FunctionDirichletBC poisson_bc(std::string("boundary_3"),
+                                             Array<int>({1, 2}));
+
+  poisson_bc.coeff = new mfem::FunctionCoefficient(potential);
+  bc_map.bc_map.insert(
+      std::pair<std::string, hephaestus::FunctionDirichletBC *>(
+          std::string("electric_potential"),
+          new hephaestus::FunctionDirichletBC(poisson_bc)));
 
   double sigma = 2.0 * M_PI * 10;
   double Tcapacity = 1.0;
@@ -89,26 +93,27 @@ hephaestus::Inputs hertz_example_inputs() {
   hephaestus::BCMap bc_map;
 
   // dirichlet
-  hephaestus::BoundaryCondition e_bc(std::string("boundary_1"),
-                                     Array<int>({1, 2}));
+  hephaestus::VectorFunctionDirichletBC e_bc(std::string("boundary_1"),
+                                             Array<int>({1, 2}));
   e_bc.vector_func = e_bc_r;
   e_bc.vector_func_im = e_bc_i;
-  bc_map.setBC(std::string("tangential_E"), e_bc);
 
-  // robin
+  bc_map.bc_map.insert(
+      std::pair<std::string, hephaestus::VectorFunctionDirichletBC *>(
+          std::string("tangential_E"),
+          new hephaestus::VectorFunctionDirichletBC(e_bc)));
+  // bc_map.setBC(std::string("tangential_E"), e_bc);
 
-  static double mu = 1.25663706e-6;
-  static double epsilon = 8.85418782e-12;
-  static double sigma = 0.0;
-
-  hephaestus::Material copper("air", 1);
-  copper.setMaterialProperty(std::string("complex_electrical_conductivity"),
-                             sigma);
-  copper.setMaterialProperty(std::string("complex_permeability"), mu);
-  copper.setMaterialProperty(std::string("complex_permittivity"), epsilon);
+  hephaestus::Material air("air", 1);
+  air.setMaterialProperty(std::string("real_electrical_conductivity"), 0.0);
+  air.setMaterialProperty(std::string("imag_electrical_conductivity"), 0.0);
+  air.setMaterialProperty(std::string("real_rel_permittivity"), 1.0);
+  air.setMaterialProperty(std::string("imag_rel_permittivity"), 0.0);
+  air.setMaterialProperty(std::string("real_rel_permeability"), 1.0);
+  air.setMaterialProperty(std::string("imag_rel_permeability"), 0.0);
 
   hephaestus::MaterialMap material_map(
-      std::vector<hephaestus::Material>({copper}));
+      std::vector<hephaestus::Material>({air}));
 
   hephaestus::Executioner executioner(std::string("transient"), 0.5, 100.0);
   hephaestus::Inputs inputs(std::string("irises.g"), std::string("Hertz"), 2,

@@ -26,7 +26,7 @@ MagneticDiffusionEOperator::MagneticDiffusionEOperator(
     ParFiniteElementSpace &HCurlFES, ParFiniteElementSpace &HDivFES,
     ParFiniteElementSpace &HGradFES, Array<int> &ess_bdr_arg,
     Array<int> &thermal_ess_bdr_arg, Array<int> &poisson_ess_bdr_arg,
-    double mu_coef, std::function<double(const mfem::Vector &, double)> _p_bc,
+    double mu_coef, FunctionCoefficient &_voltage,
     // std::function<void(const mfem::Vector&, double, mfem::Vector&)> _edot_bc,
     std::map<int, double> sigmaAttMap, std::map<int, double> TcapacityAttMap,
     std::map<int, double> InvTcapAttMap, std::map<int, double> InvTcondAttMap)
@@ -40,8 +40,7 @@ MagneticDiffusionEOperator::MagneticDiffusionEOperator(
       B3(NULL), v0(NULL), v1(NULL), v2(NULL), amg_a0(NULL), pcg_a0(NULL),
       ads_a2(NULL), pcg_a2(NULL), ams_a1(NULL), pcg_a1(NULL), dsp_m3(NULL),
       pcg_m3(NULL), dsp_m1(NULL), pcg_m1(NULL), dsp_m2(NULL), pcg_m2(NULL),
-      mu(mu_coef), dt_A1(-1.0), dt_A2(-1.0) {
-  p_bc = _p_bc;
+      mu(mu_coef), dt_A1(-1.0), dt_A2(-1.0), voltage(_voltage) {
   ess_bdr.SetSize(ess_bdr_arg.Size());
   for (int i = 0; i < ess_bdr_arg.Size(); i++) {
     ess_bdr[i] = ess_bdr_arg[i];
@@ -196,7 +195,6 @@ void MagneticDiffusionEOperator::Mult(const Vector &X, Vector &dX_dt) const {
   ParGridFunction Phi_gf(&HGradFESpace);
 
   // p_bc is given function defining electrostatic potential on surface
-  FunctionCoefficient voltage(p_bc);
   voltage.SetTime(this->GetTime());
   Phi_gf = 0.0;
 
@@ -443,7 +441,6 @@ void MagneticDiffusionEOperator::ImplicitSolve(const double dt, const Vector &X,
   ParGridFunction Phi_gf(&HGradFESpace);
 
   // p_bc is given function defining electrostatic potential on surface
-  FunctionCoefficient voltage(p_bc);
   voltage.SetTime(this->GetTime());
   Phi_gf = 0.0;
 

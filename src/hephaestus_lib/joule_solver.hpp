@@ -129,9 +129,9 @@ protected:
   // temporary work vectors
   ParGridFunction *v0, *v1, *v2;
 
+  mutable FunctionCoefficient voltage;
   // void edot_bc(const Vector &x, Vector &E);
   // double p_bc(const Vector &x, double t);
-  std::function<double(const mfem::Vector &, double)> p_bc;
   // std::function<void(const mfem::Vector&, double, double&)> p_bc;
   // std::function<void(const mfem::Vector&, double, mfem::Vector&)> edot_bc,
 
@@ -183,8 +183,7 @@ public:
       int len, ParFiniteElementSpace &L2FES, ParFiniteElementSpace &HCurlFES,
       ParFiniteElementSpace &HDivFES, ParFiniteElementSpace &HGradFES,
       Array<int> &ess_bdr, Array<int> &thermal_ess_bdr,
-      Array<int> &poisson_ess_bdr, double mu,
-      std::function<double(const mfem::Vector &, double)> _p_bc,
+      Array<int> &poisson_ess_bdr, double mu, FunctionCoefficient &_voltage,
       // std::function<void(const mfem::Vector&, double, mfem::Vector&)>
       // edot_bc,
       std::map<int, double> sigmaAttMap, std::map<int, double> TcapacityAttMap,

@@ -14,17 +14,17 @@ mfem::Array<int> BoundaryCondition::getMarkers(mfem::Mesh &mesh) {
   return markers;
 }
 
-BCMap::BCMap() {}
+FunctionDirichletBC::FunctionDirichletBC() {}
 
-void BCMap::setBC(std::string bc_name, BoundaryCondition bc) {
-  bc_map.insert(std::pair<std::string, BoundaryCondition *>(
-      bc_name, new BoundaryCondition(bc)));
-}
+FunctionDirichletBC::FunctionDirichletBC(const std::string &boundary_name,
+                                         mfem::Array<int> boundary_ids)
+    : BoundaryCondition(boundary_name, boundary_ids) {}
 
-BoundaryCondition BCMap::getBC(std::string bc_name) {
-  BoundaryCondition *test_bc = bc_map[bc_name];
-  return *test_bc;
-}
+VectorFunctionDirichletBC::VectorFunctionDirichletBC() {}
+
+VectorFunctionDirichletBC::VectorFunctionDirichletBC(
+    const std::string &boundary_name, mfem::Array<int> boundary_ids)
+    : BoundaryCondition(boundary_name, boundary_ids) {}
 
 IntegratedBC::IntegratedBC() {}
 
@@ -42,6 +42,18 @@ void IntegratedBC::applyBC(mfem::ComplexLinearForm &b) {
 
 void IntegratedBC::applyBC(mfem::ParComplexLinearForm &b) {
   b.AddBoundaryIntegrator(lfi_re, lfi_im, markers);
+}
+
+BCMap::BCMap() {}
+
+void BCMap::setBC(std::string bc_name, BoundaryCondition bc) {
+  bc_map.insert(std::pair<std::string, BoundaryCondition *>(
+      bc_name, new BoundaryCondition(bc)));
+}
+
+BoundaryCondition BCMap::getBC(std::string bc_name) {
+  BoundaryCondition *test_bc = bc_map[bc_name];
+  return *test_bc;
 }
 
 } // namespace hephaestus

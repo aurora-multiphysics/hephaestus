@@ -227,8 +227,13 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
       bc_map.getBC(std::string("thermal_flux")).getMarkers(*mesh);
   mfem::Array<int> poisson_ess_bdr =
       bc_map.getBC(std::string("electric_potential")).getMarkers(*mesh);
-  std::function<double(const mfem::Vector &, double)> p_bc =
-      bc_map.getBC(std::string("electric_potential")).scalar_func;
+  // mfem::FunctionCoefficient voltage =
+  //     bc_map.getBC(std::string("electric_potential")).coeff;
+
+  hephaestus::FunctionDirichletBC *potential_bc =
+      dynamic_cast<hephaestus::FunctionDirichletBC *>(
+          bc_map.bc_map["electric_potential"]);
+  mfem::FunctionCoefficient voltage = *potential_bc->coeff;
 
   if (myid == 0) {
     cout << "\nBoundary conditions applied" << endl;
@@ -434,7 +439,7 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   //     the initial energies.
   mfem::electromagnetics::MagneticDiffusionEOperator oper(
       true_offset[6], L2FESpace, HCurlFESpace, HDivFESpace, HGradFESpace,
-      ess_bdr, thermal_ess_bdr, poisson_ess_bdr, mu, p_bc, sigmaMap, TcapMap,
+      ess_bdr, thermal_ess_bdr, poisson_ess_bdr, mu, voltage, sigmaMap, TcapMap,
       InvTcapMap, InvTcondMap);
 
   if (myid == 0) {

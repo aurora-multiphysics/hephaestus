@@ -425,10 +425,14 @@ int hertz_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   hephaestus::IntegratedBC *test_bc =
       static_cast<hephaestus::IntegratedBC *>(bc_map.bc_map["Neumann"]);
 
+  hephaestus::VectorFunctionDirichletBC *tangential_E_bc =
+      dynamic_cast<hephaestus::VectorFunctionDirichletBC *>(
+          bc_map.bc_map["tangential_E"]);
+
   std::function<void(const mfem::Vector &, mfem::Vector &)> e_bc_r =
-      bc_map.getBC(std::string("tangential_E")).vector_func;
+      tangential_E_bc->vector_func;
   std::function<void(const mfem::Vector &, mfem::Vector &)> e_bc_i =
-      bc_map.getBC(std::string("tangential_E")).vector_func_im;
+      tangential_E_bc->vector_func_im;
 
   // Create the Magnetostatic solver
   HertzSolver Hertz(pmesh, order, freq_, (HertzSolver::SolverType)sol, solOpts,
