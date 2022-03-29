@@ -33,9 +33,6 @@ public:
                       mfem::FunctionCoefficient *coeff_,
                       mfem::FunctionCoefficient *coeff_im_ = nullptr);
 
-  std::function<double(const mfem::Vector &, double)> scalar_func;
-  std::function<double(const mfem::Vector &, double)> scalar_func_im;
-
   mfem::FunctionCoefficient *coeff;
   mfem::FunctionCoefficient *coeff_im;
 };
@@ -49,9 +46,6 @@ public:
       const std::string &boundary_name, mfem::Array<int> boundary_ids,
       mfem::VectorFunctionCoefficient *vec_coeff_,
       mfem::VectorFunctionCoefficient *vec_coeff_im_ = nullptr);
-
-  std::function<void(const mfem::Vector &, mfem::Vector &)> vector_func;
-  std::function<void(const mfem::Vector &, mfem::Vector &)> vector_func_im;
 
   mfem::VectorFunctionCoefficient *vec_coeff;
   mfem::VectorFunctionCoefficient *vec_coeff_im;
@@ -70,14 +64,6 @@ public:
   virtual void applyBC(mfem::ParComplexLinearForm &b) override;
 };
 
-class BCMap : public std::map<std::string, hephaestus::BoundaryCondition *> {
-  // public:
-  //   BCMap();
-
-  //   void setBC(std::string bc_name, BoundaryCondition bc);
-  //   BoundaryCondition getBC(std::string bc_name);
-
-  //   std::map<std::string, hephaestus::BoundaryCondition *> bc_map;
-};
+class BCMap : public std::map<std::string, hephaestus::BoundaryCondition *> {};
 
 } // namespace hephaestus

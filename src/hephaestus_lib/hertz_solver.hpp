@@ -77,8 +77,6 @@ public:
               Coefficient &muInvCoef, Coefficient *sigmaCoef,
               Coefficient *etaInvCoef, hephaestus::BCMap bc_map,
               Array<int> &abcs, Array<int> &dbcs,
-              std::function<void(const mfem::Vector &, mfem::Vector &)> e_r_bc,
-              std::function<void(const mfem::Vector &, mfem::Vector &)> e_i_bc,
               void (*j_r_src)(const Vector &, Vector &),
               void (*j_i_src)(const Vector &, Vector &));
   ~HertzSolver();
@@ -166,8 +164,6 @@ private:
 
   // Array of 0's and 1's marking the location of Dirichlet boundaries
   Array<int> dbc_marker_;
-  std::function<void(const mfem::Vector &, mfem::Vector &)> e_r_bc_;
-  std::function<void(const mfem::Vector &, mfem::Vector &)> e_i_bc_;
 
   Array<int> *dbcs_;
   Array<int> ess_bdr_;

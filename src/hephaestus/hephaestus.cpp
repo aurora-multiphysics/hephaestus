@@ -88,10 +88,10 @@ hephaestus::Inputs hertz_example_inputs() {
   hephaestus::BCMap bc_map;
 
   // dirichlet
-  hephaestus::VectorFunctionDirichletBC e_bc(std::string("boundary_1"),
-                                             Array<int>({1, 2}));
-  e_bc.vector_func = e_bc_r;
-  e_bc.vector_func_im = e_bc_i;
+  hephaestus::VectorFunctionDirichletBC e_bc(
+      std::string("boundary_1"), Array<int>({1, 2}),
+      new VectorFunctionCoefficient(3, e_bc_r),
+      new VectorFunctionCoefficient(3, e_bc_i));
 
   bc_map["tangential_E"] = new hephaestus::VectorFunctionDirichletBC(e_bc);
 

@@ -58,17 +58,4 @@ void IntegratedBC::applyBC(mfem::ParComplexLinearForm &b) {
   b.AddBoundaryIntegrator(lfi_re, lfi_im, markers);
 }
 
-// BCMap::BCMap()
-//  : {}
-
-// void BCMap::setBC(std::string bc_name, BoundaryCondition bc) {
-//   bc_map.insert(std::pair<std::string, BoundaryCondition *>(
-//       bc_name, new BoundaryCondition(bc)));
-// }
-
-// BoundaryCondition BCMap::getBC(std::string bc_name) {
-//   BoundaryCondition *test_bc = bc_map[bc_name];
-//   return *test_bc;
-// }
-
 } // namespace hephaestus

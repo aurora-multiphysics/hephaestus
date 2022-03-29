@@ -426,15 +426,10 @@ int hertz_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
       dynamic_cast<hephaestus::VectorFunctionDirichletBC *>(
           bc_map["tangential_E"]);
 
-  std::function<void(const mfem::Vector &, mfem::Vector &)> e_bc_r =
-      tangential_E_bc->vector_func;
-  std::function<void(const mfem::Vector &, mfem::Vector &)> e_bc_i =
-      tangential_E_bc->vector_func_im;
-
   // Create the Magnetostatic solver
   HertzSolver Hertz(pmesh, order, freq_, (HertzSolver::SolverType)sol, solOpts,
                     (HertzSolver::PrecondType)prec, conv, *epsCoef, *muInvCoef,
-                    sigmaCoef, etaInvCoef, bc_map, abcs, dbcs, e_bc_r, e_bc_i,
+                    sigmaCoef, etaInvCoef, bc_map, abcs, dbcs,
                     (do_params_.Size() > 0) ? j_src : NULL, NULL);
 
   // Initialize GLVis visualization

@@ -24,16 +24,15 @@ namespace electromagnetics {
 // Used for combining scalar coefficients
 double prodFunc(double a, double b) { return a * b; }
 
-HertzSolver::HertzSolver(
-    ParMesh &pmesh, int order, double freq, HertzSolver::SolverType sol,
-    SolverOptions &sOpts, HertzSolver::PrecondType prec,
-    ComplexOperator::Convention conv, Coefficient &epsCoef,
-    Coefficient &muInvCoef, Coefficient *sigmaCoef, Coefficient *etaInvCoef,
-    hephaestus::BCMap bc_map, Array<int> &abcs, Array<int> &dbcs,
-    std::function<void(const mfem::Vector &, mfem::Vector &)> e_r_bc,
-    std::function<void(const mfem::Vector &, mfem::Vector &)> e_i_bc,
-    void (*j_r_src)(const Vector &, Vector &),
-    void (*j_i_src)(const Vector &, Vector &))
+HertzSolver::HertzSolver(ParMesh &pmesh, int order, double freq,
+                         HertzSolver::SolverType sol, SolverOptions &sOpts,
+                         HertzSolver::PrecondType prec,
+                         ComplexOperator::Convention conv, Coefficient &epsCoef,
+                         Coefficient &muInvCoef, Coefficient *sigmaCoef,
+                         Coefficient *etaInvCoef, hephaestus::BCMap bc_map,
+                         Array<int> &abcs, Array<int> &dbcs,
+                         void (*j_r_src)(const Vector &, Vector &),
+                         void (*j_i_src)(const Vector &, Vector &))
     : myid_(0), num_procs_(1), order_(order), logging_(1), sol_(sol),
       solOpts_(sOpts), prec_(prec), conv_(conv),
       ownsEtaInv_(etaInvCoef == NULL), freq_(freq), pmesh_(&pmesh),
@@ -46,8 +45,8 @@ HertzSolver::HertzSolver(
       negOmega2Coef_(new ConstantCoefficient(-pow(2.0 * M_PI * freq_, 2))),
       massCoef_(NULL), posMassCoef_(NULL), lossCoef_(NULL), abcCoef_(NULL),
       posAbcCoef_(NULL), jrCoef_(NULL), jiCoef_(NULL), erCoef_(NULL),
-      eiCoef_(NULL), j_r_src_(j_r_src), j_i_src_(j_i_src), e_r_bc_(e_r_bc),
-      e_i_bc_(e_i_bc), dbcs_(&dbcs), visit_dc_(NULL) {
+      eiCoef_(NULL), j_r_src_(j_r_src), j_i_src_(j_i_src), dbcs_(&dbcs),
+      visit_dc_(NULL) {
   // Initialize MPI variables
   MPI_Comm_size(pmesh_->GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh_->GetComm(), &myid_);
@@ -80,27 +79,8 @@ HertzSolver::HertzSolver(
         dynamic_cast<hephaestus::VectorFunctionDirichletBC *>(
             bc_map["tangential_E"]);
 
-    e_r_bc_ = tangential_E_bc->vector_func;
-    e_i_bc_ = tangential_E_bc->vector_func_im;
-
-    if (e_r_bc_) {
-      erCoef_ =
-          new VectorFunctionCoefficient(pmesh_->SpaceDimension(), e_r_bc_);
-      if (e_i_bc_ == NULL) {
-        Vector e(3);
-        e = 0.0;
-        eiCoef_ = new VectorConstantCoefficient(e);
-      }
-    }
-    if (e_i_bc_) {
-      eiCoef_ =
-          new VectorFunctionCoefficient(pmesh_->SpaceDimension(), e_i_bc_);
-      if (e_r_bc_ == NULL) {
-        Vector e(3);
-        e = 0.0;
-        erCoef_ = new VectorConstantCoefficient(e);
-      }
-    }
+    erCoef_ = tangential_E_bc->vec_coeff;
+    eiCoef_ = tangential_E_bc->vec_coeff_im;
   }
 
   // Setup various coefficients
