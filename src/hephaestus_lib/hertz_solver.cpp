@@ -76,6 +76,13 @@ HertzSolver::HertzSolver(
     }
     HCurlFESpace_->GetEssentialTrueDofs(ess_bdr_, ess_bdr_tdofs_);
 
+    hephaestus::VectorFunctionDirichletBC *tangential_E_bc =
+        dynamic_cast<hephaestus::VectorFunctionDirichletBC *>(
+            bc_map["tangential_E"]);
+
+    e_r_bc_ = tangential_E_bc->vector_func;
+    e_i_bc_ = tangential_E_bc->vector_func_im;
+
     if (e_r_bc_) {
       erCoef_ =
           new VectorFunctionCoefficient(pmesh_->SpaceDimension(), e_r_bc_);

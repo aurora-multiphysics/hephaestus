@@ -315,12 +315,7 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   if (myid == 0) {
     cout << "\nParallel mesh refined" << endl;
   }
-  // 10. Reorient the mesh. Must be done after refinement but before definition
-  //     of higher order Nedelec spaces
-  pmesh->ReorientTetMesh();
-  if (myid == 0) {
-    cout << "\nMesh reoriented" << endl;
-  }
+  // 10. Tet mesh reorientation - no longer necessary
 
   // 11. Rebalance the mesh. Since the mesh was adaptively refined in a
   //     non-uniform way it will be computationally unbalanced.

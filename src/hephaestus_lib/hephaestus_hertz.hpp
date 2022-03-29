@@ -422,9 +422,6 @@ int hertz_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
 
   bc_map["Neumann"] = new hephaestus::IntegratedBC(waveguide_in);
 
-  hephaestus::IntegratedBC *test_bc =
-      static_cast<hephaestus::IntegratedBC *>(bc_map["Neumann"]);
-
   hephaestus::VectorFunctionDirichletBC *tangential_E_bc =
       dynamic_cast<hephaestus::VectorFunctionDirichletBC *>(
           bc_map["tangential_E"]);
