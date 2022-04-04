@@ -14,6 +14,7 @@
 
 #include "../common/pfem_extras.hpp"
 #include "materials.hpp"
+#include "postprocessors.hpp"
 
 #ifdef MFEM_USE_MPI
 
@@ -225,22 +226,6 @@ public:
   void Debug(const char *basefilename, double time);
 
   virtual ~MagneticDiffusionEOperator();
-};
-
-// A Coefficient is an object with a function Eval that returns a double. The
-// JouleHeatingCoefficient object will contain a reference to the electric field
-// grid function, and the conductivity sigma, and returns sigma E dot E at a
-// point.
-class JouleHeatingCoefficient : public Coefficient {
-private:
-  ParGridFunction &E_gf;
-  PWCoefficient sigma;
-
-public:
-  JouleHeatingCoefficient(const PWCoefficient &sigma_, ParGridFunction &E_gf_)
-      : E_gf(E_gf_), sigma(sigma_) {}
-  virtual double Eval(ElementTransformation &T, const IntegrationPoint &ip);
-  virtual ~JouleHeatingCoefficient() {}
 };
 
 } // namespace electromagnetics

@@ -819,7 +819,7 @@ void MagneticDiffusionEOperator::GetJouleHeating(ParGridFunction &E_gf,
                                                  ParGridFunction &w_gf) const {
   // The w_coeff object stashes a reference to sigma and E, and it has
   // an Eval method that will be used by ProjectCoefficient.
-  JouleHeatingCoefficient w_coeff(sigma, E_gf);
+  hephaestus::JouleHeatingCoefficient w_coeff(sigma, E_gf);
 
   // This applies the definition of the finite element degrees-of-freedom
   // to convert the function to a set of discrete values
@@ -968,15 +968,6 @@ void MagneticDiffusionEOperator::Debug(const char *base, double) {
     HypreParVector tempX2(A2->GetComm(), A2->N(), X2->GetData(), A2->ColPart());
     tempX2.Print("X2_");
   }
-}
-
-double JouleHeatingCoefficient::Eval(ElementTransformation &T,
-                                     const IntegrationPoint &ip) {
-  Vector E;
-  double thisSigma;
-  E_gf.GetVectorValue(T, ip, E);
-  thisSigma = sigma.Eval(T, ip);
-  return thisSigma * (E * E);
 }
 
 MeshDependentCoefficient::MeshDependentCoefficient(

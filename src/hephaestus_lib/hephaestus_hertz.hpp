@@ -88,6 +88,7 @@
 
 #include "hertz_solver.hpp"
 #include "inputs.hpp"
+#include "postprocessors.hpp"
 
 using namespace std;
 using namespace mfem;
@@ -153,13 +154,6 @@ double kc;
 double k0;
 complex<double> k_;
 
-void cross_product(Vector &va, Vector &vb, Vector &V) {
-  V.SetSize(3);
-  V[0] = va[1] * vb[2] - va[2] * vb[1];
-  V[1] = va[2] * vb[0] - va[0] * vb[2];
-  V[2] = va[0] * vb[1] - va[1] * vb[0];
-}
-
 void RWTE10(const Vector &x, vector<complex<double>> &E) {
   complex<double> zi = complex<double>(0., 1.);
   double port_length_vector[3] = {0.0, 22.86e-3, 0.0};
@@ -171,9 +165,9 @@ void RWTE10(const Vector &x, vector<complex<double>> &E) {
   Vector a2xa3;
   Vector a3xa1;
 
-  cross_product(a1Vec, a2Vec, a3Vec);
-  cross_product(a2Vec, a3Vec, a2xa3);
-  cross_product(a3Vec, a1Vec, a3xa1);
+  hephaestus::cross_product(a1Vec, a2Vec, a3Vec);
+  hephaestus::cross_product(a2Vec, a3Vec, a2xa3);
+  hephaestus::cross_product(a3Vec, a1Vec, a3xa1);
 
   Vector k_a = a2xa3;
   Vector k_c = a3Vec;
@@ -182,7 +176,7 @@ void RWTE10(const Vector &x, vector<complex<double>> &E) {
   k_c *= k_.imag() / a3Vec.Norml2();
 
   Vector E_hat;
-  cross_product(k_c, k_a, E_hat);
+  hephaestus::cross_product(k_c, k_a, E_hat);
   E_hat *= 1.0 / E_hat.Norml2();
 
   double E0(
