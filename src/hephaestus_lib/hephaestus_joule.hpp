@@ -111,11 +111,8 @@
 #include <iostream>
 #include <memory>
 
-#include "boundary_conditions.hpp"
-#include "executioner.hpp"
 #include "inputs.hpp"
 #include "joule_solver.hpp"
-#include "materials.hpp"
 
 using namespace std;
 
@@ -200,20 +197,7 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   mesh->EnsureNCMesh(); // Required for mesh refinement
 
   // 4. Assign materials
-  hephaestus::MaterialMap material_map(inputs.material_map);
-  std::map<int, double> sigmaMap(
-      material_map.getBlockPropertyMap(std::string("electrical_conductivity")));
-  std::map<int, double> TcapMap(
-      material_map.getBlockPropertyMap(std::string("heat_capacity")));
-  std::map<int, double> TcondMap(
-      material_map.getBlockPropertyMap(std::string("thermal_conductivity")));
-
-  std::map<int, double> InvTcondMap(TcondMap);
-  std::map<int, double> InvTcapMap(TcapMap);
-  for (unsigned int i = 0; i < TcondMap.size(); ++i) {
-    InvTcapMap[i] = 1.0 / TcapMap[i];
-    InvTcondMap[i] = 1.0 / TcondMap[i];
-  }
+  hephaestus::DomainProperties domain_properties(inputs.domain_properties);
 
   if (myid == 0) {
     cout << "\nMaterial properties applied" << endl;
@@ -430,8 +414,8 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   //     the initial energies.
   mfem::electromagnetics::MagneticDiffusionEOperator oper(
       true_offset[6], L2FESpace, HCurlFESpace, HDivFESpace, HGradFESpace,
-      ess_bdr, thermal_ess_bdr, poisson_ess_bdr, mu, voltage, sigmaMap, TcapMap,
-      InvTcapMap, InvTcondMap);
+      ess_bdr, thermal_ess_bdr, poisson_ess_bdr, mu, voltage,
+      domain_properties);
 
   if (myid == 0) {
     cout << "\nDiffusion operator Initialised" << endl;

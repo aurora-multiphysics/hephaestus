@@ -13,6 +13,7 @@
 #define MFEM_JOULE_SOLVER
 
 #include "../common/pfem_extras.hpp"
+#include "materials.hpp"
 
 #ifdef MFEM_USE_MPI
 
@@ -159,36 +160,40 @@ protected:
   mutable Array<int> poisson_ess_bdr;
   mutable Array<int> poisson_ess_bdr_vdofs;
 
-  MeshDependentCoefficient *sigma, *Tcapacity, *InvTcap, *InvTcond;
+  PWCoefficient sigma, Tcapacity, InvTcap, InvTcond;
   double mu, dt_A1, dt_A2;
 
   // The method builA2 creates the ParBilinearForm a2, the HypreParMatrix A2,
   // and the solver and preconditioner pcg_a2 and amg_a2. The other build
   // functions do similar things.
-  void buildA0(MeshDependentCoefficient &sigma);
-  void buildA1(double muInv, MeshDependentCoefficient &sigma, double dt);
-  void buildA2(MeshDependentCoefficient &InvTcond,
-               MeshDependentCoefficient &InvTcap, double dt);
-  void buildM1(MeshDependentCoefficient &sigma);
-  void buildM2(MeshDependentCoefficient &alpha);
-  void buildM3(MeshDependentCoefficient &Tcap);
+  void buildA0(PWCoefficient &sigma);
+  void buildA1(double muInv, PWCoefficient &sigma, double dt);
+  void buildA2(PWCoefficient &InvTcond, PWCoefficient &InvTcap, double dt);
+  void buildM1(PWCoefficient &sigma);
+  void buildM2(PWCoefficient &alpha);
+  void buildM3(PWCoefficient &Tcap);
   void buildS1(double muInv);
-  void buildS2(MeshDependentCoefficient &alpha);
+  void buildS2(PWCoefficient &alpha);
   void buildGrad();
   void buildCurl(double muInv);
-  void buildDiv(MeshDependentCoefficient &InvTcap);
+  void buildDiv(PWCoefficient &InvTcap);
 
 public:
-  MagneticDiffusionEOperator(
-      int len, ParFiniteElementSpace &L2FES, ParFiniteElementSpace &HCurlFES,
-      ParFiniteElementSpace &HDivFES, ParFiniteElementSpace &HGradFES,
-      Array<int> &ess_bdr, Array<int> &thermal_ess_bdr,
-      Array<int> &poisson_ess_bdr, double mu, FunctionCoefficient &_voltage,
-      // std::function<void(const mfem::Vector&, double, mfem::Vector&)>
-      // edot_bc,
-      std::map<int, double> sigmaAttMap, std::map<int, double> TcapacityAttMap,
-      std::map<int, double> InvTcapAttMap,
-      std::map<int, double> InvTcondAttMap);
+  MagneticDiffusionEOperator(int len, ParFiniteElementSpace &L2FES,
+                             ParFiniteElementSpace &HCurlFES,
+                             ParFiniteElementSpace &HDivFES,
+                             ParFiniteElementSpace &HGradFES,
+                             Array<int> &ess_bdr, Array<int> &thermal_ess_bdr,
+                             Array<int> &poisson_ess_bdr, double mu,
+                             FunctionCoefficient &_voltage,
+                             // std::function<void(const mfem::Vector&, double,
+                             // mfem::Vector&)> edot_bc,
+                             hephaestus::DomainProperties &domain_properties);
+  // mfem::PWCoefficient &sigma, mfem::PWCoefficient &Tcapacity,
+  // mfem::PWCoefficient &InvTcap, mfem::PWCoefficient &InvTcond);
+  // std::map<int, double> sigmaAttMap, std::map<int, double>
+  // TcapacityAttMap, std::map<int, double> InvTcapAttMap, std::map<int,
+  // double> InvTcondAttMap);
 
   // Initialize the fields. This is where restart would go to.
   void Init(Vector &vx);
@@ -229,11 +234,10 @@ public:
 class JouleHeatingCoefficient : public Coefficient {
 private:
   ParGridFunction &E_gf;
-  MeshDependentCoefficient sigma;
+  PWCoefficient sigma;
 
 public:
-  JouleHeatingCoefficient(const MeshDependentCoefficient &sigma_,
-                          ParGridFunction &E_gf_)
+  JouleHeatingCoefficient(const PWCoefficient &sigma_, ParGridFunction &E_gf_)
       : E_gf(E_gf_), sigma(sigma_) {}
   virtual double Eval(ElementTransformation &T, const IntegrationPoint &ip);
   virtual ~JouleHeatingCoefficient() {}

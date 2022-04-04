@@ -380,24 +380,10 @@ int hertz_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   double omega_ = 2.0 * M_PI * freq_;
   k0 = omega_ * sqrt(epsilon0_ * mu0_);
   k_ = complex<double>(0., sqrt(k0 * k0 - kc * kc));
-  // ConstantCoefficient negkRealCoef(-k_.real()/mu_);
-  // ConstantCoefficient negkImagCoef(-k_.imag()/mu_); //equiv to abcCoef
 
   // Robin coefficient, but already handled here.
   Coefficient *etaInvCoef =
       new ConstantCoefficient(-k_.imag() / (mu0_ * omega_));
-
-  // a->AddBoundaryIntegrator(
-  //    new VectorFEMassIntegrator(negkRealCoef),
-  //    new VectorFEMassIntegrator(negkImagCoef),
-  //    wgi_bdr);
-
-  // cf
-  // Coefficient * etaInvCoef = new ConstantCoefficient(pw_eta_inv_);;
-  // abcCoef_ = new TransformedCoefficient(negOmegaCoef_, etaInvCoef_,
-  //                                        prodFunc);
-  // a1_->AddBoundaryIntegrator(NULL, new VectorFEMassIntegrator(*abcCoef_),
-  //                            abc_marker_);
 
   hephaestus::BCMap bc_map = inputs.bc_map;
 

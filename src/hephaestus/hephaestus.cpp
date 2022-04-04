@@ -53,19 +53,25 @@ hephaestus::Inputs joule_example_inputs() {
   TcondAir = 1.0e6 * Tconductivity;
   TcapAir = 1.0 * Tcapacity;
 
-  hephaestus::Material copper("copper", 1);
-  copper.setMaterialProperty(std::string("electrical_conductivity"), sigma);
-  copper.setMaterialProperty(std::string("thermal_conductivity"),
-                             Tconductivity);
-  copper.setMaterialProperty(std::string("heat_capacity"), Tcapacity);
+  hephaestus::Subdomain wire("wire", 1);
+  wire.property_map["electrical_conductivity"] = new ConstantCoefficient(sigma);
+  wire.property_map["heat_capacity"] = new ConstantCoefficient(Tcapacity);
+  wire.property_map["inverse_heat_capacity"] =
+      new ConstantCoefficient(1.0 / Tcapacity);
+  wire.property_map["inverse_thermal_conductivity"] =
+      new ConstantCoefficient(1.0 / Tconductivity);
 
-  hephaestus::Material air("air", 2);
-  air.setMaterialProperty(std::string("electrical_conductivity"), sigmaAir);
-  air.setMaterialProperty(std::string("thermal_conductivity"), TcondAir);
-  air.setMaterialProperty(std::string("heat_capacity"), TcapAir);
+  hephaestus::Subdomain air("air", 2);
+  air.property_map["electrical_conductivity"] =
+      new ConstantCoefficient(sigmaAir);
+  air.property_map["heat_capacity"] = new ConstantCoefficient(TcapAir);
+  air.property_map["inverse_heat_capacity"] =
+      new ConstantCoefficient(1.0 / TcapAir);
+  air.property_map["inverse_thermal_conductivity"] =
+      new ConstantCoefficient(1.0 / TcondAir);
 
-  hephaestus::MaterialMap material_map(
-      std::vector<hephaestus::Material>({copper, air}));
+  hephaestus::DomainProperties material_map(
+      std::vector<hephaestus::Subdomain>({wire, air}));
 
   hephaestus::Executioner executioner(std::string("transient"), 0.5, 100.0);
   hephaestus::Inputs inputs(std::string("cylinder-hex-q2.gen"),
@@ -95,16 +101,19 @@ hephaestus::Inputs hertz_example_inputs() {
 
   bc_map["tangential_E"] = new hephaestus::VectorFunctionDirichletBC(e_bc);
 
-  hephaestus::Material air("air", 1);
-  air.setMaterialProperty(std::string("real_electrical_conductivity"), 0.0);
-  air.setMaterialProperty(std::string("imag_electrical_conductivity"), 0.0);
-  air.setMaterialProperty(std::string("real_rel_permittivity"), 1.0);
-  air.setMaterialProperty(std::string("imag_rel_permittivity"), 0.0);
-  air.setMaterialProperty(std::string("real_rel_permeability"), 1.0);
-  air.setMaterialProperty(std::string("imag_rel_permeability"), 0.0);
+  hephaestus::Subdomain air("air", 1);
 
-  hephaestus::MaterialMap material_map(
-      std::vector<hephaestus::Material>({air}));
+  air.property_map["real_electrical_conductivity"] =
+      new ConstantCoefficient(0.0);
+  air.property_map["imag_electrical_conductivity"] =
+      new ConstantCoefficient(0.0);
+  air.property_map["real_rel_permittivity"] = new ConstantCoefficient(1.0);
+  air.property_map["imag_rel_permittivity"] = new ConstantCoefficient(0.0);
+  air.property_map["real_rel_permeability"] = new ConstantCoefficient(1.0);
+  air.property_map["imag_rel_permeability"] = new ConstantCoefficient(0.0);
+
+  hephaestus::DomainProperties material_map(
+      std::vector<hephaestus::Subdomain>({air}));
 
   hephaestus::Executioner executioner(std::string("transient"), 0.5, 100.0);
   hephaestus::Inputs inputs(std::string("irises.g"), std::string("Hertz"), 2,

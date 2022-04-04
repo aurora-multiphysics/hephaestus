@@ -3,31 +3,29 @@
 #include <iostream>
 #include <memory>
 
-#include "joule_solver.hpp"
+// #include "joule_solver.hpp"
 #include "mesh_extras.hpp"
 
 namespace hephaestus {
 
-class Material {
+class Subdomain {
 public:
-  Material(const std::string &material_name, int material_block_id);
+  Subdomain(const std::string &subdomain_name, int subdomain_id);
 
   std::string name;
-  int block_id;
-  std::map<std::string, double> properties;
-
-  void setMaterialProperty(std::string property_name, double property_value);
-  double getMaterialProperty(std::string property_name);
+  int id;
+  std::map<std::string, mfem::Coefficient *> property_map;
 };
 
-class MaterialMap {
+class DomainProperties {
 public:
-  MaterialMap();
-  MaterialMap(std::vector<Material> mats);
+  DomainProperties();
+  DomainProperties(std::vector<Subdomain> subdomains);
 
-  std::map<int, double> getBlockPropertyMap(std::string property_name);
+  mfem::PWCoefficient getGlobalScalarProperty(std::string property_name);
 
-  std::vector<Material> materials;
+  std::map<std::string, mfem::Coefficient *> scalar_property_map;
+  std::vector<Subdomain> _subdomains;
 };
 
 } // namespace hephaestus

@@ -21,15 +21,15 @@ using namespace common;
 
 namespace electromagnetics {
 
+double productTransform(double a, double b) { return a * b; }
+
 MagneticDiffusionEOperator::MagneticDiffusionEOperator(
     int stateVectorLen, ParFiniteElementSpace &L2FES,
     ParFiniteElementSpace &HCurlFES, ParFiniteElementSpace &HDivFES,
     ParFiniteElementSpace &HGradFES, Array<int> &ess_bdr_arg,
     Array<int> &thermal_ess_bdr_arg, Array<int> &poisson_ess_bdr_arg,
     double mu_coef, FunctionCoefficient &_voltage,
-    // std::function<void(const mfem::Vector&, double, mfem::Vector&)> _edot_bc,
-    std::map<int, double> sigmaAttMap, std::map<int, double> TcapacityAttMap,
-    std::map<int, double> InvTcapAttMap, std::map<int, double> InvTcondAttMap)
+    hephaestus::DomainProperties &domain_properties)
 
     : TimeDependentOperator(stateVectorLen, 0.0), L2FESpace(L2FES),
       HCurlFESpace(HCurlFES), HDivFESpace(HDivFES), HGradFESpace(HGradFES),
@@ -54,19 +54,23 @@ MagneticDiffusionEOperator::MagneticDiffusionEOperator(
     poisson_ess_bdr[i] = poisson_ess_bdr_arg[i];
   }
 
-  sigma = new MeshDependentCoefficient(sigmaAttMap);
-  Tcapacity = new MeshDependentCoefficient(TcapacityAttMap);
-  InvTcap = new MeshDependentCoefficient(InvTcapAttMap);
-  InvTcond = new MeshDependentCoefficient(InvTcondAttMap);
+  sigma = domain_properties.getGlobalScalarProperty(
+      std::string("electrical_conductivity"));
+  Tcapacity =
+      domain_properties.getGlobalScalarProperty(std::string("heat_capacity"));
+  InvTcap = domain_properties.getGlobalScalarProperty(
+      std::string("inverse_heat_capacity"));
+  InvTcond = domain_properties.getGlobalScalarProperty(
+      std::string("inverse_thermal_conductivity"));
 
-  this->buildA0(*sigma);
-  this->buildM3(*Tcapacity);
-  this->buildM1(*sigma);
-  this->buildM2(*InvTcond);
-  this->buildS2(*InvTcap);
+  this->buildA0(sigma);
+  this->buildM3(Tcapacity);
+  this->buildM1(sigma);
+  this->buildM2(InvTcond);
+  this->buildS2(InvTcap);
   this->buildS1(1.0 / mu);
   this->buildCurl(1.0 / mu);
-  this->buildDiv(*InvTcap);
+  this->buildDiv(InvTcap);
   this->buildGrad();
 
   v0 = new ParGridFunction(&HGradFESpace);
@@ -390,10 +394,10 @@ corrected for.
 void MagneticDiffusionEOperator::ImplicitSolve(const double dt, const Vector &X,
                                                Vector &dX_dt) {
   if (A2 == NULL || fabs(dt - dt_A2) > 1.0e-12 * dt) {
-    this->buildA2(*InvTcond, *InvTcap, dt);
+    this->buildA2(InvTcond, InvTcap, dt);
   }
   if (A1 == NULL || fabs(dt - dt_A1) > 1.0e-12 * dt) {
-    this->buildA1(1.0 / mu, *sigma, dt);
+    this->buildA1(1.0 / mu, sigma, dt);
   }
 
   dX_dt = 0.0;
@@ -624,7 +628,7 @@ void MagneticDiffusionEOperator::ImplicitSolve(const double dt, const Vector &X,
   pcg_m3->Mult(temp_lf, dT);
 }
 
-void MagneticDiffusionEOperator::buildA0(MeshDependentCoefficient &Sigma) {
+void MagneticDiffusionEOperator::buildA0(PWCoefficient &Sigma) {
   if (a0 != NULL) {
     delete a0;
   }
@@ -644,8 +648,7 @@ void MagneticDiffusionEOperator::buildA0(MeshDependentCoefficient &Sigma) {
   // Don't finalize or parallel assemble this is done in FormLinearSystem.
 }
 
-void MagneticDiffusionEOperator::buildA1(double muInv,
-                                         MeshDependentCoefficient &Sigma,
+void MagneticDiffusionEOperator::buildA1(double muInv, PWCoefficient &Sigma,
                                          double dt) {
   if (a1 != NULL) {
     delete a1;
@@ -669,17 +672,16 @@ void MagneticDiffusionEOperator::buildA1(double muInv,
   dt_A1 = dt;
 }
 
-void MagneticDiffusionEOperator::buildA2(MeshDependentCoefficient &InvTcond,
-                                         MeshDependentCoefficient &InvTcap,
-                                         double dt) {
-  if (a2 != NULL) {
-    delete a2;
-  }
+void MagneticDiffusionEOperator::buildA2(PWCoefficient &InvTcond,
+                                         PWCoefficient &InvTcap, double dt) {
 
-  InvTcap.SetScaleFactor(dt);
+  ConstantCoefficient dtCoef(dt);
+  TransformedCoefficient dtInvTcap_ = TransformedCoefficient(
+      &dtCoef, &InvTcap, mfem::electromagnetics::productTransform);
+  // InvTcap.SetScaleFactor(dt);
   a2 = new ParBilinearForm(&HDivFESpace);
   a2->AddDomainIntegrator(new VectorFEMassIntegrator(InvTcond));
-  a2->AddDomainIntegrator(new DivDivIntegrator(InvTcap));
+  a2->AddDomainIntegrator(new DivDivIntegrator(dtInvTcap_));
   if (STATIC_COND == 1) {
     a2->EnableStaticCondensation();
   }
@@ -690,7 +692,7 @@ void MagneticDiffusionEOperator::buildA2(MeshDependentCoefficient &InvTcond,
   dt_A2 = dt;
 }
 
-void MagneticDiffusionEOperator::buildM1(MeshDependentCoefficient &Sigma) {
+void MagneticDiffusionEOperator::buildM1(PWCoefficient &Sigma) {
   if (m1 != NULL) {
     delete m1;
   }
@@ -702,7 +704,7 @@ void MagneticDiffusionEOperator::buildM1(MeshDependentCoefficient &Sigma) {
   // Don't finalize or parallel assemble this is done in FormLinearSystem.
 }
 
-void MagneticDiffusionEOperator::buildM2(MeshDependentCoefficient &Alpha) {
+void MagneticDiffusionEOperator::buildM2(PWCoefficient &Alpha) {
   if (m2 != NULL) {
     delete m2;
   }
@@ -715,7 +717,7 @@ void MagneticDiffusionEOperator::buildM2(MeshDependentCoefficient &Alpha) {
   // Don't finalize or parallel assemble this is done in FormLinearSystem.
 }
 
-void MagneticDiffusionEOperator::buildM3(MeshDependentCoefficient &Tcapacity) {
+void MagneticDiffusionEOperator::buildM3(PWCoefficient &Tcapacity) {
   if (m3 != NULL) {
     delete m3;
   }
@@ -739,7 +741,7 @@ void MagneticDiffusionEOperator::buildS1(double muInv) {
   s1->Assemble();
 }
 
-void MagneticDiffusionEOperator::buildS2(MeshDependentCoefficient &InvTcap) {
+void MagneticDiffusionEOperator::buildS2(PWCoefficient &InvTcap) {
   if (s2 != NULL) {
     delete s2;
   }
@@ -770,7 +772,7 @@ void MagneticDiffusionEOperator::buildCurl(double muInv) {
   // no ParallelAssemble since this will be applied to GridFunctions
 }
 
-void MagneticDiffusionEOperator::buildDiv(MeshDependentCoefficient &InvTcap) {
+void MagneticDiffusionEOperator::buildDiv(PWCoefficient &InvTcap) {
   if (weakDiv != NULL) {
     delete weakDiv;
   }
@@ -817,7 +819,7 @@ void MagneticDiffusionEOperator::GetJouleHeating(ParGridFunction &E_gf,
                                                  ParGridFunction &w_gf) const {
   // The w_coeff object stashes a reference to sigma and E, and it has
   // an Eval method that will be used by ProjectCoefficient.
-  JouleHeatingCoefficient w_coeff(*sigma, E_gf);
+  JouleHeatingCoefficient w_coeff(sigma, E_gf);
 
   // This applies the definition of the finite element degrees-of-freedom
   // to convert the function to a set of discrete values
@@ -923,17 +925,17 @@ MagneticDiffusionEOperator::~MagneticDiffusionEOperator() {
     delete v2;
   }
 
-  if (sigma != NULL) {
-    delete sigma;
+  if (&sigma != NULL) {
+    delete &sigma;
   }
-  if (Tcapacity != NULL) {
-    delete Tcapacity;
+  if (&Tcapacity != NULL) {
+    delete &Tcapacity;
   }
-  if (InvTcap != NULL) {
-    delete InvTcap;
+  if (&InvTcap != NULL) {
+    delete &InvTcap;
   }
-  if (InvTcond != NULL) {
-    delete InvTcond;
+  if (&InvTcond != NULL) {
+    delete &InvTcond;
   }
 
   delete amg_a0;
