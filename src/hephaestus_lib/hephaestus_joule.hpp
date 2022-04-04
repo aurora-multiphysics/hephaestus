@@ -130,10 +130,10 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
 
   // 2. Parse command-line options.
   const char *formulation = "Joule";
-  const char *mesh_file = inputs._mesh_file.c_str();
+  const char *mesh_file = inputs.mesh_file.c_str();
   int ser_ref_levels = 0;
   int par_ref_levels = 0;
-  int order = inputs._order;
+  int order = inputs.order;
   int ode_solver_type = 1;
   double t_final = inputs.executioner.t_final;
   double dt = inputs.executioner.dt;

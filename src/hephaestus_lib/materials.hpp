@@ -10,7 +10,7 @@ namespace hephaestus {
 
 class Subdomain {
 public:
-  Subdomain(const std::string &subdomain_name, int subdomain_id);
+  Subdomain(const std::string &name_, int id_);
 
   std::string name;
   int id;
@@ -20,12 +20,12 @@ public:
 class DomainProperties {
 public:
   DomainProperties();
-  DomainProperties(std::vector<Subdomain> subdomains);
+  DomainProperties(std::vector<Subdomain> subdomains_);
 
-  mfem::PWCoefficient getGlobalScalarProperty(std::string property_name);
+  mfem::PWCoefficient getGlobalScalarProperty(std::string property_name_);
 
   std::map<std::string, mfem::Coefficient *> scalar_property_map;
-  std::vector<Subdomain> _subdomains;
+  std::vector<Subdomain> subdomains;
 };
 
 } // namespace hephaestus

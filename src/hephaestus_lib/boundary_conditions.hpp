@@ -10,8 +10,7 @@ namespace hephaestus {
 class BoundaryCondition {
 public:
   BoundaryCondition();
-  BoundaryCondition(const std::string &boundary_name,
-                    mfem::Array<int> boundary_ids);
+  BoundaryCondition(const std::string &name_, mfem::Array<int> bdr_attributes_);
   mfem::Array<int> getMarkers(mfem::Mesh &mesh);
 
   std::string name;
@@ -26,10 +25,10 @@ public:
 class FunctionDirichletBC : public BoundaryCondition {
 public:
   FunctionDirichletBC();
-  FunctionDirichletBC(const std::string &boundary_name,
-                      mfem::Array<int> boundary_ids);
-  FunctionDirichletBC(const std::string &boundary_name,
-                      mfem::Array<int> boundary_ids,
+  FunctionDirichletBC(const std::string &name_,
+                      mfem::Array<int> bdr_attributes_);
+  FunctionDirichletBC(const std::string &name_,
+                      mfem::Array<int> bdr_attributes_,
                       mfem::FunctionCoefficient *coeff_,
                       mfem::FunctionCoefficient *coeff_im_ = nullptr);
 
@@ -40,10 +39,10 @@ public:
 class VectorFunctionDirichletBC : public BoundaryCondition {
 public:
   VectorFunctionDirichletBC();
-  VectorFunctionDirichletBC(const std::string &boundary_name,
-                            mfem::Array<int> boundary_ids);
+  VectorFunctionDirichletBC(const std::string &name_,
+                            mfem::Array<int> bdr_attributes_);
   VectorFunctionDirichletBC(
-      const std::string &boundary_name, mfem::Array<int> boundary_ids,
+      const std::string &name_, mfem::Array<int> bdr_attributes_,
       mfem::VectorFunctionCoefficient *vec_coeff_,
       mfem::VectorFunctionCoefficient *vec_coeff_im_ = nullptr);
 
@@ -54,7 +53,7 @@ public:
 class IntegratedBC : public BoundaryCondition {
 public:
   IntegratedBC();
-  IntegratedBC(const std::string &boundary_name, mfem::Array<int> boundary_ids);
+  IntegratedBC(const std::string &name_, mfem::Array<int> bdr_attributes_);
 
   mfem::LinearFormIntegrator *lfi_re;
   mfem::LinearFormIntegrator *lfi_im;

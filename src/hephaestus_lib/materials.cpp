@@ -2,23 +2,23 @@
 
 namespace hephaestus {
 
-Subdomain::Subdomain(const std::string &subdomain_name, int subdomain_id)
-    : name(subdomain_name), id(subdomain_id) {}
+Subdomain::Subdomain(const std::string &name_, int id_)
+    : name(name_), id(id_) {}
 
 DomainProperties::DomainProperties() {}
 
-DomainProperties::DomainProperties(std::vector<Subdomain> subdomains)
-    : _subdomains(subdomains) {}
+DomainProperties::DomainProperties(std::vector<Subdomain> subdomains_)
+    : subdomains(subdomains_) {}
 
 mfem::PWCoefficient
-DomainProperties::getGlobalScalarProperty(std::string property_name) {
+DomainProperties::getGlobalScalarProperty(std::string property_name_) {
 
   mfem::Array<int> subdomain_ids;
   mfem::Array<mfem::Coefficient *> subdomain_coefs;
 
-  for (std::size_t i = 0; i < _subdomains.size(); i++) {
-    subdomain_ids.Append(_subdomains[i].id);
-    subdomain_coefs.Append(_subdomains[i].property_map[property_name]);
+  for (std::size_t i = 0; i < subdomains.size(); i++) {
+    subdomain_ids.Append(subdomains[i].id);
+    subdomain_coefs.Append(subdomains[i].property_map[property_name_]);
   }
   mfem::PWCoefficient global_property_map(subdomain_ids, subdomain_coefs);
   return global_property_map;

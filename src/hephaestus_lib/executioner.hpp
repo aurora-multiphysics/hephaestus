@@ -8,8 +8,8 @@ namespace hephaestus {
 class Executioner {
 public:
   Executioner() {}
-  Executioner(const std::string &executioner_type, const double time_step,
-              const double end_time);
+  Executioner(const std::string &type_, const double dt_,
+              const double t_final_);
 
   std::string type;
   double dt;
