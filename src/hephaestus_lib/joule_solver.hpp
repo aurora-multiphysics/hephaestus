@@ -30,10 +30,24 @@ namespace electromagnetics {
 const double SOLVER_TOL = 1.0e-9;
 const int SOLVER_MAX_IT = 1000;
 // Initialized in joule.cpp and used in joule_solver.cpp:
-extern int SOLVER_PRINT_LEVEL;
-extern int STATIC_COND;
+int SOLVER_PRINT_LEVEL = 0;
+int STATIC_COND = 0;
 
 // These are defined in joule.cpp
+void edot_bc(const mfem::Vector &x, mfem::Vector &E) { E = 0.0; }
+
+void e_exact(const mfem::Vector &x, double t, mfem::Vector &E) {
+  E[0] = 0.0;
+  E[1] = 0.0;
+  E[2] = 0.0;
+}
+
+void b_exact(const mfem::Vector &x, double t, mfem::Vector &B) {
+  B[0] = 0.0;
+  B[1] = 0.0;
+  B[2] = 0.0;
+}
+
 void edot_bc(const Vector &x, Vector &E);
 void e_exact(const Vector &x, double t, Vector &E);
 void b_exact(const Vector &x, double t, Vector &B);

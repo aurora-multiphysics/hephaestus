@@ -82,7 +82,7 @@
 //                        -do '-0.5 -0.5 0.0 -0.5 -0.5 1.0 0.1 1 .5 1'
 //                        -dbcs '4 8 19 21' -abcs '5 18' -f 3e8
 //
-
+#pragma once
 #include <fstream>
 #include <iostream>
 

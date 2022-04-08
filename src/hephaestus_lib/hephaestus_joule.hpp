@@ -116,10 +116,6 @@
 
 using namespace std;
 
-// Initialize variables used in joule_solver.cpp
-int mfem::electromagnetics::SOLVER_PRINT_LEVEL = 0;
-int mfem::electromagnetics::STATIC_COND = 0;
-
 int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   // 1. Initialize MPI.
   // MPI_Session mpi(argc, argv);
@@ -170,12 +166,9 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   args.AddOption(&gfprint, "-print", "--print",
                  "Print results (grid functions) to disk.");
   args.AddOption(&amr, "-amr", "--amr", "Enable AMR");
-  args.AddOption(&mfem::electromagnetics::STATIC_COND, "-sc",
-                 "--static-condensation", "Enable static condensation");
   args.AddOption(&debug, "-debug", "--debug",
                  "Print matrices and vectors to disk");
-  args.AddOption(&mfem::electromagnetics::SOLVER_PRINT_LEVEL, "-hl",
-                 "--hypre-print-level", "Hypre print level");
+
   args.Parse();
   if (!args.Good()) {
     if (myid == 0) {
@@ -625,20 +618,6 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
 namespace mfem {
 
 namespace electromagnetics {
-
-void edot_bc(const mfem::Vector &x, mfem::Vector &E) { E = 0.0; }
-
-void e_exact(const mfem::Vector &x, double t, mfem::Vector &E) {
-  E[0] = 0.0;
-  E[1] = 0.0;
-  E[2] = 0.0;
-}
-
-void b_exact(const mfem::Vector &x, double t, mfem::Vector &B) {
-  B[0] = 0.0;
-  B[1] = 0.0;
-  B[2] = 0.0;
-}
 
 double t_exact(const mfem::Vector &x) {
   double T = 0.0;
