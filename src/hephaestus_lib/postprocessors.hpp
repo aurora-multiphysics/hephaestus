@@ -23,8 +23,8 @@ public:
 };
 
 // The LorentzForceVectorCoefficient object will contain a reference to the
-// electric field grid function, and the conductivity sigma, and returns sigma E
-// dot E at a point.
+// current density and magnetic flux density grid functions,
+// and returns the Lorentz force density coefficient.
 class LorentzForceVectorCoefficient : public mfem::VectorCoefficient {
 private:
   mfem::ParGridFunction &J_gf;
