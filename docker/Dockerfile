@@ -9,7 +9,7 @@ ARG WORKDIR="opt"
 ARG hypre_git_sha="562c29a"
 
 # Install apt dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y \
     clang-format-9 \
     curl \
     libboost-all-dev \
@@ -97,3 +97,9 @@ RUN cd /$WORKDIR && \
     cd build && \
     cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DMFEM_DIR=/$WORKDIR/mfem/build -DMFEM_COMMON_INCLUDES=/$WORKDIR/mfem/miniapps/common  .. && \
     make
+
+# Run tests
+RUN cd /$WORKDIR/hephaestus/bin && \
+    ./unit_tests && \
+    ./regression_tests && \
+    ./integration_tests
