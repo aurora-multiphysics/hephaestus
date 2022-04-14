@@ -5,7 +5,6 @@
 
 #include "boundary_conditions.hpp"
 #include "executioner.hpp"
-// #include "joule_solver.hpp"
 #include "materials.hpp"
 
 namespace hephaestus {

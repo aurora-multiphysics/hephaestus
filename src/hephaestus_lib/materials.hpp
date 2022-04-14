@@ -3,7 +3,6 @@
 #include <iostream>
 #include <memory>
 
-// #include "joule_solver.hpp"
 #include "mesh_extras.hpp"
 
 namespace hephaestus {
