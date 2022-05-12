@@ -123,7 +123,7 @@ private:
 
   ND_ParFESpace *HCurlFESpace_;
 
-  Array<HYPRE_Int> blockTrueOffsets_;
+  Array<int> blockTrueOffsets_;
 
   ParSesquilinearForm *a1_;
   ParBilinearForm *b1_;
