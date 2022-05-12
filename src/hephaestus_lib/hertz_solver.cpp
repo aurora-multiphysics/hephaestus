@@ -283,10 +283,9 @@ void HertzSolver::Solve() {
 
   OperatorHandle A1;
   Vector E, RHS;
+  OperatorHandle PCOp;
 
   a1_->FormLinearSystem(ess_bdr_tdofs_, *e_, *jd_, A1, E, RHS);
-
-  OperatorHandle PCOp;
   b1_->FormSystemMatrix(ess_bdr_tdofs_, PCOp);
 
   tic_toc.Clear();
@@ -307,20 +306,20 @@ void HertzSolver::Solve() {
       if (myid_ == 0 && logging_ > 0) {
         cout << "Diagonal Scaling Preconditioner Requested" << endl;
       }
-      pcr = new HypreDiagScale(dynamic_cast<HypreParMatrix &>(*PCOp.Ptr()));
+      pcr = new HypreDiagScale(*PCOp.As<HypreParMatrix>());
       break;
     case PARASAILS:
       if (myid_ == 0 && logging_ > 0) {
         cout << "ParaSails Preconditioner Requested" << endl;
       }
-      pcr = new HypreParaSails(dynamic_cast<HypreParMatrix &>(*PCOp.Ptr()));
+      pcr = new HypreParaSails(*PCOp.As<HypreParMatrix>());
       dynamic_cast<HypreParaSails *>(pcr)->SetSymmetry(1);
       break;
     case EUCLID:
       if (myid_ == 0 && logging_ > 0) {
         cout << "Euclid Preconditioner Requested" << endl;
       }
-      pcr = new HypreEuclid(dynamic_cast<HypreParMatrix &>(*PCOp.Ptr()));
+      pcr = new HypreEuclid(*PCOp.As<HypreParMatrix>());
       if (solOpts_.euLvl != 1) {
         HypreSolver *pc = dynamic_cast<HypreSolver *>(pcr);
         HYPRE_EuclidSetLevel(*pc, solOpts_.euLvl);
@@ -330,8 +329,7 @@ void HertzSolver::Solve() {
       if (myid_ == 0 && logging_ > 0) {
         cout << "AMS Preconditioner Requested" << endl;
       }
-      pcr = new HypreAMS(dynamic_cast<HypreParMatrix &>(*PCOp.Ptr()),
-                         HCurlFESpace_);
+      pcr = new HypreAMS(*PCOp.As<HypreParMatrix>(), HCurlFESpace_);
       break;
     default:
       MFEM_ABORT("Requested preconditioner is not available.");
@@ -347,20 +345,6 @@ void HertzSolver::Solve() {
       BDP->owns_blocks = 0;
     }
   }
-  // pc_i = new ScaledOperator(pc_r,
-  //                           (conv == ComplexOperator::HERMITIAN) ?
-  //                           -1.0:1.0);
-
-  // BDP.SetDiagonalBlock(0, pc_r);
-  // BDP.SetDiagonalBlock(1, pc_i);
-  // BDP.owns_blocks = 1;
-
-  // HypreParMatrix *A_hpm = A.As<ComplexHypreParMatrix>()->GetSystemMatrix();
-  // MUMPSSolver mumps;
-  // mumps.SetPrintLevel(0);
-  // mumps.SetMatrixSymType(MUMPSSolver::MatType::UNSYMMETRIC);
-  // mumps.SetOperator(*A1.Ptr());
-  // mumps.Mult(RHS,E);
 
   switch (sol_) {
   case GMRES: {

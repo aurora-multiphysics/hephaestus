@@ -217,9 +217,9 @@ int hertz_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   int maxit = 1;
   int serial_ref_levels = 0;
   int parallel_ref_levels = 0;
-  int sol = 6;
-  int prec = 4;
-  bool herm_conv = false;
+  int sol = 1;
+  int prec = 2;
+  bool herm_conv = true;
   bool visualization = true;
   bool visit = true;
 
@@ -230,8 +230,8 @@ int hertz_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   solOpts.maxIter = 1000;
   solOpts.kDim = 50;
   solOpts.printLvl = 1;
-  solOpts.relTol = 1e-4;
-  solOpts.euLvl = 1;
+  solOpts.relTol = 1e-2;
+  solOpts.euLvl = 2;
 
   OptionsParser args(argc, argv);
   args.AddOption(&formulation, "-form", "--formulation",
@@ -373,6 +373,7 @@ int hertz_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   freq_ = 9.3e9;
   double omega_ = 2.0 * M_PI * freq_;
   k0 = omega_ * sqrt(epsilon0_ * mu0_);
+  std::cout<<k0;
   k_ = complex<double>(0., sqrt(k0 * k0 - kc * kc));
 
   // Robin coefficient, but already handled here.
