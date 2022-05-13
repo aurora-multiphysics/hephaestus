@@ -106,7 +106,7 @@
 // NOTE:  We write out, optionally, grid functions for P, E, B, W, F, and
 //        T. These can be visualized using "glvis -np 4 -m mesh.mesh -g E",
 //        assuming we used 4 processors.
-
+#pragma once
 #include <fstream>
 #include <iostream>
 #include <memory>
