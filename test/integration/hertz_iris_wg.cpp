@@ -1,9 +1,8 @@
 #include "hephaestus.hpp"
 #include <gtest/gtest.h>
 
-
 class HertzIrisWGTest : public testing::Test {
- protected:
+protected:
   static void e_bc_r(const mfem::Vector &x, mfem::Vector &E) {
     E.SetSize(3);
     E = 0.0;
@@ -30,10 +29,14 @@ class HertzIrisWGTest : public testing::Test {
         new mfem::ConstantCoefficient(0.0);
     air.property_map["imag_electrical_conductivity"] =
         new mfem::ConstantCoefficient(0.0);
-    air.property_map["real_rel_permittivity"] = new mfem::ConstantCoefficient(1.0);
-    air.property_map["imag_rel_permittivity"] = new mfem::ConstantCoefficient(0.0);
-    air.property_map["real_rel_permeability"] = new mfem::ConstantCoefficient(1.0);
-    air.property_map["imag_rel_permeability"] = new mfem::ConstantCoefficient(0.0);
+    air.property_map["real_rel_permittivity"] =
+        new mfem::ConstantCoefficient(1.0);
+    air.property_map["imag_rel_permittivity"] =
+        new mfem::ConstantCoefficient(0.0);
+    air.property_map["real_rel_permeability"] =
+        new mfem::ConstantCoefficient(1.0);
+    air.property_map["imag_rel_permeability"] =
+        new mfem::ConstantCoefficient(0.0);
 
     hephaestus::DomainProperties material_map(
         std::vector<hephaestus::Subdomain>({air}));
@@ -45,8 +48,7 @@ class HertzIrisWGTest : public testing::Test {
   }
 };
 
-
-TEST_F(HertzIrisWGTest, CheckData) {
+TEST_F(HertzIrisWGTest, CheckRun) {
 
   hephaestus::Inputs inputs(hertz_example_inputs());
   std::vector<char *> argv;
