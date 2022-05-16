@@ -387,7 +387,7 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   B_gf.MakeRef(&HDivFESpace, F, true_offset[4]);
   w_gf.MakeRef(&L2FESpace, F, true_offset[5]);
   if (myid == 0) {
-    cout << "\nFESpaces Initialised" << endl;
+    cout << "\nGrid functions initialised" << endl;
   }
   // 13. Get the boundary conditions, set up the exact solution grid functions
   //     These VectorCoefficients have an Eval function.  Note that

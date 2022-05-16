@@ -925,19 +925,6 @@ MagneticDiffusionEOperator::~MagneticDiffusionEOperator() {
     delete v2;
   }
 
-  if (&sigma != NULL) {
-    delete &sigma;
-  }
-  if (&Tcapacity != NULL) {
-    delete &Tcapacity;
-  }
-  if (&InvTcap != NULL) {
-    delete &InvTcap;
-  }
-  if (&InvTcond != NULL) {
-    delete &InvTcond;
-  }
-
   delete amg_a0;
   delete pcg_a0;
   delete pcg_a2;

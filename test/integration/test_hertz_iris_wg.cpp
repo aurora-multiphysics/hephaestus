@@ -1,7 +1,7 @@
-#include "hephaestus.hpp"
+#include "hephaestus_hertz.hpp"
 #include <gtest/gtest.h>
 
-class HertzIrisWGTest : public testing::Test {
+class TestHertzIrisWaveguide : public testing::Test {
 protected:
   static void e_bc_r(const mfem::Vector &x, mfem::Vector &E) {
     E.SetSize(3);
@@ -48,8 +48,7 @@ protected:
   }
 };
 
-TEST_F(HertzIrisWGTest, CheckRun) {
-
+TEST_F(TestHertzIrisWaveguide, CheckRun) {
   hephaestus::Inputs inputs(hertz_example_inputs());
   std::vector<char *> argv;
   hertz_solve(0, argv.data(), inputs);
