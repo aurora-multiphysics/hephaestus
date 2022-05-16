@@ -12,4 +12,5 @@ target_link_libraries(integration_tests ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lib${P
 target_link_libraries(integration_tests ${MFEM_LIBRARIES} ${MFEM_COMMON_LIBRARY} -lrt)
 
 include(GoogleTest)
-gtest_discover_tests(integration_tests)
+gtest_discover_tests(integration_tests PROPERTIES
+                     ENVIRONMENT DATA_DIR=${PROJECT_SOURCE_DIR}/data/)

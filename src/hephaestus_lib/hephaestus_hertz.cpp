@@ -96,7 +96,7 @@ int hertz_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
 
   // Parse command-line options.
   const char *formulation = "Hertz";
-  const char *mesh_file = "./irises.g";
+  const char *mesh_file = inputs.mesh_file.c_str();
   int order = 1;
   int maxit = 1;
   int serial_ref_levels = 0;

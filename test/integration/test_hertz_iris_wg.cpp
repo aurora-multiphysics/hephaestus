@@ -42,8 +42,9 @@ protected:
         std::vector<hephaestus::Subdomain>({air}));
 
     hephaestus::Executioner executioner(std::string("transient"), 0.5, 5.0);
-    hephaestus::Inputs inputs(std::string("irises.g"), std::string("Hertz"), 2,
-                              bc_map, material_map, executioner);
+    hephaestus::Inputs inputs(
+        std::string(std::getenv("DATA_DIR")) + std::string("irises.g"),
+        std::string("Hertz"), 2, bc_map, material_map, executioner);
     return inputs;
   }
 };
