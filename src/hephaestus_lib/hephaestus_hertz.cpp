@@ -257,7 +257,6 @@ int hertz_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   freq_ = 9.3e9;
   double omega_ = 2.0 * M_PI * freq_;
   k0 = omega_ * sqrt(epsilon0_ * mu0_);
-  std::cout<<k0;
   k_ = complex<double>(0., sqrt(k0 * k0 - kc * kc));
 
   // Robin coefficient, but already handled here.
@@ -585,15 +584,3 @@ void dipole_oscillator(const Vector &x, Vector &j) {
     j.Add(a, v);
   }
 }
-
-// void e_bc_r(const Vector &x, Vector &E)
-// {
-//    E.SetSize(3);
-//    E = 0.0;
-// }
-
-// void e_bc_i(const Vector &x, Vector &E)
-// {
-//    E.SetSize(3);
-//    E = 0.0;
-// }
