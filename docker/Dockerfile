@@ -6,6 +6,7 @@ ARG compile_cores=1
 
 # By default checkout mfem-moose branch
 ARG WORKDIR="opt"
+ARG build_git_sha="master"
 ARG hypre_git_sha="562c29a"
 
 # Install apt dependencies
@@ -93,6 +94,7 @@ RUN cd /$WORKDIR && \
 RUN cd /$WORKDIR && \
     git clone https://github.com/aurora-multiphysics/hephaestus.git && \
     cd hephaestus && \
+    git checkout "$build_git_sha" && \
     mkdir build && \
     cd build && \
     cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=TEST -DMFEM_DIR=/$WORKDIR/mfem/build -DMFEM_COMMON_INCLUDES=/$WORKDIR/mfem/miniapps/common  .. && \
