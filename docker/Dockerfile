@@ -95,11 +95,9 @@ RUN cd /$WORKDIR && \
     cd hephaestus && \
     mkdir build && \
     cd build && \
-    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DMFEM_DIR=/$WORKDIR/mfem/build -DMFEM_COMMON_INCLUDES=/$WORKDIR/mfem/miniapps/common  .. && \
+    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=TEST -DMFEM_DIR=/$WORKDIR/mfem/build -DMFEM_COMMON_INCLUDES=/$WORKDIR/mfem/miniapps/common  .. && \
     make
 
 # Run tests
-RUN cd /$WORKDIR/hephaestus/bin && \
-    ./unit_tests && \
-    ./regression_tests && \
-    ./integration_tests
+RUN cd /$WORKDIR/hephaestus/build && \
+    make test
