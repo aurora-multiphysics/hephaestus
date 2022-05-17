@@ -126,7 +126,6 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
 
   // 2. Parse command-line options.
   const char *formulation = "Joule";
-  const char *mesh_file = inputs.mesh_file.c_str();
   int ser_ref_levels = 0;
   int par_ref_levels = 0;
   int order = inputs.order;
@@ -184,7 +183,8 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   //    handle triangular, quadrilateral, tetrahedral and hexahedral meshes
   //    with the same code.
   mfem::Mesh *mesh;
-  mesh = new mfem::Mesh(mesh_file, 1, 1);
+  mesh = new mfem::Mesh(inputs.mesh);
+
   int dim = mesh->Dimension();
   int max_attr = mesh->bdr_attributes.Max();
   mesh->EnsureNCMesh(); // Required for mesh refinement

@@ -65,9 +65,11 @@ protected:
         std::vector<hephaestus::Subdomain>({wire, air}));
 
     hephaestus::Executioner executioner(std::string("transient"), 0.5, 2.5);
-    hephaestus::Inputs inputs(
-        std::string(DATA_DIR) + std::string("./cylinder-hex-q2.gen"),
-        std::string("Joule"), 2, bc_map, material_map, executioner);
+    mfem::Mesh mesh(
+        (std::string(DATA_DIR) + std::string("./cylinder-hex-q2.gen")).c_str(),
+        1, 1);
+    hephaestus::Inputs inputs(mesh, std::string("Hertz"), 2, bc_map,
+                              material_map, executioner);
     return inputs;
   }
 };

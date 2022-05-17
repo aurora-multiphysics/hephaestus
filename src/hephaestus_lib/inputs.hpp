@@ -12,12 +12,12 @@ namespace hephaestus {
 class Inputs {
 public:
   Inputs(){};
-  Inputs(const std::string &mesh_file_, const std::string &formulation_,
+  Inputs(const mfem::Mesh &mesh_, const std::string &formulation_,
          const int order_, const BCMap &bc_map_,
          const DomainProperties &domain_properties_,
          const Executioner &executioner_);
 
-  std::string mesh_file;
+  mfem::Mesh mesh;
   std::string formulation;
   int order;
   BCMap bc_map;

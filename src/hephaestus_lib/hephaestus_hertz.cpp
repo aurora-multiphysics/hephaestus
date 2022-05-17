@@ -96,7 +96,6 @@ int hertz_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
 
   // Parse command-line options.
   const char *formulation = "Hertz";
-  const char *mesh_file = inputs.mesh_file.c_str();
   int order = 1;
   int maxit = 1;
   int serial_ref_levels = 0;
@@ -120,7 +119,6 @@ int hertz_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   OptionsParser args(argc, argv);
   args.AddOption(&formulation, "-form", "--formulation",
                  "Name of formulation to use during solve.");
-  args.AddOption(&mesh_file, "-m", "--mesh", "Mesh file to use.");
   args.AddOption(&order, "-o", "--order",
                  "Finite element order (polynomial degree).");
   args.AddOption(&serial_ref_levels, "-rs", "--serial-ref-levels",
@@ -201,7 +199,9 @@ int hertz_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   // Read the (serial) mesh from the given mesh file on all processors.  We
   // can handle triangular, quadrilateral, tetrahedral, hexahedral, surface
   // and volume meshes with the same code.
-  Mesh *mesh = new Mesh(mesh_file, 1, 1);
+  mfem::Mesh *mesh;
+  mesh = new mfem::Mesh(inputs.mesh);
+
   if (world_rank == 0) {
     cout << "Starting initialization." << endl;
   }
