@@ -69,9 +69,12 @@ protected:
         (std::string(DATA_DIR) + std::string("./cylinder-hex-q2.gen")).c_str(),
         1, 1);
 
-    mfem::VisItDataCollection* visit_dc = new mfem::VisItDataCollection("Joule");
+    std::map<std::string, mfem::DataCollection*> data_collections;
+    data_collections["VisItDataCollection"] = new mfem::VisItDataCollection("JouleRodVisIt");
+    data_collections["ParaViewDataCollection"] = new mfem::ParaViewDataCollection("JouleRodParaView");
+    hephaestus::Outputs outputs(data_collections);
     hephaestus::Inputs inputs(mesh, std::string("Joule"), 2, bc_map,
-                              material_map, executioner, visit_dc);
+                              material_map, executioner, outputs);
     return inputs;
   }
 };

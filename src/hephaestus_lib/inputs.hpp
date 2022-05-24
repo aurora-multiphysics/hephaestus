@@ -6,6 +6,7 @@
 #include "boundary_conditions.hpp"
 #include "executioner.hpp"
 #include "materials.hpp"
+#include "outputs.hpp"
 
 namespace hephaestus {
 
@@ -16,7 +17,7 @@ public:
          const int order_, const BCMap &bc_map_,
          const DomainProperties &domain_properties_,
          const Executioner &executioner_,
-         mfem::DataCollection* data_collection_);
+         Outputs outputs_);
 
   mfem::Mesh mesh;
   std::string formulation;
@@ -24,7 +25,7 @@ public:
   BCMap bc_map;
   DomainProperties domain_properties;
   Executioner executioner;
-  mfem::DataCollection* data_collection;
+  Outputs outputs;
 
 };
 
