@@ -68,8 +68,10 @@ protected:
     mfem::Mesh mesh(
         (std::string(DATA_DIR) + std::string("./cylinder-hex-q2.gen")).c_str(),
         1, 1);
-    hephaestus::Inputs inputs(mesh, std::string("Hertz"), 2, bc_map,
-                              material_map, executioner);
+
+    mfem::VisItDataCollection* visit_dc = new mfem::VisItDataCollection("Joule");
+    hephaestus::Inputs inputs(mesh, std::string("Joule"), 2, bc_map,
+                              material_map, executioner, visit_dc);
     return inputs;
   }
 };

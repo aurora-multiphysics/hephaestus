@@ -12,4 +12,4 @@ target_link_libraries(unit_tests ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lib${PROJECT_
 target_link_libraries(unit_tests ${MFEM_LIBRARIES} ${MFEM_COMMON_LIBRARY} -lrt)
 
 include(GoogleTest)
-gtest_discover_tests(unit_tests)
+gtest_discover_tests(unit_tests EXTRA_ARGS --data_directory ${PROJECT_SOURCE_DIR}/data/)
