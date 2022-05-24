@@ -455,20 +455,20 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
     mfem::common::VisualizeField(vis_T, vishost, visport, T_gf, "Temperature",
                                  Wx, Wy, Ww, Wh);
   }
-  // VisIt visualization
-  mfem::VisItDataCollection visit_dc(basename, pmesh);
-  if (visit) {
-    visit_dc.RegisterField("E", &E_gf);
-    visit_dc.RegisterField("B", &B_gf);
-    visit_dc.RegisterField("T", &T_gf);
-    visit_dc.RegisterField("w", &w_gf);
-    visit_dc.RegisterField("Phi", &P_gf);
-    visit_dc.RegisterField("F", &F_gf);
+  // Prepare DataCollection for outputs
+  mfem::DataCollection* dc_=  inputs.data_collection;
+  dc_->SetMesh(pmesh);
 
-    visit_dc.SetCycle(0);
-    visit_dc.SetTime(0.0);
-    visit_dc.Save();
-  }
+  dc_->RegisterField("E", &E_gf);
+  dc_->RegisterField("B", &B_gf);
+  dc_->RegisterField("T", &T_gf);
+  dc_->RegisterField("w", &w_gf);
+  dc_->RegisterField("Phi", &P_gf);
+  dc_->RegisterField("F", &F_gf);
+
+  dc_->SetCycle(0);
+  dc_->SetTime(0.0);
+  dc_->Save();
 
   E_exact.SetTime(0.0);
   B_exact.SetTime(0.0);
@@ -590,11 +590,10 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
                                      "Temperature", Wx, Wy, Ww, Wh);
       }
 
-      if (visit) {
-        visit_dc.SetCycle(ti);
-        visit_dc.SetTime(t);
-        visit_dc.Save();
-      }
+
+      dc_->SetCycle(ti);
+      dc_->SetTime(t);
+      dc_->Save();
     }
   }
   if (visualization) {

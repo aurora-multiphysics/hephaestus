@@ -46,8 +46,10 @@ protected:
     hephaestus::Executioner executioner(std::string("transient"), 0.5, 5.0);
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./irises.g")).c_str(),
                     1, 1);
+
+    mfem::VisItDataCollection* visit_dc = new mfem::VisItDataCollection("Hertz-AMR-Parallel");
     hephaestus::Inputs inputs(mesh, std::string("Hertz"), 2, bc_map,
-                              material_map, executioner);
+                              material_map, executioner, visit_dc);
     return inputs;
   }
 };
