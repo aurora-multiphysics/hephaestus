@@ -456,10 +456,10 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
                                  Wx, Wy, Ww, Wh);
   }
   // Prepare DataCollection for outputs
-  std::map<std::string, mfem::DataCollection*> data_collections = inputs.outputs.data_collections;
+  std::map<std::string, mfem::DataCollection *> data_collections =
+      inputs.outputs.data_collections;
 
-  for (auto const& [name, dc_] : data_collections)
-  {
+  for (auto const &[name, dc_] : data_collections) {
     dc_->SetMesh(pmesh);
 
     dc_->RegisterField("E", &E_gf);
@@ -475,7 +475,6 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   }
 
   // mfem::DataCollection* dc_=  inputs.data_collection;
-
 
   E_exact.SetTime(0.0);
   B_exact.SetTime(0.0);
@@ -597,13 +596,11 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
                                      "Temperature", Wx, Wy, Ww, Wh);
       }
 
-    for (auto const& [name, dc_] : data_collections)
-    {
+      for (auto const &[name, dc_] : data_collections) {
         dc_->SetCycle(ti);
         dc_->SetTime(t);
         dc_->Save();
-    }
-
+      }
     }
   }
   if (visualization) {

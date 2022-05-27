@@ -10,9 +10,9 @@ namespace hephaestus {
 class Outputs {
 public:
   Outputs();
-  Outputs(std::map<std::string, mfem::DataCollection*> data_collections_);
+  Outputs(std::map<std::string, mfem::DataCollection *> data_collections_);
 
-  std::map<std::string, mfem::DataCollection*> data_collections;
+  std::map<std::string, mfem::DataCollection *> data_collections;
 };
 
 } // namespace hephaestus
