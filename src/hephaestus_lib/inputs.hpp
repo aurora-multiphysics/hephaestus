@@ -16,8 +16,7 @@ public:
   Inputs(const mfem::Mesh &mesh_, const std::string &formulation_,
          const int order_, const BCMap &bc_map_,
          const DomainProperties &domain_properties_,
-         const Executioner &executioner_,
-         Outputs outputs_);
+         const Executioner &executioner_, Outputs outputs_);
 
   mfem::Mesh mesh;
   std::string formulation;
@@ -26,7 +25,6 @@ public:
   DomainProperties domain_properties;
   Executioner executioner;
   Outputs outputs;
-
 };
 
 } // namespace hephaestus
