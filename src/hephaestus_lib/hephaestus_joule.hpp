@@ -134,10 +134,8 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   double dt = inputs.executioner.dt;
   double mu = 1.0;
   bool visualization = true;
-  bool visit = true;
   int vis_steps = 1;
   int gfprint = 0;
-  const char *basename = "Joule";
   int amr = 0;
   int debug = 0;
 
@@ -156,17 +154,10 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   args.AddOption(&visualization, "-vis", "--visualization", "-no-vis",
                  "--no-visualization",
                  "Enable or disable GLVis visualization.");
-  args.AddOption(&visit, "-visit", "--visit", "-no-visit", "--no-visit",
-                 "Enable or disable VisIt visualization.");
   args.AddOption(&vis_steps, "-vs", "--visualization-steps",
                  "Visualize every n-th timestep.");
-  args.AddOption(&basename, "-k", "--outputfilename",
-                 "Name of the visit dump files");
-  args.AddOption(&gfprint, "-print", "--print",
-                 "Print results (grid functions) to disk.");
+
   args.AddOption(&amr, "-amr", "--amr", "Enable AMR");
-  args.AddOption(&debug, "-debug", "--debug",
-                 "Print matrices and vectors to disk");
 
   args.Parse();
   if (!args.Good()) {
@@ -495,63 +486,6 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
     // F is the vector of dofs, t is the current time, and dt is the time step
     // to advance.
     ode_solver->Step(F, t, dt);
-
-    if (debug == 1) {
-      oper.Debug(basename, t);
-    }
-
-    if (gfprint == 1) {
-      ostringstream T_name, E_name, B_name, F_name, w_name, P_name, mesh_name;
-      T_name << basename << "_" << setfill('0') << setw(6) << t << "_"
-             << "T." << setfill('0') << setw(6) << myid;
-      E_name << basename << "_" << setfill('0') << setw(6) << t << "_"
-             << "E." << setfill('0') << setw(6) << myid;
-      B_name << basename << "_" << setfill('0') << setw(6) << t << "_"
-             << "B." << setfill('0') << setw(6) << myid;
-      F_name << basename << "_" << setfill('0') << setw(6) << t << "_"
-             << "F." << setfill('0') << setw(6) << myid;
-      w_name << basename << "_" << setfill('0') << setw(6) << t << "_"
-             << "w." << setfill('0') << setw(6) << myid;
-      P_name << basename << "_" << setfill('0') << setw(6) << t << "_"
-             << "P." << setfill('0') << setw(6) << myid;
-      mesh_name << basename << "_" << setfill('0') << setw(6) << t << "_"
-                << "mesh." << setfill('0') << setw(6) << myid;
-
-      ofstream mesh_ofs(mesh_name.str().c_str());
-      mesh_ofs.precision(8);
-      pmesh->Print(mesh_ofs);
-      mesh_ofs.close();
-
-      ofstream T_ofs(T_name.str().c_str());
-      T_ofs.precision(8);
-      T_gf.Save(T_ofs);
-      T_ofs.close();
-
-      ofstream E_ofs(E_name.str().c_str());
-      E_ofs.precision(8);
-      E_gf.Save(E_ofs);
-      E_ofs.close();
-
-      ofstream B_ofs(B_name.str().c_str());
-      B_ofs.precision(8);
-      B_gf.Save(B_ofs);
-      B_ofs.close();
-
-      ofstream F_ofs(F_name.str().c_str());
-      F_ofs.precision(8);
-      F_gf.Save(B_ofs);
-      F_ofs.close();
-
-      ofstream P_ofs(P_name.str().c_str());
-      P_ofs.precision(8);
-      P_gf.Save(P_ofs);
-      P_ofs.close();
-
-      ofstream w_ofs(w_name.str().c_str());
-      w_ofs.precision(8);
-      w_gf.Save(w_ofs);
-      w_ofs.close();
-    }
 
     if (last_step || (ti % vis_steps) == 0) {
       double el = oper.ElectricLosses(E_gf);
