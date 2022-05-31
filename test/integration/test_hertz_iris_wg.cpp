@@ -43,13 +43,14 @@ protected:
     hephaestus::DomainProperties material_map(
         std::vector<hephaestus::Subdomain>({air}));
 
-    hephaestus::Executioner executioner(std::string("transient"), 0.5, 5.0);
+    hephaestus::Executioner executioner(std::string("transient"), 0.5, 0.0,
+                                        5.0);
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./irises.g")).c_str(),
                     1, 1);
 
-
-    std::map<std::string, mfem::DataCollection*> data_collections;
-    data_collections["VisItDataCollection"] = new mfem::VisItDataCollection("Hertz-AMR-Parallel");
+    std::map<std::string, mfem::DataCollection *> data_collections;
+    data_collections["VisItDataCollection"] =
+        new mfem::VisItDataCollection("Hertz-AMR-Parallel");
     hephaestus::Outputs outputs(data_collections);
     hephaestus::Inputs inputs(mesh, std::string("Hertz"), 2, bc_map,
                               material_map, executioner, outputs);
