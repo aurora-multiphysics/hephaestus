@@ -33,23 +33,9 @@ void e_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   hephaestus::DomainProperties domain_properties(inputs.domain_properties);
   hephaestus::ESolver esolver(pmesh, order, bc_map, domain_properties);
 
-  // Allocate memory to store
-  int Vsize_h1 = esolver.H1FESpace_->GetVSize();
-  int Vsize_nd = esolver.HCurlFESpace_->GetVSize();
-  int Vsize_rt = esolver.HDivFESpace_->GetVSize();
-
-  std::cout << Vsize_h1 << " ok ";
-  mfem::Array<int> true_offset(4);
-  true_offset[0] = 0;
-  true_offset[1] = Vsize_h1;
-  true_offset[2] = true_offset[1] + Vsize_nd;
-  true_offset[3] = true_offset[2] + Vsize_rt;
-
-  mfem::BlockVector F(true_offset);
-  std::cout << Vsize_h1;
+  mfem::BlockVector F(esolver.true_offsets);
 
   esolver.Init(F);
-  std::cout << Vsize_h1;
 
   mfem::ODESolver *ode_solver = new mfem::BackwardEulerSolver;
   bool visualization = true;

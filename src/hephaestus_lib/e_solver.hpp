@@ -31,6 +31,8 @@ public:
   mfem::common::ND_ParFESpace *HCurlFESpace_;
   mfem::common::RT_ParFESpace *HDivFESpace_;
 
+  mfem::Array<int> true_offsets;
+
   double ElectricLosses() const;
 
 private:

@@ -13,8 +13,8 @@ ESolver::ESolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
           new mfem::common::ND_ParFESpace(&pmesh, order, pmesh.Dimension())),
       HDivFESpace_(
           new mfem::common::RT_ParFESpace(&pmesh, order, pmesh.Dimension())),
-      amg_a0(NULL), pcg_a0(NULL), ams_a1(NULL), pcg_a1(NULL), m1(NULL),
-      grad(NULL), curl(NULL), weakCurl(NULL),
+      true_offsets(4), amg_a0(NULL), pcg_a0(NULL), ams_a1(NULL), pcg_a1(NULL),
+      m1(NULL), grad(NULL), curl(NULL), weakCurl(NULL),
       v_(mfem::ParGridFunction(H1FESpace_)),
       e_(mfem::ParGridFunction(HCurlFESpace_)),
       b_(mfem::ParGridFunction(HDivFESpace_)),
@@ -24,11 +24,18 @@ ESolver::ESolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
   // Initialize MPI variables
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh.GetComm(), &myid_);
-  this->height = HCurlFESpace_->GlobalTrueVSize() +
-                 H1FESpace_->GlobalTrueVSize() +
-                 HDivFESpace_->GlobalTrueVSize();
-  this->width = HCurlFESpace_->GlobalTrueVSize() +
-                H1FESpace_->GlobalTrueVSize() + HDivFESpace_->GlobalTrueVSize();
+
+  HYPRE_BigInt Vsize_h1 = H1FESpace_->GetVSize();
+  HYPRE_BigInt Vsize_nd = HCurlFESpace_->GetVSize();
+  HYPRE_BigInt Vsize_rt = HDivFESpace_->GetVSize();
+
+  true_offsets[0] = 0;
+  true_offsets[1] = true_offsets[0] + Vsize_h1;
+  true_offsets[2] = true_offsets[1] + Vsize_nd;
+  true_offsets[3] = true_offsets[2] + Vsize_rt;
+
+  this->height = true_offsets[3];
+  this->width = true_offsets[3];
 
   // Define material property coefficients
   dt = 0.5;
@@ -69,31 +76,21 @@ ESolver::ESolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
 This is the main computational code that computes dX/dt implicitly
 where X is the state vector containing A and V
 
-(M1+dt S1) A = WeakCurl^T B + Grad V
+(M1+dt S1) E = WeakCurl^T B + Grad V
         S0 V = 0
 */
 void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
                             mfem::Vector &dX_dt) {
   dX_dt = 0.0;
 
-  int Vsize_h1 = H1FESpace_->GetVSize();
-  int Vsize_nd = HCurlFESpace_->GetVSize();
-  int Vsize_rt = HDivFESpace_->GetVSize();
-
-  mfem::Array<int> true_offset(4);
-  true_offset[0] = 0;
-  true_offset[1] = true_offset[0] + Vsize_h1;
-  true_offset[2] = true_offset[1] + Vsize_nd;
-  true_offset[3] = true_offset[1] + Vsize_rt;
-
   mfem::Vector *xptr = (mfem::Vector *)&X;
-  v_.MakeRef(H1FESpace_, *xptr, true_offset[0]);
-  e_.MakeRef(HCurlFESpace_, *xptr, true_offset[1]);
-  b_.MakeRef(HDivFESpace_, *xptr, true_offset[2]);
+  v_.MakeRef(H1FESpace_, *xptr, true_offsets[0]);
+  e_.MakeRef(HCurlFESpace_, *xptr, true_offsets[1]);
+  b_.MakeRef(HDivFESpace_, *xptr, true_offsets[2]);
 
-  dv_.MakeRef(H1FESpace_, dX_dt, true_offset[0]);
-  de_.MakeRef(HCurlFESpace_, dX_dt, true_offset[1]);
-  db_.MakeRef(HDivFESpace_, dX_dt, true_offset[2]);
+  dv_.MakeRef(H1FESpace_, dX_dt, true_offsets[0]);
+  de_.MakeRef(HCurlFESpace_, dX_dt, true_offsets[1]);
+  db_.MakeRef(HDivFESpace_, dX_dt, true_offsets[2]);
 
   // form the Laplacian and solve it
   mfem::ParGridFunction Phi_gf(H1FESpace_);
@@ -248,20 +245,14 @@ void ESolver::Init(mfem::Vector &X) {
   mfem::VectorConstantCoefficient Zero_vec(zero_vec);
   mfem::ConstantCoefficient Zero(0.0);
 
-  int Vsize_h1 = H1FESpace_->GetVSize();
-  int Vsize_nd = HCurlFESpace_->GetVSize();
-
-  mfem::Array<int> true_offset(3);
-  true_offset[0] = 0;
-  true_offset[1] = true_offset[0] + Vsize_h1;
-  true_offset[2] = true_offset[1] + Vsize_nd;
-
   mfem::Vector *xptr = (mfem::Vector *)&X;
-  v_.MakeRef(H1FESpace_, *xptr, true_offset[0]);
-  e_.MakeRef(HCurlFESpace_, *xptr, true_offset[1]);
+  v_.MakeRef(H1FESpace_, *xptr, true_offsets[0]);
+  e_.MakeRef(HCurlFESpace_, *xptr, true_offsets[1]);
+  b_.MakeRef(HDivFESpace_, *xptr, true_offsets[2]);
 
   v_.ProjectCoefficient(Zero);
   e_.ProjectCoefficient(Zero_vec);
+  b_.ProjectCoefficient(Zero_vec);
 }
 
 void ESolver::RegisterVisItFields(mfem::VisItDataCollection &visit_dc) {
