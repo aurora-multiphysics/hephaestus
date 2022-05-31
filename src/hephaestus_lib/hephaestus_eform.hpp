@@ -32,34 +32,23 @@ void e_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   hephaestus::BCMap bc_map(inputs.bc_map);
   hephaestus::DomainProperties domain_properties(inputs.domain_properties);
   hephaestus::ESolver esolver(pmesh, order, bc_map, domain_properties);
-
   mfem::BlockVector F(esolver.true_offsets);
-
   esolver.Init(F);
 
-  mfem::ODESolver *ode_solver = new mfem::BackwardEulerSolver;
-  bool visualization = true;
-  bool visit = true;
+  std::map<std::string, mfem::DataCollection *> data_collections(
+      inputs.outputs.data_collections);
+  for (auto const &[name, dc_] : data_collections) {
+    // Write initial fields to disk
+    dc_->SetMesh(&pmesh);
+    esolver.RegisterOutputFields(dc_);
+    esolver.WriteOutputFields(dc_, 0);
+  }
 
-  // Initialize GLVis visualization
+  // Initialize GLVis visualization and
+  // send the initial condition by socket to a GLVis server.
+  bool visualization = true;
   if (visualization) {
     esolver.InitializeGLVis();
-  }
-
-  // Initialize VisIt visualization
-  mfem::VisItDataCollection visit_dc("AV-Parallel", &pmesh);
-
-  if (visit) {
-    esolver.RegisterVisItFields(visit_dc);
-  }
-
-  // Write initial fields to disk for VisIt
-  if (visit) {
-    esolver.WriteVisItFields(0);
-  }
-
-  // Send the initial condition by socket to a GLVis server.
-  if (visualization) {
     esolver.DisplayToGLVis();
   }
 
@@ -70,6 +59,7 @@ void e_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
 
   double t = ti;
   esolver.SetTime(t);
+  mfem::ODESolver *ode_solver = new mfem::BackwardEulerSolver;
   ode_solver->Init(esolver);
 
   bool last_step = false;
@@ -90,7 +80,6 @@ void e_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
                   << std::setprecision(3) << t
                   << ",\tdot(E, J) = " << std::setprecision(8) << el
                   << std::endl;
-        ;
       }
 
       // Make sure all ranks have sent their 'v' solution before initiating
@@ -101,8 +90,8 @@ void e_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
         esolver.DisplayToGLVis();
       }
 
-      if (visit) {
-        esolver.WriteVisItFields(it);
+      for (auto const &[name, dc_] : data_collections) {
+        esolver.WriteOutputFields(dc_, it);
       }
     }
   }

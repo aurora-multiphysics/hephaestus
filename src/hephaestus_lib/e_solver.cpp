@@ -255,22 +255,21 @@ void ESolver::Init(mfem::Vector &X) {
   b_.ProjectCoefficient(Zero_vec);
 }
 
-void ESolver::RegisterVisItFields(mfem::VisItDataCollection &visit_dc) {
-  visit_dc_ = &visit_dc;
-
-  visit_dc.RegisterField("A", &e_);
-  visit_dc.RegisterField("V", &v_);
+void ESolver::RegisterOutputFields(mfem::DataCollection *dc_) {
+  dc_->RegisterField("E", &e_);
+  dc_->RegisterField("B", &b_);
+  dc_->RegisterField("V", &v_);
 }
 
-void ESolver::WriteVisItFields(int it) {
-  if (visit_dc_) {
+void ESolver::WriteOutputFields(mfem::DataCollection *dc_, int it) {
+  if (dc_) {
     if (myid_ == 0) {
-      std::cout << "Writing VisIt files ..." << std::flush;
+      std::cout << "Writing output files ..." << std::flush;
     }
 
-    visit_dc_->SetCycle(it);
-    visit_dc_->SetTime(t);
-    visit_dc_->Save();
+    dc_->SetCycle(it);
+    dc_->SetTime(t);
+    dc_->Save();
 
     if (myid_ == 0) {
       std::cout << " done." << std::endl;
@@ -283,8 +282,11 @@ void ESolver::InitializeGLVis() {
     std::cout << "Opening GLVis sockets." << std::endl;
   }
 
-  socks_["A"] = new mfem::socketstream;
-  socks_["A"]->precision(8);
+  socks_["E"] = new mfem::socketstream;
+  socks_["E"]->precision(8);
+
+  socks_["B"] = new mfem::socketstream;
+  socks_["B"]->precision(8);
 
   socks_["V"] = new mfem::socketstream;
   socks_["V"]->precision(8);
@@ -306,8 +308,12 @@ void ESolver::DisplayToGLVis() {
   int Ww = 350, Wh = 350;             // window size
   int offx = Ww + 10, offy = Wh + 45; // window offsets
 
-  mfem::common::VisualizeField(*socks_["A"], vishost, visport, e_,
-                               "Vector Potential (A)", Wx, Wy, Ww, Wh);
+  mfem::common::VisualizeField(*socks_["E"], vishost, visport, e_,
+                               "Electric Field (E)", Wx, Wy, Ww, Wh);
+  Wx += offx;
+
+  mfem::common::VisualizeField(*socks_["B"], vishost, visport, b_,
+                               "Magnetic Flux Density (B)", Wx, Wy, Ww, Wh);
   Wx += offx;
 
   mfem::common::VisualizeField(*socks_["V"], vishost, visport, v_,

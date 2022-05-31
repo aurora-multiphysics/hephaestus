@@ -20,9 +20,9 @@ public:
   void ImplicitSolve(const double dt, const mfem::Vector &X,
                      mfem::Vector &dX_dt);
 
-  void RegisterVisItFields(mfem::VisItDataCollection &visit_dc);
+  void RegisterOutputFields(mfem::DataCollection *dc_);
 
-  void WriteVisItFields(int it = 0);
+  void WriteOutputFields(mfem::DataCollection *dc_, int it = 0);
 
   void InitializeGLVis();
 
@@ -75,8 +75,6 @@ private:
   mfem::ConstantCoefficient muInvCoef, dtMuInvCoef; // Reluctivity Coefficient
   mfem::PWCoefficient sigmaCoef; // Electric Conductivity Coefficient
 
-  // Data collection used to write VisIt files
-  mfem::VisItDataCollection *visit_dc_;
   // Sockets used to communicate with GLVis
   std::map<std::string, mfem::socketstream *> socks_;
 };
