@@ -14,65 +14,61 @@
 #include "inputs.hpp"
 
 void e_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
-
   int myid;
   MPI_Comm_rank(MPI_COMM_WORLD, &myid);
 
-  // Read the serial mesh from the given mesh file on all processors. We can
-  // handle triangular, quadrilateral, tetrahedral and hexahedral meshes
-  // with the same code.
-  mfem::Mesh *mesh = new mfem::Mesh(inputs.mesh);
-  int dim = mesh->Dimension();
-  int max_attr = mesh->bdr_attributes.Max();
-  mesh->EnsureNCMesh(); // Required for mesh refinement
-  mfem::ParMesh pmesh = mfem::ParMesh(MPI_COMM_WORLD, *mesh);
-  delete mesh;
-
+  // Read in inputs, and initialise solver
+  mfem::ParMesh pmesh = mfem::ParMesh(MPI_COMM_WORLD, inputs.mesh);
   int order = inputs.order;
   hephaestus::BCMap bc_map(inputs.bc_map);
   hephaestus::DomainProperties domain_properties(inputs.domain_properties);
   hephaestus::ESolver esolver(pmesh, order, bc_map, domain_properties);
-  mfem::BlockVector F(esolver.true_offsets);
-  esolver.Init(F);
+  mfem::BlockVector F(esolver.true_offsets); // Vector of dofs
+  esolver.Init(F);                           // Set up initial conditions
 
+  // Set up Executioner
+  double t_initial = inputs.executioner.t_initial; // initial time
+  double t_final = inputs.executioner.t_final;     // final time
+  double dt = inputs.executioner.dt;               // time step
+  int vis_steps = 1;
+  double t = t_initial; // current time
+  esolver.SetTime(t);
+  mfem::ODESolver *ode_solver = new mfem::BackwardEulerSolver;
+  ode_solver->Init(esolver);
+
+  // Set up DataCollections to track fields of interest.
   std::map<std::string, mfem::DataCollection *> data_collections(
       inputs.outputs.data_collections);
   for (auto const &[name, dc_] : data_collections) {
-    // Write initial fields to disk
     dc_->SetMesh(&pmesh);
     esolver.RegisterOutputFields(dc_);
+    // Write initial fields to disk
     esolver.WriteOutputFields(dc_, 0);
   }
 
-  // Initialize GLVis visualization and
-  // send the initial condition by socket to a GLVis server.
+  // Initialize GLVis visualization and send the initial condition
+  // by socket to a GLVis server.
   bool visualization = true;
   if (visualization) {
     esolver.InitializeGLVis();
     esolver.DisplayToGLVis();
   }
 
-  double ti = 0.0; // initial time
-  double t_final = inputs.executioner.t_final;
-  double dt = inputs.executioner.dt;
-  int vis_steps = 1;
-
-  double t = ti;
-  esolver.SetTime(t);
-  mfem::ODESolver *ode_solver = new mfem::BackwardEulerSolver;
-  ode_solver->Init(esolver);
-
+  // Begin time evolution
   bool last_step = false;
   for (int it = 1; !last_step; it++) {
+    // Check if current time step is final
     if (t + dt >= t_final - dt / 2) {
       last_step = true;
     }
 
-    // F is the vector of dofs, t is the current time, and dt is the time step
-    // to advance.
+    // Advance time step.
     ode_solver->Step(F, t, dt);
 
+    // Output data
     if (last_step || (it % vis_steps) == 0) {
+
+      // Output Ohmic losses to console
       double el = esolver.ElectricLosses();
       if (myid == 0) {
         std::cout << std::fixed;
@@ -86,10 +82,12 @@ void e_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
       // another set of GLVis connections (one from each rank):
       MPI_Barrier(pmesh.GetComm());
 
+      // Send output fields to GLVis for visualisation
       if (visualization) {
         esolver.DisplayToGLVis();
       }
 
+      // Save output fields at timestep to DataCollections
       for (auto const &[name, dc_] : data_collections) {
         esolver.WriteOutputFields(dc_, it);
       }
@@ -98,4 +96,6 @@ void e_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   if (myid == 0) {
     std::cout << "\nSolved" << std::endl;
   }
+
+  delete ode_solver;
 }

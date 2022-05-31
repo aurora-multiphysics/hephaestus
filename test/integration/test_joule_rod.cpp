@@ -64,14 +64,17 @@ protected:
     hephaestus::DomainProperties material_map(
         std::vector<hephaestus::Subdomain>({wire, air}));
 
-    hephaestus::Executioner executioner(std::string("transient"), 0.5, 2.5);
+    hephaestus::Executioner executioner(std::string("transient"), 0.5, 0.0,
+                                        2.5);
     mfem::Mesh mesh(
         (std::string(DATA_DIR) + std::string("./cylinder-hex-q2.gen")).c_str(),
         1, 1);
 
-    std::map<std::string, mfem::DataCollection*> data_collections;
-    data_collections["VisItDataCollection"] = new mfem::VisItDataCollection("JouleRodVisIt");
-    data_collections["ParaViewDataCollection"] = new mfem::ParaViewDataCollection("JouleRodParaView");
+    std::map<std::string, mfem::DataCollection *> data_collections;
+    data_collections["VisItDataCollection"] =
+        new mfem::VisItDataCollection("JouleRodVisIt");
+    data_collections["ParaViewDataCollection"] =
+        new mfem::ParaViewDataCollection("JouleRodParaView");
     hephaestus::Outputs outputs(data_collections);
     hephaestus::Inputs inputs(mesh, std::string("Joule"), 2, bc_map,
                               material_map, executioner, outputs);
