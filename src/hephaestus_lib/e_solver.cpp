@@ -261,19 +261,24 @@ void ESolver::RegisterOutputFields(mfem::DataCollection *dc_) {
   dc_->RegisterField("V", &v_);
 }
 
+void ESolver::WriteConsoleSummary(double t, int it) {
+  // Write a summary of the timestep to console.
+
+  // Output Ohmic losses to console
+  double el = this->ElectricLosses();
+  if (myid_ == 0) {
+    std::cout << std::fixed;
+    std::cout << "step " << std::setw(6) << it << ",\tt = " << std::setw(6)
+              << std::setprecision(3) << t
+              << ",\tdot(E, J) = " << std::setprecision(8) << el << std::endl;
+  }
+}
+
 void ESolver::WriteOutputFields(mfem::DataCollection *dc_, int it) {
   if (dc_) {
-    if (myid_ == 0) {
-      std::cout << "Writing output files ..." << std::flush;
-    }
-
     dc_->SetCycle(it);
     dc_->SetTime(t);
     dc_->Save();
-
-    if (myid_ == 0) {
-      std::cout << " done." << std::endl;
-    }
   }
 }
 
@@ -297,10 +302,6 @@ void ESolver::InitializeGLVis() {
 }
 
 void ESolver::DisplayToGLVis() {
-  if (myid_ == 0) {
-    std::cout << "Sending data to GLVis ..." << std::flush;
-  }
-
   char vishost[] = "localhost";
   int visport = 19916;
 
@@ -319,11 +320,8 @@ void ESolver::DisplayToGLVis() {
   mfem::common::VisualizeField(*socks_["V"], vishost, visport, v_,
                                "Scalar Potential (V)", Wx, Wy, Ww, Wh);
   Wx += offx;
-
-  if (myid_ == 0) {
-    std::cout << " done." << std::endl;
-  }
 }
+
 double ESolver::ElectricLosses() const {
   double el = m1->InnerProduct(e_, e_);
 

@@ -24,6 +24,8 @@ public:
 
   void WriteOutputFields(mfem::DataCollection *dc_, int it = 0);
 
+  void WriteConsoleSummary(double t, int it);
+
   void InitializeGLVis();
 
   void DisplayToGLVis();
