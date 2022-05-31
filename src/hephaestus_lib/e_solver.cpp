@@ -11,60 +11,48 @@ ESolver::ESolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
           new mfem::common::H1_ParFESpace(&pmesh, order, pmesh.Dimension())),
       HCurlFESpace_(
           new mfem::common::ND_ParFESpace(&pmesh, order, pmesh.Dimension())),
+      HDivFESpace_(
+          new mfem::common::RT_ParFESpace(&pmesh, order, pmesh.Dimension())),
       amg_a0(NULL), pcg_a0(NULL), ams_a1(NULL), pcg_a1(NULL), m1(NULL),
-      grad(NULL), v_(mfem::ParGridFunction(H1FESpace_)),
+      grad(NULL), curl(NULL), weakCurl(NULL),
+      v_(mfem::ParGridFunction(H1FESpace_)),
       e_(mfem::ParGridFunction(HCurlFESpace_)),
+      b_(mfem::ParGridFunction(HDivFESpace_)),
       dv_(mfem::ParGridFunction(H1FESpace_)),
-      de_(mfem::ParGridFunction(HCurlFESpace_)) {
+      de_(mfem::ParGridFunction(HCurlFESpace_)),
+      db_(mfem::ParGridFunction(HDivFESpace_)) {
   // Initialize MPI variables
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh.GetComm(), &myid_);
-  this->height =
-      HCurlFESpace_->GlobalTrueVSize() + H1FESpace_->GlobalTrueVSize();
-  this->width =
-      HCurlFESpace_->GlobalTrueVSize() + H1FESpace_->GlobalTrueVSize();
-  // Define compatible parallel finite element spaces on the parallel
-  // mesh. Here we use arbitrary order H1, Nedelec, and Raviart-Thomas finite
-  // elements.
-  // H1FESpace_ =
-  //     new mfem::common::H1_ParFESpace(&pmesh, order, pmesh.Dimension());
-  // HCurlFESpace_ =
-  //     new mfem::common::ND_ParFESpace(&pmesh, order, pmesh.Dimension());
-  // HDivFESpace_ =
-  //     new mfem::common::RT_ParFESpace(&pmesh, order, pmesh.Dimension());
-
-  // Define gridfunctions
-  // v_ = new mfem::ParGridFunction(H1FESpace_);     // Scalar Potential (H1)
-  // e_ = new mfem::ParGridFunction(HCurlFESpace_);  // Vector Potential (HCurl)
-  // dv_ = new mfem::ParGridFunction(H1FESpace_);    // Scalar Potential (H1)
-  // de_ = new mfem::ParGridFunction(HCurlFESpace_); // Vector Potential (HCurl)
-
-  // e_ = new mfem::ParGridFunction(HCurlFESpace_); // Electric Field (HCurl)
-  // b_ = new mfem::ParGridFunction(HDivFESpace_);  // Magnetic Flux (HDiv)
+  this->height = HCurlFESpace_->GlobalTrueVSize() +
+                 H1FESpace_->GlobalTrueVSize() +
+                 HDivFESpace_->GlobalTrueVSize();
+  this->width = HCurlFESpace_->GlobalTrueVSize() +
+                H1FESpace_->GlobalTrueVSize() + HDivFESpace_->GlobalTrueVSize();
 
   // Define material property coefficients
   dt = 0.5;
   mu = 1.0;
   sigmaCoef = domain_properties.getGlobalScalarProperty(
       std::string("electrical_conductivity"));
-  dtMuInvCoef = mfem::ConstantCoefficient(dt * mu);
-
-  // (σ(dA/dt + ∇ V), ∇ V') + <n.J, V'> = 0
+  dtMuInvCoef = mfem::ConstantCoefficient(dt / mu);
+  muInvCoef = mfem::ConstantCoefficient(1.0 / mu);
+  // Bilinear for divergence free source field solve
+  // -(J0, ∇ V') + <n.J, V'> = 0  where J0 = -σ∇V
   a0 = new mfem::ParBilinearForm(H1FESpace_);
   a0->AddDomainIntegrator(new mfem::DiffusionIntegrator(sigmaCoef));
   a0->Assemble();
 
-  // σ[(e_{n+1}-e_n)/dt] = f(t_{n+1}, e_{n+1})
-  // σ(dA/dt) = σ((e_{n+1}-e_n)/dt)  --> σ e_{n+1} = σ dt e_n
-  // (ν∇×A, ∇×A') + (σ(dA/dt + ∇ V), A') - (J0, A') - <(ν∇×A) × n, A'> = 0
-  // a1 = σ(dA, A') + dt (ν∇×A, ∇×A')
-  // b1 = dt [-(σ ∇ V, A') + (J0, A') + <(ν∇×A) × n, A'>]
+  // (ν∇×E, ∇×E') - (σE, E') - (J0, E') - <(ν∇×E) × n, E'> = 0
+  // a1 = -σ(dE, E') + dt (ν∇×E, ∇×E')
+  // b1 = dt [(J0, E') + <(ν∇×E) × n, E'>]
   a1 = new mfem::ParBilinearForm(HCurlFESpace_);
-  a1->AddDomainIntegrator(new mfem::CurlCurlIntegrator(dtMuInvCoef));
   a1->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(sigmaCoef));
+  a1->AddDomainIntegrator(new mfem::CurlCurlIntegrator(dtMuInvCoef));
   a1->Assemble();
 
   this->buildM1(sigmaCoef);
+  this->buildCurl(muInvCoef);
   this->buildGrad();
   b0 = new mfem::ParGridFunction(H1FESpace_);
   b1 = new mfem::ParGridFunction(HCurlFESpace_);
@@ -75,37 +63,6 @@ ESolver::ESolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
   B0 = new mfem::Vector;
   B1 = new mfem::Vector;
 
-  // // (ν∇×A, ∇×A') + (σ(dA/dt + ∇ V), A') - (J0, A') - <(ν∇×A) × n, A'> = 0
-  // // (ν∇×A, ∇×A')
-
-  // // (ν∇×A, ∇×A') + (σ(dA/dt + ∇ V), A') - (J0, A') - <(ν∇×A) × n, A'> = 0
-  // // (ν∇×A, ∇×A')
-  // curlMuInvCurl_ = new mfem::ParBilinearForm(HCurlFESpace_);
-  // curlMuInvCurl_->AddDomainIntegrator(new
-  // mfem::CurlCurlIntegrator(muInvCoef));
-
-  // // (σ dA/dt, A')
-  // hCurlMass_ = new mfem::ParBilinearForm(HCurlFESpace_);
-  // hCurlMass_->AddDomainIntegrator(new
-  // mfem::VectorFEMassIntegrator(sigmaCoef));
-
-  // // (σ ∇ V, A')
-  // sigmaGradH1HCurl_ = new mfem::ParMixedBilinearForm(H1FESpace_,
-  // HCurlFESpace_); sigmaGradH1HCurl_->AddDomainIntegrator(
-  //     new mfem::MixedVectorGradientIntegrator(sigmaCoef));
-
-  // (σ(dA/dt + ∇ V), ∇ V') + <n.J, V'> = 0
-  // BilinearFormIntegrator *hCurlMassInteg = new VectorFEMassIntegrator;
-  // hCurlMass_ = new mfem::ParBilinearForm(HCurlFESpace_);
-  // hCurlMass_->AddDomainIntegrator(hCurlMassInteg);
-
-  // (σ(dA/dt + ∇ V), ∇ V') + <n.J, V'> = 0
-
-  // this->buildA0(*sigma);
-  // this->buildM1(*sigma);
-  // this->buildS1(1.0 / mu);
-  // this->buildCurl(1.0 / mu);
-  // this->buildGrad();
 } // namespace hephaestus
 
 /*
@@ -121,18 +78,22 @@ void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
 
   int Vsize_h1 = H1FESpace_->GetVSize();
   int Vsize_nd = HCurlFESpace_->GetVSize();
+  int Vsize_rt = HDivFESpace_->GetVSize();
 
-  mfem::Array<int> true_offset(3);
+  mfem::Array<int> true_offset(4);
   true_offset[0] = 0;
   true_offset[1] = true_offset[0] + Vsize_h1;
   true_offset[2] = true_offset[1] + Vsize_nd;
+  true_offset[3] = true_offset[1] + Vsize_rt;
 
   mfem::Vector *xptr = (mfem::Vector *)&X;
   v_.MakeRef(H1FESpace_, *xptr, true_offset[0]);
   e_.MakeRef(HCurlFESpace_, *xptr, true_offset[1]);
+  b_.MakeRef(HDivFESpace_, *xptr, true_offset[2]);
 
   dv_.MakeRef(H1FESpace_, dX_dt, true_offset[0]);
   de_.MakeRef(HCurlFESpace_, dX_dt, true_offset[1]);
+  db_.MakeRef(HDivFESpace_, dX_dt, true_offset[2]);
 
   // form the Laplacian and solve it
   mfem::ParGridFunction Phi_gf(H1FESpace_);
@@ -182,10 +143,14 @@ void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   a0->RecoverFEMSolution(*X0, *b0, v_);
   dv_ = 0.0;
   //////////////////////////////////////////////////////////////////////////////
+  // v1 = <1/mu v, curl u> B
+  // B is a grid function but weakCurl is not parallel assembled so is OK
+  weakCurl->MultTranspose(b_, *b1);
+
   // use e_ as a temporary, E = Grad P
-  // b1 = -dt * sigma * Grad V
+  // b1 = -dt * Grad V
   grad->Mult(v_, e_);
-  m1->AddMult(e_, *b1, -dt);
+  m1->AddMult(e_, *b1, 1.0);
 
   mfem::Array<int> ess_bdr = _bc_map["tangential_dEdt"]->getMarkers(*pmesh_);
   mfem::VectorFunctionCoefficient Jdot(3, edot_bc);
@@ -220,6 +185,18 @@ void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   pcg_a1->Mult(*B1, *X1);
 
   a1->RecoverFEMSolution(*X1, *b1, e_);
+  de_ = 0.0;
+
+  // the total field is E_tot = E_ind - Grad Phi
+  // so we need to subtract out Grad Phi
+  // E = E - grad (P)
+  // note grad maps GF to GF
+  grad->AddMult(v_, e_, -1.0);
+
+  // Compute dB/dt = -Curl(E_{n+1})
+  // note curl maps GF to GF
+  curl->Mult(e_, db_);
+  db_ *= -1.0;
 }
 
 void ESolver::buildM1(mfem::PWCoefficient &Sigma) {
@@ -242,6 +219,25 @@ void ESolver::buildGrad() {
   grad = new mfem::ParDiscreteLinearOperator(H1FESpace_, HCurlFESpace_);
   grad->AddDomainInterpolator(new mfem::GradientInterpolator());
   grad->Assemble();
+
+  // no ParallelAssemble since this will be applied to GridFunctions
+}
+
+void ESolver::buildCurl(mfem::ConstantCoefficient &MuInv) {
+  if (curl != NULL) {
+    delete curl;
+  }
+  if (weakCurl != NULL) {
+    delete weakCurl;
+  }
+
+  curl = new mfem::ParDiscreteLinearOperator(HCurlFESpace_, HDivFESpace_);
+  curl->AddDomainInterpolator(new mfem::CurlInterpolator);
+  curl->Assemble();
+
+  weakCurl = new mfem::ParMixedBilinearForm(HCurlFESpace_, HDivFESpace_);
+  weakCurl->AddDomainIntegrator(new mfem::VectorFECurlIntegrator(MuInv));
+  weakCurl->Assemble();
 
   // no ParallelAssemble since this will be applied to GridFunctions
 }
@@ -331,5 +327,13 @@ void ESolver::DisplayToGLVis() {
     std::cout << " done." << std::endl;
   }
 }
+double ESolver::ElectricLosses() const {
+  double el = m1->InnerProduct(e_, e_);
 
+  double global_el;
+  MPI_Allreduce(&el, &global_el, 1, MPI_DOUBLE, MPI_SUM,
+                m1->ParFESpace()->GetComm());
+
+  return el;
+}
 } // namespace hephaestus
