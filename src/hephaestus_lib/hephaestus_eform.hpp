@@ -1,12 +1,12 @@
 //            ---------------------------------------------------
-//            ESolver:  Low-Frequency Magnetodynamics Simulation
+//            ESolver:  Low-Frequency Electrodynamics Simulation
 //            ---------------------------------------------------
 //
-// This miniapp solves low frequency magnetodynamics problems using the AV
+// This miniapp solves low frequency magnetodynamics problems using the E
 // formulation.
 //
-// (ν∇×A, ∇×A') + (σ(dA/dt + ∇ V), A') - (J0, A') - <(ν∇×A) × n, A'> = 0
-// (σ(dA/dt + ∇ V), ∇ V') + <n.J, V'> = 0
+// (ν∇×E, ∇×E') - (σE, E') - (J0, E') - <(ν∇×E) × n, E'> = 0
+// -(J0, ∇ V') + <n.J, V'> = 0
 
 #pragma once
 #include "../common/pfem_extras.hpp"
@@ -36,12 +36,14 @@ void e_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   // Allocate memory to store
   int Vsize_h1 = esolver.H1FESpace_->GetVSize();
   int Vsize_nd = esolver.HCurlFESpace_->GetVSize();
+  int Vsize_rt = esolver.HDivFESpace_->GetVSize();
 
   std::cout << Vsize_h1 << " ok ";
-  mfem::Array<int> true_offset(3);
+  mfem::Array<int> true_offset(4);
   true_offset[0] = 0;
   true_offset[1] = Vsize_h1;
   true_offset[2] = true_offset[1] + Vsize_nd;
+  true_offset[3] = true_offset[2] + Vsize_rt;
 
   mfem::BlockVector F(true_offset);
   std::cout << Vsize_h1;
@@ -76,8 +78,8 @@ void e_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   }
 
   double ti = 0.0; // initial time
-  double dt = 0.5;
-  double t_final = 2.5;
+  double t_final = inputs.executioner.t_final;
+  double dt = inputs.executioner.dt;
   int vis_steps = 1;
 
   double t = ti;
@@ -95,11 +97,14 @@ void e_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
     ode_solver->Step(F, t, dt);
 
     if (last_step || (it % vis_steps) == 0) {
+      double el = esolver.ElectricLosses();
       if (myid == 0) {
         std::cout << std::fixed;
         std::cout << "step " << std::setw(6) << it << ",\tt = " << std::setw(6)
                   << std::setprecision(3) << t
-                  << ",\tdot(E, J) = " << std::endl;
+                  << ",\tdot(E, J) = " << std::setprecision(8) << el
+                  << std::endl;
+        ;
       }
 
       // Make sure all ranks have sent their 'v' solution before initiating
