@@ -68,15 +68,8 @@ void e_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
     // Output data
     if (last_step || (it % vis_steps) == 0) {
 
-      // Output Ohmic losses to console
-      double el = esolver.ElectricLosses();
-      if (myid == 0) {
-        std::cout << std::fixed;
-        std::cout << "step " << std::setw(6) << it << ",\tt = " << std::setw(6)
-                  << std::setprecision(3) << t
-                  << ",\tdot(E, J) = " << std::setprecision(8) << el
-                  << std::endl;
-      }
+      // Output timestep summary to console
+      esolver.WriteConsoleSummary(t, it);
 
       // Make sure all ranks have sent their 'v' solution before initiating
       // another set of GLVis connections (one from each rank):
