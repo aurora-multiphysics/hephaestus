@@ -65,28 +65,12 @@ public:
 
 class BCMap : public std::map<std::string, hephaestus::BoundaryCondition *> {
 public:
-  //  global_ess_markers;
   mfem::Array<int> getEssentialBdrMarkers(const std::string &name_,
-                                          mfem::Mesh *mesh_) {
+                                          mfem::Mesh *mesh_);
 
-    mfem::Array<int> global_ess_markers(mesh_->bdr_attributes.Max());
-    mfem::Array<int> ess_bdrs(mesh_->bdr_attributes.Max());
-    hephaestus::FunctionDirichletBC *bc;
-    for (auto const &[name, bc_] : *this) {
-      if (bc_->name == name_) {
-        bc = dynamic_cast<hephaestus::FunctionDirichletBC *>(bc_);
-        ess_bdrs = bc->getMarkers(*mesh_);
-        for (auto it = 0; it != mesh_->bdr_attributes.Max(); ++it) {
-          global_ess_markers[it] =
-              std::max(global_ess_markers[it], ess_bdrs[it]);
-        }
-      }
-      // bc->coeff->SetTime(this->GetTime());
-      // Phi_gf.ProjectBdrCoefficient(*(bc->coeff), ess_bdrs);
-    }
-    return global_ess_markers;
-  };
-
-}; // namespace hephaestus
+  mfem::Array<int> applyEssentialBCs(const std::string &name_,
+                                     mfem::GridFunction &gridfunc,
+                                     mfem::Mesh *mesh_, double time = 0.0);
+};
 
 } // namespace hephaestus
