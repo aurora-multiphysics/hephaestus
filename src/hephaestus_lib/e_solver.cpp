@@ -95,12 +95,10 @@ void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   // form the Laplacian and solve it
   mfem::ParGridFunction Phi_gf(H1FESpace_);
   Phi_gf = 0.0;
-
   mfem::Array<int> poisson_ess_bdr = _bc_map.applyEssentialBCs(
       "electric_potential", Phi_gf, pmesh_, this->GetTime());
   mfem::Array<int> poisson_ess_tdof_list;
   H1FESpace_->GetEssentialTrueDofs(poisson_ess_bdr, poisson_ess_tdof_list);
-
   *b0 = 0.0;
   a0->FormLinearSystem(poisson_ess_tdof_list, Phi_gf, *b0, *A0, *X0, *B0);
 
@@ -131,18 +129,12 @@ void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   grad->Mult(v_, e_);
   m1->AddMult(e_, *b1, 1.0);
 
-  mfem::Array<int> ess_bdr = _bc_map["tangential_dEdt"]->getMarkers(*pmesh_);
-  mfem::VectorFunctionCoefficient Jdot(3, edot_bc);
   mfem::ParGridFunction J_gf(HCurlFESpace_);
   J_gf = 0.0;
-  J_gf.ProjectBdrCoefficientTangent(Jdot, ess_bdr);
-
-  // form the linear system, including eliminating essential BC's and
-  // applying
-  // static condensation. The system to solve is A1 X1 = B1
+  mfem::Array<int> ess_bdr = _bc_map.applyEssentialBCs("electric_field", J_gf,
+                                                       pmesh_, this->GetTime());
   mfem::Array<int> ess_tdof_list;
   HCurlFESpace_->GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
-
   a1->FormLinearSystem(ess_tdof_list, J_gf, *b1, *A1, *X1, *B1);
 
   // We only need to create the solver and preconditioner once

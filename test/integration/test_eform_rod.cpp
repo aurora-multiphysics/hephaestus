@@ -14,10 +14,13 @@ protected:
     // the value
     return -cos(wj_ * t);
   }
+  static void edot_bc(const mfem::Vector &x, mfem::Vector &E) { E = 0.0; }
+
   hephaestus::Inputs eform_rod_inputs() {
     hephaestus::BCMap bc_map;
-    bc_map["tangential_dEdt"] = new hephaestus::BoundaryCondition(
-        std::string("boundary_1"), mfem::Array<int>({1, 2, 3}));
+    bc_map["tangential_dEdt"] = new hephaestus::VectorFunctionDirichletBC(
+        std::string("electric_field"), mfem::Array<int>({1, 2, 3}),
+        new mfem::VectorFunctionCoefficient(3, edot_bc));
 
     bc_map["thermal_flux"] = new hephaestus::BoundaryCondition(
         std::string("boundary_2"), mfem::Array<int>({1, 2}));

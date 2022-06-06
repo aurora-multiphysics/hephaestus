@@ -22,7 +22,16 @@ public:
   virtual void applyBC(mfem::ParComplexLinearForm &b){};
 };
 
-class FunctionDirichletBC : public BoundaryCondition {
+class EssentialBC : public BoundaryCondition {
+public:
+  EssentialBC();
+  EssentialBC(const std::string &name_, mfem::Array<int> bdr_attributes_);
+
+  virtual void applyBC(mfem::GridFunction &gridfunc, mfem::Mesh *mesh_,
+                       double time = 0.0){};
+};
+
+class FunctionDirichletBC : public EssentialBC {
 public:
   FunctionDirichletBC();
   FunctionDirichletBC(const std::string &name_,
@@ -32,11 +41,14 @@ public:
                       mfem::FunctionCoefficient *coeff_,
                       mfem::FunctionCoefficient *coeff_im_ = nullptr);
 
+  virtual void applyBC(mfem::GridFunction &gridfunc, mfem::Mesh *mesh_,
+                       double time = 0.0) override;
+
   mfem::FunctionCoefficient *coeff;
   mfem::FunctionCoefficient *coeff_im;
 };
 
-class VectorFunctionDirichletBC : public BoundaryCondition {
+class VectorFunctionDirichletBC : public EssentialBC {
 public:
   VectorFunctionDirichletBC();
   VectorFunctionDirichletBC(const std::string &name_,
@@ -45,6 +57,9 @@ public:
       const std::string &name_, mfem::Array<int> bdr_attributes_,
       mfem::VectorFunctionCoefficient *vec_coeff_,
       mfem::VectorFunctionCoefficient *vec_coeff_im_ = nullptr);
+
+  virtual void applyBC(mfem::GridFunction &gridfunc, mfem::Mesh *mesh_,
+                       double time = 0.0) override;
 
   mfem::VectorFunctionCoefficient *vec_coeff;
   mfem::VectorFunctionCoefficient *vec_coeff_im;
