@@ -58,4 +58,39 @@ void IntegratedBC::applyBC(mfem::ParComplexLinearForm &b) {
   b.AddBoundaryIntegrator(lfi_re, lfi_im, markers);
 }
 
+mfem::Array<int> BCMap::getEssentialBdrMarkers(const std::string &name_,
+                                               mfem::Mesh *mesh_) {
+  mfem::Array<int> global_ess_markers(mesh_->bdr_attributes.Max());
+  mfem::Array<int> ess_bdrs(mesh_->bdr_attributes.Max());
+  hephaestus::FunctionDirichletBC *bc;
+  for (auto const &[name, bc_] : *this) {
+    if (bc_->name == name_) {
+      bc = dynamic_cast<hephaestus::FunctionDirichletBC *>(bc_);
+      ess_bdrs = bc->getMarkers(*mesh_);
+      for (auto it = 0; it != mesh_->bdr_attributes.Max(); ++it) {
+        global_ess_markers[it] = std::max(global_ess_markers[it], ess_bdrs[it]);
+      }
+    }
+  }
+  return global_ess_markers;
+}
+
+mfem::Array<int> BCMap::applyEssentialBCs(const std::string &name_,
+                                          mfem::GridFunction &gridfunc,
+                                          mfem::Mesh *mesh_, double time) {
+
+  mfem::Array<int> ess_bdrs(mesh_->bdr_attributes.Max());
+
+  for (auto const &[name, bc_] : *this) {
+    if (bc_->name == name_) {
+      hephaestus::FunctionDirichletBC *bc =
+          dynamic_cast<hephaestus::FunctionDirichletBC *>(bc_);
+      ess_bdrs = bc->getMarkers(*mesh_);
+      bc->coeff->SetTime(time);
+      gridfunc.ProjectBdrCoefficient(*(bc->coeff), ess_bdrs);
+    }
+  }
+  return getEssentialBdrMarkers(name_, mesh_);
+};
+
 } // namespace hephaestus

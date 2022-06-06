@@ -94,41 +94,10 @@ void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
 
   // form the Laplacian and solve it
   mfem::ParGridFunction Phi_gf(H1FESpace_);
-
-  // p_bc is given function defining electrostatic potential on surface
-  mfem::Array<int> poisson_ess_bdr =
-      _bc_map.getEssentialBdrMarkers("electric_potential", pmesh_);
-
   Phi_gf = 0.0;
-  mfem::Array<int> ess_bdrs;
-  hephaestus::FunctionDirichletBC *bc;
-  for (auto const &[name, bc_] : _bc_map) {
-    if (bc_->name == "electric_potential") {
-      bc = dynamic_cast<hephaestus::FunctionDirichletBC *>(bc_);
-      ess_bdrs = bc->getMarkers(*pmesh_);
-      bc->coeff->SetTime(this->GetTime());
-      Phi_gf.ProjectBdrCoefficient(*(bc->coeff), ess_bdrs);
-    }
-  }
 
-  // hephaestus::FunctionDirichletBC *potential_bc =
-  //     dynamic_cast<hephaestus::FunctionDirichletBC *>(
-  //         _bc_map["electric_potential"]);
-  // mfem::FunctionCoefficient voltage = *potential_bc->coeff;
-
-  // voltage.SetTime(this->GetTime());
-  // Phi_gf = 0.0;
-
-  // // the function below is currently not fully supported on AMR meshes
-  // // Phi_gf.ProjectBdrCoefficient(voltage,poisson_ess_bdr);
-
-  // // this is a hack to get around the above issue
-  // Phi_gf.ProjectBdrCoefficient(voltage, poisson_ess_bdr);
-
-  // end of hack
-
-  // apply essential BC's and apply static condensation, the new system to
-  // solve is A0 X0 = B0
+  mfem::Array<int> poisson_ess_bdr = _bc_map.applyEssentialBCs(
+      "electric_potential", Phi_gf, pmesh_, this->GetTime());
   mfem::Array<int> poisson_ess_tdof_list;
   H1FESpace_->GetEssentialTrueDofs(poisson_ess_bdr, poisson_ess_tdof_list);
 
