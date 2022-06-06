@@ -18,7 +18,12 @@ void e_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   MPI_Comm_rank(MPI_COMM_WORLD, &myid);
 
   // Read in inputs, and initialise solver
-  mfem::ParMesh pmesh = mfem::ParMesh(MPI_COMM_WORLD, inputs.mesh);
+  mfem::Mesh *mesh = new mfem::Mesh(inputs.mesh);
+  mesh->EnsureNCMesh(); // Required for mesh refinement
+  mfem::ParMesh pmesh = mfem::ParMesh(MPI_COMM_WORLD, *mesh);
+  delete mesh;
+
+  // mfem::ParMesh pmesh = mfem::ParMesh(MPI_COMM_WORLD, inputs.mesh);
   int order = inputs.order;
   hephaestus::BCMap bc_map(inputs.bc_map);
   hephaestus::DomainProperties domain_properties(inputs.domain_properties);
