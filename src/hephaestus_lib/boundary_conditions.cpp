@@ -99,6 +99,7 @@ mfem::Array<int> BCMap::getEssentialBdrMarkers(const std::string &name_,
 mfem::Array<int> BCMap::applyEssentialBCs(const std::string &name_,
                                           mfem::GridFunction &gridfunc,
                                           mfem::Mesh *mesh_, double time) {
+
   for (auto const &[name, bc_] : *this) {
     if (bc_->name == name_) {
       hephaestus::EssentialBC *bc =
