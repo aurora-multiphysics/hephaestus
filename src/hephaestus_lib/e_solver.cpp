@@ -97,21 +97,34 @@ void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
 
   // p_bc is given function defining electrostatic potential on surface
   mfem::Array<int> poisson_ess_bdr =
-      _bc_map["electric_potential"]->getMarkers(*pmesh_);
+      _bc_map.getEssentialBdrMarkers("electric_potential", pmesh_);
 
-  hephaestus::FunctionDirichletBC *potential_bc =
-      dynamic_cast<hephaestus::FunctionDirichletBC *>(
-          _bc_map["electric_potential"]);
-  mfem::FunctionCoefficient voltage = *potential_bc->coeff;
-
-  voltage.SetTime(this->GetTime());
   Phi_gf = 0.0;
+  mfem::Array<int> ess_bdrs;
+  hephaestus::FunctionDirichletBC *bc;
+  for (auto const &[name, bc_] : _bc_map) {
+    if (bc_->name == "electric_potential") {
+      bc = dynamic_cast<hephaestus::FunctionDirichletBC *>(bc_);
+      ess_bdrs = bc->getMarkers(*pmesh_);
+      bc->coeff->SetTime(this->GetTime());
+      Phi_gf.ProjectBdrCoefficient(*(bc->coeff), ess_bdrs);
+    }
+  }
 
-  // the function below is currently not fully supported on AMR meshes
-  // Phi_gf.ProjectBdrCoefficient(voltage,poisson_ess_bdr);
+  // hephaestus::FunctionDirichletBC *potential_bc =
+  //     dynamic_cast<hephaestus::FunctionDirichletBC *>(
+  //         _bc_map["electric_potential"]);
+  // mfem::FunctionCoefficient voltage = *potential_bc->coeff;
 
-  // this is a hack to get around the above issue
-  Phi_gf.ProjectCoefficient(voltage);
+  // voltage.SetTime(this->GetTime());
+  // Phi_gf = 0.0;
+
+  // // the function below is currently not fully supported on AMR meshes
+  // // Phi_gf.ProjectBdrCoefficient(voltage,poisson_ess_bdr);
+
+  // // this is a hack to get around the above issue
+  // Phi_gf.ProjectBdrCoefficient(voltage, poisson_ess_bdr);
+
   // end of hack
 
   // apply essential BC's and apply static condensation, the new system to
