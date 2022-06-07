@@ -61,8 +61,8 @@ ESolver::ESolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
   this->buildM1(sigmaCoef);
   this->buildCurl(muInvCoef);
   this->buildGrad();
-  b0 = new mfem::ParGridFunction(H1FESpace_);
-  b1 = new mfem::ParGridFunction(HCurlFESpace_);
+  b0 = new mfem::ParLinearForm(H1FESpace_);
+  b1 = new mfem::ParLinearForm(HCurlFESpace_);
   A0 = new mfem::HypreParMatrix;
   A1 = new mfem::HypreParMatrix;
   X0 = new mfem::Vector;
@@ -100,6 +100,7 @@ void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   mfem::Array<int> poisson_ess_tdof_list;
   H1FESpace_->GetEssentialTrueDofs(poisson_ess_bdr, poisson_ess_tdof_list);
   *b0 = 0.0;
+  _bc_map.applyIntegratedBCs("electric_potential", *b0);
   a0->FormLinearSystem(poisson_ess_tdof_list, Phi_gf, *b0, *A0, *X0, *B0);
 
   if (amg_a0 == NULL) {
@@ -135,6 +136,7 @@ void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
                                                        pmesh_, this->GetTime());
   mfem::Array<int> ess_tdof_list;
   HCurlFESpace_->GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
+  _bc_map.applyIntegratedBCs("electric_field", *b1);
   a1->FormLinearSystem(ess_tdof_list, J_gf, *b1, *A1, *X1, *B1);
 
   // We only need to create the solver and preconditioner once
