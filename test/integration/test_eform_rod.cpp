@@ -5,14 +5,12 @@ extern const char *DATA_DIR;
 
 class TestEFormRod : public testing::Test {
 protected:
-  static double potential1(const mfem::Vector &x, double t) {
+  static double potential_high(const mfem::Vector &x, double t) {
     double wj_(2.0 * M_PI / 60.0);
-    return cos(wj_ * t);
+    return 2 * cos(wj_ * t);
   }
-  static double potential2(const mfem::Vector &x, double t) {
-    double wj_(2.0 * M_PI / 60.0);
-    // the value
-    return -cos(wj_ * t);
+  static double potential_ground(const mfem::Vector &x, double t) {
+    return 0.0;
   }
   static void edot_bc(const mfem::Vector &x, mfem::Vector &E) { E = 0.0; }
 
@@ -22,21 +20,17 @@ protected:
         std::string("electric_field"), mfem::Array<int>({1, 2, 3}),
         new mfem::VectorFunctionCoefficient(3, edot_bc));
 
-    bc_map["thermal_flux"] = new hephaestus::BoundaryCondition(
-        std::string("boundary_2"), mfem::Array<int>({1, 2}));
+    mfem::Array<int> high_terminal(1);
+    high_terminal[0] = 1;
+    bc_map["high_potential"] = new hephaestus::FunctionDirichletBC(
+        std::string("electric_potential"), high_terminal,
+        new mfem::FunctionCoefficient(potential_high));
 
-    mfem::Array<int> test1(1);
-    mfem::Array<int> test2(1);
-    test1[0] = 1;
-    test2[0] = 2;
-
-    bc_map["electric_potential1"] = new hephaestus::FunctionDirichletBC(
-        std::string("electric_potential"), test1,
-        new mfem::FunctionCoefficient(potential1));
-
-    bc_map["electric_potential2"] = new hephaestus::FunctionDirichletBC(
-        std::string("electric_potential"), test2,
-        new mfem::FunctionCoefficient(potential2));
+    mfem::Array<int> ground_terminal(1);
+    ground_terminal[0] = 2;
+    bc_map["ground_potential"] = new hephaestus::FunctionDirichletBC(
+        std::string("electric_potential"), ground_terminal,
+        new mfem::FunctionCoefficient(potential_ground));
 
     double sigma = 2.0 * M_PI * 10;
     double Tcapacity = 1.0;
