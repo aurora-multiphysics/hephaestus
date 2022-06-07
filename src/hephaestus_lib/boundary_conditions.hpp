@@ -86,6 +86,8 @@ public:
   mfem::Array<int> applyEssentialBCs(const std::string &name_,
                                      mfem::GridFunction &gridfunc,
                                      mfem::Mesh *mesh_, double time = 0.0);
+
+  void applyIntegratedBCs(const std::string &name_, mfem::LinearForm &lf);
 };
 
 } // namespace hephaestus

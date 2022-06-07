@@ -87,9 +87,12 @@ mfem::Array<int> BCMap::getEssentialBdrMarkers(const std::string &name_,
   for (auto const &[name, bc_] : *this) {
     if (bc_->name == name_) {
       bc = dynamic_cast<hephaestus::EssentialBC *>(bc_);
-      ess_bdrs = bc->getMarkers(*mesh_);
-      for (auto it = 0; it != mesh_->bdr_attributes.Max(); ++it) {
-        global_ess_markers[it] = std::max(global_ess_markers[it], ess_bdrs[it]);
+      if (bc != NULL) {
+        ess_bdrs = bc->getMarkers(*mesh_);
+        for (auto it = 0; it != mesh_->bdr_attributes.Max(); ++it) {
+          global_ess_markers[it] =
+              std::max(global_ess_markers[it], ess_bdrs[it]);
+        }
       }
     }
   }
@@ -104,10 +107,25 @@ mfem::Array<int> BCMap::applyEssentialBCs(const std::string &name_,
     if (bc_->name == name_) {
       hephaestus::EssentialBC *bc =
           dynamic_cast<hephaestus::EssentialBC *>(bc_);
-      bc->applyBC(gridfunc, mesh_, time);
+      if (bc != NULL) {
+        bc->applyBC(gridfunc, mesh_, time);
+      }
     }
   }
   return getEssentialBdrMarkers(name_, mesh_);
+};
+
+void BCMap::applyIntegratedBCs(const std::string &name_, mfem::LinearForm &lf) {
+
+  for (auto const &[name, bc_] : *this) {
+    if (bc_->name == name_) {
+      hephaestus::IntegratedBC *bc =
+          dynamic_cast<hephaestus::IntegratedBC *>(bc_);
+      if (bc != NULL) {
+        bc->applyBC(lf);
+      }
+    }
+  }
 };
 
 } // namespace hephaestus
