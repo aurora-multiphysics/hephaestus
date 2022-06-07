@@ -67,6 +67,13 @@ IntegratedBC::IntegratedBC(const std::string &name_,
                            mfem::Array<int> bdr_attributes_)
     : BoundaryCondition(name_, bdr_attributes_) {}
 
+IntegratedBC::IntegratedBC(const std::string &name_,
+                           mfem::Array<int> bdr_attributes_,
+                           mfem::LinearFormIntegrator *lfi_re_,
+                           mfem::LinearFormIntegrator *lfi_im_)
+    : BoundaryCondition(name_, bdr_attributes_), lfi_re(lfi_re_),
+      lfi_im(lfi_im_) {}
+
 void IntegratedBC::applyBC(mfem::LinearForm &b) {
   b.AddBoundaryIntegrator(lfi_re, markers);
 }
@@ -115,13 +122,15 @@ mfem::Array<int> BCMap::applyEssentialBCs(const std::string &name_,
   return getEssentialBdrMarkers(name_, mesh_);
 };
 
-void BCMap::applyIntegratedBCs(const std::string &name_, mfem::LinearForm &lf) {
+void BCMap::applyIntegratedBCs(const std::string &name_, mfem::LinearForm &lf,
+                               mfem::Mesh *mesh_) {
 
   for (auto const &[name, bc_] : *this) {
     if (bc_->name == name_) {
       hephaestus::IntegratedBC *bc =
           dynamic_cast<hephaestus::IntegratedBC *>(bc_);
       if (bc != NULL) {
+        bc->getMarkers(*mesh_);
         bc->applyBC(lf);
       }
     }
