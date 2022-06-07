@@ -69,6 +69,9 @@ class IntegratedBC : public BoundaryCondition {
 public:
   IntegratedBC();
   IntegratedBC(const std::string &name_, mfem::Array<int> bdr_attributes_);
+  IntegratedBC(const std::string &name_, mfem::Array<int> bdr_attributes_,
+               mfem::LinearFormIntegrator *lfi_re_,
+               mfem::LinearFormIntegrator *lfi_im_ = nullptr);
 
   mfem::LinearFormIntegrator *lfi_re;
   mfem::LinearFormIntegrator *lfi_im;
@@ -87,7 +90,8 @@ public:
                                      mfem::GridFunction &gridfunc,
                                      mfem::Mesh *mesh_, double time = 0.0);
 
-  void applyIntegratedBCs(const std::string &name_, mfem::LinearForm &lf);
+  void applyIntegratedBCs(const std::string &name_, mfem::LinearForm &lf,
+                          mfem::Mesh *mesh_);
 };
 
 } // namespace hephaestus

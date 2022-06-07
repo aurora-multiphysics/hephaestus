@@ -100,7 +100,8 @@ void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   mfem::Array<int> poisson_ess_tdof_list;
   H1FESpace_->GetEssentialTrueDofs(poisson_ess_bdr, poisson_ess_tdof_list);
   *b0 = 0.0;
-  _bc_map.applyIntegratedBCs("electric_potential", *b0);
+  _bc_map.applyIntegratedBCs("electric_potential", *b0, pmesh_);
+  b0->Assemble();
   a0->FormLinearSystem(poisson_ess_tdof_list, Phi_gf, *b0, *A0, *X0, *B0);
 
   if (amg_a0 == NULL) {
@@ -121,6 +122,15 @@ void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   a0->RecoverFEMSolution(*X0, *b0, v_);
   dv_ = 0.0;
   //////////////////////////////////////////////////////////////////////////////
+  mfem::ParGridFunction J_gf(HCurlFESpace_);
+  J_gf = 0.0;
+  mfem::Array<int> ess_bdr = _bc_map.applyEssentialBCs("electric_field", J_gf,
+                                                       pmesh_, this->GetTime());
+  mfem::Array<int> ess_tdof_list;
+  HCurlFESpace_->GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
+  _bc_map.applyIntegratedBCs("electric_field", *b1, pmesh_);
+  b1->Assemble();
+
   // v1 = <1/mu v, curl u> B
   // B is a grid function but weakCurl is not parallel assembled so is OK
   weakCurl->MultTranspose(b_, *b1);
@@ -130,13 +140,6 @@ void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   grad->Mult(v_, e_);
   m1->AddMult(e_, *b1, 1.0);
 
-  mfem::ParGridFunction J_gf(HCurlFESpace_);
-  J_gf = 0.0;
-  mfem::Array<int> ess_bdr = _bc_map.applyEssentialBCs("electric_field", J_gf,
-                                                       pmesh_, this->GetTime());
-  mfem::Array<int> ess_tdof_list;
-  HCurlFESpace_->GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
-  _bc_map.applyIntegratedBCs("electric_field", *b1);
   a1->FormLinearSystem(ess_tdof_list, J_gf, *b1, *A1, *X1, *B1);
 
   // We only need to create the solver and preconditioner once
