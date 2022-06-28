@@ -169,15 +169,12 @@ HertzSolver::HertzSolver(ParMesh &pmesh, int order, double freq,
   j_ = new ParComplexGridFunction(HCurlFESpace_);
   j_->ProjectCoefficient(*jrCoef_, *jiCoef_);
 
-  // A LineatForm representation of the current denisty for the RHS
+  // A LinearForm representation of the current density for the RHS
   jd_ = new ParComplexLinearForm(HCurlFESpace_, conv_);
   jd_->AddDomainIntegrator(new VectorFEDomainLFIntegrator(*jrCoef_),
                            new VectorFEDomainLFIntegrator(*jiCoef_));
-
   // add IntegratedBC
-  dynamic_cast<hephaestus::IntegratedBC *>(bc_map["Neumann"])->applyBC(*jd_);
-  // jd_->real().Vector::operator=(0.0);
-  // jd_->imag().Vector::operator=(0.0);
+  bc_map.applyIntegratedBCs("electric_field", *jd_, pmesh_);
 }
 
 HertzSolver::~HertzSolver() {

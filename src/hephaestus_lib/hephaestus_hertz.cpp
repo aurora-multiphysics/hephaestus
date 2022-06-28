@@ -268,15 +268,13 @@ int hertz_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   hephaestus::BoundaryCondition waveguide_ports(std::string("robin_1"),
                                                 Array<int>({1, 2}));
   Array<int> wgi_in_attr(1);
-  wgi_in_attr[0] = 1;
-  hephaestus::IntegratedBC waveguide_in(std::string("wgi"), wgi_in_attr);
+  wgi_in_attr[0] = 2;
+  hephaestus::IntegratedBC waveguide_in(std::string("electric_field"),
+                                        wgi_in_attr);
   VectorFunctionCoefficient UReal(pmesh.SpaceDimension(), RWTE10_real);
   VectorFunctionCoefficient UImag(pmesh.SpaceDimension(), RWTE10_imag);
   waveguide_in.lfi_re = new mfem::VectorFEBoundaryTangentLFIntegrator(UReal);
   waveguide_in.lfi_im = new mfem::VectorFEBoundaryTangentLFIntegrator(UImag);
-  waveguide_in.markers.SetSize(pmesh.bdr_attributes.Max());
-  waveguide_in.markers = 0;
-  waveguide_in.markers[1] = 1;
 
   dbcs.SetSize(1);
   dbcs = 0;
