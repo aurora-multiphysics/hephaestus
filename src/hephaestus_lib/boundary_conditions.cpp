@@ -137,4 +137,19 @@ void BCMap::applyIntegratedBCs(const std::string &name_, mfem::LinearForm &lf,
   }
 };
 
+void BCMap::applyIntegratedBCs(const std::string &name_,
+                               mfem::ParComplexLinearForm &clf,
+                               mfem::Mesh *mesh_) {
+
+  for (auto const &[name, bc_] : *this) {
+    if (bc_->name == name_) {
+      hephaestus::IntegratedBC *bc =
+          dynamic_cast<hephaestus::IntegratedBC *>(bc_);
+      if (bc != NULL) {
+        bc->getMarkers(*mesh_);
+        bc->applyBC(clf);
+      }
+    }
+  }
+};
 } // namespace hephaestus
