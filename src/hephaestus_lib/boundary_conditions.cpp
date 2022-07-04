@@ -89,7 +89,9 @@ void IntegratedBC::applyBC(mfem::ParComplexLinearForm &b) {
 mfem::Array<int> BCMap::getEssentialBdrMarkers(const std::string &name_,
                                                mfem::Mesh *mesh_) {
   mfem::Array<int> global_ess_markers(mesh_->bdr_attributes.Max());
+  global_ess_markers = 0;
   mfem::Array<int> ess_bdrs(mesh_->bdr_attributes.Max());
+  ess_bdrs = 0;
   hephaestus::EssentialBC *bc;
   for (auto const &[name, bc_] : *this) {
     if (bc_->name == name_) {
@@ -119,7 +121,10 @@ mfem::Array<int> BCMap::applyEssentialBCs(const std::string &name_,
       }
     }
   }
-  return getEssentialBdrMarkers(name_, mesh_);
+  mfem::Array<int> ess_bdr = getEssentialBdrMarkers(name_, mesh_);
+  mfem::Array<int> ess_tdof_list;
+  gridfunc.FESpace()->GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
+  return ess_tdof_list;
 };
 
 void BCMap::applyIntegratedBCs(const std::string &name_, mfem::LinearForm &lf,
