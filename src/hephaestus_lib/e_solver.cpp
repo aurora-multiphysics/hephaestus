@@ -25,14 +25,11 @@ ESolver::ESolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh.GetComm(), &myid_);
 
-  HYPRE_BigInt Vsize_h1 = H1FESpace_->GetVSize();
-  HYPRE_BigInt Vsize_nd = HCurlFESpace_->GetVSize();
-  HYPRE_BigInt Vsize_rt = HDivFESpace_->GetVSize();
-
   true_offsets[0] = 0;
-  true_offsets[1] = true_offsets[0] + Vsize_h1;
-  true_offsets[2] = true_offsets[1] + Vsize_nd;
-  true_offsets[3] = true_offsets[2] + Vsize_rt;
+  true_offsets[1] = H1FESpace_->GetVSize();
+  true_offsets[2] = HCurlFESpace_->GetVSize();
+  true_offsets[3] = HDivFESpace_->GetVSize();
+  true_offsets.PartialSum();
 
   this->height = true_offsets[3];
   this->width = true_offsets[3];
@@ -83,10 +80,9 @@ void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
                             mfem::Vector &dX_dt) {
   dX_dt = 0.0;
 
-  mfem::Vector *xptr = (mfem::Vector *)&X;
-  v_.MakeRef(H1FESpace_, *xptr, true_offsets[0]);
-  e_.MakeRef(HCurlFESpace_, *xptr, true_offsets[1]);
-  b_.MakeRef(HDivFESpace_, *xptr, true_offsets[2]);
+  v_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
+  e_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
+  b_.MakeRef(HDivFESpace_, const_cast<mfem::Vector &>(X), true_offsets[2]);
 
   dv_.MakeRef(H1FESpace_, dX_dt, true_offsets[0]);
   de_.MakeRef(HCurlFESpace_, dX_dt, true_offsets[1]);
@@ -220,10 +216,9 @@ void ESolver::Init(mfem::Vector &X) {
   mfem::VectorConstantCoefficient Zero_vec(zero_vec);
   mfem::ConstantCoefficient Zero(0.0);
 
-  mfem::Vector *xptr = (mfem::Vector *)&X;
-  v_.MakeRef(H1FESpace_, *xptr, true_offsets[0]);
-  e_.MakeRef(HCurlFESpace_, *xptr, true_offsets[1]);
-  b_.MakeRef(HDivFESpace_, *xptr, true_offsets[2]);
+  v_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
+  e_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
+  b_.MakeRef(HDivFESpace_, const_cast<mfem::Vector &>(X), true_offsets[2]);
 
   v_.ProjectCoefficient(Zero);
   e_.ProjectCoefficient(Zero_vec);
