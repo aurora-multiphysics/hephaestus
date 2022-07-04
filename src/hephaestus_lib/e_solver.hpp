@@ -62,8 +62,8 @@ private:
   mutable mfem::HyprePCG *pcg_a1;
 
   // temporary work vectors
-  mfem::ParLinearForm *b0, *b1;
-
+  mfem::ParGridFunction *b1;
+  mfem::ParLinearForm *b0;
   mfem::ParGridFunction e_, de_; // Electric Field (HCurl)
   mfem::ParGridFunction v_, dv_; // Scalar Potential (H1)
   mfem::ParGridFunction *h_;     // Magnetic Field (HCurl)
