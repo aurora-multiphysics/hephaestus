@@ -95,19 +95,10 @@ void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   // form the Laplacian and solve it
   mfem::ParGridFunction Phi_gf(H1FESpace_);
   Phi_gf = 0.0;
-  mfem::Array<int> poisson_ess_bdr({0, 1, 0});
-  mfem::Array<int> poisson_ess_tdof_list;
-  H1FESpace_->GetEssentialTrueDofs(poisson_ess_bdr, poisson_ess_tdof_list);
-  Phi_gf.ProjectCoefficient(*(dynamic_cast<hephaestus::FunctionDirichletBC *>(
-                                  _bc_map["ground_potential"])
-                                  ->coeff));
-  // *b0 = 0.0;
+  mfem::Array<int> poisson_ess_tdof_list = _bc_map.applyEssentialBCs(
+      "electric_potential", Phi_gf, pmesh_, this->GetTime());
   *b0 = 0.0;
-  mfem::ConstantCoefficient jVecCCoef(1.0);
-  mfem::Array<int> markers({1, 0, 0});
-  // pmesh_->bdr_attributes.Print();
-  b0->AddBoundaryIntegrator(new mfem::BoundaryLFIntegrator(jVecCCoef), markers);
-  // _bc_map.applyIntegratedBCs("electric_potential", *b0, pmesh_);
+  _bc_map.applyIntegratedBCs("electric_potential", *b0, pmesh_);
   b0->Assemble();
 
   a0->FormLinearSystem(poisson_ess_tdof_list, Phi_gf, *b0, *A0, *X0, *B0);

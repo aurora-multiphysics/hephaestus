@@ -22,9 +22,19 @@ protected:
 
     mfem::Array<int> high_terminal(1);
     high_terminal[0] = 1;
-    bc_map["high_potential"] = new hephaestus::FunctionDirichletBC(
+
+    mfem::Vector jVec(3);
+    jVec = 0.0;
+    jVec(2) = -100.0;
+    mfem::VectorConstantCoefficient *jVecCoef =
+        new mfem::VectorConstantCoefficient(jVec);
+    bc_map["current_inlet"] = new hephaestus::IntegratedBC(
         std::string("electric_potential"), high_terminal,
-        new mfem::FunctionCoefficient(potential_high));
+        new mfem::BoundaryNormalLFIntegrator(*jVecCoef));
+
+    // bc_map["high_potential"] = new hephaestus::FunctionDirichletBC(
+    //     std::string("electric_potential"), high_terminal,
+    //     new mfem::FunctionCoefficient(potential_high));
 
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 2;
