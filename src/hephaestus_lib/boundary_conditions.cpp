@@ -108,9 +108,10 @@ mfem::Array<int> BCMap::getEssentialBdrMarkers(const std::string &name_,
   return global_ess_markers;
 }
 
-mfem::Array<int> BCMap::applyEssentialBCs(const std::string &name_,
-                                          mfem::GridFunction &gridfunc,
-                                          mfem::Mesh *mesh_, double time) {
+void BCMap::applyEssentialBCs(const std::string &name_,
+                              mfem::Array<int> &ess_tdof_list,
+                              mfem::GridFunction &gridfunc, mfem::Mesh *mesh_,
+                              double time) {
 
   for (auto const &[name, bc_] : *this) {
     if (bc_->name == name_) {
@@ -122,9 +123,7 @@ mfem::Array<int> BCMap::applyEssentialBCs(const std::string &name_,
     }
   }
   mfem::Array<int> ess_bdr = getEssentialBdrMarkers(name_, mesh_);
-  mfem::Array<int> ess_tdof_list;
   gridfunc.FESpace()->GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
-  return ess_tdof_list;
 };
 
 void BCMap::applyIntegratedBCs(const std::string &name_, mfem::LinearForm &lf,

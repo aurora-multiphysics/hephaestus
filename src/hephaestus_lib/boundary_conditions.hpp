@@ -86,9 +86,10 @@ public:
   mfem::Array<int> getEssentialBdrMarkers(const std::string &name_,
                                           mfem::Mesh *mesh_);
 
-  mfem::Array<int> applyEssentialBCs(const std::string &name_,
-                                     mfem::GridFunction &gridfunc,
-                                     mfem::Mesh *mesh_, double time = 0.0);
+  void applyEssentialBCs(const std::string &name_,
+                         mfem::Array<int> &ess_tdof_list,
+                         mfem::GridFunction &gridfunc, mfem::Mesh *mesh_,
+                         double time = 0.0);
 
   void applyIntegratedBCs(const std::string &name_, mfem::LinearForm &lf,
                           mfem::Mesh *mesh_);
