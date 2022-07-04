@@ -90,10 +90,11 @@ void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
 
   // form the Laplacian and solve it
   mfem::ParGridFunction Phi_gf(H1FESpace_);
+  mfem::Array<int> poisson_ess_tdof_list;
   Phi_gf = 0.0;
-  mfem::Array<int> poisson_ess_tdof_list = _bc_map.applyEssentialBCs(
-      "electric_potential", Phi_gf, pmesh_, this->GetTime());
   *b0 = 0.0;
+  _bc_map.applyEssentialBCs("electric_potential", poisson_ess_tdof_list, Phi_gf,
+                            pmesh_, this->GetTime());
   _bc_map.applyIntegratedBCs("electric_potential", *b0, pmesh_);
   b0->Assemble();
 
@@ -127,11 +128,10 @@ void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   m1->AddMult(e_, *b1, 1.0);
 
   mfem::ParGridFunction J_gf(HCurlFESpace_);
-  J_gf = 0.0;
-  mfem::Array<int> ess_bdr = _bc_map.applyEssentialBCs("electric_field", J_gf,
-                                                       pmesh_, this->GetTime());
   mfem::Array<int> ess_tdof_list;
-  HCurlFESpace_->GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
+  J_gf = 0.0;
+  _bc_map.applyEssentialBCs("electric_field", ess_tdof_list, J_gf, pmesh_,
+                            this->GetTime());
   a1->FormLinearSystem(ess_tdof_list, J_gf, *b1, *A1, *X1, *B1);
 
   // We only need to create the solver and preconditioner once
