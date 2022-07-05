@@ -22,38 +22,25 @@ protected:
 
   hephaestus::Inputs eform_rod_inputs() {
     double sigma = 2.0 * M_PI * 10;
-    double Tcapacity = 1.0;
-    double Tconductivity = 0.01;
 
     double sigmaAir;
-    double TcondAir;
-    double TcapAir;
 
     sigmaAir = 1.0e-6 * sigma;
-    TcondAir = 1.0e6 * Tconductivity;
-    TcapAir = 1.0 * Tcapacity;
 
     hephaestus::Subdomain wire("wire", 1);
     wire.property_map["electrical_conductivity"] =
         new mfem::ConstantCoefficient(sigma);
-    wire.property_map["heat_capacity"] =
-        new mfem::ConstantCoefficient(Tcapacity);
-    wire.property_map["inverse_heat_capacity"] =
-        new mfem::ConstantCoefficient(1.0 / Tcapacity);
-    wire.property_map["inverse_thermal_conductivity"] =
-        new mfem::ConstantCoefficient(1.0 / Tconductivity);
 
     hephaestus::Subdomain air("air", 2);
     air.property_map["electrical_conductivity"] =
         new mfem::ConstantCoefficient(sigmaAir);
-    air.property_map["heat_capacity"] = new mfem::ConstantCoefficient(TcapAir);
-    air.property_map["inverse_heat_capacity"] =
-        new mfem::ConstantCoefficient(1.0 / TcapAir);
-    air.property_map["inverse_thermal_conductivity"] =
-        new mfem::ConstantCoefficient(1.0 / TcondAir);
 
     hephaestus::DomainProperties domain_properties(
         std::vector<hephaestus::Subdomain>({wire, air}));
+
+    domain_properties.scalar_property_map["electrical_conductivity"] =
+        new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
+            std::string("electrical_conductivity")));
 
     hephaestus::BCMap bc_map;
     mfem::VectorFunctionCoefficient *edotVecCoef =
@@ -61,6 +48,8 @@ protected:
     bc_map["tangential_dEdt"] = new hephaestus::VectorFunctionDirichletBC(
         std::string("electric_field"), mfem::Array<int>({1, 2, 3}),
         edotVecCoef);
+    domain_properties.scalar_property_map["magnetic_permeability"] =
+        new mfem::ConstantCoefficient(1.0);
     domain_properties.vector_property_map["surface_tangential_dEdt"] =
         edotVecCoef;
 
@@ -75,7 +64,7 @@ protected:
         jVecCoef;
     // bc_map["high_potential"] = new hephaestus::FunctionDirichletBC(
     //     std::string("electric_potential"), high_terminal,
-    //     new mfem::FunctionCoefficient(potential_high));
+    //     new mfem::FunctionCoefficient(potential_high)); 21296.88969549
 
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 2;
