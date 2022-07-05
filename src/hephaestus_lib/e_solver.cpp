@@ -88,11 +88,14 @@ void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   de_.MakeRef(HCurlFESpace_, dX_dt, true_offsets[1]);
   db_.MakeRef(HDivFESpace_, dX_dt, true_offsets[2]);
 
+  _domain_properties.SetTime(this->GetTime());
+
   // form the Laplacian and solve it
   mfem::ParGridFunction Phi_gf(H1FESpace_);
   mfem::Array<int> poisson_ess_tdof_list;
   Phi_gf = 0.0;
   *b0 = 0.0;
+
   _bc_map.applyEssentialBCs("electric_potential", poisson_ess_tdof_list, Phi_gf,
                             pmesh_, this->GetTime());
   _bc_map.applyIntegratedBCs("electric_potential", *b0, pmesh_);
