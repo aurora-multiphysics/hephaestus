@@ -13,35 +13,14 @@ protected:
     return 0.0;
   }
   static void edot_bc(const mfem::Vector &x, mfem::Vector &E) { E = 0.0; }
+  static void j_src(const mfem::Vector &x, double t, mfem::Vector &j) {
+    double wj_(2.0 * M_PI / 60.0);
+    j[0] = 0.0;
+    j[1] = 0.0;
+    j[2] = 2 * sin(wj_ * t);
+  }
 
   hephaestus::Inputs eform_rod_inputs() {
-    hephaestus::BCMap bc_map;
-    bc_map["tangential_dEdt"] = new hephaestus::VectorFunctionDirichletBC(
-        std::string("electric_field"), mfem::Array<int>({1, 2, 3}),
-        new mfem::VectorFunctionCoefficient(3, edot_bc));
-
-    mfem::Array<int> high_terminal(1);
-    high_terminal[0] = 1;
-
-    mfem::Vector jVec(3);
-    jVec = 0.0;
-    jVec(2) = -100.0;
-    mfem::VectorConstantCoefficient *jVecCoef =
-        new mfem::VectorConstantCoefficient(jVec);
-    bc_map["current_inlet"] = new hephaestus::IntegratedBC(
-        std::string("electric_potential"), high_terminal,
-        new mfem::BoundaryNormalLFIntegrator(*jVecCoef));
-
-    // bc_map["high_potential"] = new hephaestus::FunctionDirichletBC(
-    //     std::string("electric_potential"), high_terminal,
-    //     new mfem::FunctionCoefficient(potential_high));
-
-    mfem::Array<int> ground_terminal(1);
-    ground_terminal[0] = 2;
-    bc_map["ground_potential"] = new hephaestus::FunctionDirichletBC(
-        std::string("electric_potential"), ground_terminal,
-        new mfem::FunctionCoefficient(potential_ground));
-
     double sigma = 2.0 * M_PI * 10;
     double Tcapacity = 1.0;
     double Tconductivity = 0.01;
@@ -73,8 +52,36 @@ protected:
     air.property_map["inverse_thermal_conductivity"] =
         new mfem::ConstantCoefficient(1.0 / TcondAir);
 
-    hephaestus::DomainProperties material_map(
+    hephaestus::DomainProperties domain_properties(
         std::vector<hephaestus::Subdomain>({wire, air}));
+
+    hephaestus::BCMap bc_map;
+    mfem::VectorFunctionCoefficient *edotVecCoef =
+        new mfem::VectorFunctionCoefficient(3, edot_bc);
+    bc_map["tangential_dEdt"] = new hephaestus::VectorFunctionDirichletBC(
+        std::string("electric_field"), mfem::Array<int>({1, 2, 3}),
+        edotVecCoef);
+    domain_properties.vector_property_map["surface_tangential_dEdt"] =
+        edotVecCoef;
+
+    mfem::Array<int> high_terminal(1);
+    high_terminal[0] = 1;
+    mfem::VectorFunctionCoefficient *jVecCoef =
+        new mfem::VectorFunctionCoefficient(3, j_src);
+    bc_map["current_inlet"] = new hephaestus::IntegratedBC(
+        std::string("electric_potential"), high_terminal,
+        new mfem::BoundaryNormalLFIntegrator(*jVecCoef));
+    domain_properties.vector_property_map["surface_normal_current_density"] =
+        jVecCoef;
+    // bc_map["high_potential"] = new hephaestus::FunctionDirichletBC(
+    //     std::string("electric_potential"), high_terminal,
+    //     new mfem::FunctionCoefficient(potential_high));
+
+    mfem::Array<int> ground_terminal(1);
+    ground_terminal[0] = 2;
+    bc_map["ground_potential"] = new hephaestus::FunctionDirichletBC(
+        std::string("electric_potential"), ground_terminal,
+        new mfem::FunctionCoefficient(potential_ground));
 
     hephaestus::Executioner executioner(std::string("transient"), 0.5, 0.0,
                                         2.5);
@@ -89,7 +96,7 @@ protected:
         new mfem::ParaViewDataCollection("EFormParaView");
     hephaestus::Outputs outputs(data_collections);
     hephaestus::Inputs inputs(mesh, std::string("EForm"), 2, bc_map,
-                              material_map, executioner, outputs);
+                              domain_properties, executioner, outputs);
     return inputs;
   }
 };

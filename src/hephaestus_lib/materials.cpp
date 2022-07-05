@@ -10,6 +10,16 @@ DomainProperties::DomainProperties() {}
 DomainProperties::DomainProperties(std::vector<Subdomain> subdomains_)
     : subdomains(subdomains_) {}
 
+void DomainProperties::SetTime(double time) {
+  for (auto const &[name, coeff_] : scalar_property_map) {
+    coeff_->SetTime(time);
+  }
+  for (auto const &[name, vec_coeff_] : vector_property_map) {
+    vec_coeff_->SetTime(time);
+  }
+  t = time;
+}
+
 mfem::PWCoefficient
 DomainProperties::getGlobalScalarProperty(std::string property_name_) {
 
