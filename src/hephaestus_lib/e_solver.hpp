@@ -13,8 +13,8 @@ public:
 
   void Init(mfem::Vector &X);
 
-  void buildM1(mfem::PWCoefficient &sigma);
-  void buildCurl(mfem::ConstantCoefficient &muInv);
+  void buildM1(mfem::Coefficient *sigma);
+  void buildCurl(mfem::Coefficient *muInv);
   void buildGrad();
 
   void ImplicitSolve(const double dt, const mfem::Vector &X,
@@ -73,9 +73,13 @@ private:
   mfem::ParGridFunction *bd_; // Dual of B (HCurl)
   mfem::ParGridFunction *jd_; // Dual of J, the rhs vector (HCurl)
 
-  double dt, mu;
-  mfem::ConstantCoefficient muInvCoef, dtMuInvCoef; // Reluctivity Coefficient
-  mfem::PWCoefficient sigmaCoef; // Electric Conductivity Coefficient
+  double mu;
+  mfem::ConstantCoefficient dtCoef;  // Coefficient for timestep scaling
+  mfem::ConstantCoefficient oneCoef; // Auxiliary coefficient
+  mfem::Coefficient *muInvCoef;      // Reluctivity Coefficient
+  mfem::Coefficient *muCoef;         // Permeability Coefficient
+  mfem::Coefficient *dtMuInvCoef;
+  mfem::Coefficient *sigmaCoef; // Electric Conductivity Coefficient
 
   // Sockets used to communicate with GLVis
   std::map<std::string, mfem::socketstream *> socks_;
