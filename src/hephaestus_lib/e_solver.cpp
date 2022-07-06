@@ -57,7 +57,7 @@ ESolver::ESolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
   this->buildCurl(muInvCoef);
   this->buildGrad();
   b0 = new mfem::ParLinearForm(H1FESpace_);
-  b1 = new mfem::ParGridFunction(HCurlFESpace_);
+  b1 = new mfem::ParLinearForm(HCurlFESpace_);
   A0 = new mfem::HypreParMatrix;
   A1 = new mfem::HypreParMatrix;
   X0 = new mfem::Vector;
@@ -132,6 +132,8 @@ void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   mfem::Array<int> ess_tdof_list;
   J_gf = 0.0;
   _bc_map.applyEssentialBCs("electric_field", ess_tdof_list, J_gf, pmesh_);
+  _bc_map.applyIntegratedBCs("electric_field", *b1, pmesh_);
+
   if (a1 == NULL || fabs(dt - dt_A1) > 1.0e-12 * dt) {
     this->buildA1(sigmaCoef, dtMuInvCoef);
   }
