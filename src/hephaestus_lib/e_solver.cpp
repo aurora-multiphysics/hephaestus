@@ -94,9 +94,8 @@ void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   mfem::Array<int> poisson_ess_tdof_list;
   Phi_gf = 0.0;
   *b0 = 0.0;
-
   _bc_map.applyEssentialBCs("electric_potential", poisson_ess_tdof_list, Phi_gf,
-                            pmesh_, this->GetTime());
+                            pmesh_);
   _bc_map.applyIntegratedBCs("electric_potential", *b0, pmesh_);
   b0->Assemble();
 
@@ -132,8 +131,7 @@ void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   mfem::ParGridFunction J_gf(HCurlFESpace_);
   mfem::Array<int> ess_tdof_list;
   J_gf = 0.0;
-  _bc_map.applyEssentialBCs("electric_field", ess_tdof_list, J_gf, pmesh_,
-                            this->GetTime());
+  _bc_map.applyEssentialBCs("electric_field", ess_tdof_list, J_gf, pmesh_);
   if (a1 == NULL || fabs(dt - dt_A1) > 1.0e-12 * dt) {
     this->buildA1(sigmaCoef, dtMuInvCoef);
   }

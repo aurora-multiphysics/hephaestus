@@ -33,10 +33,9 @@ FunctionDirichletBC::FunctionDirichletBC(const std::string &name_,
     : EssentialBC(name_, bdr_attributes_), coeff(coeff_), coeff_im(coeff_im_) {}
 
 void FunctionDirichletBC::applyBC(mfem::GridFunction &gridfunc,
-                                  mfem::Mesh *mesh_, double time) {
+                                  mfem::Mesh *mesh_) {
   mfem::Array<int> ess_bdrs(mesh_->bdr_attributes.Max());
   ess_bdrs = this->getMarkers(*mesh_);
-  this->coeff->SetTime(time);
   gridfunc.ProjectBdrCoefficient(*(this->coeff), ess_bdrs);
 }
 
@@ -54,10 +53,9 @@ VectorFunctionDirichletBC::VectorFunctionDirichletBC(
       vec_coeff_im(vec_coeff_im_) {}
 
 void VectorFunctionDirichletBC::applyBC(mfem::GridFunction &gridfunc,
-                                        mfem::Mesh *mesh_, double time) {
+                                        mfem::Mesh *mesh_) {
   mfem::Array<int> ess_bdrs(mesh_->bdr_attributes.Max());
   ess_bdrs = this->getMarkers(*mesh_);
-  this->vec_coeff->SetTime(time);
   gridfunc.ProjectBdrCoefficient(*(this->vec_coeff), ess_bdrs);
 }
 
@@ -110,15 +108,14 @@ mfem::Array<int> BCMap::getEssentialBdrMarkers(const std::string &name_,
 
 void BCMap::applyEssentialBCs(const std::string &name_,
                               mfem::Array<int> &ess_tdof_list,
-                              mfem::GridFunction &gridfunc, mfem::Mesh *mesh_,
-                              double time) {
+                              mfem::GridFunction &gridfunc, mfem::Mesh *mesh_) {
 
   for (auto const &[name, bc_] : *this) {
     if (bc_->name == name_) {
       hephaestus::EssentialBC *bc =
           dynamic_cast<hephaestus::EssentialBC *>(bc_);
       if (bc != NULL) {
-        bc->applyBC(gridfunc, mesh_, time);
+        bc->applyBC(gridfunc, mesh_);
       }
     }
   }
