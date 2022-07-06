@@ -64,7 +64,7 @@ protected:
         jVecCoef;
     // bc_map["high_potential"] = new hephaestus::FunctionDirichletBC(
     //     std::string("electric_potential"), high_terminal,
-    //     new mfem::FunctionCoefficient(potential_high)); 21296.88969549
+    //     new mfem::FunctionCoefficient(potential_high));
 
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 2;

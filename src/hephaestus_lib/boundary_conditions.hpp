@@ -27,8 +27,7 @@ public:
   EssentialBC();
   EssentialBC(const std::string &name_, mfem::Array<int> bdr_attributes_);
 
-  virtual void applyBC(mfem::GridFunction &gridfunc, mfem::Mesh *mesh_,
-                       double time = 0.0){};
+  virtual void applyBC(mfem::GridFunction &gridfunc, mfem::Mesh *mesh_){};
 };
 
 class FunctionDirichletBC : public EssentialBC {
@@ -41,8 +40,8 @@ public:
                       mfem::FunctionCoefficient *coeff_,
                       mfem::FunctionCoefficient *coeff_im_ = nullptr);
 
-  virtual void applyBC(mfem::GridFunction &gridfunc, mfem::Mesh *mesh_,
-                       double time = 0.0) override;
+  virtual void applyBC(mfem::GridFunction &gridfunc,
+                       mfem::Mesh *mesh_) override;
 
   mfem::FunctionCoefficient *coeff;
   mfem::FunctionCoefficient *coeff_im;
@@ -58,8 +57,8 @@ public:
       mfem::VectorFunctionCoefficient *vec_coeff_,
       mfem::VectorFunctionCoefficient *vec_coeff_im_ = nullptr);
 
-  virtual void applyBC(mfem::GridFunction &gridfunc, mfem::Mesh *mesh_,
-                       double time = 0.0) override;
+  virtual void applyBC(mfem::GridFunction &gridfunc,
+                       mfem::Mesh *mesh_) override;
 
   mfem::VectorFunctionCoefficient *vec_coeff;
   mfem::VectorFunctionCoefficient *vec_coeff_im;
@@ -88,8 +87,7 @@ public:
 
   void applyEssentialBCs(const std::string &name_,
                          mfem::Array<int> &ess_tdof_list,
-                         mfem::GridFunction &gridfunc, mfem::Mesh *mesh_,
-                         double time = 0.0);
+                         mfem::GridFunction &gridfunc, mfem::Mesh *mesh_);
 
   void applyIntegratedBCs(const std::string &name_, mfem::LinearForm &lf,
                           mfem::Mesh *mesh_);
