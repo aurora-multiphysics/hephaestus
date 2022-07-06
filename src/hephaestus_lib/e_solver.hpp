@@ -13,6 +13,7 @@ public:
 
   void Init(mfem::Vector &X);
 
+  void buildA1(mfem::Coefficient *sigma, mfem::Coefficient *dtMuInv);
   void buildM1(mfem::Coefficient *sigma);
   void buildCurl(mfem::Coefficient *muInv);
   void buildGrad();
@@ -73,7 +74,7 @@ private:
   mfem::ParGridFunction *bd_; // Dual of B (HCurl)
   mfem::ParGridFunction *jd_; // Dual of J, the rhs vector (HCurl)
 
-  double mu;
+  double dt_A1;
   mfem::ConstantCoefficient dtCoef;  // Coefficient for timestep scaling
   mfem::ConstantCoefficient oneCoef; // Auxiliary coefficient
   mfem::Coefficient *muInvCoef;      // Reluctivity Coefficient

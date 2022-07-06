@@ -3,7 +3,6 @@
 namespace hephaestus {
 double prodFunc(double a, double b) { return a * b; }
 double fracFunc(double a, double b) { return a / b; }
-void edot_bc(const mfem::Vector &x, mfem::Vector &E) { E = 0.0; }
 
 ESolver::ESolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
                  hephaestus::DomainProperties &domain_properties)
@@ -15,8 +14,8 @@ ESolver::ESolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
           new mfem::common::ND_ParFESpace(&pmesh, order, pmesh.Dimension())),
       HDivFESpace_(
           new mfem::common::RT_ParFESpace(&pmesh, order, pmesh.Dimension())),
-      true_offsets(4), amg_a0(NULL), pcg_a0(NULL), ams_a1(NULL), pcg_a1(NULL),
-      m1(NULL), grad(NULL), curl(NULL), weakCurl(NULL),
+      true_offsets(4), a1(NULL), amg_a0(NULL), pcg_a0(NULL), ams_a1(NULL),
+      pcg_a1(NULL), m1(NULL), grad(NULL), curl(NULL), weakCurl(NULL),
       v_(mfem::ParGridFunction(H1FESpace_)),
       e_(mfem::ParGridFunction(HCurlFESpace_)),
       b_(mfem::ParGridFunction(HDivFESpace_)),
@@ -37,7 +36,7 @@ ESolver::ESolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
   this->width = true_offsets[3];
 
   // Define material property coefficients
-  dtCoef = mfem::ConstantCoefficient(0.5);
+  dtCoef = mfem::ConstantCoefficient(1.0);
   oneCoef = mfem::ConstantCoefficient(1.0);
   sigmaCoef = domain_properties.scalar_property_map["electrical_conductivity"];
   muCoef = domain_properties.scalar_property_map["magnetic_permeability"];
@@ -53,10 +52,6 @@ ESolver::ESolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
   // (ν∇×E, ∇×E') - (σE, E') - (J0, E') - <(ν∇×E) × n, E'> = 0
   // a1 = -σ(dE, E') + dt (ν∇×E, ∇×E')
   // b1 = dt [(J0, E') + <(ν∇×E) × n, E'>]
-  a1 = new mfem::ParBilinearForm(HCurlFESpace_);
-  a1->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*sigmaCoef));
-  a1->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*dtMuInvCoef));
-  a1->Assemble();
 
   this->buildM1(sigmaCoef);
   this->buildCurl(muInvCoef);
@@ -81,8 +76,8 @@ where X is the state vector containing A and V
 */
 void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
                             mfem::Vector &dX_dt) {
-  dtCoef.constant = dt;
   dX_dt = 0.0;
+  dtCoef.constant = dt;
 
   v_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
   e_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
@@ -139,6 +134,9 @@ void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   J_gf = 0.0;
   _bc_map.applyEssentialBCs("electric_field", ess_tdof_list, J_gf, pmesh_,
                             this->GetTime());
+  if (a1 == NULL || fabs(dt - dt_A1) > 1.0e-12 * dt) {
+    this->buildA1(sigmaCoef, dtMuInvCoef);
+  }
   a1->FormLinearSystem(ess_tdof_list, J_gf, *b1, *A1, *X1, *B1);
 
   // We only need to create the solver and preconditioner once
@@ -172,6 +170,25 @@ void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   // note curl maps GF to GF
   curl->Mult(e_, db_);
   db_ *= -1.0;
+}
+
+void ESolver::buildA1(mfem::Coefficient *Sigma, mfem::Coefficient *DtMuInv) {
+  if (a1 != NULL) {
+    delete a1;
+  }
+
+  // First create and assemble the bilinear form.  For now we assume the mesh
+  // isn't moving, the materials are time independent, and dt is constant. So
+  // we only need to do this once.
+
+  a1 = new mfem::ParBilinearForm(HCurlFESpace_);
+  a1->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*Sigma));
+  a1->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*DtMuInv));
+  a1->Assemble();
+
+  // Don't finalize or parallel assemble this is done in FormLinearSystem.
+
+  dt_A1 = dtCoef.constant;
 }
 
 void ESolver::buildM1(mfem::Coefficient *Sigma) {
