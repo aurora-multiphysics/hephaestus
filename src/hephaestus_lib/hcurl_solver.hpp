@@ -1,87 +1,96 @@
-// #pragma once
-// #include "../common/pfem_extras.hpp"
-// #include "inputs.hpp"
+#pragma once
+#include "../common/pfem_extras.hpp"
+#include "inputs.hpp"
 
-// namespace hephaestus {
+namespace hephaestus {
+double prodFunc(double a, double b);
+double fracFunc(double a, double b);
 
-// class HCurlSolver : public mfem::TimeDependentOperator {
-// public:
-//   HCurlSolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
-//               hephaestus::DomainProperties &domain_properties);
+class HCurlSolver : public mfem::TimeDependentOperator {
+  virtual void
+  SetMaterialCoefficients(hephaestus::DomainProperties &domain_properties);
+  virtual void SetVariableNames();
 
-//   ~HCurlSolver(){};
+public:
+  HCurlSolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
+              hephaestus::DomainProperties &domain_properties);
 
-//   void Init(mfem::Vector &X);
+  ~HCurlSolver(){};
 
-//   void buildA1(mfem::Coefficient *sigma, mfem::Coefficient *dtMuInv);
-//   void buildM1(mfem::Coefficient *sigma);
-//   void buildCurl(mfem::Coefficient *muInv);
-//   void buildGrad();
+  void Init(mfem::Vector &X);
 
-//   void ImplicitSolve(const double dt, const mfem::Vector &X,
-//                      mfem::Vector &dX_dt);
+  void buildA1(mfem::Coefficient *sigma, mfem::Coefficient *dtMuInv);
+  void buildM1(mfem::Coefficient *sigma);
+  void buildCurl(mfem::Coefficient *muInv);
+  void buildGrad();
 
-//   void RegisterOutputFields(mfem::DataCollection *dc_);
+  void ImplicitSolve(const double dt, const mfem::Vector &X,
+                     mfem::Vector &dX_dt);
 
-//   void WriteOutputFields(mfem::DataCollection *dc_, int it = 0);
+  void RegisterOutputFields(mfem::DataCollection *dc_);
 
-//   void WriteConsoleSummary(double t, int it);
+  void WriteOutputFields(mfem::DataCollection *dc_, int it = 0);
 
-//   void InitializeGLVis();
+  void WriteConsoleSummary(double t, int it);
 
-//   void DisplayToGLVis();
-//   mfem::common::H1_ParFESpace *H1FESpace_;
-//   mfem::common::ND_ParFESpace *HCurlFESpace_;
-//   mfem::common::RT_ParFESpace *HDivFESpace_;
+  void InitializeGLVis();
 
-//   mfem::Array<int> true_offsets;
+  void DisplayToGLVis();
+  mfem::common::H1_ParFESpace *H1FESpace_;
+  mfem::common::ND_ParFESpace *HCurlFESpace_;
+  mfem::common::RT_ParFESpace *HDivFESpace_;
 
-//   double ElectricLosses() const;
+  mfem::Array<int> true_offsets;
 
-// private:
-//   int myid_;
-//   int num_procs_;
-//   hephaestus::BCMap _bc_map;
-//   hephaestus::DomainProperties _domain_properties;
-//   mfem::ParMesh *pmesh_;
+  double ElectricLosses() const;
 
-//   // mfem::ParBilinearForm *curlMuInvCurl_;
-//   // mfem::ParBilinearForm *hCurlMass_;
-//   // mfem::ParMixedBilinearForm *sigmaGradH1HCurl_;
-//   // mfem::ParMixedBilinearForm *hCurlH1Stiff;
+  std::string u_name, p_name, v_name;
+  std::string u_display_name, p_display_name, v_display_name;
 
-//   mfem::ParBilinearForm *a0, *a1, *m1;
-//   mfem::HypreParMatrix *A0, *A1;
-//   mfem::Vector *X0, *X1, *B0, *B1;
+protected:
+  int myid_;
+  int num_procs_;
+  hephaestus::BCMap _bc_map;
+  hephaestus::DomainProperties _domain_properties;
+  mfem::ParMesh *pmesh_;
 
-//   mfem::ParDiscreteLinearOperator *grad;
-//   mfem::ParDiscreteLinearOperator *curl;
-//   mfem::ParMixedBilinearForm *weakCurl;
-//   mutable mfem::HypreSolver *amg_a0;
-//   mutable mfem::HyprePCG *pcg_a0;
-//   mutable mfem::HypreSolver *ams_a1;
-//   mutable mfem::HyprePCG *pcg_a1;
+  // mfem::ParBilinearForm *curlMuInvCurl_;
+  // mfem::ParBilinearForm *hCurlMass_;
+  // mfem::ParMixedBilinearForm *sigmaGradH1HCurl_;
+  // mfem::ParMixedBilinearForm *hCurlH1Stiff;
 
-//   // temporary work vectors
-//   mfem::ParLinearForm *b0, *b1;
-//   mfem::ParGridFunction e_, de_; // Electric Field (HCurl)
-//   mfem::ParGridFunction v_, dv_; // Scalar Potential (H1)
-//   mfem::ParGridFunction *h_;     // Magnetic Field (HCurl)
-//   mfem::ParGridFunction b_, db_; // Magnetic Flux (HDiv)
+  mfem::ParBilinearForm *a0, *a1, *m1;
+  mfem::HypreParMatrix *A0, *A1;
+  mfem::Vector *X0, *X1, *B0, *B1;
 
-//   mfem::ParGridFunction *jr_; // Raw Volumetric Current Density (HCurl)
-//   mfem::ParGridFunction *bd_; // Dual of B (HCurl)
-//   mfem::ParGridFunction *jd_; // Dual of J, the rhs vector (HCurl)
+  mfem::ParDiscreteLinearOperator *grad;
+  mfem::ParDiscreteLinearOperator *curl;
+  mfem::ParMixedBilinearForm *weakCurl;
+  mutable mfem::HypreSolver *amg_a0;
+  mutable mfem::HyprePCG *pcg_a0;
+  mutable mfem::HypreSolver *ams_a1;
+  mutable mfem::HyprePCG *pcg_a1;
 
-//   double dt_A1;
-//   mfem::ConstantCoefficient dtCoef;  // Coefficient for timestep scaling
-//   mfem::ConstantCoefficient oneCoef; // Auxiliary coefficient
-//   mfem::Coefficient *muInvCoef;      // Reluctivity Coefficient
-//   mfem::Coefficient *muCoef;         // Permeability Coefficient
-//   mfem::Coefficient *dtMuInvCoef;
-//   mfem::Coefficient *sigmaCoef; // Electric Conductivity Coefficient
+  // temporary work vectors
+  mfem::ParLinearForm *b0, *b1;
+  mfem::ParGridFunction e_, de_; // Electric Field (HCurl)
+  mfem::ParGridFunction v_, dv_; // Scalar Potential (H1)
+  mfem::ParGridFunction *h_;     // Magnetic Field (HCurl)
+  mfem::ParGridFunction b_, db_; // Magnetic Flux (HDiv)
 
-//   // Sockets used to communicate with GLVis
-//   std::map<std::string, mfem::socketstream *> socks_;
-// };
-// } // namespace hephaestus
+  mfem::ParGridFunction *jr_; // Raw Volumetric Current Density (HCurl)
+  mfem::ParGridFunction *bd_; // Dual of B (HCurl)
+  mfem::ParGridFunction *jd_; // Dual of J, the rhs vector (HCurl)
+
+  double dt_A1;
+  mfem::ConstantCoefficient dtCoef;  // Coefficient for timestep scaling
+  mfem::ConstantCoefficient oneCoef; // Auxiliary coefficient
+  mfem::Coefficient *muInvCoef;      // Reluctivity Coefficient
+  mfem::Coefficient *muCoef;         // Permeability Coefficient
+  mfem::Coefficient *dtMuInvCoef;
+  mfem::Coefficient *sigmaCoef; // Electric Conductivity Coefficient
+
+  // Sockets used to communicate with GLVis
+  std::map<std::string, mfem::socketstream *> socks_;
+};
+} // namespace hephaestus
