@@ -13,4 +13,4 @@
 #include "e_solver.hpp"
 #include "inputs.hpp"
 
-void e_solve(int argc, char *argv[], hephaestus::Inputs inputs);
+void transient_solve(int argc, char *argv[], hephaestus::Inputs inputs);

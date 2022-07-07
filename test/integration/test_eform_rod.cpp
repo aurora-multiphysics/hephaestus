@@ -1,4 +1,4 @@
-#include "hephaestus_eform.hpp"
+#include "hephaestus_transient.hpp"
 #include <gtest/gtest.h>
 
 extern const char *DATA_DIR;
@@ -93,5 +93,5 @@ protected:
 TEST_F(TestEFormRod, CheckRun) {
   hephaestus::Inputs inputs(eform_rod_inputs());
   std::vector<char *> argv;
-  e_solve(0, argv.data(), inputs);
+  transient_solve(0, argv.data(), inputs);
 }
