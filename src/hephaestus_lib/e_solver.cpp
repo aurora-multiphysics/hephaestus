@@ -38,15 +38,13 @@ ESolver::ESolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
   // Define material property coefficients
   dtCoef = mfem::ConstantCoefficient(1.0);
   oneCoef = mfem::ConstantCoefficient(1.0);
-  sigmaCoef = domain_properties.scalar_property_map["electrical_conductivity"];
-  muCoef = domain_properties.scalar_property_map["magnetic_permeability"];
-  muInvCoef = new mfem::TransformedCoefficient(&oneCoef, muCoef, fracFunc);
-  dtMuInvCoef = new mfem::TransformedCoefficient(&dtCoef, muInvCoef, prodFunc);
+  SetMaterialCoefficients(domain_properties);
+  SetVariableNames();
 
   // Variables
-  // v_, "electric_potential"
-  // e_, "electric_field"
-  // b_, "magnetic_flux_density", "Magnetic Flux Density (B)" (auxvar)
+  // v_, p_name
+  // e_, u_name
+  // b_, v_name, "Magnetic Flux Density (B)" (auxvar)
 
   // Coefficients
   // σ, "electrical_conductivity"
@@ -83,6 +81,7 @@ where X is the state vector containing A and V
 (M1+dt S1) E = WeakCurl^T B + Grad V
         S0 V = 0
 */
+
 void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
                             mfem::Vector &dX_dt) {
   dX_dt = 0.0;
@@ -103,9 +102,8 @@ void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   mfem::Array<int> poisson_ess_tdof_list;
   Phi_gf = 0.0;
   *b0 = 0.0;
-  _bc_map.applyEssentialBCs("electric_potential", poisson_ess_tdof_list, Phi_gf,
-                            pmesh_);
-  _bc_map.applyIntegratedBCs("electric_potential", *b0, pmesh_);
+  _bc_map.applyEssentialBCs(p_name, poisson_ess_tdof_list, Phi_gf, pmesh_);
+  _bc_map.applyIntegratedBCs(p_name, *b0, pmesh_);
   b0->Assemble();
   a0->FormLinearSystem(poisson_ess_tdof_list, Phi_gf, *b0, *A0, *X0, *B0);
 
@@ -139,8 +137,8 @@ void ESolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   mfem::ParGridFunction J_gf(HCurlFESpace_);
   mfem::Array<int> ess_tdof_list;
   J_gf = 0.0;
-  _bc_map.applyEssentialBCs("electric_field", ess_tdof_list, J_gf, pmesh_);
-  _bc_map.applyIntegratedBCs("electric_field", *b1, pmesh_);
+  _bc_map.applyEssentialBCs(u_name, ess_tdof_list, J_gf, pmesh_);
+  _bc_map.applyIntegratedBCs(u_name, *b1, pmesh_);
   if (a1 == NULL || fabs(dt - dt_A1) > 1.0e-12 * dt) {
     this->buildA1(sigmaCoef, dtMuInvCoef);
   }
@@ -256,10 +254,29 @@ void ESolver::Init(mfem::Vector &X) {
   b_.ProjectCoefficient(Zero_vec);
 }
 
+void ESolver::SetVariableNames() {
+  p_name = "electric_potential";
+  p_display_name = "Scalar Potential (V)";
+
+  u_name = "electric_field";
+  u_display_name = "Electric Field (E)";
+
+  v_name = "magnetic_flux_density";
+  v_display_name = "Magnetic Flux Density (B)";
+}
+
+void ESolver::SetMaterialCoefficients(
+    hephaestus::DomainProperties &domain_properties) {
+  sigmaCoef = domain_properties.scalar_property_map["electrical_conductivity"];
+  muCoef = domain_properties.scalar_property_map["magnetic_permeability"];
+  muInvCoef = new mfem::TransformedCoefficient(&oneCoef, muCoef, fracFunc);
+  dtMuInvCoef = new mfem::TransformedCoefficient(&dtCoef, muInvCoef, prodFunc);
+}
+
 void ESolver::RegisterOutputFields(mfem::DataCollection *dc_) {
-  dc_->RegisterField("electric_field", &e_);
-  dc_->RegisterField("magnetic_flux_density", &b_);
-  dc_->RegisterField("electric_potential", &v_);
+  dc_->RegisterField(u_name, &e_);
+  dc_->RegisterField(v_name, &b_);
+  dc_->RegisterField(p_name, &v_);
 }
 
 void ESolver::WriteConsoleSummary(double t, int it) {
@@ -288,14 +305,14 @@ void ESolver::InitializeGLVis() {
     std::cout << "Opening GLVis sockets." << std::endl;
   }
 
-  socks_["electric_field"] = new mfem::socketstream;
-  socks_["electric_field"]->precision(8);
+  socks_[u_name] = new mfem::socketstream;
+  socks_[u_name]->precision(8);
 
-  socks_["magnetic_flux_density"] = new mfem::socketstream;
-  socks_["magnetic_flux_density"]->precision(8);
+  socks_[v_name] = new mfem::socketstream;
+  socks_[v_name]->precision(8);
 
-  socks_["electric_potential"] = new mfem::socketstream;
-  socks_["electric_potential"]->precision(8);
+  socks_[p_name] = new mfem::socketstream;
+  socks_[p_name]->precision(8);
 
   if (myid_ == 0) {
     std::cout << "GLVis sockets open." << std::endl;
@@ -310,17 +327,16 @@ void ESolver::DisplayToGLVis() {
   int Ww = 350, Wh = 350;             // window size
   int offx = Ww + 10, offy = Wh + 45; // window offsets
 
-  mfem::common::VisualizeField(*socks_["electric_field"], vishost, visport, e_,
+  mfem::common::VisualizeField(*socks_[u_name], vishost, visport, e_,
                                "Electric Field (E)", Wx, Wy, Ww, Wh);
   Wx += offx;
 
-  mfem::common::VisualizeField(*socks_["magnetic_flux_density"], vishost,
-                               visport, b_, "Magnetic Flux Density (B)", Wx, Wy,
-                               Ww, Wh);
+  mfem::common::VisualizeField(*socks_[v_name], vishost, visport, b_,
+                               "Magnetic Flux Density (B)", Wx, Wy, Ww, Wh);
   Wx += offx;
 
-  mfem::common::VisualizeField(*socks_["electric_potential"], vishost, visport,
-                               v_, "Scalar Potential (V)", Wx, Wy, Ww, Wh);
+  mfem::common::VisualizeField(*socks_[p_name], vishost, visport, v_,
+                               "Scalar Potential (V)", Wx, Wy, Ww, Wh);
   Wx += offx;
 }
 
