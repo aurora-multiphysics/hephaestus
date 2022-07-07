@@ -5,6 +5,13 @@
 namespace hephaestus {
 
 class ESolver : public mfem::TimeDependentOperator {
+  virtual void
+  SetMaterialCoefficients(hephaestus::DomainProperties &domain_properties);
+  virtual void SetVariableNames();
+
+  std::string u_name, p_name, v_name;
+  std::string u_display_name, p_display_name, v_display_name;
+
 public:
   ESolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
           hephaestus::DomainProperties &domain_properties);
@@ -12,7 +19,6 @@ public:
   ~ESolver(){};
 
   void Init(mfem::Vector &X);
-
   void buildA1(mfem::Coefficient *sigma, mfem::Coefficient *dtMuInv);
   void buildM1(mfem::Coefficient *sigma);
   void buildCurl(mfem::Coefficient *muInv);
