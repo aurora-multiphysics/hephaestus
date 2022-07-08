@@ -11,6 +11,7 @@
 #pragma once
 #include "../common/pfem_extras.hpp"
 #include "e_solver.hpp"
+#include "h_solver.hpp"
 #include "inputs.hpp"
 
 void transient_solve(int argc, char *argv[], hephaestus::Inputs inputs);
