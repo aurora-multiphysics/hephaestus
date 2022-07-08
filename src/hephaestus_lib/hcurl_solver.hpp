@@ -31,7 +31,7 @@ public:
 
   void WriteOutputFields(mfem::DataCollection *dc_, int it = 0);
 
-  void WriteConsoleSummary(double t, int it);
+  virtual void WriteConsoleSummary(double t, int it);
 
   void InitializeGLVis();
 
@@ -53,11 +53,6 @@ protected:
   hephaestus::BCMap _bc_map;
   hephaestus::DomainProperties _domain_properties;
   mfem::ParMesh *pmesh_;
-
-  // mfem::ParBilinearForm *curlMuInvCurl_;
-  // mfem::ParBilinearForm *hCurlMass_;
-  // mfem::ParMixedBilinearForm *sigmaGradH1HCurl_;
-  // mfem::ParMixedBilinearForm *hCurlH1Stiff;
 
   mfem::ParBilinearForm *a0, *a1, *m1;
   mfem::HypreParMatrix *A0, *A1;
@@ -85,10 +80,9 @@ protected:
   double dt_A1;
   mfem::ConstantCoefficient dtCoef;  // Coefficient for timestep scaling
   mfem::ConstantCoefficient oneCoef; // Auxiliary coefficient
-  mfem::Coefficient *muInvCoef;      // Reluctivity Coefficient
-  mfem::Coefficient *muCoef;         // Permeability Coefficient
-  mfem::Coefficient *dtMuInvCoef;
-  mfem::Coefficient *sigmaCoef; // Electric Conductivity Coefficient
+  mfem::Coefficient *alphaCoef;      // Reluctivity Coefficient
+  mfem::Coefficient *dtAlphaCoef;
+  mfem::Coefficient *betaCoef; // Electric Conductivity Coefficient
 
   // Sockets used to communicate with GLVis
   std::map<std::string, mfem::socketstream *> socks_;
