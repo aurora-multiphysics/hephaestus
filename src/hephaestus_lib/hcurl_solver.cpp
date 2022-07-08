@@ -48,43 +48,6 @@ HCurlSolver::HCurlSolver(mfem::ParMesh &pmesh, int order,
   this->height = true_offsets[3];
   this->width = true_offsets[3];
 
-  // Define material property coefficients
-  dtCoef = mfem::ConstantCoefficient(1.0);
-  oneCoef = mfem::ConstantCoefficient(1.0);
-  SetMaterialCoefficients(domain_properties);
-  SetVariableNames();
-
-  // Variables
-  // v_, "electric_potential"
-  // e_, "electric_field"
-  // b_, "magnetic_flux_density", "Magnetic Flux Density (B)" (auxvar)
-
-  // Coefficients
-  // σ, "electrical_conductivity"
-  // mu, "magnetic_permeability"
-
-  // Bilinear for divergence free source field solve
-  // -(J0, ∇ V') + <n.J, V'> = 0  where J0 = -σ∇V
-  a0 = new mfem::ParBilinearForm(H1FESpace_);
-  a0->AddDomainIntegrator(new mfem::DiffusionIntegrator(*sigmaCoef));
-  a0->Assemble();
-
-  // (ν∇×E, ∇×E') - (σE, E') - (J0, E') - <(ν∇×E) × n, E'> = 0
-  // a1 = -σ(dE, E') + dt (ν∇×E, ∇×E')
-  // b1 = dt [(J0, E') + <(ν∇×E) × n, E'>]
-
-  this->buildM1(sigmaCoef);
-  this->buildCurl(muInvCoef);
-  this->buildGrad();
-  b0 = new mfem::ParLinearForm(H1FESpace_);
-  b1 = new mfem::ParLinearForm(HCurlFESpace_);
-  A0 = new mfem::HypreParMatrix;
-  A1 = new mfem::HypreParMatrix;
-  X0 = new mfem::Vector;
-  X1 = new mfem::Vector;
-  B0 = new mfem::Vector;
-  B1 = new mfem::Vector;
-
 } // namespace hephaestus
 
 /*
@@ -152,7 +115,7 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   _bc_map.applyEssentialBCs(u_name, ess_tdof_list, J_gf, pmesh_);
   _bc_map.applyIntegratedBCs(u_name, *b1, pmesh_);
   if (a1 == NULL || fabs(dt - dt_A1) > 1.0e-12 * dt) {
-    this->buildA1(sigmaCoef, dtMuInvCoef);
+    this->buildA1(betaCoef, dtAlphaCoef);
   }
   a1->FormLinearSystem(ess_tdof_list, J_gf, *b1, *A1, *X1, *B1);
 
@@ -251,7 +214,47 @@ void HCurlSolver::buildCurl(mfem::Coefficient *MuInv) {
 
   // no ParallelAssemble since this will be applied to GridFunctions
 }
+
 void HCurlSolver::Init(mfem::Vector &X) {
+  // Define material property coefficients
+  dtCoef = mfem::ConstantCoefficient(1.0);
+  oneCoef = mfem::ConstantCoefficient(1.0);
+  SetMaterialCoefficients(_domain_properties);
+  dtAlphaCoef = new mfem::TransformedCoefficient(&dtCoef, alphaCoef, prodFunc);
+
+  SetVariableNames();
+
+  // Variables
+  // v_, "electric_potential"
+  // e_, "electric_field"
+  // b_, "magnetic_flux_density", "Magnetic Flux Density (B)" (auxvar)
+
+  // Coefficients
+  // σ, "electrical_conductivity"
+  // mu, "magnetic_permeability"
+
+  // Bilinear for divergence free source field solve
+  // -(J0, ∇ V') + <n.J, V'> = 0  where J0 = -σ∇V
+  a0 = new mfem::ParBilinearForm(H1FESpace_);
+  a0->AddDomainIntegrator(new mfem::DiffusionIntegrator(*betaCoef));
+  a0->Assemble();
+
+  // (ν∇×E, ∇×E') - (σE, E') - (J0, E') - <(ν∇×E) × n, E'> = 0
+  // a1 = -σ(dE, E') + dt (ν∇×E, ∇×E')
+  // b1 = dt [(J0, E') + <(ν∇×E) × n, E'>]
+
+  this->buildM1(betaCoef);
+  this->buildCurl(alphaCoef);
+  this->buildGrad();
+  b0 = new mfem::ParLinearForm(H1FESpace_);
+  b1 = new mfem::ParLinearForm(HCurlFESpace_);
+  A0 = new mfem::HypreParMatrix;
+  A1 = new mfem::HypreParMatrix;
+  X0 = new mfem::Vector;
+  X1 = new mfem::Vector;
+  B0 = new mfem::Vector;
+  B1 = new mfem::Vector;
+
   mfem::Vector zero_vec(3);
   zero_vec = 0.0;
   mfem::VectorConstantCoefficient Zero_vec(zero_vec);
@@ -267,22 +270,20 @@ void HCurlSolver::Init(mfem::Vector &X) {
 }
 
 void HCurlSolver::SetVariableNames() {
-  p_name = "electric_potential";
-  p_display_name = "Scalar Potential (V)";
+  p_name = "scalar_potential";
+  p_display_name = "Scalar Potential";
 
-  u_name = "electric_field";
-  u_display_name = "Electric Field (E)";
+  u_name = "h_curl_var";
+  u_display_name = "H(Curl) variable";
 
-  v_name = "magnetic_flux_density";
-  v_display_name = "Magnetic Flux Density (B)";
+  v_name = "h_div_var";
+  v_display_name = "H(Div) variable";
 }
 
 void HCurlSolver::SetMaterialCoefficients(
     hephaestus::DomainProperties &domain_properties) {
-  sigmaCoef = domain_properties.scalar_property_map["electrical_conductivity"];
-  muCoef = domain_properties.scalar_property_map["magnetic_permeability"];
-  muInvCoef = new mfem::TransformedCoefficient(&oneCoef, muCoef, fracFunc);
-  dtMuInvCoef = new mfem::TransformedCoefficient(&dtCoef, muInvCoef, prodFunc);
+  alphaCoef = domain_properties.scalar_property_map["alpha"];
+  betaCoef = domain_properties.scalar_property_map["beta"];
 }
 
 void HCurlSolver::RegisterOutputFields(mfem::DataCollection *dc_) {
@@ -293,14 +294,10 @@ void HCurlSolver::RegisterOutputFields(mfem::DataCollection *dc_) {
 
 void HCurlSolver::WriteConsoleSummary(double t, int it) {
   // Write a summary of the timestep to console.
-
-  // Output Ohmic losses to console
-  double el = this->ElectricLosses();
   if (myid_ == 0) {
     std::cout << std::fixed;
     std::cout << "step " << std::setw(6) << it << ",\tt = " << std::setw(6)
-              << std::setprecision(3) << t
-              << ",\tdot(E, J) = " << std::setprecision(8) << el << std::endl;
+              << std::setprecision(3) << t << std::endl;
   }
 }
 
@@ -352,13 +349,4 @@ void HCurlSolver::DisplayToGLVis() {
   Wx += offx;
 }
 
-double HCurlSolver::ElectricLosses() const {
-  double el = m1->InnerProduct(e_, e_);
-
-  double global_el;
-  MPI_Allreduce(&el, &global_el, 1, MPI_DOUBLE, MPI_SUM,
-                m1->ParFESpace()->GetComm());
-
-  return el;
-}
 } // namespace hephaestus
