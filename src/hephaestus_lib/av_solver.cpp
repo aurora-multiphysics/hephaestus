@@ -184,11 +184,12 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
 
   // use a_ as a temporary, E = Grad P
   // b1 = -dt * Grad V
+  curlCurl->MultTranspose(a_, *b1); // b1 = (ν∇×A, ∇×A')
   grad->Mult(v_, da_);
-  m1->AddMult(da_, *b1, 1.0); // b1 = (J0, A')
-  _bc_map.applyIntegratedBCs(u_name, *b1,
-                             pmesh_); // b1 = (J0, A') + <(ν∇×A) × n, A'>
-  // TODO: add (ν∇×A, ∇×A')
+  m1->AddMult(da_, *b1, 1.0); // b1 = (ν∇×A, ∇×A') + (J0, A')
+  _bc_map.applyIntegratedBCs(
+      u_name, *b1,
+      pmesh_); // b1 = (ν∇×A, ∇×A') + (J0, A') + <(ν∇×A) × n, A'>
 
   mfem::ParGridFunction J_gf(HCurlFESpace_);
   mfem::Array<int> ess_tdof_list;
@@ -283,6 +284,10 @@ void AVSolver::buildCurl(mfem::Coefficient *MuInv) {
   weakCurl = new mfem::ParMixedBilinearForm(HCurlFESpace_, HDivFESpace_);
   weakCurl->AddDomainIntegrator(new mfem::VectorFECurlIntegrator(*MuInv));
   weakCurl->Assemble();
+
+  curlCurl = new mfem::ParBilinearForm(HCurlFESpace_);
+  curlCurl->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*MuInv));
+  curlCurl->Assemble();
 
   // no ParallelAssemble since this will be applied to GridFunctions
 }

@@ -60,6 +60,8 @@ protected:
   mfem::ParDiscreteLinearOperator *grad;
   mfem::ParDiscreteLinearOperator *curl;
   mfem::ParMixedBilinearForm *weakCurl;
+  mfem::ParBilinearForm *curlCurl;
+
   mutable mfem::HypreSolver *amg_a0;
   mutable mfem::HyprePCG *pcg_a0;
   mutable mfem::HypreSolver *ams_a1;
