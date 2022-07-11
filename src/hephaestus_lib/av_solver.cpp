@@ -58,10 +58,10 @@ AVSolver::AVSolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
       true_offsets(4), a1(NULL), amg_a0(NULL), pcg_a0(NULL), ams_a1(NULL),
       pcg_a1(NULL), m1(NULL), grad(NULL), curl(NULL), weakCurl(NULL),
       v_(mfem::ParGridFunction(H1FESpace_)),
-      e_(mfem::ParGridFunction(HCurlFESpace_)),
+      a_(mfem::ParGridFunction(HCurlFESpace_)),
       b_(mfem::ParGridFunction(HDivFESpace_)),
       dv_(mfem::ParGridFunction(H1FESpace_)),
-      de_(mfem::ParGridFunction(HCurlFESpace_)),
+      da_(mfem::ParGridFunction(HCurlFESpace_)),
       db_(mfem::ParGridFunction(HDivFESpace_)) {
   // Initialize MPI variables
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);
@@ -75,8 +75,60 @@ AVSolver::AVSolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
 
   this->height = true_offsets[3];
   this->width = true_offsets[3];
+}
 
-} // namespace hephaestus
+void AVSolver::Init(mfem::Vector &X) {
+  // Define material property coefficients
+  dtCoef = mfem::ConstantCoefficient(1.0);
+  oneCoef = mfem::ConstantCoefficient(1.0);
+  SetMaterialCoefficients(_domain_properties);
+  dtAlphaCoef = new mfem::TransformedCoefficient(&dtCoef, alphaCoef, prodFunc);
+
+  SetVariableNames();
+
+  // Variables
+  // v_, "electric_potential"
+  // a_, "magnetic_vector_potential"
+
+  // Coefficients
+  // σ, "electrical_conductivity"
+  // mu, "magnetic_permeability"
+
+  ///////
+  // (σ(dA/dt + ∇ V), ∇ V') + <n.J, V'> = 0
+  // (σ(dA/dt + ∇ V), A') + (ν∇×A, ∇×A') - <(ν∇×A) × n, A'> - (J0, A') = 0
+  ///////
+  // Bilinear for divergence free source field solve
+  // -(J0, ∇ V') + <n.J, V'> = 0  where J0 = -σ∇V
+  a0 = new mfem::ParBilinearForm(H1FESpace_);
+  a0->AddDomainIntegrator(new mfem::DiffusionIntegrator(*betaCoef));
+  a0->Assemble();
+
+  this->buildM1(betaCoef);    // (σ dA/dt, A')
+  this->buildCurl(alphaCoef); // (ν∇×A, ∇×A')
+  this->buildGrad();
+  b0 = new mfem::ParLinearForm(H1FESpace_);
+  b1 = new mfem::ParLinearForm(HCurlFESpace_);
+  A0 = new mfem::HypreParMatrix;
+  A1 = new mfem::HypreParMatrix;
+  X0 = new mfem::Vector;
+  X1 = new mfem::Vector;
+  B0 = new mfem::Vector;
+  B1 = new mfem::Vector;
+
+  mfem::Vector zero_vec(3);
+  zero_vec = 0.0;
+  mfem::VectorConstantCoefficient Zero_vec(zero_vec);
+  mfem::ConstantCoefficient Zero(0.0);
+
+  v_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
+  a_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
+  b_.MakeRef(HDivFESpace_, const_cast<mfem::Vector &>(X), true_offsets[2]);
+
+  v_.ProjectCoefficient(Zero);
+  a_.ProjectCoefficient(Zero_vec);
+  b_.ProjectCoefficient(Zero_vec);
+}
 
 /*
 This is the main computational code that computes dX/dt implicitly
@@ -91,11 +143,11 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   dtCoef.constant = dt;
 
   v_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
-  e_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
+  a_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
   b_.MakeRef(HDivFESpace_, const_cast<mfem::Vector &>(X), true_offsets[2]);
 
   dv_.MakeRef(H1FESpace_, dX_dt, true_offsets[0]);
-  de_.MakeRef(HCurlFESpace_, dX_dt, true_offsets[1]);
+  da_.MakeRef(HCurlFESpace_, dX_dt, true_offsets[1]);
   db_.MakeRef(HDivFESpace_, dX_dt, true_offsets[2]);
 
   _domain_properties.SetTime(this->GetTime());
@@ -128,23 +180,25 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   a0->RecoverFEMSolution(*X0, *b0, v_);
   dv_ = 0.0;
   //////////////////////////////////////////////////////////////////////////////
-  // v1 = <1/mu v, curl u> B
-  // B is a grid function but weakCurl is not parallel assembled so is OK
-  weakCurl->MultTranspose(b_, *b1);
+  // (σ(dA/dt + ∇ V), A') + (ν∇×A, ∇×A') - <(ν∇×A) × n, A'> - (J0, A') = 0
 
-  // use e_ as a temporary, E = Grad P
+  // use a_ as a temporary, E = Grad P
   // b1 = -dt * Grad V
-  grad->Mult(v_, e_);
-  m1->AddMult(e_, *b1, 1.0);
+  grad->Mult(v_, da_);
+  m1->AddMult(da_, *b1, 1.0); // b1 = (J0, A')
+  _bc_map.applyIntegratedBCs(u_name, *b1,
+                             pmesh_); // b1 = (J0, A') + <(ν∇×A) × n, A'>
+  // TODO: add (ν∇×A, ∇×A')
 
   mfem::ParGridFunction J_gf(HCurlFESpace_);
   mfem::Array<int> ess_tdof_list;
   J_gf = 0.0;
   _bc_map.applyEssentialBCs(u_name, ess_tdof_list, J_gf, pmesh_);
-  _bc_map.applyIntegratedBCs(u_name, *b1, pmesh_);
   if (a1 == NULL || fabs(dt - dt_A1) > 1.0e-12 * dt) {
     this->buildA1(betaCoef, dtAlphaCoef);
   }
+  // a1 = (σ dA/dt, A') + dt (ν∇×dA/dt, ∇×A')
+  // TODO: add  (σ ∇ V, A')
   a1->FormLinearSystem(ess_tdof_list, J_gf, *b1, *A1, *X1, *B1);
 
   // We only need to create the solver and preconditioner once
@@ -165,26 +219,17 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   // dE = (A1)^-1 [-S1 E]
   pcg_a1->Mult(*B1, *X1);
 
-  a1->RecoverFEMSolution(*X1, *b1, e_);
-  de_ = 0.0;
+  a1->RecoverFEMSolution(*X1, *b1, da_);
 
-  // the total field is E_tot = E_ind - Grad Phi
-  // so we need to subtract out Grad Phi
-  // E = E - grad (P)
-  // note grad maps GF to GF
-  grad->AddMult(v_, e_, -1.0);
-
-  // Compute dB/dt = -Curl(E_{n+1})
-  // note curl maps GF to GF
-  curl->Mult(e_, db_);
-  db_ *= -1.0;
+  // Compute B = Curl(A)
+  curl->Mult(a_, b_);
 }
 
 void AVSolver::buildA1(mfem::Coefficient *Sigma, mfem::Coefficient *DtMuInv) {
   if (a1 != NULL) {
     delete a1;
   }
-
+  // (σ(dA/dt, A') + dt (ν∇×dA/dt, ∇×A')
   // First create and assemble the bilinear form.  For now we assume the mesh
   // isn't moving, the materials are time independent, and dt is constant. So
   // we only need to do this once.
@@ -242,60 +287,6 @@ void AVSolver::buildCurl(mfem::Coefficient *MuInv) {
   // no ParallelAssemble since this will be applied to GridFunctions
 }
 
-void AVSolver::Init(mfem::Vector &X) {
-  // Define material property coefficients
-  dtCoef = mfem::ConstantCoefficient(1.0);
-  oneCoef = mfem::ConstantCoefficient(1.0);
-  SetMaterialCoefficients(_domain_properties);
-  dtAlphaCoef = new mfem::TransformedCoefficient(&dtCoef, alphaCoef, prodFunc);
-
-  SetVariableNames();
-
-  // Variables
-  // v_, "electric_potential"
-  // e_, "electric_field"
-  // b_, "magnetic_flux_density", "Magnetic Flux Density (B)" (auxvar)
-
-  // Coefficients
-  // σ, "electrical_conductivity"
-  // mu, "magnetic_permeability"
-
-  // Bilinear for divergence free source field solve
-  // -(J0, ∇ V') + <n.J, V'> = 0  where J0 = -σ∇V
-  a0 = new mfem::ParBilinearForm(H1FESpace_);
-  a0->AddDomainIntegrator(new mfem::DiffusionIntegrator(*betaCoef));
-  a0->Assemble();
-
-  // (ν∇×E, ∇×E') - (σE, E') - (J0, E') - <(ν∇×E) × n, E'> = 0
-  // a1 = -σ(dE, E') + dt (ν∇×E, ∇×E')
-  // b1 = dt [(J0, E') + <(ν∇×E) × n, E'>]
-
-  this->buildM1(betaCoef);
-  this->buildCurl(alphaCoef);
-  this->buildGrad();
-  b0 = new mfem::ParLinearForm(H1FESpace_);
-  b1 = new mfem::ParLinearForm(HCurlFESpace_);
-  A0 = new mfem::HypreParMatrix;
-  A1 = new mfem::HypreParMatrix;
-  X0 = new mfem::Vector;
-  X1 = new mfem::Vector;
-  B0 = new mfem::Vector;
-  B1 = new mfem::Vector;
-
-  mfem::Vector zero_vec(3);
-  zero_vec = 0.0;
-  mfem::VectorConstantCoefficient Zero_vec(zero_vec);
-  mfem::ConstantCoefficient Zero(0.0);
-
-  v_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
-  e_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
-  b_.MakeRef(HDivFESpace_, const_cast<mfem::Vector &>(X), true_offsets[2]);
-
-  v_.ProjectCoefficient(Zero);
-  e_.ProjectCoefficient(Zero_vec);
-  b_.ProjectCoefficient(Zero_vec);
-}
-
 void AVSolver::SetVariableNames() {
   p_name = "electric_potential";
   p_display_name = "Electric Scalar Potential (V)";
@@ -316,7 +307,7 @@ void AVSolver::SetMaterialCoefficients(
 }
 
 void AVSolver::RegisterOutputFields(mfem::DataCollection *dc_) {
-  dc_->RegisterField(u_name, &e_);
+  dc_->RegisterField(u_name, &a_);
   dc_->RegisterField(v_name, &b_);
   dc_->RegisterField(p_name, &v_);
 }
@@ -365,7 +356,7 @@ void AVSolver::DisplayToGLVis() {
   int Ww = 350, Wh = 350;             // window size
   int offx = Ww + 10, offy = Wh + 45; // window offsets
 
-  mfem::common::VisualizeField(*socks_[u_name], vishost, visport, e_,
+  mfem::common::VisualizeField(*socks_[u_name], vishost, visport, a_,
                                u_display_name.c_str(), Wx, Wy, Ww, Wh);
   Wx += offx;
 

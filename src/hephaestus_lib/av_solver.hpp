@@ -67,7 +67,7 @@ protected:
 
   // temporary work vectors
   mfem::ParLinearForm *b0, *b1;
-  mfem::ParGridFunction e_, de_; // Electric Field (HCurl)
+  mfem::ParGridFunction a_, da_; // Electric Field (HCurl)
   mfem::ParGridFunction v_, dv_; // Scalar Potential (H1)
   mfem::ParGridFunction *h_;     // Magnetic Field (HCurl)
   mfem::ParGridFunction b_, db_; // Magnetic Flux (HDiv)
