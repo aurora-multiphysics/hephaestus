@@ -55,14 +55,12 @@ AVSolver::AVSolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
           new mfem::common::ND_ParFESpace(&pmesh, order, pmesh.Dimension())),
       HDivFESpace_(
           new mfem::common::RT_ParFESpace(&pmesh, order, pmesh.Dimension())),
-      true_offsets(4), a1(NULL), amg_a0(NULL), pcg_a0(NULL), ams_a1(NULL),
+      true_offsets(3), a1(NULL), amg_a0(NULL), pcg_a0(NULL), ams_a1(NULL),
       pcg_a1(NULL), m1(NULL), grad(NULL), curl(NULL), weakCurl(NULL),
       v_(mfem::ParGridFunction(H1FESpace_)),
       a_(mfem::ParGridFunction(HCurlFESpace_)),
-      b_(mfem::ParGridFunction(HDivFESpace_)),
       dv_(mfem::ParGridFunction(H1FESpace_)),
-      da_(mfem::ParGridFunction(HCurlFESpace_)),
-      db_(mfem::ParGridFunction(HDivFESpace_)) {
+      da_(mfem::ParGridFunction(HCurlFESpace_)) {
   // Initialize MPI variables
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh.GetComm(), &myid_);
@@ -70,11 +68,10 @@ AVSolver::AVSolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
   true_offsets[0] = 0;
   true_offsets[1] = H1FESpace_->GetVSize();
   true_offsets[2] = HCurlFESpace_->GetVSize();
-  true_offsets[3] = HDivFESpace_->GetVSize();
   true_offsets.PartialSum();
 
-  this->height = true_offsets[3];
-  this->width = true_offsets[3];
+  this->height = true_offsets[2];
+  this->width = true_offsets[2];
 }
 
 void AVSolver::Init(mfem::Vector &X) {
@@ -123,11 +120,15 @@ void AVSolver::Init(mfem::Vector &X) {
 
   v_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
   a_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
-  b_.MakeRef(HDivFESpace_, const_cast<mfem::Vector &>(X), true_offsets[2]);
 
   v_.ProjectCoefficient(Zero);
   a_.ProjectCoefficient(Zero_vec);
-  b_.ProjectCoefficient(Zero_vec);
+
+  // aux
+  e_ = new mfem::ParGridFunction(HCurlFESpace_);
+  e_->ProjectCoefficient(Zero_vec);
+  b_ = new mfem::ParGridFunction(HDivFESpace_);
+  b_->ProjectCoefficient(Zero_vec);
 }
 
 /*
@@ -144,11 +145,9 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
 
   v_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
   a_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
-  b_.MakeRef(HDivFESpace_, const_cast<mfem::Vector &>(X), true_offsets[2]);
 
   dv_.MakeRef(H1FESpace_, dX_dt, true_offsets[0]);
   da_.MakeRef(HCurlFESpace_, dX_dt, true_offsets[1]);
-  db_.MakeRef(HDivFESpace_, dX_dt, true_offsets[2]);
 
   _domain_properties.SetTime(this->GetTime());
 
@@ -222,8 +221,13 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
 
   a1->RecoverFEMSolution(*X1, *b1, da_);
 
+  // Auxiliary calculations
   // Compute B = Curl(A)
-  curl->Mult(a_, b_);
+  curl->Mult(a_, *b_);
+  // Compute e = -(dA/dt + ∇ V);
+  *e_ = da_;
+  grad->AddMult(v_, *e_, 1.0);
+  *e_ *= -1.0;
 }
 
 void AVSolver::buildA1(mfem::Coefficient *Sigma, mfem::Coefficient *DtMuInv) {
@@ -301,6 +305,9 @@ void AVSolver::SetVariableNames() {
 
   v_name = "magnetic_flux_density";
   v_display_name = "Magnetic Flux Density (B)";
+
+  e_name = "electric_field";
+  e_display_name = "Electric Field (E)";
 }
 
 void AVSolver::SetMaterialCoefficients(
@@ -313,8 +320,9 @@ void AVSolver::SetMaterialCoefficients(
 
 void AVSolver::RegisterOutputFields(mfem::DataCollection *dc_) {
   dc_->RegisterField(u_name, &a_);
-  dc_->RegisterField(v_name, &b_);
   dc_->RegisterField(p_name, &v_);
+  dc_->RegisterField(v_name, b_);
+  dc_->RegisterField(e_name, e_);
 }
 
 void AVSolver::WriteConsoleSummary(double t, int it) {
@@ -348,6 +356,9 @@ void AVSolver::InitializeGLVis() {
   socks_[p_name] = new mfem::socketstream;
   socks_[p_name]->precision(8);
 
+  socks_[e_name] = new mfem::socketstream;
+  socks_[e_name]->precision(8);
+
   if (myid_ == 0) {
     std::cout << "GLVis sockets open." << std::endl;
   }
@@ -365,12 +376,16 @@ void AVSolver::DisplayToGLVis() {
                                u_display_name.c_str(), Wx, Wy, Ww, Wh);
   Wx += offx;
 
-  mfem::common::VisualizeField(*socks_[v_name], vishost, visport, b_,
+  mfem::common::VisualizeField(*socks_[p_name], vishost, visport, v_,
+                               p_display_name.c_str(), Wx, Wy, Ww, Wh);
+  Wx += offx;
+
+  mfem::common::VisualizeField(*socks_[v_name], vishost, visport, *b_,
                                v_display_name.c_str(), Wx, Wy, Ww, Wh);
   Wx += offx;
 
-  mfem::common::VisualizeField(*socks_[p_name], vishost, visport, v_,
-                               p_display_name.c_str(), Wx, Wy, Ww, Wh);
+  mfem::common::VisualizeField(*socks_[e_name], vishost, visport, *e_,
+                               e_display_name.c_str(), Wx, Wy, Ww, Wh);
   Wx += offx;
 }
 

@@ -48,10 +48,10 @@ protected:
     bc_map["tangential_dAdt"] = new hephaestus::VectorFunctionDirichletBC(
         std::string("magnetic_vector_potential"), mfem::Array<int>({1, 2, 3}),
         adotVecCoef);
-    domain_properties.scalar_property_map["magnetic_permeability"] =
-        new mfem::ConstantCoefficient(1.0);
     domain_properties.vector_property_map["surface_tangential_dAdt"] =
         adotVecCoef;
+    domain_properties.scalar_property_map["magnetic_permeability"] =
+        new mfem::ConstantCoefficient(1.0);
 
     mfem::Array<int> high_terminal(1);
     high_terminal[0] = 1;

@@ -43,8 +43,8 @@ public:
 
   double ElectricLosses() const;
 
-  std::string u_name, p_name, v_name;
-  std::string u_display_name, p_display_name, v_display_name;
+  std::string u_name, p_name, v_name, e_name;
+  std::string u_display_name, p_display_name, v_display_name, e_display_name;
 
 protected:
   int myid_;
@@ -69,10 +69,11 @@ protected:
 
   // temporary work vectors
   mfem::ParLinearForm *b0, *b1;
-  mfem::ParGridFunction a_, da_; // Electric Field (HCurl)
-  mfem::ParGridFunction v_, dv_; // Scalar Potential (H1)
-  mfem::ParGridFunction *h_;     // Magnetic Field (HCurl)
-  mfem::ParGridFunction b_, db_; // Magnetic Flux (HDiv)
+  mfem::ParGridFunction a_, da_;   // Magnetic Vector Potential (HCurl)
+  mfem::ParGridFunction v_, dv_;   // Scalar Potential (H1)
+  mfem::ParGridFunction *h_;       // Magnetic Field (HCurl)
+  mfem::ParGridFunction *b_, *db_; // Magnetic Flux (HDiv)
+  mfem::ParGridFunction *e_, *de_; // Electric Field (HCurl)
 
   mfem::ParGridFunction *jr_; // Raw Volumetric Current Density (HCurl)
   mfem::ParGridFunction *bd_; // Dual of B (HCurl)
