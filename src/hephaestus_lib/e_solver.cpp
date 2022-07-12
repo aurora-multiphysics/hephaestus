@@ -39,7 +39,7 @@ void ESolver::WriteConsoleSummary(double t, int it) {
 }
 
 double ESolver::ElectricLosses() const {
-  double el = m1->InnerProduct(e_, e_);
+  double el = m1->InnerProduct(u_, u_);
 
   double global_el;
   MPI_Allreduce(&el, &global_el, 1, MPI_DOUBLE, MPI_SUM,
