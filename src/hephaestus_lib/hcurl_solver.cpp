@@ -23,11 +23,11 @@
 
 // Fully discretised equations
 // -(s0_{n+1}, ∇ p') + <n.s0_{n+1}, p'> = 0
-// (αv_{n}, ∇×u') - (αdt∇×u_{n+1}, ∇×u') - (βu_{n+1}, u') - (s0_{n+1}, u') -
+// (αp_{n}, ∇×u') - (αdt∇×u_{n+1}, ∇×u') - (βu_{n+1}, u') - (s0_{n+1}, u') -
 // <(α∇×u_{n+1}) × n, u'> = 0
 // (dv/dt_{n+1}, v') + (∇×u_{n+1}, v') = 0
 // using
-// v_{n+1} = v_{n} + dt dv/dt_{n+1} = v_{n} - dt ∇×u_{n+1}
+// p_{n+1} = p_{n} + dt dv/dt_{n+1} = p_{n} - dt ∇×u_{n+1}
 
 // Rewritten as
 // a0(p_{n+1}, p') = b0(p')
@@ -38,7 +38,7 @@
 // a0(p, p') = (β ∇ p, ∇ p')
 // b0(p') = <n.s0, p'>
 // a1(u, u') = (βu, u') + (αdt∇×u, ∇×u')
-// b1(u') = (s0_{n+1}, u') + (αv_{n}, ∇×u') + <(αdt∇×u_{n+1}) × n, u'>
+// b1(u') = (s0_{n+1}, u') + (αp_{n}, ∇×u') + <(αdt∇×u_{n+1}) × n, u'>
 
 #include "hcurl_solver.hpp"
 
@@ -59,12 +59,12 @@ HCurlSolver::HCurlSolver(mfem::ParMesh &pmesh, int order,
           new mfem::common::RT_ParFESpace(&pmesh, order, pmesh.Dimension())),
       true_offsets(4), a1(NULL), amg_a0(NULL), pcg_a0(NULL), ams_a1(NULL),
       pcg_a1(NULL), m1(NULL), grad(NULL), curl(NULL), weakCurl(NULL),
-      v_(mfem::ParGridFunction(H1FESpace_)),
-      e_(mfem::ParGridFunction(HCurlFESpace_)),
-      b_(mfem::ParGridFunction(HDivFESpace_)),
-      dv_(mfem::ParGridFunction(H1FESpace_)),
-      de_(mfem::ParGridFunction(HCurlFESpace_)),
-      db_(mfem::ParGridFunction(HDivFESpace_)) {
+      p_(mfem::ParGridFunction(H1FESpace_)),
+      u_(mfem::ParGridFunction(HCurlFESpace_)),
+      v_(mfem::ParGridFunction(HDivFESpace_)),
+      dp_(mfem::ParGridFunction(H1FESpace_)),
+      du_(mfem::ParGridFunction(HCurlFESpace_)),
+      dv_(mfem::ParGridFunction(HDivFESpace_)) {
   // Initialize MPI variables
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh.GetComm(), &myid_);
@@ -94,7 +94,7 @@ void HCurlSolver::Init(mfem::Vector &X) {
   a0->Assemble();
 
   this->buildM1(betaCoef);    //(βu, u')
-  this->buildCurl(alphaCoef); // (αv_{n}, ∇×u')
+  this->buildCurl(alphaCoef); // (αp_{n}, ∇×u')
   this->buildGrad();          // (s0_{n+1}, u')
   b0 = new mfem::ParLinearForm(H1FESpace_);
   b1 = new mfem::ParLinearForm(HCurlFESpace_);
@@ -110,13 +110,13 @@ void HCurlSolver::Init(mfem::Vector &X) {
   mfem::VectorConstantCoefficient Zero_vec(zero_vec);
   mfem::ConstantCoefficient Zero(0.0);
 
-  v_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
-  e_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
-  b_.MakeRef(HDivFESpace_, const_cast<mfem::Vector &>(X), true_offsets[2]);
+  p_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
+  u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
+  v_.MakeRef(HDivFESpace_, const_cast<mfem::Vector &>(X), true_offsets[2]);
 
-  v_.ProjectCoefficient(Zero);
-  e_.ProjectCoefficient(Zero_vec);
-  b_.ProjectCoefficient(Zero_vec);
+  p_.ProjectCoefficient(Zero);
+  u_.ProjectCoefficient(Zero_vec);
+  v_.ProjectCoefficient(Zero_vec);
 }
 
 /*
@@ -131,24 +131,24 @@ p_{n+1} ∈ H1
 
 Fully discretised equations
 -(s0_{n+1}, ∇ p') + <n.s0_{n+1}, p'> = 0
-(αv_{n}, ∇×u') - (αdt∇×u_{n+1}, ∇×u') - (βu_{n+1}, u') - (s0_{n+1}, u') -
+(αp_{n}, ∇×u') - (αdt∇×u_{n+1}, ∇×u') - (βu_{n+1}, u') - (s0_{n+1}, u') -
 <(α∇×u_{n+1}) × n, u'> = 0
 (dv/dt_{n+1}, v') + (∇×u_{n+1}, v') = 0
 using
-v_{n+1} = v_{n} + dt dv/dt_{n+1} = v_{n} - dt ∇×u_{n+1}
+p_{n+1} = p_{n} + dt dv/dt_{n+1} = p_{n} - dt ∇×u_{n+1}
 */
 void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
                                 mfem::Vector &dX_dt) {
   dX_dt = 0.0;
   dtCoef.constant = dt;
 
-  v_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
-  e_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
-  b_.MakeRef(HDivFESpace_, const_cast<mfem::Vector &>(X), true_offsets[2]);
+  p_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
+  u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
+  v_.MakeRef(HDivFESpace_, const_cast<mfem::Vector &>(X), true_offsets[2]);
 
-  dv_.MakeRef(H1FESpace_, dX_dt, true_offsets[0]);
-  de_.MakeRef(HCurlFESpace_, dX_dt, true_offsets[1]);
-  db_.MakeRef(HDivFESpace_, dX_dt, true_offsets[2]);
+  dp_.MakeRef(H1FESpace_, dX_dt, true_offsets[0]);
+  du_.MakeRef(HCurlFESpace_, dX_dt, true_offsets[1]);
+  dv_.MakeRef(HDivFESpace_, dX_dt, true_offsets[2]);
 
   _domain_properties.SetTime(this->GetTime());
 
@@ -180,24 +180,24 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   pcg_a0->Mult(*B0, *X0);
 
   // "undo" the static condensation saving result in grid function dP
-  a0->RecoverFEMSolution(*X0, *b0, v_);
-  dv_ = 0.0;
+  a0->RecoverFEMSolution(*X0, *b0, p_);
+  dp_ = 0.0;
   //////////////////////////////////////////////////////////////////////////////
-  // (αv_{n}, ∇×u') - (αdt∇×u_{n+1}, ∇×u') - (βu_{n+1}, u') - (s0_{n+1}, u') -
+  // (αp_{n}, ∇×u') - (αdt∇×u_{n+1}, ∇×u') - (βu_{n+1}, u') - (s0_{n+1}, u') -
   // <(α∇×u_{n+1}) × n, u'> = 0
 
   // a1(u_{n+1}, u') = b1(u')
   // a1(u, u') = (βu, u') + (αdt∇×u, ∇×u')
-  // b1(u') = (s0_{n+1}, u') + (αv_{n}, ∇×u') + <(αdt∇×u_{n+1}) × n, u'>
+  // b1(u') = (s0_{n+1}, u') + (αp_{n}, ∇×u') + <(αdt∇×u_{n+1}) × n, u'>
 
-  // (αv_{n}, ∇×u')
-  // b_ is a grid function but weakCurl is not parallel assembled so is OK
-  weakCurl->MultTranspose(b_, *b1);
+  // (αp_{n}, ∇×u')
+  // v_ is a grid function but weakCurl is not parallel assembled so is OK
+  weakCurl->MultTranspose(v_, *b1);
 
-  // use e_ as a temporary, E = Grad v
+  // use u_ as a temporary, E = Grad v
   // (s0_{n+1}, u')
-  grad->Mult(v_, e_);
-  m1->AddMult(e_, *b1, 1.0);
+  grad->Mult(p_, u_);
+  m1->AddMult(u_, *b1, 1.0);
 
   mfem::ParGridFunction J_gf(HCurlFESpace_);
   mfem::Array<int> ess_tdof_list;
@@ -211,10 +211,7 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
 
   // We only need to create the solver and preconditioner once
   if (ams_a1 == NULL) {
-    mfem::ParFiniteElementSpace *prec_fespace =
-        (a1->StaticCondensationIsEnabled() ? a1->SCParFESpace()
-                                           : HCurlFESpace_);
-    ams_a1 = new mfem::HypreAMS(*A1, prec_fespace);
+    ams_a1 = new mfem::HypreAMS(*A1, HCurlFESpace_);
   }
   if (pcg_a1 == NULL) {
     pcg_a1 = new mfem::HyprePCG(*A1);
@@ -226,16 +223,16 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   // solve the system
   pcg_a1->Mult(*B1, *X1);
 
-  a1->RecoverFEMSolution(*X1, *b1, e_);
-  de_ = 0.0;
+  a1->RecoverFEMSolution(*X1, *b1, u_);
+  du_ = 0.0;
 
   // Subtract off contribution from source
-  grad->AddMult(v_, e_, -1.0);
+  grad->AddMult(p_, u_, -1.0);
 
   // dv/dt_{n+1} = -∇×u
   // note curl maps GF to GF
-  curl->Mult(e_, db_);
-  db_ *= -1.0;
+  curl->Mult(u_, dv_);
+  dv_ *= -1.0;
 }
 
 void HCurlSolver::buildA1(mfem::Coefficient *Sigma,
@@ -319,9 +316,9 @@ void HCurlSolver::SetMaterialCoefficients(
 }
 
 void HCurlSolver::RegisterOutputFields(mfem::DataCollection *dc_) {
-  dc_->RegisterField(u_name, &e_);
-  dc_->RegisterField(v_name, &b_);
-  dc_->RegisterField(p_name, &v_);
+  dc_->RegisterField(u_name, &u_);
+  dc_->RegisterField(v_name, &v_);
+  dc_->RegisterField(p_name, &p_);
 }
 
 void HCurlSolver::WriteConsoleSummary(double t, int it) {
@@ -368,15 +365,15 @@ void HCurlSolver::DisplayToGLVis() {
   int Ww = 350, Wh = 350;             // window size
   int offx = Ww + 10, offy = Wh + 45; // window offsets
 
-  mfem::common::VisualizeField(*socks_[u_name], vishost, visport, e_,
+  mfem::common::VisualizeField(*socks_[u_name], vishost, visport, u_,
                                u_display_name.c_str(), Wx, Wy, Ww, Wh);
   Wx += offx;
 
-  mfem::common::VisualizeField(*socks_[v_name], vishost, visport, b_,
+  mfem::common::VisualizeField(*socks_[v_name], vishost, visport, v_,
                                v_display_name.c_str(), Wx, Wy, Ww, Wh);
   Wx += offx;
 
-  mfem::common::VisualizeField(*socks_[p_name], vishost, visport, v_,
+  mfem::common::VisualizeField(*socks_[p_name], vishost, visport, p_,
                                p_display_name.c_str(), Wx, Wy, Ww, Wh);
   Wx += offx;
 }

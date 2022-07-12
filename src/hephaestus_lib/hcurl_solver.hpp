@@ -68,14 +68,9 @@ protected:
 
   // temporary work vectors
   mfem::ParLinearForm *b0, *b1;
-  mfem::ParGridFunction e_, de_; // Electric Field (HCurl)
-  mfem::ParGridFunction v_, dv_; // Scalar Potential (H1)
-  mfem::ParGridFunction *h_;     // Magnetic Field (HCurl)
-  mfem::ParGridFunction b_, db_; // Magnetic Flux (HDiv)
-
-  mfem::ParGridFunction *jr_; // Raw Volumetric Current Density (HCurl)
-  mfem::ParGridFunction *bd_; // Dual of B (HCurl)
-  mfem::ParGridFunction *jd_; // Dual of J, the rhs vector (HCurl)
+  mfem::ParGridFunction u_, du_; // HCurl vector field
+  mfem::ParGridFunction p_, dp_; // H1 scalar potential
+  mfem::ParGridFunction v_, dv_; // HDiv vector field
 
   double dt_A1;
   mfem::ConstantCoefficient dtCoef;  // Coefficient for timestep scaling
