@@ -93,7 +93,7 @@ void HCurlSolver::Init(mfem::Vector &X) {
   a0->AddDomainIntegrator(new mfem::DiffusionIntegrator(*betaCoef));
   a0->Assemble();
 
-  this->buildM1(betaCoef);    //(βu, u')
+  this->buildM1(betaCoef);    // (βu, u')
   this->buildCurl(alphaCoef); // (αp_{n}, ∇×u')
   this->buildGrad();          // (s0_{n+1}, u')
   b0 = new mfem::ParLinearForm(H1FESpace_);
