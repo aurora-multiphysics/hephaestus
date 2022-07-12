@@ -311,6 +311,14 @@ void HCurlSolver::SetVariableNames() {
 
 void HCurlSolver::SetMaterialCoefficients(
     hephaestus::DomainProperties &domain_properties) {
+  if (domain_properties.scalar_property_map.count("alpha") == 0) {
+    domain_properties.scalar_property_map["alpha"] = new mfem::PWCoefficient(
+        domain_properties.getGlobalScalarProperty(std::string("alpha")));
+  }
+  if (domain_properties.scalar_property_map.count("beta") == 0) {
+    domain_properties.scalar_property_map["beta"] = new mfem::PWCoefficient(
+        domain_properties.getGlobalScalarProperty(std::string("beta")));
+  }
   alphaCoef = domain_properties.scalar_property_map["alpha"];
   betaCoef = domain_properties.scalar_property_map["beta"];
 }
