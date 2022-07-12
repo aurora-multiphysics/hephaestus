@@ -1,14 +1,44 @@
-// Strong form
-// ∇⋅v0 = 0
-// ∇×(α∇×u) - βdu/dt = v0
+// Solves the equations
+// ∇⋅s0 = 0
+// ∇×(α∇×u) - βu = s0
+// dv/dt = -∇×u
 
-// Weak form
-// -(v0, ∇ p') + <n.v0, p'> = 0
-// (α∇×u, ∇×u') - (βdu/dt, u') - (v0, u') - <(α∇×u) × n, u'> = 0
-
-// v, v0 ∈ H(div) source field
+// where
+// s0 ∈ H(div) source field
+// v ∈ H(div)
 // u ∈ H(curl)
 // p ∈ H1
+
+// Weak form (Space discretisation)
+// -(s0, ∇ p') + <n.s0, p'> = 0
+// (α∇×u, ∇×u') - (βu, u') - (s0, u') - <(α∇×u) × n, u'> = 0
+// (dv/dt, v') + (∇×u, v') = 0
+
+// Time discretisation using implicit scheme:
+// Unknowns
+// s0_{n+1} ∈ H(div) source field, where s0 = -β∇p
+// dv/dt_{n+1} ∈ H(div)
+// u_{n+1} ∈ H(curl)
+// p_{n+1} ∈ H1
+
+// Fully discretised equations
+// -(s0_{n+1}, ∇ p') + <n.s0_{n+1}, p'> = 0
+// (αv_{n}, ∇×u') - (αdt∇×u_{n+1}, ∇×u') - (βu_{n+1}, u') - (s0_{n+1}, u') -
+// <(α∇×u_{n+1}) × n, u'> = 0
+// (dv/dt_{n+1}, v') + (∇×u_{n+1}, v') = 0
+// using
+// v_{n+1} = v_{n} + dt dv/dt_{n+1} = v_{n} - dt ∇×u_{n+1}
+
+// Rewritten as
+// a0(p_{n+1}, p') = b0(p')
+// a1(u_{n+1}, u') = b1(u')
+// dv/dt_{n+1} = -∇×u
+
+// where
+// a0(p, p') = (β ∇ p, ∇ p')
+// b0(p') = <n.s0, p'>
+// a1(u, u') = (βu, u') + (αdt∇×u, ∇×u')
+// b1(u') = (s0_{n+1}, u') + (αv_{n}, ∇×u') + <(αdt∇×u_{n+1}) × n, u'>
 
 #include "hcurl_solver.hpp"
 
@@ -47,8 +77,47 @@ HCurlSolver::HCurlSolver(mfem::ParMesh &pmesh, int order,
 
   this->height = true_offsets[3];
   this->width = true_offsets[3];
+}
 
-} // namespace hephaestus
+void HCurlSolver::Init(mfem::Vector &X) {
+  // Define material property coefficients
+  dtCoef = mfem::ConstantCoefficient(1.0);
+  oneCoef = mfem::ConstantCoefficient(1.0);
+  SetMaterialCoefficients(_domain_properties);
+  dtAlphaCoef = new mfem::TransformedCoefficient(&dtCoef, alphaCoef, prodFunc);
+
+  SetVariableNames();
+
+  // a0(p, p') = (β ∇ p, ∇ p')
+  a0 = new mfem::ParBilinearForm(H1FESpace_);
+  a0->AddDomainIntegrator(new mfem::DiffusionIntegrator(*betaCoef));
+  a0->Assemble();
+
+  this->buildM1(betaCoef);    //(βu, u')
+  this->buildCurl(alphaCoef); // (αv_{n}, ∇×u')
+  this->buildGrad();          // (s0_{n+1}, u')
+  b0 = new mfem::ParLinearForm(H1FESpace_);
+  b1 = new mfem::ParLinearForm(HCurlFESpace_);
+  A0 = new mfem::HypreParMatrix;
+  A1 = new mfem::HypreParMatrix;
+  X0 = new mfem::Vector;
+  X1 = new mfem::Vector;
+  B0 = new mfem::Vector;
+  B1 = new mfem::Vector;
+
+  mfem::Vector zero_vec(3);
+  zero_vec = 0.0;
+  mfem::VectorConstantCoefficient Zero_vec(zero_vec);
+  mfem::ConstantCoefficient Zero(0.0);
+
+  v_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
+  e_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
+  b_.MakeRef(HDivFESpace_, const_cast<mfem::Vector &>(X), true_offsets[2]);
+
+  v_.ProjectCoefficient(Zero);
+  e_.ProjectCoefficient(Zero_vec);
+  b_.ProjectCoefficient(Zero_vec);
+}
 
 /*
 This is the main computational code that computes dX/dt implicitly
@@ -72,7 +141,10 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
 
   _domain_properties.SetTime(this->GetTime());
 
-  // form the Laplacian and solve it
+  // -(s0_{n+1}, ∇ p') + <n.s0_{n+1}, p'> = 0
+  // a0(p_{n+1}, p') = b0(p')
+  // a0(p, p') = (β ∇ p, ∇ p')
+  // b0(p') = <n.s0, p'>
   mfem::ParGridFunction Phi_gf(H1FESpace_);
   mfem::Array<int> poisson_ess_tdof_list;
   Phi_gf = 0.0;
@@ -100,6 +172,13 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   a0->RecoverFEMSolution(*X0, *b0, v_);
   dv_ = 0.0;
   //////////////////////////////////////////////////////////////////////////////
+  // (αv_{n}, ∇×u') - (αdt∇×u_{n+1}, ∇×u') - (βu_{n+1}, u') - (s0_{n+1}, u') -
+  // <(α∇×u_{n+1}) × n, u'> = 0
+
+  // a1(u_{n+1}, u') = b1(u')
+  // a1(u, u') = (βu, u') + (αdt∇×u, ∇×u')
+  // b1(u') = (s0_{n+1}, u') + (αv_{n}, ∇×u') + <(αdt∇×u_{n+1}) × n, u'>
+
   // v1 = <1/mu v, curl u> B
   // B is a grid function but weakCurl is not parallel assembled so is OK
   weakCurl->MultTranspose(b_, *b1);
@@ -146,7 +225,7 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   // note grad maps GF to GF
   grad->AddMult(v_, e_, -1.0);
 
-  // Compute dB/dt = -Curl(E_{n+1})
+  // dv/dt_{n+1} = -∇×u
   // note curl maps GF to GF
   curl->Mult(e_, db_);
   db_ *= -1.0;
@@ -213,60 +292,6 @@ void HCurlSolver::buildCurl(mfem::Coefficient *MuInv) {
   weakCurl->Assemble();
 
   // no ParallelAssemble since this will be applied to GridFunctions
-}
-
-void HCurlSolver::Init(mfem::Vector &X) {
-  // Define material property coefficients
-  dtCoef = mfem::ConstantCoefficient(1.0);
-  oneCoef = mfem::ConstantCoefficient(1.0);
-  SetMaterialCoefficients(_domain_properties);
-  dtAlphaCoef = new mfem::TransformedCoefficient(&dtCoef, alphaCoef, prodFunc);
-
-  SetVariableNames();
-
-  // Variables
-  // v_, "electric_potential"
-  // e_, "electric_field"
-  // b_, "magnetic_flux_density", "Magnetic Flux Density (B)" (auxvar)
-
-  // Coefficients
-  // σ, "electrical_conductivity"
-  // mu, "magnetic_permeability"
-
-  // Bilinear for divergence free source field solve
-  // -(J0, ∇ V') + <n.J, V'> = 0  where J0 = -σ∇V
-  a0 = new mfem::ParBilinearForm(H1FESpace_);
-  a0->AddDomainIntegrator(new mfem::DiffusionIntegrator(*betaCoef));
-  a0->Assemble();
-
-  // (ν∇×E, ∇×E') - (σE, E') - (J0, E') - <(ν∇×E) × n, E'> = 0
-  // a1 = -σ(dE, E') + dt (ν∇×E, ∇×E')
-  // b1 = dt [(J0, E') + <(ν∇×E) × n, E'>]
-
-  this->buildM1(betaCoef);
-  this->buildCurl(alphaCoef);
-  this->buildGrad();
-  b0 = new mfem::ParLinearForm(H1FESpace_);
-  b1 = new mfem::ParLinearForm(HCurlFESpace_);
-  A0 = new mfem::HypreParMatrix;
-  A1 = new mfem::HypreParMatrix;
-  X0 = new mfem::Vector;
-  X1 = new mfem::Vector;
-  B0 = new mfem::Vector;
-  B1 = new mfem::Vector;
-
-  mfem::Vector zero_vec(3);
-  zero_vec = 0.0;
-  mfem::VectorConstantCoefficient Zero_vec(zero_vec);
-  mfem::ConstantCoefficient Zero(0.0);
-
-  v_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
-  e_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
-  b_.MakeRef(HDivFESpace_, const_cast<mfem::Vector &>(X), true_offsets[2]);
-
-  v_.ProjectCoefficient(Zero);
-  e_.ProjectCoefficient(Zero_vec);
-  b_.ProjectCoefficient(Zero_vec);
 }
 
 void HCurlSolver::SetVariableNames() {
