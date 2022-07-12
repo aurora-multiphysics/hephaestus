@@ -1,4 +1,4 @@
-// Solves a time-domain formulation.
+// Solves a time-domain formulation->
 // TODO: Add to Executioners?
 
 #include "hephaestus_transient.hpp"
@@ -12,9 +12,18 @@ void transient_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   int order = inputs.order;
   hephaestus::BCMap bc_map(inputs.bc_map);
   hephaestus::DomainProperties domain_properties(inputs.domain_properties);
-  hephaestus::HSolver formulation(pmesh, order, bc_map, domain_properties);
-  mfem::BlockVector F(formulation.true_offsets); // Vector of dofs
-  formulation.Init(F);                           // Set up initial conditions
+
+  hephaestus::HCurlSolver *formulation;
+
+  if (inputs.formulation == "EForm") {
+    formulation =
+        new hephaestus::ESolver(pmesh, order, bc_map, domain_properties);
+  } else if (inputs.formulation == "HForm") {
+    formulation =
+        new hephaestus::HSolver(pmesh, order, bc_map, domain_properties);
+  }
+  mfem::BlockVector F(formulation->true_offsets); // Vector of dofs
+  formulation->Init(F);                           // Set up initial conditions
 
   // Set up Executioner
   double t_initial = inputs.executioner.t_initial; // initial time
@@ -22,26 +31,26 @@ void transient_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   double dt = inputs.executioner.dt;               // time step
   int vis_steps = 1;
   double t = t_initial; // current time
-  formulation.SetTime(t);
+  formulation->SetTime(t);
   mfem::ODESolver *ode_solver = new mfem::BackwardEulerSolver;
-  ode_solver->Init(formulation);
+  ode_solver->Init(*formulation);
 
   // Set up DataCollections to track fields of interest.
   std::map<std::string, mfem::DataCollection *> data_collections(
       inputs.outputs.data_collections);
   for (auto const &[name, dc_] : data_collections) {
     dc_->SetMesh(&pmesh);
-    formulation.RegisterOutputFields(dc_);
+    formulation->RegisterOutputFields(dc_);
     // Write initial fields to disk
-    formulation.WriteOutputFields(dc_, 0);
+    formulation->WriteOutputFields(dc_, 0);
   }
 
   // Initialize GLVis visualization and send the initial condition
   // by socket to a GLVis server.
   bool visualization = true;
   if (visualization) {
-    formulation.InitializeGLVis();
-    formulation.DisplayToGLVis();
+    formulation->InitializeGLVis();
+    formulation->DisplayToGLVis();
   }
 
   // Begin time evolution
@@ -59,7 +68,7 @@ void transient_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
     if (last_step || (it % vis_steps) == 0) {
 
       // Output timestep summary to console
-      formulation.WriteConsoleSummary(t, it);
+      formulation->WriteConsoleSummary(t, it);
 
       // Make sure all ranks have sent their 'v' solution before initiating
       // another set of GLVis connections (one from each rank):
@@ -67,12 +76,12 @@ void transient_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
 
       // Send output fields to GLVis for visualisation
       if (visualization) {
-        formulation.DisplayToGLVis();
+        formulation->DisplayToGLVis();
       }
 
       // Save output fields at timestep to DataCollections
       for (auto const &[name, dc_] : data_collections) {
-        formulation.WriteOutputFields(dc_, it);
+        formulation->WriteOutputFields(dc_, it);
       }
     }
   }

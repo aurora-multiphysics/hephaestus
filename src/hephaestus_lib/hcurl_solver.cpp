@@ -121,10 +121,21 @@ void HCurlSolver::Init(mfem::Vector &X) {
 
 /*
 This is the main computational code that computes dX/dt implicitly
-where X is the state vector containing A and V
+where X is the state vector containing p, u and v.
 
-(M1+dt S1) E = WeakCurl^T B + Grad V
-        S0 V = 0
+Unknowns
+s0_{n+1} ∈ H(div) source field, where s0 = -β∇p
+dv/dt_{n+1} ∈ H(div)
+u_{n+1} ∈ H(curl)
+p_{n+1} ∈ H1
+
+Fully discretised equations
+-(s0_{n+1}, ∇ p') + <n.s0_{n+1}, p'> = 0
+(αv_{n}, ∇×u') - (αdt∇×u_{n+1}, ∇×u') - (βu_{n+1}, u') - (s0_{n+1}, u') -
+<(α∇×u_{n+1}) × n, u'> = 0
+(dv/dt_{n+1}, v') + (∇×u_{n+1}, v') = 0
+using
+v_{n+1} = v_{n} + dt dv/dt_{n+1} = v_{n} - dt ∇×u_{n+1}
 */
 void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
                                 mfem::Vector &dX_dt) {
@@ -179,12 +190,12 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   // a1(u, u') = (βu, u') + (αdt∇×u, ∇×u')
   // b1(u') = (s0_{n+1}, u') + (αv_{n}, ∇×u') + <(αdt∇×u_{n+1}) × n, u'>
 
-  // v1 = <1/mu v, curl u> B
-  // B is a grid function but weakCurl is not parallel assembled so is OK
+  // (αv_{n}, ∇×u')
+  // b_ is a grid function but weakCurl is not parallel assembled so is OK
   weakCurl->MultTranspose(b_, *b1);
 
-  // use e_ as a temporary, E = Grad P
-  // b1 = -dt * Grad V
+  // use e_ as a temporary, E = Grad v
+  // (s0_{n+1}, u')
   grad->Mult(v_, e_);
   m1->AddMult(e_, *b1, 1.0);
 
@@ -213,16 +224,12 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
     pcg_a1->SetPreconditioner(*ams_a1);
   }
   // solve the system
-  // dE = (A1)^-1 [-S1 E]
   pcg_a1->Mult(*B1, *X1);
 
   a1->RecoverFEMSolution(*X1, *b1, e_);
   de_ = 0.0;
 
-  // the total field is E_tot = E_ind - Grad Phi
-  // so we need to subtract out Grad Phi
-  // E = E - grad (P)
-  // note grad maps GF to GF
+  // Subtract off contribution from source
   grad->AddMult(v_, e_, -1.0);
 
   // dv/dt_{n+1} = -∇×u
