@@ -39,7 +39,7 @@ public:
   mfem::common::ND_ParFESpace *HCurlFESpace_;
   mfem::common::RT_ParFESpace *HDivFESpace_;
 
-  mfem::Array<int> true_offsets;
+  mfem::Array<int> true_offsets, block_trueOffsets;
 
   double ElectricLosses() const;
 
@@ -53,7 +53,13 @@ protected:
   hephaestus::DomainProperties _domain_properties;
   mfem::ParMesh *pmesh_;
 
-  mfem::ParBilinearForm *a0, *a1, *m1;
+  mfem::ParBilinearForm *a0, *a1, *a00, *a11, *m1;
+  mfem::ParMixedBilinearForm *a01, *a10;
+  mfem::BlockOperator *blockAV;
+  mfem::BlockDiagonalPreconditioner *blockAVPr;
+  mfem::BlockVector *x, *rhs;
+  mfem::BlockVector *trueX, *trueRhs;
+
   mfem::HypreParMatrix *A0, *A1;
   mfem::Vector *X0, *X1, *B0, *B1;
 
@@ -80,11 +86,12 @@ protected:
   mfem::ParGridFunction *jd_; // Dual of J, the rhs vector (HCurl)
 
   double dt_A1;
-  mfem::ConstantCoefficient dtCoef;  // Coefficient for timestep scaling
-  mfem::ConstantCoefficient oneCoef; // Auxiliary coefficient
-  mfem::Coefficient *alphaCoef;      // Reluctivity Coefficient
+  mfem::ConstantCoefficient dtCoef; // Coefficient for timestep scaling
+  mfem::ConstantCoefficient oneCoef, negCoef; // Auxiliary coefficient
+  mfem::Coefficient *alphaCoef;               // Reluctivity Coefficient
   mfem::Coefficient *dtAlphaCoef;
-  mfem::Coefficient *betaCoef; // Electric Conductivity Coefficient
+  mfem::Coefficient *betaCoef,
+      *negBetaCoef; // Electric Conductivity Coefficient
 
   // Sockets used to communicate with GLVis
   std::map<std::string, mfem::socketstream *> socks_;

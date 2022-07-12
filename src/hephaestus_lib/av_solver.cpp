@@ -55,8 +55,9 @@ AVSolver::AVSolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
           new mfem::common::ND_ParFESpace(&pmesh, order, pmesh.Dimension())),
       HDivFESpace_(
           new mfem::common::RT_ParFESpace(&pmesh, order, pmesh.Dimension())),
-      true_offsets(3), a1(NULL), amg_a0(NULL), pcg_a0(NULL), ams_a1(NULL),
-      pcg_a1(NULL), m1(NULL), grad(NULL), curl(NULL), weakCurl(NULL),
+      true_offsets(3), block_trueOffsets(3), blockAV(NULL), blockAVPr(NULL),
+      a1(NULL), amg_a0(NULL), pcg_a0(NULL), ams_a1(NULL), pcg_a1(NULL),
+      m1(NULL), grad(NULL), curl(NULL), weakCurl(NULL),
       v_(mfem::ParGridFunction(H1FESpace_)),
       a_(mfem::ParGridFunction(HCurlFESpace_)),
       dv_(mfem::ParGridFunction(H1FESpace_)),
@@ -70,6 +71,11 @@ AVSolver::AVSolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
   true_offsets[2] = HCurlFESpace_->GetVSize();
   true_offsets.PartialSum();
 
+  block_trueOffsets[0] = 0;
+  block_trueOffsets[1] = H1FESpace_->TrueVSize();
+  block_trueOffsets[2] = HCurlFESpace_->TrueVSize();
+  block_trueOffsets.PartialSum();
+
   this->height = true_offsets[2];
   this->width = true_offsets[2];
 }
@@ -78,10 +84,18 @@ void AVSolver::Init(mfem::Vector &X) {
   // Define material property coefficients
   dtCoef = mfem::ConstantCoefficient(1.0);
   oneCoef = mfem::ConstantCoefficient(1.0);
+  negCoef = mfem::ConstantCoefficient(-1.0);
+
   SetMaterialCoefficients(_domain_properties);
   dtAlphaCoef = new mfem::TransformedCoefficient(&dtCoef, alphaCoef, prodFunc);
+  negBetaCoef = new mfem::TransformedCoefficient(&negCoef, betaCoef, prodFunc);
 
   SetVariableNames();
+
+  x = new mfem::BlockVector(true_offsets);
+  rhs = new mfem::BlockVector(true_offsets);
+  trueX = new mfem::BlockVector(block_trueOffsets);
+  trueRhs = new mfem::BlockVector(block_trueOffsets);
 
   // Variables
   // v_, "electric_potential"
@@ -100,6 +114,24 @@ void AVSolver::Init(mfem::Vector &X) {
   a0 = new mfem::ParBilinearForm(H1FESpace_);
   a0->AddDomainIntegrator(new mfem::DiffusionIntegrator(*betaCoef));
   a0->Assemble();
+  a0->Finalize();
+
+  // (σdA/dt , ∇ V')
+  // mfem::ParMixedBilinearForm(HCurlFESpace_, H1FESpace_)
+  // mfem::MixedVectorWeakDivergenceIntegrator(sigmaCoef)
+  // TODO: SHOULD BE -BETACOEF
+  a01 = new mfem::ParMixedBilinearForm(HCurlFESpace_, H1FESpace_);
+  a01->AddDomainIntegrator(
+      new mfem::MixedVectorWeakDivergenceIntegrator(*negBetaCoef));
+  a01->Assemble();
+  a01->Finalize();
+  // // (σ ∇ V, A')
+  // mfem::ParMixedBilinearForm(H1FESpace_, HCurlFESpace_);
+  // mfem::MixedVectorGradientIntegrator(sigmaCoef);
+  a10 = new mfem::ParMixedBilinearForm(H1FESpace_, HCurlFESpace_);
+  a10->AddDomainIntegrator(new mfem::MixedVectorGradientIntegrator(*betaCoef));
+  a10->Assemble();
+  a10->Finalize();
 
   this->buildM1(betaCoef);    // (σ dA/dt, A')
   this->buildCurl(alphaCoef); // (ν∇×A, ∇×A')
@@ -151,75 +183,179 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
 
   _domain_properties.SetTime(this->GetTime());
 
-  // form the Laplacian and solve it
   mfem::ParGridFunction Phi_gf(H1FESpace_);
   mfem::Array<int> poisson_ess_tdof_list;
   Phi_gf = 0.0;
   *b0 = 0.0;
-  _bc_map.applyEssentialBCs(p_name, poisson_ess_tdof_list, Phi_gf, pmesh_);
+  b0->Update(H1FESpace_, Phi_gf, 0);
   _bc_map.applyIntegratedBCs(p_name, *b0, pmesh_);
+  _bc_map.applyEssentialBCs(p_name, poisson_ess_tdof_list, Phi_gf, pmesh_);
   b0->Assemble();
-  a0->FormLinearSystem(poisson_ess_tdof_list, Phi_gf, *b0, *A0, *X0, *B0);
-
-  if (amg_a0 == NULL) {
-    amg_a0 = new mfem::HypreBoomerAMG(*A0);
-  }
-  if (pcg_a0 == NULL) {
-    pcg_a0 = new mfem::HyprePCG(*A0);
-    pcg_a0->SetTol(1.0e-9);
-    pcg_a0->SetMaxIter(1000);
-    pcg_a0->SetPrintLevel(0);
-    pcg_a0->SetPreconditioner(*amg_a0);
-  }
-  // pcg "Mult" operation is a solve
-  // X0 = A0^-1 * B0
-  pcg_a0->Mult(*B0, *X0);
-
-  // "undo" the static condensation saving result in grid function dP
-  a0->RecoverFEMSolution(*X0, *b0, v_);
-  dv_ = 0.0;
-  //////////////////////////////////////////////////////////////////////////////
-  // (σ(dA/dt + ∇ V), A') + (ν∇×A, ∇×A') - <(ν∇×A) × n, A'> - (J0, A') = 0
-
-  // use a_ as a temporary, E = Grad P
-  // b1 = -dt * Grad V
-  curlCurl->MultTranspose(a_, *b1); // b1 = (ν∇×A, ∇×A')
-  grad->Mult(v_, da_);
-  m1->AddMult(da_, *b1, 1.0); // b1 = (ν∇×A, ∇×A') + (J0, A')
-  _bc_map.applyIntegratedBCs(
-      u_name, *b1,
-      pmesh_); // b1 = (ν∇×A, ∇×A') + (J0, A') + <(ν∇×A) × n, A'>
+  b0->ParallelAssemble(trueRhs->GetBlock(0));
+  // b0->ParallelAssemble(Phi_gf.GetTrueVector());
 
   mfem::ParGridFunction J_gf(HCurlFESpace_);
   mfem::Array<int> ess_tdof_list;
   J_gf = 0.0;
+  b1->Update(HCurlFESpace_, J_gf, 0);
+  *b1 = 0.0;
+  curlCurl->MultTranspose(a_, *b1); // b1 = (ν∇×A, ∇×A')
+  _bc_map.applyIntegratedBCs(u_name, *b1,
+                             pmesh_); // b1 = (ν∇×A, ∇×A') +  <(ν∇×A) × n, A'>
   _bc_map.applyEssentialBCs(u_name, ess_tdof_list, J_gf, pmesh_);
+  b1->Assemble();
+  b1->ParallelAssemble(trueRhs->GetBlock(1));
+  // b1->ParallelAssemble(J_gf.GetTrueVector());
+
+  // mVarf->EliminateEssentialBC(mark_bdr_attr_ess, trueX.GetBlock(0),
+  // trueRhs.GetBlock(0)); bVarf->EliminateTrialDofs(mark_bdr_attr_ess,
+  // trueX.GetBlock(0), trueRhs.GetBlock(1)); a01->Finalize();
+
   if (a1 == NULL || fabs(dt - dt_A1) > 1.0e-12 * dt) {
     this->buildA1(betaCoef, dtAlphaCoef);
+    a1->Finalize();
   }
-  // a1 = (σ dA/dt, A') + dt (ν∇×dA/dt, ∇×A')
-  // TODO: add  (σ ∇ V, A')
-  a1->FormLinearSystem(ess_tdof_list, J_gf, *b1, *A1, *X1, *B1);
 
-  // We only need to create the solver and preconditioner once
+  if (blockAV == NULL) {
+    blockAV = new mfem::BlockOperator(block_trueOffsets);
+    blockAV->SetBlock(0, 0, a0->ParallelAssemble());
+    blockAV->SetBlock(0, 1, a01->ParallelAssemble());
+    blockAV->SetBlock(1, 0, a10->ParallelAssemble());
+    blockAV->SetBlock(1, 1, a1->ParallelAssemble());
+  }
+
+  if (amg_a0 == NULL) {
+    amg_a0 = new mfem::HypreBoomerAMG(*A0);
+  }
   if (ams_a1 == NULL) {
     mfem::ParFiniteElementSpace *prec_fespace =
         (a1->StaticCondensationIsEnabled() ? a1->SCParFESpace()
                                            : HCurlFESpace_);
     ams_a1 = new mfem::HypreAMS(*A1, prec_fespace);
   }
-  if (pcg_a1 == NULL) {
-    pcg_a1 = new mfem::HyprePCG(*A1);
-    pcg_a1->SetTol(1.0e-9);
-    pcg_a1->SetMaxIter(1000);
-    pcg_a1->SetPrintLevel(0);
-    pcg_a1->SetPreconditioner(*ams_a1);
+  // OperatorHandle ;
+  if (blockAVPr = NULL) {
+    blockAVPr = new mfem::BlockDiagonalPreconditioner(block_trueOffsets);
+    blockAVPr->SetDiagonalBlock(0, amg_a0);
+    blockAVPr->SetDiagonalBlock(1, ams_a1);
   }
-  // solve the system
-  // dE = (A1)^-1 [-S1 E]
-  pcg_a1->Mult(*B1, *X1);
 
-  a1->RecoverFEMSolution(*X1, *b1, da_);
+  if (pcg_a0 == NULL) {
+    mfem::MINRESSolver solver(MPI_COMM_WORLD);
+    solver.SetAbsTol(1.0e-9);
+    //  solver.SetRelTol(rtol);
+    solver.SetMaxIter(1000);
+    solver.SetOperator(*blockAV);
+    // solver.SetPreconditioner(*blockAVPr);
+    //  solver.SetPrintLevel(verbose);
+    solver.Mult(*trueRhs, *trueX);
+    da_.Distribute(&(trueX->GetBlock(0)));
+    v_.Distribute(&(trueX->GetBlock(1)));
+
+    // pcg_a0 = new mfem::HyprePCG(MPI_COMM_WORLD);
+    // pcg_a0->SetTol(1.0e-9);
+    // pcg_a0->SetMaxIter(1000);
+    // pcg_a0->SetPrintLevel(0);
+    // pcg_a0->SetPreconditioner(dynamic_cast<mfem::HypreSolver *>(blockAVPr));
+    // pcg_a0->SetOperator(*blockAV);
+  }
+
+  // pcg_a0->Mult(*B0, *X0);
+  // solver.Mult(trueRhs, trueX);
+
+  // //  u->MakeRef(R_space, x.GetBlock(0), 0);
+  // //  p->MakeRef(W_space, x.GetBlock(1), 0);
+  // da_->Distribute(&(trueX.GetBlock(0)));
+  // v_->Distribute(&(trueX.GetBlock(1)));
+
+  // if (amg_a0 == NULL) {
+  //   amg_a0 = new mfem::HypreBoomerAMG(*A0);
+  // }
+  // if (pcg_a0 == NULL) {
+  //   pcg_a0 = new mfem::HyprePCG(*A0);
+  //   pcg_a0->SetTol(1.0e-9);
+  //   pcg_a0->SetMaxIter(1000);
+  //   pcg_a0->SetPrintLevel(0);
+  //   pcg_a0->SetPreconditioner(*amg_a0);
+  //   blockAVPr->SetDiagonalBlock(0, pcg_a0);
+  // }
+
+  // We only need to create the solver and preconditioner once
+  // if (ams_a1 == NULL) {
+  //   mfem::ParFiniteElementSpace *prec_fespace =
+  //       (a1->StaticCondensationIsEnabled() ? a1->SCParFESpace()
+  //                                          : HCurlFESpace_);
+  //   ams_a1 = new mfem::HypreAMS(*A1, prec_fespace);
+  // }
+  // if (pcg_a1 == NULL) {
+  //   pcg_a1 = new mfem::HyprePCG(*A1);
+  //   pcg_a1->SetTol(1.0e-9);
+  //   pcg_a1->SetMaxIter(1000);
+  //   pcg_a1->SetPrintLevel(0);
+  //   pcg_a1->SetPreconditioner(*ams_a1);
+  //   blockAVPr->SetDiagonalBlock(0, pcg_a1);
+  // }
+
+  // form the Laplacian and solve it
+
+  // a0->FormLinearSystem(poisson_ess_tdof_list, Phi_gf, *b0, *A0, *X0, *B0);
+
+  // if (amg_a0 == NULL) {
+  //   amg_a0 = new mfem::HypreBoomerAMG(*A0);
+  // }
+  // if (pcg_a0 == NULL) {
+  //   pcg_a0 = new mfem::HyprePCG(*A0);
+  //   pcg_a0->SetTol(1.0e-9);
+  //   pcg_a0->SetMaxIter(1000);
+  //   pcg_a0->SetPrintLevel(0);
+  //   pcg_a0->SetPreconditioner(*amg_a0);
+  // }
+  // pcg "Mult" operation is a solve
+  // X0 = A0^-1 * B0
+
+  // "undo" the static condensation saving result in grid function dP
+  // a0->RecoverFEMSolution(*X0, *b0, v_);
+  // dv_ = 0.0;
+  // pcg_a1->Mult(*B1, *X1);
+
+  // a1->RecoverFEMSolution(*X1, *b1, da_);
+
+  //////////////////////////////////////////////////////////////////////////////
+  // (σ(dA/dt + ∇ V), A') + (ν∇×A, ∇×A') - <(ν∇×A) × n, A'> - (J0, A') = 0
+
+  // use a_ as a temporary, E = Grad P
+  // b1 = -dt * Grad V
+
+  // mfem::ParGridFunction J_gf(HCurlFESpace_);
+  // mfem::Array<int> ess_tdof_list;
+  // J_gf = 0.0;
+  // _bc_map.applyEssentialBCs(u_name, ess_tdof_list, J_gf, pmesh_);
+  // if (a1 == NULL || fabs(dt - dt_A1) > 1.0e-12 * dt) {
+  //   this->buildA1(betaCoef, dtAlphaCoef);
+  // }
+  // // a1 = (σ dA/dt, A') + dt (ν∇×dA/dt, ∇×A')
+  // // TODO: add  (σ ∇ V, A')
+  // a1->FormLinearSystem(ess_tdof_list, J_gf, *b1, *A1, *X1, *B1);
+
+  // // We only need to create the solver and preconditioner once
+  // if (ams_a1 == NULL) {
+  //   mfem::ParFiniteElementSpace *prec_fespace =
+  //       (a1->StaticCondensationIsEnabled() ? a1->SCParFESpace()
+  //                                          : HCurlFESpace_);
+  //   ams_a1 = new mfem::HypreAMS(*A1, prec_fespace);
+  // }
+  // if (pcg_a1 == NULL) {
+  //   pcg_a1 = new mfem::HyprePCG(*A1);
+  //   pcg_a1->SetTol(1.0e-9);
+  //   pcg_a1->SetMaxIter(1000);
+  //   pcg_a1->SetPrintLevel(0);
+  //   pcg_a1->SetPreconditioner(*ams_a1);
+  // }
+  // // solve the system
+  // // dE = (A1)^-1 [-S1 E]
+  // pcg_a1->Mult(*B1, *X1);
+
+  // a1->RecoverFEMSolution(*X1, *b1, da_);
 
   // Auxiliary calculations
   // Compute B = Curl(A)
