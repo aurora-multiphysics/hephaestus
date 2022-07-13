@@ -261,19 +261,9 @@ void HCurlSolver::buildGrad() {
 }
 
 void HCurlSolver::buildCurl(mfem::Coefficient *MuInv) {
-  if (curl != NULL) {
-    delete curl;
-  }
   if (curlCurl != NULL) {
     delete curlCurl;
   }
-  if (curlCurl != NULL) {
-    delete curlCurl;
-  }
-
-  curl = new mfem::ParDiscreteLinearOperator(HCurlFESpace_, HDivFESpace_);
-  curl->AddDomainInterpolator(new mfem::CurlInterpolator);
-  curl->Assemble();
 
   curlCurl = new mfem::ParBilinearForm(HCurlFESpace_);
   curlCurl->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*MuInv));

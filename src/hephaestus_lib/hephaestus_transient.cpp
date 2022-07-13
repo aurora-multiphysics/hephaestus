@@ -21,7 +21,11 @@ void transient_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   } else if (inputs.formulation == "HJForm") {
     formulation =
         new hephaestus::HJDualSolver(pmesh, order, bc_map, domain_properties);
+  } else if (inputs.formulation == "HForm") {
+    formulation =
+        new hephaestus::HFormSolver(pmesh, order, bc_map, domain_properties);
   }
+
   mfem::BlockVector F(formulation->true_offsets); // Vector of dofs
   formulation->Init(F);                           // Set up initial conditions
 
