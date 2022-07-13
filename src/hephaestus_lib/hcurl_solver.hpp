@@ -37,12 +37,11 @@ public:
   void DisplayToGLVis() override;
   mfem::common::H1_ParFESpace *H1FESpace_;
   mfem::common::ND_ParFESpace *HCurlFESpace_;
-  mfem::common::RT_ParFESpace *HDivFESpace_;
 
   double ElectricLosses() const;
 
-  std::string u_name, p_name, v_name;
-  std::string u_display_name, p_display_name, v_display_name;
+  std::string u_name, p_name;
+  std::string u_display_name, p_display_name;
 
 protected:
   int myid_;
