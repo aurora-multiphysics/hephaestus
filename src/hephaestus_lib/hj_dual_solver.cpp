@@ -1,12 +1,13 @@
-#include "h_solver.hpp"
+#include "hj_dual_solver.hpp"
 
 namespace hephaestus {
 
-HSolver::HSolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
-                 hephaestus::DomainProperties &domain_properties)
-    : HCurlSolver(pmesh, order, bc_map, domain_properties) {}
+HJDualSolver::HJDualSolver(mfem::ParMesh &pmesh, int order,
+                           hephaestus::BCMap &bc_map,
+                           hephaestus::DomainProperties &domain_properties)
+    : DualSolver(pmesh, order, bc_map, domain_properties) {}
 
-void HSolver::SetVariableNames() {
+void HJDualSolver::SetVariableNames() {
   p_name = "magnetic_potential";
   p_display_name = "Scalar Potential (V)";
 
@@ -17,7 +18,7 @@ void HSolver::SetVariableNames() {
   v_display_name = "Current Density (J)";
 }
 
-void HSolver::SetMaterialCoefficients(
+void HJDualSolver::SetMaterialCoefficients(
     hephaestus::DomainProperties &domain_properties) {
   if (domain_properties.scalar_property_map.count("magnetic_permeability") ==
       0) {

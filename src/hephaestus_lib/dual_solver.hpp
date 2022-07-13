@@ -6,16 +6,16 @@ namespace hephaestus {
 double prodFunc(double a, double b);
 double fracFunc(double a, double b);
 
-class HCurlSolver : public mfem::TimeDependentOperator {
+class DualSolver : public mfem::TimeDependentOperator {
   virtual void
   SetMaterialCoefficients(hephaestus::DomainProperties &domain_properties);
   virtual void SetVariableNames();
 
 public:
-  HCurlSolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
-              hephaestus::DomainProperties &domain_properties);
+  DualSolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
+             hephaestus::DomainProperties &domain_properties);
 
-  ~HCurlSolver(){};
+  ~DualSolver(){};
 
   void Init(mfem::Vector &X);
 

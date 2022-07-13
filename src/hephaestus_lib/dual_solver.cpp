@@ -40,15 +40,15 @@
 // a1(u, u') = (βu, u') + (αdt∇×u, ∇×u')
 // b1(u') = (s0_{n+1}, u') + (αp_{n}, ∇×u') + <(αdt∇×u_{n+1}) × n, u'>
 
-#include "hcurl_solver.hpp"
+#include "dual_solver.hpp"
 
 namespace hephaestus {
 double prodFunc(double a, double b) { return a * b; }
 double fracFunc(double a, double b) { return a / b; }
 
-HCurlSolver::HCurlSolver(mfem::ParMesh &pmesh, int order,
-                         hephaestus::BCMap &bc_map,
-                         hephaestus::DomainProperties &domain_properties)
+DualSolver::DualSolver(mfem::ParMesh &pmesh, int order,
+                       hephaestus::BCMap &bc_map,
+                       hephaestus::DomainProperties &domain_properties)
     : myid_(0), num_procs_(1), pmesh_(&pmesh), _bc_map(bc_map),
       _domain_properties(domain_properties),
       H1FESpace_(
@@ -79,7 +79,7 @@ HCurlSolver::HCurlSolver(mfem::ParMesh &pmesh, int order,
   this->width = true_offsets[3];
 }
 
-void HCurlSolver::Init(mfem::Vector &X) {
+void DualSolver::Init(mfem::Vector &X) {
   // Define material property coefficients
   dtCoef = mfem::ConstantCoefficient(1.0);
   oneCoef = mfem::ConstantCoefficient(1.0);
@@ -137,8 +137,8 @@ Fully discretised equations
 using
 p_{n+1} = p_{n} + dt dv/dt_{n+1} = p_{n} - dt ∇×u_{n+1}
 */
-void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
-                                mfem::Vector &dX_dt) {
+void DualSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
+                               mfem::Vector &dX_dt) {
   dX_dt = 0.0;
   dtCoef.constant = dt;
 
@@ -235,8 +235,7 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   dv_ *= -1.0;
 }
 
-void HCurlSolver::buildA1(mfem::Coefficient *Sigma,
-                          mfem::Coefficient *DtMuInv) {
+void DualSolver::buildA1(mfem::Coefficient *Sigma, mfem::Coefficient *DtMuInv) {
   if (a1 != NULL) {
     delete a1;
   }
@@ -255,7 +254,7 @@ void HCurlSolver::buildA1(mfem::Coefficient *Sigma,
   dt_A1 = dtCoef.constant;
 }
 
-void HCurlSolver::buildM1(mfem::Coefficient *Sigma) {
+void DualSolver::buildM1(mfem::Coefficient *Sigma) {
   if (m1 != NULL) {
     delete m1;
   }
@@ -267,7 +266,7 @@ void HCurlSolver::buildM1(mfem::Coefficient *Sigma) {
   // Don't finalize or parallel assemble this is done in FormLinearSystem.
 }
 
-void HCurlSolver::buildGrad() {
+void DualSolver::buildGrad() {
   if (grad != NULL) {
     delete grad;
   }
@@ -279,7 +278,7 @@ void HCurlSolver::buildGrad() {
   // no ParallelAssemble since this will be applied to GridFunctions
 }
 
-void HCurlSolver::buildCurl(mfem::Coefficient *MuInv) {
+void DualSolver::buildCurl(mfem::Coefficient *MuInv) {
   if (curl != NULL) {
     delete curl;
   }
@@ -298,7 +297,7 @@ void HCurlSolver::buildCurl(mfem::Coefficient *MuInv) {
   // no ParallelAssemble since this will be applied to GridFunctions
 }
 
-void HCurlSolver::SetVariableNames() {
+void DualSolver::SetVariableNames() {
   p_name = "scalar_potential";
   p_display_name = "Scalar Potential";
 
@@ -309,7 +308,7 @@ void HCurlSolver::SetVariableNames() {
   v_display_name = "H(Div) variable";
 }
 
-void HCurlSolver::SetMaterialCoefficients(
+void DualSolver::SetMaterialCoefficients(
     hephaestus::DomainProperties &domain_properties) {
   if (domain_properties.scalar_property_map.count("alpha") == 0) {
     domain_properties.scalar_property_map["alpha"] = new mfem::PWCoefficient(
@@ -323,13 +322,13 @@ void HCurlSolver::SetMaterialCoefficients(
   betaCoef = domain_properties.scalar_property_map["beta"];
 }
 
-void HCurlSolver::RegisterOutputFields(mfem::DataCollection *dc_) {
+void DualSolver::RegisterOutputFields(mfem::DataCollection *dc_) {
   dc_->RegisterField(u_name, &u_);
   dc_->RegisterField(v_name, &v_);
   dc_->RegisterField(p_name, &p_);
 }
 
-void HCurlSolver::WriteConsoleSummary(double t, int it) {
+void DualSolver::WriteConsoleSummary(double t, int it) {
   // Write a summary of the timestep to console.
   if (myid_ == 0) {
     std::cout << std::fixed;
@@ -338,7 +337,7 @@ void HCurlSolver::WriteConsoleSummary(double t, int it) {
   }
 }
 
-void HCurlSolver::WriteOutputFields(mfem::DataCollection *dc_, int it) {
+void DualSolver::WriteOutputFields(mfem::DataCollection *dc_, int it) {
   if (dc_) {
     dc_->SetCycle(it);
     dc_->SetTime(t);
@@ -346,7 +345,7 @@ void HCurlSolver::WriteOutputFields(mfem::DataCollection *dc_, int it) {
   }
 }
 
-void HCurlSolver::InitializeGLVis() {
+void DualSolver::InitializeGLVis() {
   if (myid_ == 0) {
     std::cout << "Opening GLVis sockets." << std::endl;
   }
@@ -365,7 +364,7 @@ void HCurlSolver::InitializeGLVis() {
   }
 }
 
-void HCurlSolver::DisplayToGLVis() {
+void DualSolver::DisplayToGLVis() {
   char vishost[] = "localhost";
   int visport = 19916;
 
