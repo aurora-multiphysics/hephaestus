@@ -1,6 +1,6 @@
 // Solves the equations
 // ∇⋅s0 = 0
-// ∇×(α∇×u) - βu = s0
+// ∇×(αv) - βu = s0
 // dv/dt = -∇×u
 
 // where
@@ -11,7 +11,7 @@
 
 // Weak form (Space discretisation)
 // -(s0, ∇ p') + <n.s0, p'> = 0
-// (α∇×u, ∇×u') - (βu, u') - (s0, u') - <(α∇×u) × n, u'> = 0
+// (αv, ∇×u') - (βu, u') - (s0, u') - <(αv) × n, u'> = 0
 // (dv/dt, v') + (∇×u, v') = 0
 
 // Time discretisation using implicit scheme:
@@ -23,11 +23,11 @@
 
 // Fully discretised equations
 // -(s0_{n+1}, ∇ p') + <n.s0_{n+1}, p'> = 0
-// (αp_{n}, ∇×u') - (αdt∇×u_{n+1}, ∇×u') - (βu_{n+1}, u') - (s0_{n+1}, u') -
-// <(α∇×u_{n+1}) × n, u'> = 0
+// (αv_{n}, ∇×u') - (αdt∇×u_{n+1}, ∇×u') - (βu_{n+1}, u') - (s0_{n+1}, u') -
+// <(αv) × n, u'> = 0
 // (dv/dt_{n+1}, v') + (∇×u_{n+1}, v') = 0
 // using
-// p_{n+1} = p_{n} + dt dv/dt_{n+1} = p_{n} - dt ∇×u_{n+1}
+// v_{n+1} = v_{n} + dt dv/dt_{n+1} = v_{n} - dt ∇×u_{n+1}
 
 // Rewritten as
 // a0(p_{n+1}, p') = b0(p')
