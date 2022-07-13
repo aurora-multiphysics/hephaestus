@@ -13,7 +13,7 @@ void transient_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   hephaestus::BCMap bc_map(inputs.bc_map);
   hephaestus::DomainProperties domain_properties(inputs.domain_properties);
 
-  hephaestus::DualSolver *formulation;
+  hephaestus::TransientFormulation *formulation;
 
   if (inputs.formulation == "EBForm") {
     formulation =
