@@ -1,12 +1,13 @@
-#include "e_solver.hpp"
+#include "eb_dual_solver.hpp"
 
 namespace hephaestus {
 
-ESolver::ESolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
-                 hephaestus::DomainProperties &domain_properties)
-    : HCurlSolver(pmesh, order, bc_map, domain_properties) {}
+EBDualSolver::EBDualSolver(mfem::ParMesh &pmesh, int order,
+                           hephaestus::BCMap &bc_map,
+                           hephaestus::DomainProperties &domain_properties)
+    : DualSolver(pmesh, order, bc_map, domain_properties) {}
 
-void ESolver::SetVariableNames() {
+void EBDualSolver::SetVariableNames() {
   p_name = "electric_potential";
   p_display_name = "Scalar Potential (V)";
 
@@ -17,7 +18,7 @@ void ESolver::SetVariableNames() {
   v_display_name = "Magnetic Flux Density (B)";
 }
 
-void ESolver::SetMaterialCoefficients(
+void EBDualSolver::SetMaterialCoefficients(
     hephaestus::DomainProperties &domain_properties) {
   if (domain_properties.scalar_property_map.count("magnetic_permeability") ==
       0) {
@@ -38,7 +39,7 @@ void ESolver::SetMaterialCoefficients(
   betaCoef = domain_properties.scalar_property_map["electrical_conductivity"];
 }
 
-void ESolver::WriteConsoleSummary(double t, int it) {
+void EBDualSolver::WriteConsoleSummary(double t, int it) {
   // Write a summary of the timestep to console.
 
   // Output Ohmic losses to console
@@ -51,7 +52,7 @@ void ESolver::WriteConsoleSummary(double t, int it) {
   }
 }
 
-double ESolver::ElectricLosses() const {
+double EBDualSolver::ElectricLosses() const {
   double el = m1->InnerProduct(u_, u_);
 
   double global_el;
