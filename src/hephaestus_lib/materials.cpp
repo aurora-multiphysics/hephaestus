@@ -2,6 +2,9 @@
 
 namespace hephaestus {
 
+double prodFunc(double a, double b) { return a * b; }
+double fracFunc(double a, double b) { return a / b; }
+
 Subdomain::Subdomain(const std::string &name_, int id_)
     : name(name_), id(id_) {}
 

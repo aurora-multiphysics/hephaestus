@@ -3,9 +3,6 @@
 #include "inputs.hpp"
 
 namespace hephaestus {
-double prodFunc(double a, double b);
-double fracFunc(double a, double b);
-
 // Specifies output interfaces of a time-domain EM formulation.
 class TransientFormulation : public mfem::TimeDependentOperator {
 
