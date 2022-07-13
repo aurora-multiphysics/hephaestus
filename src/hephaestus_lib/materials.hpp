@@ -7,6 +7,9 @@
 
 namespace hephaestus {
 
+double prodFunc(double a, double b);
+double fracFunc(double a, double b);
+
 class Subdomain {
 public:
   Subdomain(const std::string &name_, int id_);

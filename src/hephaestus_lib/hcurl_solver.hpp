@@ -5,16 +5,16 @@
 
 namespace hephaestus {
 
-class DualSolver : public TransientFormulation {
+class HCurlSolver : public TransientFormulation {
   virtual void
   SetMaterialCoefficients(hephaestus::DomainProperties &domain_properties);
   virtual void SetVariableNames();
 
 public:
-  DualSolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
-             hephaestus::DomainProperties &domain_properties);
+  HCurlSolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
+              hephaestus::DomainProperties &domain_properties);
 
-  ~DualSolver(){};
+  ~HCurlSolver(){};
 
   void Init(mfem::Vector &X) override;
 
@@ -57,7 +57,7 @@ protected:
 
   mfem::ParDiscreteLinearOperator *grad;
   mfem::ParDiscreteLinearOperator *curl;
-  mfem::ParMixedBilinearForm *weakCurl;
+  mfem::ParBilinearForm *curlCurl;
   mutable mfem::HypreSolver *amg_a0;
   mutable mfem::HyprePCG *pcg_a0;
   mutable mfem::HypreSolver *ams_a1;
@@ -67,7 +67,6 @@ protected:
   mfem::ParLinearForm *b0, *b1;
   mfem::ParGridFunction u_, du_; // HCurl vector field
   mfem::ParGridFunction p_, dp_; // H1 scalar potential
-  mfem::ParGridFunction v_, dv_; // HDiv vector field
 
   double dt_A1;
   mfem::ConstantCoefficient dtCoef;  // Coefficient for timestep scaling
