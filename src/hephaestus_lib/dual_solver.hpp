@@ -1,12 +1,13 @@
 #pragma once
 #include "../common/pfem_extras.hpp"
+#include "formulation.hpp"
 #include "inputs.hpp"
 
 namespace hephaestus {
 double prodFunc(double a, double b);
 double fracFunc(double a, double b);
 
-class DualSolver : public mfem::TimeDependentOperator {
+class DualSolver : public TransientFormulation {
   virtual void
   SetMaterialCoefficients(hephaestus::DomainProperties &domain_properties);
   virtual void SetVariableNames();
@@ -17,7 +18,7 @@ public:
 
   ~DualSolver(){};
 
-  void Init(mfem::Vector &X);
+  void Init(mfem::Vector &X) override;
 
   void buildA1(mfem::Coefficient *sigma, mfem::Coefficient *dtMuInv);
   void buildM1(mfem::Coefficient *sigma);
@@ -25,22 +26,20 @@ public:
   void buildGrad();
 
   void ImplicitSolve(const double dt, const mfem::Vector &X,
-                     mfem::Vector &dX_dt);
+                     mfem::Vector &dX_dt) override;
 
-  void RegisterOutputFields(mfem::DataCollection *dc_);
+  void RegisterOutputFields(mfem::DataCollection *dc_) override;
 
-  void WriteOutputFields(mfem::DataCollection *dc_, int it = 0);
+  void WriteOutputFields(mfem::DataCollection *dc_, int it = 0) override;
 
-  virtual void WriteConsoleSummary(double t, int it);
+  virtual void WriteConsoleSummary(double t, int it) override;
 
-  void InitializeGLVis();
+  void InitializeGLVis() override;
 
-  void DisplayToGLVis();
+  void DisplayToGLVis() override;
   mfem::common::H1_ParFESpace *H1FESpace_;
   mfem::common::ND_ParFESpace *HCurlFESpace_;
   mfem::common::RT_ParFESpace *HDivFESpace_;
-
-  mfem::Array<int> true_offsets;
 
   double ElectricLosses() const;
 

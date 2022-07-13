@@ -57,8 +57,8 @@ DualSolver::DualSolver(mfem::ParMesh &pmesh, int order,
           new mfem::common::ND_ParFESpace(&pmesh, order, pmesh.Dimension())),
       HDivFESpace_(
           new mfem::common::RT_ParFESpace(&pmesh, order, pmesh.Dimension())),
-      true_offsets(4), a1(NULL), amg_a0(NULL), pcg_a0(NULL), ams_a1(NULL),
-      pcg_a1(NULL), m1(NULL), grad(NULL), curl(NULL), weakCurl(NULL),
+      a1(NULL), amg_a0(NULL), pcg_a0(NULL), ams_a1(NULL), pcg_a1(NULL),
+      m1(NULL), grad(NULL), curl(NULL), weakCurl(NULL),
       p_(mfem::ParGridFunction(H1FESpace_)),
       u_(mfem::ParGridFunction(HCurlFESpace_)),
       v_(mfem::ParGridFunction(HDivFESpace_)),
@@ -69,6 +69,7 @@ DualSolver::DualSolver(mfem::ParMesh &pmesh, int order,
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh.GetComm(), &myid_);
 
+  true_offsets.SetSize(4);
   true_offsets[0] = 0;
   true_offsets[1] = H1FESpace_->GetVSize();
   true_offsets[2] = HCurlFESpace_->GetVSize();
