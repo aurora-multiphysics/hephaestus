@@ -17,6 +17,8 @@ FormulationFactory::createTransientFormulation(
     return new hephaestus::HFormSolver(pmesh, order, bc_map, domain_properties);
   } else if (formulation == "EForm") {
     return new hephaestus::EFormSolver(pmesh, order, bc_map, domain_properties);
+  } else {
+    std::cout << "Formulation name " << formulation << " not recognised. \n";
   }
   return nullptr;
 }
