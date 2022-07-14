@@ -38,7 +38,7 @@
 // a0(p, p') = (β ∇ p, ∇ p')
 // b0(p') = <n.s0, p'>
 // a1(u, u') = (βu, u') + (αdt∇×u, ∇×u')
-// b1(u') = (s0_{n+1}, u') + (αp_{n}, ∇×u') + <(αdt∇×u_{n+1}) × n, u'>
+// b1(u') = (s0_{n+1}, u') + (αv_{n}, ∇×u') + <(αdt∇×u_{n+1}) × n, u'>
 
 #include "dual_solver.hpp"
 
@@ -93,7 +93,7 @@ void DualSolver::Init(mfem::Vector &X) {
   a0->Assemble();
 
   this->buildM1(betaCoef);    // (βu, u')
-  this->buildCurl(alphaCoef); // (αp_{n}, ∇×u')
+  this->buildCurl(alphaCoef); // (αv_{n}, ∇×u')
   this->buildGrad();          // (s0_{n+1}, u')
   b0 = new mfem::ParLinearForm(H1FESpace_);
   b1 = new mfem::ParLinearForm(HCurlFESpace_);
@@ -130,11 +130,11 @@ p_{n+1} ∈ H1
 
 Fully discretised equations
 -(s0_{n+1}, ∇ p') + <n.s0_{n+1}, p'> = 0
-(αp_{n}, ∇×u') - (αdt∇×u_{n+1}, ∇×u') - (βu_{n+1}, u') - (s0_{n+1}, u') -
+(αv_{n}, ∇×u') - (αdt∇×u_{n+1}, ∇×u') - (βu_{n+1}, u') - (s0_{n+1}, u') -
 <(α∇×u_{n+1}) × n, u'> = 0
 (dv/dt_{n+1}, v') + (∇×u_{n+1}, v') = 0
 using
-p_{n+1} = p_{n} + dt dv/dt_{n+1} = p_{n} - dt ∇×u_{n+1}
+v_{n+1} = v_{n} + dt dv/dt_{n+1} = v_{n} - dt ∇×u_{n+1}
 */
 void DualSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
                                mfem::Vector &dX_dt) {
@@ -182,14 +182,14 @@ void DualSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   a0->RecoverFEMSolution(*X0, *b0, p_);
   dp_ = 0.0;
   //////////////////////////////////////////////////////////////////////////////
-  // (αp_{n}, ∇×u') - (αdt∇×u_{n+1}, ∇×u') - (βu_{n+1}, u') - (s0_{n+1}, u') -
+  // (αv_{n}, ∇×u') - (αdt∇×u_{n+1}, ∇×u') - (βu_{n+1}, u') - (s0_{n+1}, u') -
   // <(α∇×u_{n+1}) × n, u'> = 0
 
   // a1(u_{n+1}, u') = b1(u')
   // a1(u, u') = (βu, u') + (αdt∇×u, ∇×u')
-  // b1(u') = (s0_{n+1}, u') + (αp_{n}, ∇×u') + <(αdt∇×u_{n+1}) × n, u'>
+  // b1(u') = (s0_{n+1}, u') + (αv_{n}, ∇×u') + <(αdt∇×u_{n+1}) × n, u'>
 
-  // (αp_{n}, ∇×u')
+  // (αv_{n}, ∇×u')
   // v_ is a grid function but weakCurl is not parallel assembled so is OK
   weakCurl->MultTranspose(v_, *b1);
 
