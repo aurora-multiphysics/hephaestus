@@ -15,6 +15,8 @@ FormulationFactory::createTransientFormulation(
                                         domain_properties);
   } else if (formulation == "HForm") {
     return new hephaestus::HFormSolver(pmesh, order, bc_map, domain_properties);
+  } else if (formulation == "EForm") {
+    return new hephaestus::EFormSolver(pmesh, order, bc_map, domain_properties);
   }
   return nullptr;
 }
