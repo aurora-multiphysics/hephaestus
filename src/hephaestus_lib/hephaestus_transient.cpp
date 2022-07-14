@@ -1,6 +1,3 @@
-// Solves a time-domain formulation->
-// TODO: Add to Executioners?
-
 #include "hephaestus_transient.hpp"
 
 void transient_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
@@ -13,18 +10,9 @@ void transient_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   hephaestus::BCMap bc_map(inputs.bc_map);
   hephaestus::DomainProperties domain_properties(inputs.domain_properties);
 
-  hephaestus::TransientFormulation *formulation;
-
-  if (inputs.formulation == "EBForm") {
-    formulation =
-        new hephaestus::EBDualSolver(pmesh, order, bc_map, domain_properties);
-  } else if (inputs.formulation == "HJForm") {
-    formulation =
-        new hephaestus::HJDualSolver(pmesh, order, bc_map, domain_properties);
-  } else if (inputs.formulation == "HForm") {
-    formulation =
-        new hephaestus::HFormSolver(pmesh, order, bc_map, domain_properties);
-  }
+  hephaestus::TransientFormulation *formulation =
+      hephaestus::FormulationFactory::createTransientFormulation(
+          inputs.formulation, pmesh, order, bc_map, domain_properties);
 
   mfem::BlockVector F(formulation->true_offsets); // Vector of dofs
   formulation->Init(F);                           // Set up initial conditions
