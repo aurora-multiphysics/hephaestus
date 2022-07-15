@@ -8,6 +8,8 @@ namespace hephaestus {
 class HCurlSolver : public TransientFormulation {
   virtual void
   SetMaterialCoefficients(hephaestus::DomainProperties &domain_properties);
+  virtual void
+  SetSourceCoefficient(hephaestus::DomainProperties &domain_properties);
   virtual void SetVariableNames();
 
 public:
@@ -22,6 +24,7 @@ public:
   void buildM1(mfem::Coefficient *sigma);
   void buildCurl(mfem::Coefficient *muInv);
   void buildGrad();
+  void buildSource();
 
   void ImplicitSolve(const double dt, const mfem::Vector &X,
                      mfem::Vector &dX_dt) override;
@@ -70,9 +73,14 @@ protected:
   double dt_A1;
   mfem::ConstantCoefficient dtCoef;  // Coefficient for timestep scaling
   mfem::ConstantCoefficient oneCoef; // Auxiliary coefficient
-  mfem::Coefficient *alphaCoef;      // Reluctivity Coefficient
+  mfem::Coefficient *alphaCoef;
   mfem::Coefficient *dtAlphaCoef;
-  mfem::Coefficient *betaCoef; // Electric Conductivity Coefficient
+  mfem::Coefficient *betaCoef;
+
+  mfem::VectorCoefficient *sourceVecCoef;
+  mfem::ParGridFunction *src_gf, *div_free_src_gf; // Source field
+  mfem::ParBilinearForm *hCurlMass;
+  mfem::common::DivergenceFreeProjector *divFreeProj;
 
   // Sockets used to communicate with GLVis
   std::map<std::string, mfem::socketstream *> socks_;
