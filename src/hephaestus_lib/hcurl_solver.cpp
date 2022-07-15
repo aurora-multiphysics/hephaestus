@@ -51,7 +51,8 @@ HCurlSolver::HCurlSolver(mfem::ParMesh &pmesh, int order,
       HCurlFESpace_(
           new mfem::common::ND_ParFESpace(&pmesh, order, pmesh.Dimension())),
       a1(NULL), amg_a0(NULL), pcg_a0(NULL), ams_a1(NULL), pcg_a1(NULL),
-      m1(NULL), grad(NULL), curl(NULL), curlCurl(NULL),
+      m1(NULL), grad(NULL), curl(NULL), curlCurl(NULL), sourceVecCoef(NULL),
+      src_gf(NULL), div_free_src_gf(NULL), hCurlMass(NULL), divFreeProj(NULL),
       p_(mfem::ParGridFunction(H1FESpace_)),
       u_(mfem::ParGridFunction(HCurlFESpace_)),
       dp_(mfem::ParGridFunction(H1FESpace_)),
@@ -76,8 +77,12 @@ void HCurlSolver::Init(mfem::Vector &X) {
   oneCoef = mfem::ConstantCoefficient(1.0);
   SetMaterialCoefficients(_domain_properties);
   dtAlphaCoef = new mfem::TransformedCoefficient(&dtCoef, alphaCoef, prodFunc);
-
   SetVariableNames();
+
+  SetSourceCoefficient(_domain_properties);
+  if (sourceVecCoef) {
+    buildSource();
+  }
 
   // a0(p, p') = (β ∇ p, ∇ p')
   a0 = new mfem::ParBilinearForm(H1FESpace_);
@@ -184,6 +189,15 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   grad->Mult(p_, du_);
   m1->AddMult(du_, *b1, 1.0);
 
+  if (src_gf) {
+    src_gf->ProjectCoefficient(*sourceVecCoef);
+    // Compute the discretely divergence-free portion of src_gf
+    divFreeProj->Mult(*src_gf, *div_free_src_gf);
+
+    // Compute the dual of div_free_src_gf
+    hCurlMass->AddMult(*div_free_src_gf, *b1);
+  }
+
   mfem::ParGridFunction J_gf(HCurlFESpace_);
   mfem::Array<int> ess_tdof_list;
   J_gf = 0.0;
@@ -214,6 +228,10 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
 
   // Subtract off contribution from source
   grad->AddMult(p_, du_, -1.0);
+  if (src_gf) {
+    *div_free_src_gf *= -1.0;
+    du_ += *div_free_src_gf;
+  }
 }
 
 void HCurlSolver::buildA1(mfem::Coefficient *Sigma,
@@ -292,6 +310,24 @@ void HCurlSolver::SetMaterialCoefficients(
   }
   alphaCoef = domain_properties.scalar_property_map["alpha"];
   betaCoef = domain_properties.scalar_property_map["beta"];
+}
+
+void HCurlSolver::SetSourceCoefficient(
+    hephaestus::DomainProperties &domain_properties) {
+  sourceVecCoef = domain_properties.vector_property_map["source"];
+}
+
+void HCurlSolver::buildSource() {
+  src_gf = new mfem::ParGridFunction(HCurlFESpace_);
+  div_free_src_gf = new mfem::ParGridFunction(HCurlFESpace_);
+  // int irOrder = H1FESpace_->GetElementTransformation(0)->OrderW() +
+  //               2 * H1FESpace_->GetOrder();
+  int irOrder = H1FESpace_->GetElementTransformation(0)->OrderW() + 2 * 2;
+  divFreeProj = new mfem::common::DivergenceFreeProjector(
+      *H1FESpace_, *HCurlFESpace_, irOrder, NULL, NULL, NULL);
+  hCurlMass = new mfem::ParBilinearForm(HCurlFESpace_);
+  hCurlMass->AddDomainIntegrator(new mfem::VectorFEMassIntegrator());
+  hCurlMass->Assemble();
 }
 
 void HCurlSolver::RegisterOutputFields(mfem::DataCollection *dc_) {
