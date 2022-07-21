@@ -183,17 +183,16 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   // (α∇×u_{n}, ∇×u')
   // v_ is a grid function but curlCurl is not parallel assembled so is OK
   curlCurl->MultTranspose(u_, *b1);
+  *b1 *= -1.0;
 
   // use du_ as a temporary
   // (s0_{n+1}, u')
   grad->Mult(p_, du_);
   m1->AddMult(du_, *b1, 1.0);
-
   if (src_gf) {
     src_gf->ProjectCoefficient(*sourceVecCoef);
     // Compute the discretely divergence-free portion of src_gf
     divFreeProj->Mult(*src_gf, *div_free_src_gf);
-
     // Compute the dual of div_free_src_gf
     hCurlMass->AddMult(*div_free_src_gf, *b1);
   }
@@ -213,10 +212,11 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   // We only need to create the solver and preconditioner once
   if (ams_a1 == NULL) {
     ams_a1 = new mfem::HypreAMS(*A1, HCurlFESpace_);
+    ams_a1->SetSingularProblem();
   }
   if (pcg_a1 == NULL) {
     pcg_a1 = new mfem::HyprePCG(*A1);
-    pcg_a1->SetTol(1.0e-9);
+    pcg_a1->SetTol(1.0e-16);
     pcg_a1->SetMaxIter(1000);
     pcg_a1->SetPrintLevel(0);
     pcg_a1->SetPreconditioner(*ams_a1);
@@ -225,13 +225,6 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   pcg_a1->Mult(*B1, *X1);
 
   a1->RecoverFEMSolution(*X1, *b1, du_);
-
-  // Subtract off contribution from source
-  grad->AddMult(p_, du_, -1.0);
-  if (src_gf) {
-    *div_free_src_gf *= -1.0;
-    du_ += *div_free_src_gf;
-  }
 }
 
 void HCurlSolver::buildA1(mfem::Coefficient *Sigma,
@@ -333,6 +326,7 @@ void HCurlSolver::buildSource() {
 void HCurlSolver::RegisterOutputFields(mfem::DataCollection *dc_) {
   dc_->RegisterField(u_name, &u_);
   dc_->RegisterField(p_name, &p_);
+  dc_->RegisterField("source", div_free_src_gf);
 }
 
 void HCurlSolver::WriteConsoleSummary(double t, int it) {
@@ -363,6 +357,9 @@ void HCurlSolver::InitializeGLVis() {
   socks_[p_name] = new mfem::socketstream;
   socks_[p_name]->precision(8);
 
+  socks_["source"] = new mfem::socketstream;
+  socks_["source"]->precision(8);
+
   if (myid_ == 0) {
     std::cout << "GLVis sockets open." << std::endl;
   }
@@ -382,6 +379,9 @@ void HCurlSolver::DisplayToGLVis() {
 
   mfem::common::VisualizeField(*socks_[p_name], vishost, visport, p_,
                                p_display_name.c_str(), Wx, Wy, Ww, Wh);
+  Wx += offx;
+  mfem::common::VisualizeField(*socks_["source"], vishost, visport,
+                               *div_free_src_gf, "source", Wx, Wy, Ww, Wh);
   Wx += offx;
 }
 

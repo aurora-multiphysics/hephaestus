@@ -56,7 +56,7 @@ void VectorFunctionDirichletBC::applyBC(mfem::GridFunction &gridfunc,
                                         mfem::Mesh *mesh_) {
   mfem::Array<int> ess_bdrs(mesh_->bdr_attributes.Max());
   ess_bdrs = this->getMarkers(*mesh_);
-  gridfunc.ProjectBdrCoefficient(*(this->vec_coeff), ess_bdrs);
+  gridfunc.ProjectBdrCoefficientTangent(*(this->vec_coeff), ess_bdrs);
 }
 
 IntegratedBC::IntegratedBC() {}
