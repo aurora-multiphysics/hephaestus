@@ -11,7 +11,8 @@ class HFormSolver : public hephaestus::HCurlSolver {
   virtual void SetVariableNames() override;
 
 public:
-  HFormSolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
+  HFormSolver(mfem::ParMesh &pmesh, int order,
+              hephaestus::VariableMap &variables, hephaestus::BCMap &bc_map,
               hephaestus::DomainProperties &domain_properties);
 
   ~HFormSolver(){};

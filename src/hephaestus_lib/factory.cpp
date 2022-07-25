@@ -5,7 +5,7 @@ namespace hephaestus {
 hephaestus::TransientFormulation *
 FormulationFactory::createTransientFormulation(
     std::string &formulation, mfem::ParMesh &pmesh, int order,
-    hephaestus::BCMap &bc_map,
+    hephaestus::VariableMap &variables, hephaestus::BCMap &bc_map,
     hephaestus::DomainProperties &domain_properties) {
   if (formulation == "EBForm") {
     return new hephaestus::EBDualSolver(pmesh, order, bc_map,
@@ -14,9 +14,11 @@ FormulationFactory::createTransientFormulation(
     return new hephaestus::HJDualSolver(pmesh, order, bc_map,
                                         domain_properties);
   } else if (formulation == "HForm") {
-    return new hephaestus::HFormSolver(pmesh, order, bc_map, domain_properties);
+    return new hephaestus::HFormSolver(pmesh, order, variables, bc_map,
+                                       domain_properties);
   } else if (formulation == "EForm") {
-    return new hephaestus::EFormSolver(pmesh, order, bc_map, domain_properties);
+    return new hephaestus::EFormSolver(pmesh, order, variables, bc_map,
+                                       domain_properties);
   } else {
     std::cout << "Formulation name " << formulation << " not recognised. \n";
   }

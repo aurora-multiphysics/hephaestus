@@ -35,8 +35,8 @@ protected:
     double sigma = 1.0;
     return sigma;
   }
-  // RSource field
-  static void f_expr(const mfem::Vector &x, double t, mfem::Vector &f) {
+  // Source field
+  static void source_field(const mfem::Vector &x, double t, mfem::Vector &f) {
     f(0) = 2 * M_PI * M_PI * t * sin(M_PI * x(1)) * sin(M_PI * x(2)) +
            sigma_expr(x) * sin(M_PI * x(1)) * sin(M_PI * x(2));
     f(1) = 0.0;
@@ -69,7 +69,7 @@ protected:
         new mfem::ConstantCoefficient(1.0);
 
     mfem::VectorFunctionCoefficient *dBdtSrcCoef =
-        new mfem::VectorFunctionCoefficient(3, f_expr);
+        new mfem::VectorFunctionCoefficient(3, source_field);
     domain_properties.vector_property_map["source"] = dBdtSrcCoef;
 
     bc_map["ground_potential"] = new hephaestus::FunctionDirichletBC(
@@ -108,6 +108,7 @@ TEST_F(TestHFormSource, CheckRun) {
       mfem::ParMesh pmesh = mfem::ParMesh(MPI_COMM_WORLD, inputs.mesh);
       int order = inputs.order;
       hephaestus::BCMap bc_map(inputs.bc_map);
+      hephaestus::VariableMap variables;
       hephaestus::DomainProperties domain_properties(inputs.domain_properties);
 
       for (int l = 0; l < par_ref_levels; l++) {
@@ -117,8 +118,8 @@ TEST_F(TestHFormSource, CheckRun) {
       int myid;
       MPI_Comm_rank(MPI_COMM_WORLD, &myid);
 
-      hephaestus::HFormSolver *formulation =
-          new hephaestus::HFormSolver(pmesh, order, bc_map, domain_properties);
+      hephaestus::HFormSolver *formulation = new hephaestus::HFormSolver(
+          pmesh, order, variables, bc_map, domain_properties);
 
       mfem::BlockVector F(formulation->true_offsets); // Vector of dofs
       formulation->Init(F); // Set up initial conditions
@@ -132,6 +133,7 @@ TEST_F(TestHFormSource, CheckRun) {
       double t = t_initial; // current time
       H_exact.SetTime(t);
       h_gf.ProjectCoefficient(H_exact);
+      variables.Register("analytic_magnetic_field", &h_gf, false);
 
       formulation->SetTime(t);
       mfem::ODESolver *ode_solver = new mfem::BackwardEulerSolver;
@@ -141,7 +143,6 @@ TEST_F(TestHFormSource, CheckRun) {
       std::map<std::string, mfem::DataCollection *> data_collections(
           inputs.outputs.data_collections);
       for (auto const &[name, dc_] : data_collections) {
-        dc_->SetMesh(&pmesh);
         formulation->RegisterOutputFields(dc_);
         // Write initial fields to disk
         formulation->WriteOutputFields(dc_, 0);
@@ -152,19 +153,7 @@ TEST_F(TestHFormSource, CheckRun) {
       bool visualization = true;
       if (visualization) {
         formulation->InitializeGLVis();
-
-        formulation->socks_["h_exact"] = new mfem::socketstream;
-        formulation->socks_["h_exact"]->precision(8);
         formulation->DisplayToGLVis();
-        char vishost[] = "localhost";
-        int visport = 19916;
-
-        int Wx = 0, Wy = 0;                 // window position
-        int Ww = 350, Wh = 350;             // window size
-        int offx = Ww + 10, offy = Wh + 45; // window offsets
-        mfem::common::VisualizeField(*(formulation->socks_["h_exact"]), vishost,
-                                     visport, h_gf, "h_exact", Wx, Wy, Ww, Wh);
-        Wx += offx;
       }
 
       // Begin time evolution
@@ -193,17 +182,6 @@ TEST_F(TestHFormSource, CheckRun) {
           // Send output fields to GLVis for visualisation
           if (visualization) {
             formulation->DisplayToGLVis();
-            char vishost[] = "localhost";
-            int visport = 19916;
-
-            int Wx = 0, Wy = 0;                 // window position
-            int Ww = 350, Wh = 350;             // window size
-            int offx = Ww + 10, offy = Wh + 45; // window offsets
-
-            mfem::common::VisualizeField(*(formulation->socks_["h_exact"]),
-                                         vishost, visport, h_gf, "h_exact", Wx,
-                                         Wy, Ww, Wh);
-            Wx += offx;
           }
 
           // Save output fields at timestep to DataCollections

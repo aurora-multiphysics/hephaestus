@@ -42,10 +42,11 @@
 namespace hephaestus {
 
 HCurlSolver::HCurlSolver(mfem::ParMesh &pmesh, int order,
+                         hephaestus::VariableMap &variables,
                          hephaestus::BCMap &bc_map,
                          hephaestus::DomainProperties &domain_properties)
-    : myid_(0), num_procs_(1), pmesh_(&pmesh), _bc_map(bc_map),
-      _domain_properties(domain_properties),
+    : myid_(0), num_procs_(1), pmesh_(&pmesh), _variables(variables),
+      _bc_map(bc_map), _domain_properties(domain_properties),
       H1FESpace_(
           new mfem::common::H1_ParFESpace(&pmesh, order, pmesh.Dimension())),
       HCurlFESpace_(
@@ -72,12 +73,15 @@ HCurlSolver::HCurlSolver(mfem::ParMesh &pmesh, int order,
 }
 
 void HCurlSolver::Init(mfem::Vector &X) {
+  SetVariableNames();
+  _variables.Register(u_name, &u_, false);
+  _variables.Register(p_name, &p_, false);
+
   // Define material property coefficients
   dtCoef = mfem::ConstantCoefficient(1.0);
   oneCoef = mfem::ConstantCoefficient(1.0);
   SetMaterialCoefficients(_domain_properties);
   dtAlphaCoef = new mfem::TransformedCoefficient(&dtCoef, alphaCoef, prodFunc);
-  SetVariableNames();
 
   SetSourceCoefficient(_domain_properties);
   if (sourceVecCoef) {
@@ -307,12 +311,18 @@ void HCurlSolver::SetMaterialCoefficients(
 
 void HCurlSolver::SetSourceCoefficient(
     hephaestus::DomainProperties &domain_properties) {
-  sourceVecCoef = domain_properties.vector_property_map["source"];
+  if (domain_properties.vector_property_map.find("source") !=
+      domain_properties.vector_property_map.end()) {
+    sourceVecCoef = domain_properties.vector_property_map["source"];
+  }
 }
 
 void HCurlSolver::buildSource() {
+  // Replace with class to calculate div free source from input
+  // VectorCoefficient
   src_gf = new mfem::ParGridFunction(HCurlFESpace_);
   div_free_src_gf = new mfem::ParGridFunction(HCurlFESpace_);
+  _variables.Register("source", div_free_src_gf, false);
   // int irOrder = H1FESpace_->GetElementTransformation(0)->OrderW() +
   //               2 * H1FESpace_->GetOrder();
   int irOrder = H1FESpace_->GetElementTransformation(0)->OrderW() + 2 * 2;
@@ -324,9 +334,10 @@ void HCurlSolver::buildSource() {
 }
 
 void HCurlSolver::RegisterOutputFields(mfem::DataCollection *dc_) {
-  dc_->RegisterField(u_name, &u_);
-  dc_->RegisterField(p_name, &p_);
-  dc_->RegisterField("source", div_free_src_gf);
+  dc_->SetMesh(pmesh_);
+  for (auto var = _variables.begin(); var != _variables.end(); ++var) {
+    dc_->RegisterField(var->first, var->second);
+  }
 }
 
 void HCurlSolver::WriteConsoleSummary(double t, int it) {
@@ -351,14 +362,10 @@ void HCurlSolver::InitializeGLVis() {
     std::cout << "Opening GLVis sockets." << std::endl;
   }
 
-  socks_[u_name] = new mfem::socketstream;
-  socks_[u_name]->precision(8);
-
-  socks_[p_name] = new mfem::socketstream;
-  socks_[p_name]->precision(8);
-
-  socks_["source"] = new mfem::socketstream;
-  socks_["source"]->precision(8);
+  for (auto var = _variables.begin(); var != _variables.end(); ++var) {
+    socks_[var->first] = new mfem::socketstream;
+    socks_[var->first]->precision(8);
+  }
 
   if (myid_ == 0) {
     std::cout << "GLVis sockets open." << std::endl;
@@ -373,16 +380,12 @@ void HCurlSolver::DisplayToGLVis() {
   int Ww = 350, Wh = 350;             // window size
   int offx = Ww + 10, offy = Wh + 45; // window offsets
 
-  mfem::common::VisualizeField(*socks_[u_name], vishost, visport, u_,
-                               u_display_name.c_str(), Wx, Wy, Ww, Wh);
-  Wx += offx;
-
-  mfem::common::VisualizeField(*socks_[p_name], vishost, visport, p_,
-                               p_display_name.c_str(), Wx, Wy, Ww, Wh);
-  Wx += offx;
-  mfem::common::VisualizeField(*socks_["source"], vishost, visport,
-                               *div_free_src_gf, "source", Wx, Wy, Ww, Wh);
-  Wx += offx;
+  for (auto var = _variables.begin(); var != _variables.end(); ++var) {
+    mfem::common::VisualizeField(*socks_[var->first], vishost, visport,
+                                 *(var->second), (var->first).c_str(), Wx, Wy,
+                                 Ww, Wh);
+    Wx += offx;
+  }
 }
 
 } // namespace hephaestus
