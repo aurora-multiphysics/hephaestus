@@ -3,9 +3,10 @@
 namespace hephaestus {
 
 EFormSolver::EFormSolver(mfem::ParMesh &pmesh, int order,
+                         hephaestus::VariableMap &variables,
                          hephaestus::BCMap &bc_map,
                          hephaestus::DomainProperties &domain_properties)
-    : HCurlSolver(pmesh, order, bc_map, domain_properties) {}
+    : HCurlSolver(pmesh, order, variables, bc_map, domain_properties) {}
 
 void EFormSolver::SetVariableNames() {
   p_name = "electric_potential";

@@ -12,7 +12,8 @@ class FormulationFactory {
 public:
   static hephaestus::TransientFormulation *
   createTransientFormulation(std::string &formulation, mfem::ParMesh &pmesh,
-                             int order, hephaestus::BCMap &bc_map,
+                             int order, hephaestus::VariableMap &variables,
+                             hephaestus::BCMap &bc_map,
                              hephaestus::DomainProperties &domain_properties);
 };
 

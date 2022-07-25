@@ -3,9 +3,10 @@
 namespace hephaestus {
 
 HFormSolver::HFormSolver(mfem::ParMesh &pmesh, int order,
+                         hephaestus::VariableMap &variables,
                          hephaestus::BCMap &bc_map,
                          hephaestus::DomainProperties &domain_properties)
-    : HCurlSolver(pmesh, order, bc_map, domain_properties) {}
+    : HCurlSolver(pmesh, order, variables, bc_map, domain_properties) {}
 
 void HFormSolver::SetVariableNames() {
   p_name = "magnetic_potential";
