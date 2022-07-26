@@ -1,5 +1,7 @@
 #pragma once
+#include "materials.hpp"
 #include "mfem.hpp"
+#include "variables.hpp"
 
 namespace hephaestus {
 
@@ -37,6 +39,30 @@ public:
   virtual void Eval(mfem::Vector &V, mfem::ElementTransformation &T,
                     const mfem::IntegrationPoint &ip);
   virtual ~LorentzForceVectorCoefficient() {}
+};
+
+// Class to calculate and store the L2 error
+// of a grid function with respect to a (Vector)Coefficient
+class L2ErrorVectorPostprocessor {
+
+public:
+  L2ErrorVectorPostprocessor(){};
+  L2ErrorVectorPostprocessor(const std::string &var_name_,
+                             const std::string &vec_coef_name_);
+
+  void Init(const hephaestus::VariableMap &variables,
+            hephaestus::DomainProperties &domain_properties);
+
+  virtual void Update(double t = 0.0);
+
+  std::string var_name;      // name of the variable
+  std::string vec_coef_name; // name of the vector coefficient
+
+  std::vector<double> times;
+  std::vector<HYPRE_BigInt> ndofs;
+  std::vector<double> l2_errs;
+  mfem::ParGridFunction *gf;
+  mfem::VectorCoefficient *vec_coeff;
 };
 
 } // namespace hephaestus

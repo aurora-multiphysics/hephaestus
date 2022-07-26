@@ -1,15 +1,17 @@
 // Based on an H form MMS test provided by Joseph Dean
 
 #include "hephaestus_transient.hpp"
+#include "postprocessors.hpp"
+
 #include <gtest/gtest.h>
 
 extern const char *DATA_DIR;
 
 class TestHFormSource : public testing::Test {
 protected:
-  static double compute_convergence_rate(HYPRE_BigInt n_i, HYPRE_BigInt n_imo,
-                                         double error_i, double error_imo,
-                                         int dim) {
+  static double estimate_convergence_rate(HYPRE_BigInt n_i, HYPRE_BigInt n_imo,
+                                          double error_i, double error_imo,
+                                          int dim) {
     return std::log(error_i / error_imo) /
            std::log(std::pow(n_imo / static_cast<double>(n_i), 1.0 / dim));
   }
@@ -95,10 +97,14 @@ TEST_F(TestHFormSource, CheckRun) {
   hephaestus::Inputs inputs(hform_rod_inputs());
   int num_conv_refinements = 3;
   mfem::VectorFunctionCoefficient H_exact(3, H_exact_expr);
+  inputs.domain_properties.vector_property_map["h_exact_coeff"] = &H_exact;
   std::vector<int> ndofs;
   std::vector<double> ts;
   std::vector<double> e_Hs;
   double r;
+
+  hephaestus::L2ErrorVectorPostprocessor postprocessor("magnetic_field",
+                                                       "h_exact_coeff");
 
   for (int par_ref_levels = 0; par_ref_levels < num_conv_refinements;
        ++par_ref_levels) {
@@ -123,7 +129,8 @@ TEST_F(TestHFormSource, CheckRun) {
 
       mfem::BlockVector F(formulation->true_offsets); // Vector of dofs
       formulation->Init(F); // Set up initial conditions
-      mfem::ParGridFunction h_gf(formulation->HCurlFESpace_);
+      mfem::ParGridFunction h_gf(
+          formulation->HCurlFESpace_); // variables.init(pmesh)?
 
       // Set up Executioner
       double t_initial = inputs.executioner.t_initial; // initial time
@@ -131,6 +138,7 @@ TEST_F(TestHFormSource, CheckRun) {
       double dt = inputs.executioner.dt;               // time step
       int vis_steps = 1;
       double t = t_initial; // current time
+
       H_exact.SetTime(t);
       h_gf.ProjectCoefficient(H_exact);
       variables.Register("analytic_magnetic_field", &h_gf, false);
@@ -138,6 +146,7 @@ TEST_F(TestHFormSource, CheckRun) {
       formulation->SetTime(t);
       mfem::ODESolver *ode_solver = new mfem::BackwardEulerSolver;
       ode_solver->Init(*formulation);
+      postprocessor.Init(variables, domain_properties);
 
       // Set up DataCollections to track fields of interest.
       std::map<std::string, mfem::DataCollection *> data_collections(
@@ -188,25 +197,17 @@ TEST_F(TestHFormSource, CheckRun) {
           for (auto const &[name, dc_] : data_collections) {
             formulation->WriteOutputFields(dc_, it);
           }
-
-          if (myid == 0) {
-            double e_H = formulation->u_.ComputeL2Error(H_exact);
-            int ndof = formulation->HCurlFESpace_->GlobalTrueVSize();
-            ts.push_back(t);
-            e_Hs.push_back(e_H);
-            ndofs.push_back(ndof);
-            std::cout << e_H << std::endl;
-            std::cout << ndof << std::endl;
-          }
+          postprocessor.Update(t);
         }
       }
       delete ode_solver;
     }
   }
 
-  for (std::size_t i = 1; i < e_Hs.size(); ++i) {
-    r = compute_convergence_rate(ndofs[i], ndofs[i - 1], e_Hs[i], e_Hs[i - 1],
-                                 3);
+  for (std::size_t i = 1; i < postprocessor.ndofs.size(); ++i) {
+    r = estimate_convergence_rate(
+        postprocessor.ndofs[i], postprocessor.ndofs[i - 1],
+        postprocessor.l2_errs[i], postprocessor.l2_errs[i - 1], 3);
     std::cout << r << std::endl;
   }
 }
