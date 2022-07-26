@@ -29,4 +29,24 @@ void LorentzForceVectorCoefficient::Eval(mfem::Vector &V,
   hephaestus::cross_product(J, B, V);
 }
 
+L2ErrorVectorPostprocessor::L2ErrorVectorPostprocessor(
+    const std::string &var_name_, const std::string &vec_coef_name_)
+    : var_name(var_name_), vec_coef_name(vec_coef_name_) {}
+
+void L2ErrorVectorPostprocessor::Init(
+    const hephaestus::VariableMap &variables,
+    hephaestus::DomainProperties &domain_properties) {
+  gf = variables.Get(var_name);
+  vec_coeff = domain_properties.vector_property_map[vec_coef_name];
+}
+
+void L2ErrorVectorPostprocessor::Update(double t) {
+  double l2_err = gf->ComputeL2Error(*vec_coeff);
+  HYPRE_BigInt ndof = gf->ParFESpace()->GlobalTrueVSize();
+
+  times.push_back(t);
+  l2_errs.push_back(l2_err);
+  ndofs.push_back(ndof);
+}
+
 } // namespace hephaestus
