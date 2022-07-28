@@ -44,9 +44,9 @@ void L2ErrorVectorPostprocessor::Update(double t) {
   double l2_err = gf->ComputeL2Error(*vec_coeff);
   HYPRE_BigInt ndof = gf->ParFESpace()->GlobalTrueVSize();
 
-  times.push_back(t);
-  l2_errs.push_back(l2_err);
-  ndofs.push_back(ndof);
+  times.Append(t);
+  l2_errs.Append(l2_err);
+  ndofs.Append(ndof);
 }
 
 } // namespace hephaestus
