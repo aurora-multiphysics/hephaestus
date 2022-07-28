@@ -1,5 +1,6 @@
 // Based on an H form MMS test provided by Joseph Dean
 
+#include "auxkernels.hpp"
 #include "hephaestus_transient.hpp"
 #include "postprocessors.hpp"
 
@@ -95,7 +96,7 @@ protected:
 
 TEST_F(TestHFormSource, CheckRun) {
   hephaestus::Inputs inputs(hform_rod_inputs());
-  int num_conv_refinements = 3;
+  int num_conv_refinements = 4;
   mfem::VectorFunctionCoefficient H_exact(3, H_exact_expr);
   inputs.domain_properties.vector_property_map["h_exact_coeff"] = &H_exact;
   std::vector<int> ndofs;
@@ -105,6 +106,8 @@ TEST_F(TestHFormSource, CheckRun) {
 
   hephaestus::L2ErrorVectorPostprocessor postprocessor("magnetic_field",
                                                        "h_exact_coeff");
+  hephaestus::VectorCoefficientAuxKernel auxkernel("analytic_magnetic_field",
+                                                   "h_exact_coeff");
 
   for (int par_ref_levels = 0; par_ref_levels < num_conv_refinements;
        ++par_ref_levels) {
@@ -129,8 +132,6 @@ TEST_F(TestHFormSource, CheckRun) {
 
       mfem::BlockVector F(formulation->true_offsets); // Vector of dofs
       formulation->Init(F); // Set up initial conditions
-      mfem::ParGridFunction h_gf(
-          formulation->HCurlFESpace_); // variables.init(pmesh)?
 
       // Set up Executioner
       double t_initial = inputs.executioner.t_initial; // initial time
@@ -139,13 +140,15 @@ TEST_F(TestHFormSource, CheckRun) {
       int vis_steps = 1;
       double t = t_initial; // current time
 
-      H_exact.SetTime(t);
-      h_gf.ProjectCoefficient(H_exact);
-      variables.Register("analytic_magnetic_field", &h_gf, false);
-
       formulation->SetTime(t);
       mfem::ODESolver *ode_solver = new mfem::BackwardEulerSolver;
       ode_solver->Init(*formulation);
+
+      mfem::ParGridFunction h_gf(
+          formulation->HCurlFESpace_); // variables.init(pmesh)?
+      variables.Register("analytic_magnetic_field", &h_gf, false);
+      auxkernel.Init(variables, domain_properties);
+      auxkernel.Solve(t);
       postprocessor.Init(variables, domain_properties);
 
       // Set up DataCollections to track fields of interest.
@@ -185,8 +188,7 @@ TEST_F(TestHFormSource, CheckRun) {
           // Make sure all ranks have sent their 'v' solution before initiating
           // another set of GLVis connections (one from each rank):
           MPI_Barrier(pmesh.GetComm());
-          H_exact.SetTime(t);
-          h_gf.ProjectCoefficient(H_exact);
+          auxkernel.Solve(t);
 
           // Send output fields to GLVis for visualisation
           if (visualization) {
@@ -203,8 +205,11 @@ TEST_F(TestHFormSource, CheckRun) {
       delete ode_solver;
     }
   }
+  postprocessor.times.Print();
+  postprocessor.ndofs.Print();
+  postprocessor.l2_errs.Print();
 
-  for (std::size_t i = 1; i < postprocessor.ndofs.size(); ++i) {
+  for (std::size_t i = 1; i < postprocessor.ndofs.Size(); ++i) {
     r = estimate_convergence_rate(
         postprocessor.ndofs[i], postprocessor.ndofs[i - 1],
         postprocessor.l2_errs[i], postprocessor.l2_errs[i - 1], 3);

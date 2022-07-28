@@ -58,9 +58,9 @@ public:
   std::string var_name;      // name of the variable
   std::string vec_coef_name; // name of the vector coefficient
 
-  std::vector<double> times;
-  std::vector<HYPRE_BigInt> ndofs;
-  std::vector<double> l2_errs;
+  mfem::Array<double> times;
+  mfem::Array<HYPRE_BigInt> ndofs;
+  mfem::Array<double> l2_errs;
   mfem::ParGridFunction *gf;
   mfem::VectorCoefficient *vec_coeff;
 };
