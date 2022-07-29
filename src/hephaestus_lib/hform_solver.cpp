@@ -3,7 +3,7 @@
 namespace hephaestus {
 
 HFormSolver::HFormSolver(mfem::ParMesh &pmesh, int order,
-                         hephaestus::VariableMap &variables,
+                         mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
                          hephaestus::BCMap &bc_map,
                          hephaestus::DomainProperties &domain_properties)
     : HCurlSolver(pmesh, order, variables, bc_map, domain_properties) {}

@@ -8,13 +8,13 @@ void transient_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   mfem::ParMesh pmesh = mfem::ParMesh(MPI_COMM_WORLD, inputs.mesh);
   int order = inputs.order;
   hephaestus::BCMap bc_map(inputs.bc_map);
-  hephaestus::VariableMap variables;
+  mfem::NamedFieldsMap<mfem::ParGridFunction> variables;
   hephaestus::DomainProperties domain_properties(inputs.domain_properties);
 
   hephaestus::TransientFormulation *formulation =
-      hephaestus::FormulationFactory::createTransientFormulation(
-          inputs.formulation, pmesh, order, variables, bc_map,
-          domain_properties);
+      hephaestus::Factory::createTransientFormulation(inputs.formulation, pmesh,
+                                                      order, variables, bc_map,
+                                                      domain_properties);
 
   mfem::BlockVector F(formulation->true_offsets); // Vector of dofs
   formulation->Init(F);                           // Set up initial conditions

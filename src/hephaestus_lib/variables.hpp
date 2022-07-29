@@ -1,17 +1,25 @@
 #pragma once
+#include "../common/pfem_extras.hpp"
+#include "factory.hpp"
+#include "inputs.hpp"
 #include "mfem.hpp"
 
 namespace hephaestus {
 
-class Variable {
+class VariableMap : public mfem::NamedFieldsMap<mfem::ParGridFunction> {};
+
+class Variables {
 public:
-  Variable() {}
+  Variables() {}
 
-  Variable(const std::string &var_display_name_, mfem::ParGridFunction *gf_);
+  Variables(const hephaestus::InputParameters);
 
-  std::string var_display_name;
-  mfem::ParGridFunction *gf;
+  void AddVariable(const hephaestus::InputParameters);
+  void Init(mfem::ParMesh &pmesh);
+
+  std::vector<hephaestus::InputParameters> variable_params;
+  mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> fespaces;
+  mfem::NamedFieldsMap<mfem::ParGridFunction> gfs;
 };
 
-class VariableMap : public mfem::NamedFieldsMap<mfem::ParGridFunction> {};
 } // namespace hephaestus

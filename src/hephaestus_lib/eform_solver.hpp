@@ -12,7 +12,8 @@ class EFormSolver : public hephaestus::HCurlSolver {
 
 public:
   EFormSolver(mfem::ParMesh &pmesh, int order,
-              hephaestus::VariableMap &variables, hephaestus::BCMap &bc_map,
+              mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+              hephaestus::BCMap &bc_map,
               hephaestus::DomainProperties &domain_properties);
 
   ~EFormSolver(){};

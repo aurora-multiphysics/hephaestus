@@ -2,10 +2,10 @@
 
 namespace hephaestus {
 
-hephaestus::TransientFormulation *
-FormulationFactory::createTransientFormulation(
+hephaestus::TransientFormulation *Factory::createTransientFormulation(
     std::string &formulation, mfem::ParMesh &pmesh, int order,
-    hephaestus::VariableMap &variables, hephaestus::BCMap &bc_map,
+    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+    hephaestus::BCMap &bc_map,
     hephaestus::DomainProperties &domain_properties) {
   if (formulation == "EBForm") {
     return new hephaestus::EBDualSolver(pmesh, order, bc_map,
@@ -21,6 +21,22 @@ FormulationFactory::createTransientFormulation(
                                        domain_properties);
   } else {
     std::cout << "Formulation name " << formulation << " not recognised. \n";
+  }
+  return nullptr;
+}
+
+mfem::ParFiniteElementSpace *
+Factory::createParFESpace(hephaestus::InputParameters params,
+                          mfem::ParMesh &pmesh) {
+  std::string FEType(params.GetParam<std::string>("FESpaceType"));
+  int order(params.GetParam<int>("order"));
+  int components(params.GetParam<int>("components"));
+  if (FEType == "H1") {
+    return new mfem::common::H1_ParFESpace(&pmesh, order, components);
+  } else if (FEType == "Nedelec") {
+    return new mfem::common::ND_ParFESpace(&pmesh, order, components);
+  } else {
+    std::cout << "FESpaceType " << FEType << " not recognised. \n";
   }
   return nullptr;
 }

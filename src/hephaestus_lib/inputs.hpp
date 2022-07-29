@@ -1,4 +1,5 @@
 #pragma once
+#include <any>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -9,6 +10,27 @@
 #include "outputs.hpp"
 
 namespace hephaestus {
+
+class InputParameters {
+
+protected:
+  std::map<std::string, std::any> params;
+
+public:
+  InputParameters(){};
+  void SetParam(std::string param_name, std::any value) {
+    params[param_name] = value;
+  };
+  template <typename T> T GetParam(std::string param_name) const {
+    T param;
+    try {
+      param = std::any_cast<T>(params.at(param_name));
+    } catch (const std::bad_any_cast &e) {
+      std::cout << e.what() << '\n';
+    }
+    return param;
+  };
+};
 
 class Inputs {
 public:

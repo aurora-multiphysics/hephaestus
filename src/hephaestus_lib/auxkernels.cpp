@@ -7,7 +7,7 @@ VectorCoefficientAuxKernel::VectorCoefficientAuxKernel(
     : var_name(var_name_), vec_coef_name(vec_coef_name_) {}
 
 void VectorCoefficientAuxKernel::Init(
-    const hephaestus::VariableMap &variables,
+    const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::DomainProperties &domain_properties) {
   gf = variables.Get(var_name);
   vec_coeff = domain_properties.vector_property_map[vec_coef_name];

@@ -50,7 +50,7 @@ public:
   L2ErrorVectorPostprocessor(const std::string &var_name_,
                              const std::string &vec_coef_name_);
 
-  void Init(const hephaestus::VariableMap &variables,
+  void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
             hephaestus::DomainProperties &domain_properties);
 
   virtual void Update(double t = 0.0);

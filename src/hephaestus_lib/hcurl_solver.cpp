@@ -42,7 +42,7 @@
 namespace hephaestus {
 
 HCurlSolver::HCurlSolver(mfem::ParMesh &pmesh, int order,
-                         hephaestus::VariableMap &variables,
+                         mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
                          hephaestus::BCMap &bc_map,
                          hephaestus::DomainProperties &domain_properties)
     : myid_(0), num_procs_(1), pmesh_(&pmesh), _variables(variables),
