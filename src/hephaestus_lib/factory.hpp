@@ -8,13 +8,17 @@
 
 namespace hephaestus {
 
-class FormulationFactory {
+class Factory {
 public:
-  static hephaestus::TransientFormulation *
-  createTransientFormulation(std::string &formulation, mfem::ParMesh &pmesh,
-                             int order, hephaestus::VariableMap &variables,
-                             hephaestus::BCMap &bc_map,
-                             hephaestus::DomainProperties &domain_properties);
+  static hephaestus::TransientFormulation *createTransientFormulation(
+      std::string &formulation, mfem::ParMesh &pmesh, int order,
+      mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+      hephaestus::BCMap &bc_map,
+      hephaestus::DomainProperties &domain_properties);
+
+  static mfem::ParFiniteElementSpace *
+  createParFESpace(const hephaestus::InputParameters params,
+                   mfem::ParMesh &pmesh);
 };
 
 } // namespace hephaestus

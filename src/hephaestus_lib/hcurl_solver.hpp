@@ -2,7 +2,6 @@
 #include "../common/pfem_extras.hpp"
 #include "formulation.hpp"
 #include "inputs.hpp"
-#include "variables.hpp"
 
 namespace hephaestus {
 
@@ -15,7 +14,8 @@ class HCurlSolver : public TransientFormulation {
 
 public:
   HCurlSolver(mfem::ParMesh &pmesh, int order,
-              hephaestus::VariableMap &variables, hephaestus::BCMap &bc_map,
+              mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+              hephaestus::BCMap &bc_map,
               hephaestus::DomainProperties &domain_properties);
 
   ~HCurlSolver(){};
@@ -55,7 +55,7 @@ protected:
   int myid_;
   int num_procs_;
   mfem::ParMesh *pmesh_;
-  hephaestus::VariableMap &_variables;
+  mfem::NamedFieldsMap<mfem::ParGridFunction> &_variables;
   hephaestus::BCMap _bc_map;
   hephaestus::DomainProperties _domain_properties;
 

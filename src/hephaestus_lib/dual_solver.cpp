@@ -204,6 +204,10 @@ void DualSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   _bc_map.applyEssentialBCs(u_name, ess_tdof_list, J_gf, pmesh_);
   _bc_map.applyIntegratedBCs(u_name, *b1, pmesh_);
   if (a1 == NULL || fabs(dt - dt_A1) > 1.0e-12 * dt) {
+    delete dtAlphaCoef;
+    dtAlphaCoef =
+        new mfem::TransformedCoefficient(&dtCoef, alphaCoef, prodFunc);
+
     this->buildA1(betaCoef, dtAlphaCoef);
   }
   a1->FormLinearSystem(ess_tdof_list, J_gf, *b1, *A1, *X1, *B1);
@@ -211,6 +215,7 @@ void DualSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   // We only need to create the solver and preconditioner once
   if (ams_a1 == NULL) {
     ams_a1 = new mfem::HypreAMS(*A1, HCurlFESpace_);
+    ams_a1->SetSingularProblem();
   }
   if (pcg_a1 == NULL) {
     pcg_a1 = new mfem::HyprePCG(*A1);
@@ -322,6 +327,7 @@ void DualSolver::SetMaterialCoefficients(
 }
 
 void DualSolver::RegisterOutputFields(mfem::DataCollection *dc_) {
+  dc_->SetMesh(pmesh_);
   dc_->RegisterField(u_name, &u_);
   dc_->RegisterField(v_name, &v_);
   dc_->RegisterField(p_name, &p_);

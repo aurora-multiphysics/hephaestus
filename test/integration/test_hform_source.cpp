@@ -96,13 +96,21 @@ protected:
 
 TEST_F(TestHFormSource, CheckRun) {
   hephaestus::Inputs inputs(hform_rod_inputs());
-  int num_conv_refinements = 4;
+  int num_conv_refinements = 3;
   mfem::VectorFunctionCoefficient H_exact(3, H_exact_expr);
   inputs.domain_properties.vector_property_map["h_exact_coeff"] = &H_exact;
-  std::vector<int> ndofs;
-  std::vector<double> ts;
-  std::vector<double> e_Hs;
-  double r;
+
+  hephaestus::Variables variables;
+  hephaestus::InputParameters hcurlvarparams;
+
+  hcurlvarparams.SetParam("VariableName",
+                          std::string("analytic_magnetic_field"));
+  hcurlvarparams.SetParam("FESpaceName", std::string("HCurl"));
+  hcurlvarparams.SetParam("FESpaceType", std::string("Nedelec"));
+  hcurlvarparams.SetParam("order", 2);
+  hcurlvarparams.SetParam("components", 3);
+
+  variables.AddVariable(hcurlvarparams);
 
   hephaestus::L2ErrorVectorPostprocessor postprocessor("magnetic_field",
                                                        "h_exact_coeff");
@@ -117,7 +125,6 @@ TEST_F(TestHFormSource, CheckRun) {
       mfem::ParMesh pmesh = mfem::ParMesh(MPI_COMM_WORLD, inputs.mesh);
       int order = inputs.order;
       hephaestus::BCMap bc_map(inputs.bc_map);
-      hephaestus::VariableMap variables;
       hephaestus::DomainProperties domain_properties(inputs.domain_properties);
 
       for (int l = 0; l < par_ref_levels; l++) {
@@ -128,7 +135,7 @@ TEST_F(TestHFormSource, CheckRun) {
       MPI_Comm_rank(MPI_COMM_WORLD, &myid);
 
       hephaestus::HFormSolver *formulation = new hephaestus::HFormSolver(
-          pmesh, order, variables, bc_map, domain_properties);
+          pmesh, order, variables.gfs, bc_map, domain_properties);
 
       mfem::BlockVector F(formulation->true_offsets); // Vector of dofs
       formulation->Init(F); // Set up initial conditions
@@ -144,12 +151,10 @@ TEST_F(TestHFormSource, CheckRun) {
       mfem::ODESolver *ode_solver = new mfem::BackwardEulerSolver;
       ode_solver->Init(*formulation);
 
-      mfem::ParGridFunction h_gf(
-          formulation->HCurlFESpace_); // variables.init(pmesh)?
-      variables.Register("analytic_magnetic_field", &h_gf, false);
-      auxkernel.Init(variables, domain_properties);
+      variables.Init(pmesh);
+      auxkernel.Init(variables.gfs, domain_properties);
       auxkernel.Solve(t);
-      postprocessor.Init(variables, domain_properties);
+      postprocessor.Init(variables.gfs, domain_properties);
 
       // Set up DataCollections to track fields of interest.
       std::map<std::string, mfem::DataCollection *> data_collections(
@@ -209,6 +214,7 @@ TEST_F(TestHFormSource, CheckRun) {
   postprocessor.ndofs.Print();
   postprocessor.l2_errs.Print();
 
+  double r;
   for (std::size_t i = 1; i < postprocessor.ndofs.Size(); ++i) {
     r = estimate_convergence_rate(
         postprocessor.ndofs[i], postprocessor.ndofs[i - 1],

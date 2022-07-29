@@ -44,6 +44,13 @@ public:
   std::string u_name, p_name, v_name;
   std::string u_display_name, p_display_name, v_display_name;
 
+  mfem::ParGridFunction u_, du_; // HCurl vector field
+  mfem::ParGridFunction p_, dp_; // H1 scalar potential
+  mfem::ParGridFunction v_, dv_; // HDiv vector field
+
+  // Sockets used to communicate with GLVis
+  std::map<std::string, mfem::socketstream *> socks_;
+
 protected:
   int myid_;
   int num_procs_;
@@ -60,14 +67,11 @@ protected:
   mfem::ParMixedBilinearForm *weakCurl;
   mutable mfem::HypreSolver *amg_a0;
   mutable mfem::HyprePCG *pcg_a0;
-  mutable mfem::HypreSolver *ams_a1;
+  mutable mfem::HypreAMS *ams_a1;
   mutable mfem::HyprePCG *pcg_a1;
 
   // temporary work vectors
   mfem::ParLinearForm *b0, *b1;
-  mfem::ParGridFunction u_, du_; // HCurl vector field
-  mfem::ParGridFunction p_, dp_; // H1 scalar potential
-  mfem::ParGridFunction v_, dv_; // HDiv vector field
 
   double dt_A1;
   mfem::ConstantCoefficient dtCoef;  // Coefficient for timestep scaling
@@ -75,8 +79,5 @@ protected:
   mfem::Coefficient *alphaCoef;      // Reluctivity Coefficient
   mfem::Coefficient *dtAlphaCoef;
   mfem::Coefficient *betaCoef; // Electric Conductivity Coefficient
-
-  // Sockets used to communicate with GLVis
-  std::map<std::string, mfem::socketstream *> socks_;
 };
 } // namespace hephaestus
