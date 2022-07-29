@@ -29,9 +29,24 @@ void LorentzForceVectorCoefficient::Eval(mfem::Vector &V,
   hephaestus::cross_product(J, B, V);
 }
 
+void Postprocessors::Init(
+    const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+    hephaestus::DomainProperties &domain_properties) {
+  for (const auto &[name, postprocessor] : GetMap()) {
+    postprocessor->Init(variables, domain_properties);
+  }
+}
+void Postprocessors::Update(double t) {
+  for (const auto &[name, postprocessor] : GetMap()) {
+    postprocessor->Update(t);
+  }
+}
+
 L2ErrorVectorPostprocessor::L2ErrorVectorPostprocessor(
-    const std::string &var_name_, const std::string &vec_coef_name_)
-    : var_name(var_name_), vec_coef_name(vec_coef_name_) {}
+    const hephaestus::InputParameters &params)
+    : Postprocessor(params),
+      var_name(params.GetParam<std::string>("VariableName")),
+      vec_coef_name(params.GetParam<std::string>("VectorCoefficientName")) {}
 
 void L2ErrorVectorPostprocessor::Init(
     const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
