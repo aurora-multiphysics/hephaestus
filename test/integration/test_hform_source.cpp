@@ -100,9 +100,7 @@ TEST_F(TestHFormSource, CheckRun) {
   mfem::VectorFunctionCoefficient H_exact(3, H_exact_expr);
   inputs.domain_properties.vector_property_map["h_exact_coeff"] = &H_exact;
 
-  hephaestus::Variables variables;
   hephaestus::InputParameters hcurlvarparams;
-
   hcurlvarparams.SetParam("VariableName",
                           std::string("analytic_magnetic_field"));
   hcurlvarparams.SetParam("FESpaceName", std::string("HCurl"));
@@ -110,10 +108,20 @@ TEST_F(TestHFormSource, CheckRun) {
   hcurlvarparams.SetParam("order", 2);
   hcurlvarparams.SetParam("components", 3);
 
+  hephaestus::Variables variables;
   variables.AddVariable(hcurlvarparams);
 
-  hephaestus::L2ErrorVectorPostprocessor postprocessor("magnetic_field",
-                                                       "h_exact_coeff");
+  hephaestus::InputParameters l2errpostprocparams;
+  l2errpostprocparams.SetParam("VariableName", std::string("magnetic_field"));
+  l2errpostprocparams.SetParam("VectorCoefficientName",
+                               std::string("h_exact_coeff"));
+
+  // fespace
+  hephaestus::Postprocessors postprocessors;
+  postprocessors.Register(
+      "L2ErrorPostprocessor",
+      new hephaestus::L2ErrorVectorPostprocessor(l2errpostprocparams), true);
+
   hephaestus::VectorCoefficientAuxKernel auxkernel("analytic_magnetic_field",
                                                    "h_exact_coeff");
 
@@ -154,7 +162,7 @@ TEST_F(TestHFormSource, CheckRun) {
       variables.Init(pmesh);
       auxkernel.Init(variables.gfs, domain_properties);
       auxkernel.Solve(t);
-      postprocessor.Init(variables.gfs, domain_properties);
+      postprocessors.Init(variables.gfs, domain_properties);
 
       // Set up DataCollections to track fields of interest.
       std::map<std::string, mfem::DataCollection *> data_collections(
@@ -204,21 +212,26 @@ TEST_F(TestHFormSource, CheckRun) {
           for (auto const &[name, dc_] : data_collections) {
             formulation->WriteOutputFields(dc_, it);
           }
-          postprocessor.Update(t);
+          postprocessors.Update(t);
         }
       }
       delete ode_solver;
     }
   }
-  postprocessor.times.Print();
-  postprocessor.ndofs.Print();
-  postprocessor.l2_errs.Print();
+
+  hephaestus::L2ErrorVectorPostprocessor l2errpostprocessor =
+      *(dynamic_cast<hephaestus::L2ErrorVectorPostprocessor *>(
+          postprocessors.Get("L2ErrorPostprocessor")));
+
+  l2errpostprocessor.times.Print();
+  l2errpostprocessor.ndofs.Print();
+  l2errpostprocessor.l2_errs.Print();
 
   double r;
-  for (std::size_t i = 1; i < postprocessor.ndofs.Size(); ++i) {
+  for (std::size_t i = 1; i < l2errpostprocessor.ndofs.Size(); ++i) {
     r = estimate_convergence_rate(
-        postprocessor.ndofs[i], postprocessor.ndofs[i - 1],
-        postprocessor.l2_errs[i], postprocessor.l2_errs[i - 1], 3);
+        l2errpostprocessor.ndofs[i], l2errpostprocessor.ndofs[i - 1],
+        l2errpostprocessor.l2_errs[i], l2errpostprocessor.l2_errs[i - 1], 3);
     std::cout << r << std::endl;
   }
 }
