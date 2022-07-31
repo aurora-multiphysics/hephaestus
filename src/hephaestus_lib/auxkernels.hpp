@@ -5,15 +5,34 @@
 
 namespace hephaestus {
 
-class VectorCoefficientAuxKernel {
+class AuxKernel {
 public:
-  VectorCoefficientAuxKernel(const std::string &var_name_,
-                             const std::string &vec_coef_name_);
+  AuxKernel() {}
 
+  AuxKernel(const hephaestus::InputParameters &params){};
+
+  virtual void
+  Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+       hephaestus::DomainProperties &domain_properties){};
+
+  virtual void Solve(double t = 0.0){};
+};
+
+class AuxKernels : public mfem::NamedFieldsMap<hephaestus::AuxKernel> {
+public:
   void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
             hephaestus::DomainProperties &domain_properties);
+  void Solve(double t = 0.0);
+};
 
-  void Solve(double t);
+class VectorCoefficientAuxKernel : public AuxKernel {
+public:
+  VectorCoefficientAuxKernel(const hephaestus::InputParameters &params);
+
+  void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+            hephaestus::DomainProperties &domain_properties) override;
+
+  void Solve(double t = 0.0) override;
 
   std::string var_name;      // name of the variable
   std::string vec_coef_name; // name of the vector coefficient

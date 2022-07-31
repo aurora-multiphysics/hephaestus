@@ -2,9 +2,23 @@
 
 namespace hephaestus {
 
+void AuxKernels::Init(
+    const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+    hephaestus::DomainProperties &domain_properties) {
+  for (const auto &[name, auxkernel] : GetMap()) {
+    auxkernel->Init(variables, domain_properties);
+  }
+}
+void AuxKernels::Solve(double t) {
+  for (const auto &[name, auxkernel] : GetMap()) {
+    auxkernel->Solve(t);
+  }
+}
+
 VectorCoefficientAuxKernel::VectorCoefficientAuxKernel(
-    const std::string &var_name_, const std::string &vec_coef_name_)
-    : var_name(var_name_), vec_coef_name(vec_coef_name_) {}
+    const hephaestus::InputParameters &params)
+    : AuxKernel(params), var_name(params.GetParam<std::string>("VariableName")),
+      vec_coef_name(params.GetParam<std::string>("VectorCoefficientName")) {}
 
 void VectorCoefficientAuxKernel::Init(
     const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,

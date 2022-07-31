@@ -115,15 +115,21 @@ TEST_F(TestHFormSource, CheckRun) {
   l2errpostprocparams.SetParam("VariableName", std::string("magnetic_field"));
   l2errpostprocparams.SetParam("VectorCoefficientName",
                                std::string("h_exact_coeff"));
-
-  // fespace
   hephaestus::Postprocessors postprocessors;
   postprocessors.Register(
       "L2ErrorPostprocessor",
       new hephaestus::L2ErrorVectorPostprocessor(l2errpostprocparams), true);
 
-  hephaestus::VectorCoefficientAuxKernel auxkernel("analytic_magnetic_field",
-                                                   "h_exact_coeff");
+  hephaestus::InputParameters vectorcoeffauxparams;
+  vectorcoeffauxparams.SetParam("VariableName",
+                                std::string("analytic_magnetic_field"));
+  vectorcoeffauxparams.SetParam("VectorCoefficientName",
+                                std::string("h_exact_coeff"));
+
+  hephaestus::AuxKernels auxkernels;
+  auxkernels.Register(
+      "VectorCoefficientAuxKernel",
+      new hephaestus::VectorCoefficientAuxKernel(vectorcoeffauxparams), true);
 
   for (int par_ref_levels = 0; par_ref_levels < num_conv_refinements;
        ++par_ref_levels) {
@@ -160,8 +166,8 @@ TEST_F(TestHFormSource, CheckRun) {
       ode_solver->Init(*formulation);
 
       variables.Init(pmesh);
-      auxkernel.Init(variables.gfs, domain_properties);
-      auxkernel.Solve(t);
+      auxkernels.Init(variables.gfs, domain_properties);
+      auxkernels.Solve(t);
       postprocessors.Init(variables.gfs, domain_properties);
 
       // Set up DataCollections to track fields of interest.
@@ -201,7 +207,7 @@ TEST_F(TestHFormSource, CheckRun) {
           // Make sure all ranks have sent their 'v' solution before initiating
           // another set of GLVis connections (one from each rank):
           MPI_Barrier(pmesh.GetComm());
-          auxkernel.Solve(t);
+          auxkernels.Solve(t);
 
           // Send output fields to GLVis for visualisation
           if (visualization) {
