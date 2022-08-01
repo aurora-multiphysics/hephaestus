@@ -36,16 +36,21 @@ protected:
     H_exact(2) = 0;
   }
   static double sigma_expr(const mfem::Vector &x) {
-    // double sigma = 1.0 + 0.25 * cos(M_PI * x(0)) * cos(M_PI * x(1));
-    double sigma = 1.0;
+    double variation_scale = 0.5;
+    double sigma =
+        1.0 / (1.0 + variation_scale * cos(M_PI * x(0)) * cos(M_PI * x(1)));
     return sigma;
   }
   // Source field
   static void source_field(const mfem::Vector &x, double t, mfem::Vector &f) {
-    f(0) = 2 * M_PI * M_PI * t * sin(M_PI * x(1)) * sin(M_PI * x(2)) +
-           sigma_expr(x) * sin(M_PI * x(1)) * sin(M_PI * x(2));
-    f(1) = 0.0;
-    f(2) = 0.0;
+    double variation_scale = 0.5;
+    f(0) = t * M_PI * M_PI * sin(M_PI * x(1)) * sin(M_PI * x(2)) *
+               (3 * variation_scale * cos(M_PI * x(0)) * cos(M_PI * x(1)) + 2) +
+           sin(M_PI * x(1)) * sin(M_PI * x(2));
+    f(1) = -variation_scale * M_PI * M_PI * t * sin(M_PI * x(0)) *
+           cos(M_PI * x(1)) * cos(M_PI * x(1)) * sin(M_PI * x(2));
+    f(2) = -0.5 * variation_scale * M_PI * M_PI * t * sin(M_PI * x(0)) *
+           sin(2 * M_PI * x(1)) * cos(M_PI * x(2));
   }
 
   hephaestus::InputParameters test_params() {
@@ -60,7 +65,7 @@ protected:
         std::vector<hephaestus::Subdomain>({wire, air}));
 
     domain_properties.scalar_property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(1.0);
+        new mfem::FunctionCoefficient(sigma_expr);
 
     hephaestus::BCMap bc_map;
     mfem::VectorFunctionCoefficient *hdotVecCoef =
@@ -171,15 +176,13 @@ TEST_F(TestHFormSource, CheckRun) {
           params.GetParam<hephaestus::Postprocessors>("Postprocessors")
               .Get("L2ErrorPostprocessor")));
 
-  l2errpostprocessor.times.Print();
-  l2errpostprocessor.ndofs.Print();
-  l2errpostprocessor.l2_errs.Print();
-
   double r;
   for (std::size_t i = 1; i < l2errpostprocessor.ndofs.Size(); ++i) {
     r = estimate_convergence_rate(
         l2errpostprocessor.ndofs[i], l2errpostprocessor.ndofs[i - 1],
         l2errpostprocessor.l2_errs[i], l2errpostprocessor.l2_errs[i - 1], 3);
     std::cout << r << std::endl;
+    ASSERT_TRUE(r > params.GetParam<int>("Order"));
+    ASSERT_TRUE(r < params.GetParam<int>("Order") + 1.0);
   }
 }
