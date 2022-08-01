@@ -65,7 +65,7 @@ RUN cd /$WORKDIR && \
     cd mumps/ && \
     mkdir build && \
     cd build && \
-    cmake --preset=build -DBUILD_SHARED_LIBS=on -Dscotch=true -Dintsize64=false -Darith="s;d;c;z" -Dautobuild=true  \
+    cmake -DBUILD_SHARED_LIBS=on -Dscotch=true -Dintsize64=false -Darith="s;d;c;z"  \
     -DCMAKE_INSTALL_PREFIX=/usr/local/ .. && \
     make && \
     make install
