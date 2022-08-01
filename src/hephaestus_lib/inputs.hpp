@@ -5,11 +5,22 @@
 #include <memory>
 
 #include "boundary_conditions.hpp"
-#include "executioner.hpp"
 #include "materials.hpp"
 #include "outputs.hpp"
 
 namespace hephaestus {
+
+class Executioner {
+public:
+  Executioner() {}
+  Executioner(const std::string &type_, const double dt_,
+              const double t_initial_, const double t_final_);
+
+  std::string type;
+  double dt;
+  double t_initial;
+  double t_final;
+};
 
 class InputParameters {
 
@@ -26,6 +37,7 @@ public:
     try {
       param = std::any_cast<T>(params.at(param_name));
     } catch (const std::bad_any_cast &e) {
+      std::cout << "Bad cast for parameter " << param_name << '\n';
       std::cout << e.what() << '\n';
     }
     return param;
