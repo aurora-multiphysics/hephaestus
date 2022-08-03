@@ -16,9 +16,15 @@ hephaestus::TransientFormulation *Factory::createTransientFormulation(
   } else if (formulation == "HForm") {
     return new hephaestus::HFormSolver(pmesh, order, variables, bc_map,
                                        domain_properties);
+  } else if (formulation == "AForm") {
+    return new hephaestus::AFormSolver(pmesh, order, variables, bc_map,
+                                       domain_properties);
   } else if (formulation == "EForm") {
     return new hephaestus::EFormSolver(pmesh, order, variables, bc_map,
                                        domain_properties);
+  } else if (formulation == "AVForm") {
+    return new hephaestus::AVSolver(pmesh, order, variables, bc_map,
+                                    domain_properties);
   } else {
     std::cout << "Formulation name " << formulation << " not recognised. \n";
   }
