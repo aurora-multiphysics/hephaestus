@@ -42,19 +42,14 @@ public:
   void DisplayToGLVis() override;
   mfem::common::H1_ParFESpace *H1FESpace_;
   mfem::common::ND_ParFESpace *HCurlFESpace_;
-  mfem::common::RT_ParFESpace *HDivFESpace_;
-
-  mfem::Array<int> block_trueOffsets;
 
   double ElectricLosses() const;
 
-  std::string u_name, p_name, v_name, e_name;
-  std::string u_display_name, p_display_name, v_display_name, e_display_name;
-
-  mfem::ParGridFunction a_, da_; // Magnetic Vector Potential (HCurl)
-  mfem::ParGridFunction v_, dv_; // Scalar Potential (H1)
-  mfem::ParGridFunction b_, db_; // Magnetic Flux (HDiv)
-  mfem::ParGridFunction e_, de_; // Electric Field (HCurl)
+  std::string u_name, p_name;
+  std::string u_display_name, p_display_name;
+  mfem::ParGridFunction u_, du_; // HCurl vector field
+  mfem::ParGridFunction p_, dp_; // H1 scalar potential
+  std::map<std::string, mfem::socketstream *> socks_;
 
 protected:
   int myid_;
@@ -64,40 +59,27 @@ protected:
   hephaestus::BCMap _bc_map;
   hephaestus::DomainProperties _domain_properties;
 
-  mfem::ParBilinearForm *a0, *a1, *a00, *a11, *m1;
-  mfem::ParMixedBilinearForm *a01, *a10;
-  mfem::BlockOperator *blockAV;
-  mfem::BlockDiagonalPreconditioner *blockAVPr;
-  mfem::BlockVector *x, *rhs;
-  mfem::BlockVector *trueX, *trueRhs;
-
-  mfem::HypreParMatrix *A0, *A1, *A10, *A01, *blockA;
+  mfem::ParBilinearForm *a0, *a1, *m1;
+  mfem::HypreParMatrix *A0, *A1;
   mfem::Vector *X0, *X1, *B0, *B1;
 
   mfem::ParDiscreteLinearOperator *grad;
   mfem::ParDiscreteLinearOperator *curl;
-  mfem::ParMixedBilinearForm *weakCurl;
   mfem::ParBilinearForm *curlCurl;
-
   mutable mfem::HypreSolver *amg_a0;
   mutable mfem::HyprePCG *pcg_a0;
-  mutable mfem::HypreSolver *ams_a1;
+  mutable mfem::HypreAMS *ams_a1;
   mutable mfem::HyprePCG *pcg_a1;
 
   // temporary work vectors
   mfem::ParLinearForm *b0, *b1;
 
-  mfem::ParGridFunction *jr_; // Raw Volumetric Current Density (HCurl)
-  mfem::ParGridFunction *bd_; // Dual of B (HCurl)
-  mfem::ParGridFunction *jd_; // Dual of J, the rhs vector (HCurl)
-
   double dt_A1;
-  mfem::ConstantCoefficient dtCoef; // Coefficient for timestep scaling
-  mfem::ConstantCoefficient oneCoef, negCoef; // Auxiliary coefficient
-  mfem::Coefficient *alphaCoef;               // Reluctivity Coefficient
+  mfem::ConstantCoefficient dtCoef;  // Coefficient for timestep scaling
+  mfem::ConstantCoefficient oneCoef; // Auxiliary coefficient
+  mfem::Coefficient *alphaCoef;
   mfem::Coefficient *dtAlphaCoef;
-  mfem::Coefficient *betaCoef,
-      *negBetaCoef; // Electric Conductivity Coefficient
+  mfem::Coefficient *betaCoef;
 
   mfem::VectorCoefficient *sourceVecCoef;
   mfem::ParGridFunction *src_gf, *div_free_src_gf; // Source field
@@ -105,6 +87,5 @@ protected:
   mfem::common::DivergenceFreeProjector *divFreeProj;
 
   // Sockets used to communicate with GLVis
-  std::map<std::string, mfem::socketstream *> socks_;
 };
 } // namespace hephaestus
