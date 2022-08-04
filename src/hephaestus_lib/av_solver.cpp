@@ -51,7 +51,7 @@ AVSolver::AVSolver(mfem::ParMesh &pmesh, int order,
           new mfem::common::H1_ParFESpace(&pmesh, order, pmesh.Dimension())),
       HCurlFESpace_(
           new mfem::common::ND_ParFESpace(&pmesh, order, pmesh.Dimension())),
-      a1(NULL), amg_a0(NULL), pcg_a0(NULL), ams_a1(NULL), pcg_a1(NULL),
+      a0(NULL), amg_a0(NULL), pcg_a0(NULL), ams_a0(NULL), pcg_a1(NULL),
       m1(NULL), grad(NULL), curl(NULL), curlCurl(NULL), sourceVecCoef(NULL),
       src_gf(NULL), div_free_src_gf(NULL), hCurlMass(NULL), divFreeProj(NULL),
       p_(mfem::ParGridFunction(H1FESpace_)),
@@ -64,8 +64,8 @@ AVSolver::AVSolver(mfem::ParMesh &pmesh, int order,
 
   true_offsets.SetSize(3);
   true_offsets[0] = 0;
-  true_offsets[1] = H1FESpace_->GetVSize();
-  true_offsets[2] = HCurlFESpace_->GetVSize();
+  true_offsets[1] = HCurlFESpace_->GetVSize();
+  true_offsets[2] = H1FESpace_->GetVSize();
   true_offsets.PartialSum();
 
   this->height = true_offsets[2];
@@ -89,15 +89,14 @@ void AVSolver::Init(mfem::Vector &X) {
   }
 
   // a0(p, p') = (β ∇ p, ∇ p')
-  a0 = new mfem::ParBilinearForm(H1FESpace_);
-  a0->AddDomainIntegrator(new mfem::DiffusionIntegrator(*betaCoef));
-  a0->Assemble();
+  // a1 = new mfem::ParBilinearForm(H1FESpace_);
+  // a1->AddDomainIntegrator(new mfem::DiffusionIntegrator(*betaCoef));
+  // a1->Assemble();
 
-  this->buildM1(betaCoef);    // (βu, u')
   this->buildCurl(alphaCoef); // (α∇×u_{n}, ∇×u')
   this->buildGrad();          // (s0_{n+1}, u')
-  b0 = new mfem::ParLinearForm(H1FESpace_);
-  b1 = new mfem::ParLinearForm(HCurlFESpace_);
+  b0 = new mfem::ParLinearForm(HCurlFESpace_);
+  b1 = new mfem::ParLinearForm(H1FESpace_);
   A0 = new mfem::HypreParMatrix;
   A1 = new mfem::HypreParMatrix;
   X0 = new mfem::Vector;
@@ -110,11 +109,11 @@ void AVSolver::Init(mfem::Vector &X) {
   mfem::VectorConstantCoefficient Zero_vec(zero_vec);
   mfem::ConstantCoefficient Zero(0.0);
 
-  p_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
-  u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
+  u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
+  p_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
 
-  p_.ProjectCoefficient(Zero);
   u_.ProjectCoefficient(Zero_vec);
+  p_.ProjectCoefficient(Zero);
 }
 
 /*
@@ -138,43 +137,43 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   dX_dt = 0.0;
   dtCoef.constant = dt;
 
-  p_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
-  u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
+  u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
+  p_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
 
-  dp_.MakeRef(H1FESpace_, dX_dt, true_offsets[0]);
-  du_.MakeRef(HCurlFESpace_, dX_dt, true_offsets[1]);
+  du_.MakeRef(HCurlFESpace_, dX_dt, true_offsets[0]);
+  dp_.MakeRef(H1FESpace_, dX_dt, true_offsets[1]);
 
   _domain_properties.SetTime(this->GetTime());
 
-  // -(s0_{n+1}, ∇ p') + <n.s0_{n+1}, p'> = 0
-  // a0(p_{n+1}, p') = b0(p')
-  // a0(p, p') = (β ∇ p, ∇ p')
-  // b0(p') = <n.s0, p'>
-  mfem::ParGridFunction Phi_gf(H1FESpace_);
-  mfem::Array<int> poisson_ess_tdof_list;
-  Phi_gf = 0.0;
-  *b0 = 0.0;
-  _bc_map.applyEssentialBCs(p_name, poisson_ess_tdof_list, Phi_gf, pmesh_);
-  _bc_map.applyIntegratedBCs(p_name, *b0, pmesh_);
-  b0->Assemble();
-  a0->FormLinearSystem(poisson_ess_tdof_list, Phi_gf, *b0, *A0, *X0, *B0);
+  // // -(s0_{n+1}, ∇ p') + <n.s0_{n+1}, p'> = 0
+  // // a0(p_{n+1}, p') = b0(p')
+  // // a0(p, p') = (β ∇ p, ∇ p')
+  // // b0(p') = <n.s0, p'>
+  // mfem::ParGridFunction Phi_gf(H1FESpace_);
+  // mfem::Array<int> poisson_ess_tdof_list;
+  // Phi_gf = 0.0;
+  // *b0 = 0.0;
+  // _bc_map.applyEssentialBCs(p_name, poisson_ess_tdof_list, Phi_gf, pmesh_);
+  // _bc_map.applyIntegratedBCs(p_name, *b0, pmesh_);
+  // b0->Assemble();
+  // a0->FormLinearSystem(poisson_ess_tdof_list, Phi_gf, *b0, *A0, *X0, *B0);
 
-  if (amg_a0 == NULL) {
-    amg_a0 = new mfem::HypreBoomerAMG(*A0);
-  }
-  if (pcg_a0 == NULL) {
-    pcg_a0 = new mfem::HyprePCG(*A0);
-    pcg_a0->SetTol(1.0e-9);
-    pcg_a0->SetMaxIter(1000);
-    pcg_a0->SetPrintLevel(0);
-    pcg_a0->SetPreconditioner(*amg_a0);
-  }
-  // pcg "Mult" operation is a solve
-  // X0 = A0^-1 * B0
-  pcg_a0->Mult(*B0, *X0);
+  // if (amg_a0 == NULL) {
+  //   amg_a0 = new mfem::HypreBoomerAMG(*A0);
+  // }
+  // if (pcg_a0 == NULL) {
+  //   pcg_a0 = new mfem::HyprePCG(*A0);
+  //   pcg_a0->SetTol(1.0e-9);
+  //   pcg_a0->SetMaxIter(1000);
+  //   pcg_a0->SetPrintLevel(0);
+  //   pcg_a0->SetPreconditioner(*amg_a0);
+  // }
+  // // pcg "Mult" operation is a solve
+  // // X0 = A0^-1 * B0
+  // pcg_a0->Mult(*B0, *X0);
 
-  // "undo" the static condensation saving result in grid function dP
-  a0->RecoverFEMSolution(*X0, *b0, p_);
+  // // "undo" the static condensation saving result in grid function dP
+  // a0->RecoverFEMSolution(*X0, *b0, p_);
   dp_ = 0.0;
   //////////////////////////////////////////////////////////////////////////////
   // (α∇×u_{n}, ∇×u') + (αdt∇×du/dt_{n+1}, ∇×u') + (βdu/dt_{n+1}, u')
@@ -186,80 +185,68 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
 
   // (α∇×u_{n}, ∇×u')
   // v_ is a grid function but curlCurl is not parallel assembled so is OK
-  curlCurl->MultTranspose(u_, *b1);
-  *b1 *= -1.0;
+  curlCurl->MultTranspose(u_, *b0);
+  *b0 *= -1.0;
 
   // use du_ as a temporary
   // (s0_{n+1}, u')
-  grad->Mult(p_, du_);
-  m1->AddMult(du_, *b1, 1.0);
+  // grad->Mult(p_, du_);
+  // m1->AddMult(du_, *b1, 1.0);
   if (src_gf) {
     src_gf->ProjectCoefficient(*sourceVecCoef);
     // Compute the discretely divergence-free portion of src_gf
     divFreeProj->Mult(*src_gf, *div_free_src_gf);
     // Compute the dual of div_free_src_gf
-    hCurlMass->AddMult(*div_free_src_gf, *b1);
+    hCurlMass->AddMult(*div_free_src_gf, *b0);
   }
 
   mfem::ParGridFunction J_gf(HCurlFESpace_);
   mfem::Array<int> ess_tdof_list;
   J_gf = 0.0;
   _bc_map.applyEssentialBCs(u_name, ess_tdof_list, J_gf, pmesh_);
-  _bc_map.applyIntegratedBCs(u_name, *b1, pmesh_);
+  _bc_map.applyIntegratedBCs(u_name, *b0, pmesh_);
 
   // a1(du/dt_{n+1}, u') = (βdu/dt_{n+1}, u') + (αdt∇×du/dt_{n+1}, ∇×u')
-  if (a1 == NULL || fabs(dt - dt_A1) > 1.0e-12 * dt) {
-    this->buildA1(betaCoef, dtAlphaCoef);
+  if (a0 == NULL || fabs(dt - dt_A0) > 1.0e-12 * dt) {
+    this->buildA0(betaCoef, dtAlphaCoef);
   }
-  a1->FormLinearSystem(ess_tdof_list, J_gf, *b1, *A1, *X1, *B1);
+  a0->FormLinearSystem(ess_tdof_list, J_gf, *b0, *A0, *X0, *B0);
 
   // We only need to create the solver and preconditioner once
-  if (ams_a1 == NULL) {
-    ams_a1 = new mfem::HypreAMS(*A1, HCurlFESpace_);
-    ams_a1->SetSingularProblem();
+  if (ams_a0 == NULL) {
+    ams_a0 = new mfem::HypreAMS(*A1, HCurlFESpace_);
+    ams_a0->SetSingularProblem();
   }
-  if (pcg_a1 == NULL) {
-    pcg_a1 = new mfem::HyprePCG(*A1);
-    pcg_a1->SetTol(1.0e-16);
-    pcg_a1->SetMaxIter(1000);
-    pcg_a1->SetPrintLevel(0);
-    pcg_a1->SetPreconditioner(*ams_a1);
+  if (pcg_a0 == NULL) {
+    pcg_a0 = new mfem::HyprePCG(*A0);
+    pcg_a0->SetTol(1.0e-16);
+    pcg_a0->SetMaxIter(1000);
+    pcg_a0->SetPrintLevel(0);
+    pcg_a0->SetPreconditioner(*ams_a0);
   }
   // solve the system
-  pcg_a1->Mult(*B1, *X1);
+  pcg_a0->Mult(*B0, *X0);
 
-  a1->RecoverFEMSolution(*X1, *b1, du_);
+  a0->RecoverFEMSolution(*X0, *b0, du_);
 }
 
-void AVSolver::buildA1(mfem::Coefficient *Sigma, mfem::Coefficient *DtMuInv) {
-  if (a1 != NULL) {
-    delete a1;
+void AVSolver::buildA0(mfem::Coefficient *Sigma, mfem::Coefficient *DtMuInv) {
+  if (a0 != NULL) {
+    delete a0;
   }
 
   // First create and assemble the bilinear form.  For now we assume the mesh
   // isn't moving, the materials are time independent, and dt is constant. So
   // we only need to do this once.
 
-  a1 = new mfem::ParBilinearForm(HCurlFESpace_);
-  a1->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*Sigma));
-  a1->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*DtMuInv));
-  a1->Assemble();
+  a0 = new mfem::ParBilinearForm(HCurlFESpace_);
+  a0->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*Sigma));
+  a0->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*DtMuInv));
+  a0->Assemble();
 
   // Don't finalize or parallel assemble this is done in FormLinearSystem.
 
-  dt_A1 = dtCoef.constant;
-}
-
-void AVSolver::buildM1(mfem::Coefficient *Sigma) {
-  if (m1 != NULL) {
-    delete m1;
-  }
-
-  m1 = new mfem::ParBilinearForm(HCurlFESpace_);
-  m1->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*Sigma));
-  m1->Assemble();
-
-  // Don't finalize or parallel assemble this is done in FormLinearSystem.
+  dt_A0 = dtCoef.constant;
 }
 
 void AVSolver::buildGrad() {
@@ -296,6 +283,19 @@ void AVSolver::SetVariableNames() {
 
 void AVSolver::SetMaterialCoefficients(
     hephaestus::DomainProperties &domain_properties) {
+  // if (domain_properties.scalar_property_map.count("magnetic_permeability") ==
+  //     0) {
+  //   domain_properties.scalar_property_map["magnetic_permeability"] =
+  //       new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
+  //           std::string("magnetic_permeability")));
+  // }
+  // if (domain_properties.scalar_property_map.count("electrical_conductivity")
+  // ==
+  //     0) {
+  //   domain_properties.scalar_property_map["electrical_conductivity"] =
+  //       new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
+  //           std::string("electrical_conductivity")));
+  // }
   alphaCoef = new mfem::TransformedCoefficient(
       &oneCoef, domain_properties.scalar_property_map["magnetic_permeability"],
       fracFunc);
