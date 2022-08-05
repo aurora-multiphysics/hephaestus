@@ -22,8 +22,7 @@ public:
 
   void Init(mfem::Vector &X) override;
 
-  void buildA1(mfem::Coefficient *sigma, mfem::Coefficient *dtMuInv);
-  void buildM1(mfem::Coefficient *sigma);
+  void buildA0(mfem::Coefficient *sigma, mfem::Coefficient *dtMuInv);
   void buildCurl(mfem::Coefficient *muInv);
   void buildGrad();
   void buildSource();
@@ -62,19 +61,20 @@ protected:
   mfem::ParBilinearForm *a0, *a1, *m1;
   mfem::HypreParMatrix *A0, *A1;
   mfem::Vector *X0, *X1, *B0, *B1;
+  mfem::Array<int> block_trueOffsets;
 
   mfem::ParDiscreteLinearOperator *grad;
   mfem::ParDiscreteLinearOperator *curl;
   mfem::ParBilinearForm *curlCurl;
   mutable mfem::HypreSolver *amg_a0;
   mutable mfem::HyprePCG *pcg_a0;
-  mutable mfem::HypreAMS *ams_a1;
+  mutable mfem::HypreAMS *ams_a0;
   mutable mfem::HyprePCG *pcg_a1;
 
   // temporary work vectors
   mfem::ParLinearForm *b0, *b1;
 
-  double dt_A1;
+  double dt_A0;
   mfem::ConstantCoefficient dtCoef;  // Coefficient for timestep scaling
   mfem::ConstantCoefficient oneCoef; // Auxiliary coefficient
   mfem::Coefficient *alphaCoef;
