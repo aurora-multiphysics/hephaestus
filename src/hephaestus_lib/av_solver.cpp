@@ -51,10 +51,10 @@ AVSolver::AVSolver(mfem::ParMesh &pmesh, int order,
           new mfem::common::H1_ParFESpace(&pmesh, order, pmesh.Dimension())),
       HCurlFESpace_(
           new mfem::common::ND_ParFESpace(&pmesh, order, pmesh.Dimension())),
-      a0(NULL), amg_a0(NULL), pcg_a0(NULL), ams_a0(NULL), pcg_a1(NULL),
-      m1(NULL), grad(NULL), curl(NULL), curlCurl(NULL), sourceVecCoef(NULL),
-      src_gf(NULL), div_free_src_gf(NULL), hCurlMass(NULL), divFreeProj(NULL),
-      p_(mfem::ParGridFunction(H1FESpace_)),
+      a0(NULL), a1(NULL), amg_a0(NULL), pcg_a0(NULL), ams_a0(NULL),
+      pcg_a1(NULL), m1(NULL), grad(NULL), curl(NULL), curlCurl(NULL),
+      sourceVecCoef(NULL), src_gf(NULL), div_free_src_gf(NULL), hCurlMass(NULL),
+      divFreeProj(NULL), p_(mfem::ParGridFunction(H1FESpace_)),
       u_(mfem::ParGridFunction(HCurlFESpace_)),
       dp_(mfem::ParGridFunction(H1FESpace_)),
       du_(mfem::ParGridFunction(HCurlFESpace_)) {
@@ -186,6 +186,7 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   // - (s0_{n+1}, u') - <(α∇×u_{n+1}) × n, u'> = 0
   mfem::BlockVector x(true_offsets), rhs(true_offsets);
   mfem::BlockVector trueX(block_trueOffsets), trueRhs(block_trueOffsets);
+  trueX = 0.0;
   // b0->Update(HCurlFESpace_, rhs.GetBlock(0), 0);
   // a1(du/dt_{n+1}, u') = b1(u')
   // a1(u, u') = (βu, u') + (αdt∇×u, ∇×u')
@@ -214,7 +215,7 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
     hCurlMass->AddMult(*div_free_src_gf, *b0);
   }
 
-  b0->SyncAliasMemory(rhs);
+  // b0->SyncAliasMemory(rhs);
   // trueRhs.GetBlock(0).SyncAliasMemory(trueRhs);
 
   // a1(du/dt_{n+1}, u') = (βdu/dt_{n+1}, u') + (αdt∇×du/dt_{n+1}, ∇×u')
