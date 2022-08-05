@@ -62,14 +62,20 @@ AVSolver::AVSolver(mfem::ParMesh &pmesh, int order,
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh.GetComm(), &myid_);
 
-  true_offsets.SetSize(3);
+  true_offsets.SetSize(2);
   true_offsets[0] = 0;
   true_offsets[1] = HCurlFESpace_->GetVSize();
-  true_offsets[2] = H1FESpace_->GetVSize();
+  // true_offsets[2] = H1FESpace_->GetVSize();
   true_offsets.PartialSum();
 
-  this->height = true_offsets[2];
-  this->width = true_offsets[2];
+  block_trueOffsets.SetSize(2);
+  block_trueOffsets[0] = 0;
+  block_trueOffsets[1] = HCurlFESpace_->TrueVSize();
+  // block_trueOffsets[2] = H1FESpace_->TrueVSize();
+  block_trueOffsets.PartialSum();
+
+  this->height = true_offsets[1];
+  this->width = true_offsets[1];
 }
 
 void AVSolver::Init(mfem::Vector &X) {
@@ -110,10 +116,10 @@ void AVSolver::Init(mfem::Vector &X) {
   mfem::ConstantCoefficient Zero(0.0);
 
   u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
-  p_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
+  // p_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
 
   u_.ProjectCoefficient(Zero_vec);
-  p_.ProjectCoefficient(Zero);
+  // p_.ProjectCoefficient(Zero);
 }
 
 /*
@@ -138,10 +144,10 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   dtCoef.constant = dt;
 
   u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
-  p_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
+  // p_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
 
   du_.MakeRef(HCurlFESpace_, dX_dt, true_offsets[0]);
-  dp_.MakeRef(H1FESpace_, dX_dt, true_offsets[1]);
+  // dp_.MakeRef(H1FESpace_, dX_dt, true_offsets[1]);
 
   _domain_properties.SetTime(this->GetTime());
 
@@ -178,11 +184,19 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   //////////////////////////////////////////////////////////////////////////////
   // (α∇×u_{n}, ∇×u') + (αdt∇×du/dt_{n+1}, ∇×u') + (βdu/dt_{n+1}, u')
   // - (s0_{n+1}, u') - <(α∇×u_{n+1}) × n, u'> = 0
-
+  mfem::BlockVector x(true_offsets), rhs(true_offsets);
+  mfem::BlockVector trueX(block_trueOffsets), trueRhs(block_trueOffsets);
+  // b0->Update(HCurlFESpace_, rhs.GetBlock(0), 0);
   // a1(du/dt_{n+1}, u') = b1(u')
   // a1(u, u') = (βu, u') + (αdt∇×u, ∇×u')
   // b1(u') = (s0_{n+1}, u') - (α∇×u_{n}, ∇×u') + <(α∇×u_{n+1}) × n, u'>
 
+  mfem::ParGridFunction J_gf(HCurlFESpace_);
+  mfem::Array<int> ess_tdof_list;
+  J_gf = 0.0;
+  _bc_map.applyEssentialBCs(u_name, ess_tdof_list, J_gf, pmesh_);
+  _bc_map.applyIntegratedBCs(u_name, *b0, pmesh_);
+  b0->Assemble();
   // (α∇×u_{n}, ∇×u')
   // v_ is a grid function but curlCurl is not parallel assembled so is OK
   curlCurl->MultTranspose(u_, *b0);
@@ -200,21 +214,28 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
     hCurlMass->AddMult(*div_free_src_gf, *b0);
   }
 
-  mfem::ParGridFunction J_gf(HCurlFESpace_);
-  mfem::Array<int> ess_tdof_list;
-  J_gf = 0.0;
-  _bc_map.applyEssentialBCs(u_name, ess_tdof_list, J_gf, pmesh_);
-  _bc_map.applyIntegratedBCs(u_name, *b0, pmesh_);
+  b0->SyncAliasMemory(rhs);
+  // trueRhs.GetBlock(0).SyncAliasMemory(trueRhs);
 
   // a1(du/dt_{n+1}, u') = (βdu/dt_{n+1}, u') + (αdt∇×du/dt_{n+1}, ∇×u')
-  if (a0 == NULL || fabs(dt - dt_A0) > 1.0e-12 * dt) {
-    this->buildA0(betaCoef, dtAlphaCoef);
-  }
-  a0->FormLinearSystem(ess_tdof_list, J_gf, *b0, *A0, *X0, *B0);
+  // if (a0 == NULL || fabs(dt - dt_A0) > 1.0e-12 * dt) {
+  this->buildA0(betaCoef, dtAlphaCoef);
+  // }
+  // a0->EliminateEssentialBC(mfem::Array<int>({1, 1, 1}), J_gf, *b0);
+  a0->EliminateEssentialBC(mfem::Array<int>({1, 1, 1}), J_gf, *b0);
+  a0->Finalize();
+  A0 = a0->ParallelAssemble();
+
+  b0->ParallelAssemble(trueRhs.GetBlock(0));
+  trueRhs.GetBlock(0).SyncAliasMemory(trueRhs);
+  // a0->FormSystemMatrix(ess_tdof_list, *A0);
+  // A0->EliminateRowsCols(ess_tdof_list);
+
+  // a0->FormLinearSystem(ess_tdof_list, J_gf, *b0, *A0, *X0, *B0);
 
   // We only need to create the solver and preconditioner once
   if (ams_a0 == NULL) {
-    ams_a0 = new mfem::HypreAMS(*A1, HCurlFESpace_);
+    ams_a0 = new mfem::HypreAMS(*A0, HCurlFESpace_);
     ams_a0->SetSingularProblem();
   }
   if (pcg_a0 == NULL) {
@@ -225,9 +246,18 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
     pcg_a0->SetPreconditioner(*ams_a0);
   }
   // solve the system
-  pcg_a0->Mult(*B0, *X0);
+  // pcg_a0->Mult(*B0, *X0);
+  // pcg_a0->Mult(rhs, du_);
+  // trueRhs.Print();
+  pcg_a0->Mult(trueRhs, trueX);
+  du_.Distribute(&(trueX.GetBlock(0)));
+  // du_ = trueX.GetBlock(0);
+  //  p->MakeRef(W_space, x.GetBlock(1), 0);
+  // du_.Distribute(&(trueX.GetBlock(0)));
+  //  p->Distribute(&(trueX.GetBlock(1)));
 
-  a0->RecoverFEMSolution(*X0, *b0, du_);
+  // du_ = trueX;
+  // a0->RecoverFEMSolution((trueX.GetBlock(0)), *b0, du_);
 }
 
 void AVSolver::buildA0(mfem::Coefficient *Sigma, mfem::Coefficient *DtMuInv) {
