@@ -59,7 +59,8 @@ protected:
   hephaestus::DomainProperties _domain_properties;
 
   mfem::ParBilinearForm *a0, *a1, *m1;
-  mfem::HypreParMatrix *A0, *A1;
+  mfem::ParMixedBilinearForm *a01, *a10;
+  mfem::HypreParMatrix *A0, *A1, *A10, *A01, *blockA;
   mfem::Vector *X0, *X1, *B0, *B1;
   mfem::Array<int> block_trueOffsets;
 
