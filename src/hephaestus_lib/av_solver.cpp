@@ -86,18 +86,14 @@ void AVSolver::Init(mfem::Vector &X) {
   // Define material property coefficients
   dtCoef = mfem::ConstantCoefficient(1.0);
   oneCoef = mfem::ConstantCoefficient(1.0);
+  negCoef = mfem::ConstantCoefficient(-1.0);
   SetMaterialCoefficients(_domain_properties);
   dtAlphaCoef = new mfem::TransformedCoefficient(&dtCoef, alphaCoef, prodFunc);
-
+  negBetaCoef = new mfem::TransformedCoefficient(&negCoef, betaCoef, prodFunc);
   SetSourceCoefficient(_domain_properties);
   if (sourceVecCoef) {
     buildSource();
   }
-
-  // a0(p, p') = (β ∇ p, ∇ p')
-  a1 = new mfem::ParBilinearForm(H1FESpace_);
-  a1->AddDomainIntegrator(new mfem::DiffusionIntegrator(*betaCoef));
-  a1->Assemble();
 
   this->buildCurl(alphaCoef); // (α∇×u_{n}, ∇×u')
   this->buildGrad();          // (s0_{n+1}, u')
@@ -206,6 +202,14 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   // (s0_{n+1}, u')
   // grad->Mult(p_, du_);
   // m1->AddMult(du_, *b1, 1.0);
+
+  mfem::ParGridFunction J_gf(HCurlFESpace_);
+  mfem::Array<int> ess_tdof_list;
+  J_gf = 0.0;
+  _bc_map.applyEssentialBCs(u_name, ess_tdof_list, J_gf, pmesh_);
+  _bc_map.applyIntegratedBCs(u_name, *b0, pmesh_);
+  b0->Assemble();
+
   if (src_gf) {
     src_gf->ProjectCoefficient(*sourceVecCoef);
     // Compute the discretely divergence-free portion of src_gf
@@ -213,13 +217,6 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
     // Compute the dual of div_free_src_gf
     hCurlMass->AddMult(*div_free_src_gf, *b0);
   }
-
-  mfem::ParGridFunction J_gf(HCurlFESpace_);
-  mfem::Array<int> ess_tdof_list;
-  J_gf = 0.0;
-  _bc_map.applyEssentialBCs(u_name, ess_tdof_list, J_gf, pmesh_);
-  _bc_map.applyIntegratedBCs(u_name, *b0, pmesh_);
-  // b0->Assemble();
 
   // b0->SyncAliasMemory(rhs);
   // trueRhs.GetBlock(0).SyncAliasMemory(trueRhs);
@@ -253,14 +250,28 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
 
   delete a10;
   delete a01;
+  delete a1;
+
+  // a1(V, V') = (σ ∇ V, ∇ V')
+  a1 = new mfem::ParBilinearForm(H1FESpace_);
+  a1->AddDomainIntegrator(new mfem::DiffusionIntegrator(*negBetaCoef));
+  a1->Assemble();
+
+  // (σdA/dt , ∇ V')
   a01 = new mfem::ParMixedBilinearForm(HCurlFESpace_, H1FESpace_);
+  a01->AddDomainIntegrator(
+      new mfem::VectorFEWeakDivergenceIntegrator(*negBetaCoef));
   a01->Assemble();
+
+  // (σ ∇ V, dA'/dt)
+  a10 = new mfem::ParMixedBilinearForm(H1FESpace_, HCurlFESpace_);
+  a10->AddDomainIntegrator(new mfem::MixedVectorGradientIntegrator(*betaCoef));
+  a10->Assemble();
+
   // a01->EliminateTrialDofs(mfem::Array<int>({1, 1, 1}), J_gf, *b1);
   // a01->Finalize();
   // A01 = a01->ParallelAssemble();
 
-  a10 = new mfem::ParMixedBilinearForm(H1FESpace_, HCurlFESpace_);
-  a10->Assemble();
   // a10->EliminateTrialDofs(mfem::Array<int>({1, 1, 1}), Phi_gf, *b0);
   // a10->Finalize();
   // A10 = a10->ParallelAssemble();
@@ -280,10 +291,11 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
 
   a01->FormRectangularLinearSystem(ess_tdof_list, poisson_ess_tdof_list, J_gf,
                                    *b10, *A01, *X0, *B1);
-  trueRhs.GetBlock(1) += *B1;
 
   a10->FormRectangularLinearSystem(poisson_ess_tdof_list, ess_tdof_list, Phi_gf,
                                    *b01, *A10, *X1, *B0);
+  trueRhs.GetBlock(1) += *B1;
+
   trueRhs.GetBlock(0) += *B0;
 
   // b0->ParallelAssemble(trueRhs.GetBlock(0));
@@ -316,15 +328,21 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   //   ams_a0 = new mfem::HypreAMS(*blockA, HCurlFESpace_);
   //   ams_a0->SetSingularProblem();
   // }
-  if (pcg_a0 == NULL) {
-    pcg_a0 = new mfem::HyprePCG(*blockA);
-    pcg_a0->SetTol(1.0e-16);
-    pcg_a0->SetMaxIter(1000);
-    pcg_a0->SetPrintLevel(0);
-    // pcg_a0->SetPreconditioner(*ams_a0);
-  }
-  // solve the system
-  pcg_a0->Mult(trueRhs, trueX);
+  mfem::MUMPSSolver mumps;
+  mumps.SetPrintLevel(0);
+  mumps.SetMatrixSymType(mfem::MUMPSSolver::MatType::UNSYMMETRIC);
+  mumps.SetOperator(*blockA);
+  mumps.Mult(trueRhs, trueX);
+
+  // if (pcg_a0 == NULL) {
+  //   pcg_a0 = new mfem::HyprePCG(*blockA);
+  //   pcg_a0->SetTol(1.0e-16);
+  //   pcg_a0->SetMaxIter(1000);
+  //   pcg_a0->SetPrintLevel(0);
+  //   // pcg_a0->SetPreconditioner(*ams_a0);
+  // }
+  // // solve the system
+  // pcg_a0->Mult(trueRhs, trueX);
 
   trueX.GetBlock(0).SyncAliasMemory(trueX);
   trueX.GetBlock(1).SyncAliasMemory(trueX);
@@ -424,7 +442,8 @@ void AVSolver::buildSource() {
   // VectorCoefficient
   src_gf = new mfem::ParGridFunction(HCurlFESpace_);
   div_free_src_gf = new mfem::ParGridFunction(HCurlFESpace_);
-  _variables.Register("source", div_free_src_gf, false);
+  // _variables.Register("source", src_gf, false);
+  // _variables.Register("sourcedivfree", div_free_src_gf, false);
   // int irOrder = H1FESpace_->GetElementTransformation(0)->OrderW() +
   //               2 * H1FESpace_->GetOrder();
   int irOrder = H1FESpace_->GetElementTransformation(0)->OrderW() + 2 * 2;
