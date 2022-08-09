@@ -76,11 +76,11 @@ protected:
   mfem::ParLinearForm *b0, *b1;
 
   double dt_A0;
-  mfem::ConstantCoefficient dtCoef;  // Coefficient for timestep scaling
-  mfem::ConstantCoefficient oneCoef; // Auxiliary coefficient
+  mfem::ConstantCoefficient dtCoef; // Coefficient for timestep scaling
+  mfem::ConstantCoefficient oneCoef, negCoef; // Auxiliary coefficient
   mfem::Coefficient *alphaCoef;
   mfem::Coefficient *dtAlphaCoef;
-  mfem::Coefficient *betaCoef;
+  mfem::Coefficient *betaCoef, *negBetaCoef;
 
   mfem::VectorCoefficient *sourceVecCoef;
   mfem::ParGridFunction *src_gf, *div_free_src_gf; // Source field
