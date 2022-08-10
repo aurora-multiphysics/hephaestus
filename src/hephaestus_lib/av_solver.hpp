@@ -54,6 +54,7 @@ public:
 protected:
   int myid_;
   int num_procs_;
+  const int order_;
   mfem::ParMesh *pmesh_;
   mfem::NamedFieldsMap<mfem::ParGridFunction> &_variables;
   hephaestus::BCMap _bc_map;

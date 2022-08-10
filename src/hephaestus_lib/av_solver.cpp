@@ -45,8 +45,9 @@ AVSolver::AVSolver(mfem::ParMesh &pmesh, int order,
                    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
                    hephaestus::BCMap &bc_map,
                    hephaestus::DomainProperties &domain_properties)
-    : myid_(0), num_procs_(1), pmesh_(&pmesh), _variables(variables),
-      _bc_map(bc_map), _domain_properties(domain_properties),
+    : myid_(0), num_procs_(1), order_(order), pmesh_(&pmesh),
+      _variables(variables), _bc_map(bc_map),
+      _domain_properties(domain_properties),
       H1FESpace_(
           new mfem::common::H1_ParFESpace(&pmesh, order, pmesh.Dimension())),
       HCurlFESpace_(
@@ -83,7 +84,7 @@ void AVSolver::Init(mfem::Vector &X) {
   SetVariableNames();
   _variables.Register(u_name, &u_, false);
   _variables.Register(p_name, &p_, false);
-  // _variables.Register(e_name, &e_, false);
+  _variables.Register(e_name, &e_, false);
 
   // Define material property coefficients
   dtCoef = mfem::ConstantCoefficient(1.0);
@@ -352,11 +353,9 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   du_.Distribute(&(trueX.GetBlock(0)));
   p_.Distribute(&(trueX.GetBlock(1)));
 
-  // e_ = 0.0;
-  // e_ = du_;
-  // grad->Mult(p_, e_);
-  // e_ += du_;
-  // e_ *= -1.0;
+  grad->Mult(p_, e_);
+  e_ += du_;
+  e_ *= -1.0;
   // du_ = trueX;
   // a0->RecoverFEMSolution((trueX.GetBlock(0)), *b0, du_);
 }
@@ -450,10 +449,7 @@ void AVSolver::buildSource() {
   src_gf = new mfem::ParGridFunction(HCurlFESpace_);
   div_free_src_gf = new mfem::ParGridFunction(HCurlFESpace_);
   _variables.Register("source", src_gf, false);
-  // _variables.Register("sourcedivfree", div_free_src_gf, false);
-  // int irOrder = H1FESpace_->GetElementTransformation(0)->OrderW() +
-  //               2 * H1FESpace_->GetOrder();
-  int irOrder = H1FESpace_->GetElementTransformation(0)->OrderW() + 2 * 2;
+  int irOrder = H1FESpace_->GetElementTransformation(0)->OrderW() + 2 * order_;
   divFreeProj = new mfem::common::DivergenceFreeProjector(
       *H1FESpace_, *HCurlFESpace_, irOrder, NULL, NULL, NULL);
   hCurlMass = new mfem::ParBilinearForm(HCurlFESpace_);
