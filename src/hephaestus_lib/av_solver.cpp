@@ -57,7 +57,8 @@ AVSolver::AVSolver(mfem::ParMesh &pmesh, int order,
       hCurlMass(NULL), divFreeProj(NULL), p_(mfem::ParGridFunction(H1FESpace_)),
       u_(mfem::ParGridFunction(HCurlFESpace_)),
       dp_(mfem::ParGridFunction(H1FESpace_)),
-      du_(mfem::ParGridFunction(HCurlFESpace_)) {
+      du_(mfem::ParGridFunction(HCurlFESpace_)),
+      e_(mfem::ParGridFunction(HCurlFESpace_)) {
   // Initialize MPI variables
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh.GetComm(), &myid_);
@@ -82,6 +83,7 @@ void AVSolver::Init(mfem::Vector &X) {
   SetVariableNames();
   _variables.Register(u_name, &u_, false);
   _variables.Register(p_name, &p_, false);
+  // _variables.Register(e_name, &e_, false);
 
   // Define material property coefficients
   dtCoef = mfem::ConstantCoefficient(1.0);
@@ -348,11 +350,13 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   trueX.GetBlock(1).SyncAliasMemory(trueX);
 
   du_.Distribute(&(trueX.GetBlock(0)));
-  // du_ = trueX.GetBlock(0);
-  //  p->MakeRef(W_space, x.GetBlock(1), 0);
-  // du_.Distribute(&(trueX.GetBlock(0)));
   p_.Distribute(&(trueX.GetBlock(1)));
 
+  // e_ = 0.0;
+  // e_ = du_;
+  // grad->Mult(p_, e_);
+  // e_ += du_;
+  // e_ *= -1.0;
   // du_ = trueX;
   // a0->RecoverFEMSolution((trueX.GetBlock(0)), *b0, du_);
 }
@@ -406,6 +410,9 @@ void AVSolver::SetVariableNames() {
 
   u_name = "magnetic_vector_potential";
   u_display_name = "Magnetic Vector Potential";
+
+  e_name = "electric_field";
+  e_display_name = "Electric Field";
 }
 
 void AVSolver::SetMaterialCoefficients(
@@ -442,7 +449,7 @@ void AVSolver::buildSource() {
   // VectorCoefficient
   src_gf = new mfem::ParGridFunction(HCurlFESpace_);
   div_free_src_gf = new mfem::ParGridFunction(HCurlFESpace_);
-  // _variables.Register("source", src_gf, false);
+  _variables.Register("source", src_gf, false);
   // _variables.Register("sourcedivfree", div_free_src_gf, false);
   // int irOrder = H1FESpace_->GetElementTransformation(0)->OrderW() +
   //               2 * H1FESpace_->GetOrder();

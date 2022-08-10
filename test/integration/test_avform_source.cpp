@@ -20,19 +20,18 @@ protected:
   }
 
   static double potential_ground(const mfem::Vector &x, double t) {
-    // return 0.0;
-    return (x(0) - 4.0) * t * sin(M_PI * x(1)) * sin(M_PI * x(2));
+    return -x(0);
   }
 
   static void adot_bc(const mfem::Vector &x, double t, mfem::Vector &H) {
-    H(0) = sin(x(1) * M_PI) * sin(x(2) * M_PI);
+    H(0) = 1 + sin(x(1) * M_PI) * sin(x(2) * M_PI);
     H(1) = 0;
     H(2) = 0;
   }
 
   static void A_exact_expr(const mfem::Vector &x, double t,
                            mfem::Vector &A_exact) {
-    A_exact(0) = sin(x(1) * M_PI) * sin(x(2) * M_PI) * t;
+    A_exact(0) = (1 + sin(x(1) * M_PI) * sin(x(2) * M_PI)) * t;
     A_exact(1) = 0;
     A_exact(2) = 0;
   }
@@ -42,10 +41,9 @@ protected:
         1.0 / (1.0 + variation_scale * cos(M_PI * x(0)) * cos(M_PI * x(1)));
     return mu;
   }
-  // Source field (not divergence free)
+  // Source field (not discretely divergence free)
   static void source_field(const mfem::Vector &x, double t, mfem::Vector &f) {
-    f(0) = t * 2 * M_PI * M_PI * sin(M_PI * x(1)) * sin(M_PI * x(2)) +
-           sin(M_PI * x(1)) * sin(M_PI * x(2));
+    f(0) = sin(M_PI * x(1)) * sin(M_PI * x(2)) * (t * 2 * M_PI * M_PI + 1);
     f(1) = 0.0;
     f(2) = 0.0;
   }
@@ -79,23 +77,24 @@ protected:
     //     std::string("electric_potential"), mfem::Array<int>({1, 2, 3}),
     //     new mfem::FunctionCoefficient(potential_ground));
 
-    // mfem::Array<int> ground_terminal(1);
-    // ground_terminal[0] = 1;
-    // mfem::FunctionCoefficient *ground_coeff =
-    //     new mfem::FunctionCoefficient(potential_ground);
-    // bc_map["ground_potential"] = new hephaestus::FunctionDirichletBC(
-    //     std::string("electric_potential"), ground_terminal, ground_coeff);
-    // domain_properties.scalar_property_map["ground_potential"] = ground_coeff;
-
-    mfem::Array<int> high_terminal(1);
-    high_terminal[0] = 2;
-    mfem::VectorFunctionCoefficient *jVecCoef =
-        new mfem::VectorFunctionCoefficient(3, source_field);
-    bc_map["current_inlet"] = new hephaestus::IntegratedBC(
+    mfem::Array<int> ground_terminal(1);
+    ground_terminal[0] = 1;
+    mfem::FunctionCoefficient *ground_coeff =
+        new mfem::FunctionCoefficient(potential_ground);
+    bc_map["ground_potential"] = new hephaestus::FunctionDirichletBC(
         std::string("electric_potential"), mfem::Array<int>({1, 2, 3}),
-        new mfem::BoundaryNormalLFIntegrator(*jVecCoef));
-    domain_properties.vector_property_map["surface_normal_current_density"] =
-        jVecCoef;
+        ground_coeff);
+    domain_properties.scalar_property_map["ground_potential"] = ground_coeff;
+
+    // mfem::Array<int> high_terminal(1);
+    // high_terminal[0] = 2;
+    // mfem::VectorFunctionCoefficient *jVecCoef =
+    //     new mfem::VectorFunctionCoefficient(3, source_field);
+    // bc_map["current_inlet"] = new hephaestus::IntegratedBC(
+    //     std::string("electric_potential"), mfem::Array<int>({1, 2, 3}),
+    //     new mfem::BoundaryNormalLFIntegrator(*jVecCoef));
+    // domain_properties.vector_property_map["surface_normal_current_density"] =
+    //     jVecCoef;
 
     mfem::VectorFunctionCoefficient *JSrcCoef =
         new mfem::VectorFunctionCoefficient(3, source_field);
@@ -110,7 +109,7 @@ protected:
 
     std::map<std::string, mfem::DataCollection *> data_collections;
     data_collections["VisItDataCollection"] =
-        new mfem::VisItDataCollection("AFormVisIt");
+        new mfem::VisItDataCollection("AVFormVisIt");
     hephaestus::Outputs outputs(data_collections);
 
     hephaestus::InputParameters hcurlvarparams;
@@ -171,7 +170,7 @@ TEST_F(TestAVFormSource, CheckRun) {
   hephaestus::InputParameters params(test_params());
   mfem::ParMesh unrefined_pmesh(params.GetParam<mfem::ParMesh>("Mesh"));
 
-  int num_conv_refinements = 3;
+  int num_conv_refinements = 4;
   for (int par_ref_levels = 0; par_ref_levels < num_conv_refinements;
        ++par_ref_levels) {
 
@@ -198,7 +197,7 @@ TEST_F(TestAVFormSource, CheckRun) {
         l2errpostprocessor.ndofs[i], l2errpostprocessor.ndofs[i - 1],
         l2errpostprocessor.l2_errs[i], l2errpostprocessor.l2_errs[i - 1], 3);
     std::cout << r << std::endl;
-    // ASSERT_TRUE(r > params.GetParam<int>("Order"));
-    // ASSERT_TRUE(r < params.GetParam<int>("Order") + 1.0);
+    ASSERT_TRUE(r > params.GetParam<int>("Order"));
+    ASSERT_TRUE(r < params.GetParam<int>("Order") + 1.0);
   }
 }
