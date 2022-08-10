@@ -117,7 +117,7 @@ protected:
                             std::string("analytic_vector_potential"));
     hcurlvarparams.SetParam("FESpaceName", std::string("HCurl"));
     hcurlvarparams.SetParam("FESpaceType", std::string("Nedelec"));
-    hcurlvarparams.SetParam("order", 2);
+    hcurlvarparams.SetParam("order", 4);
     hcurlvarparams.SetParam("components", 3);
     hephaestus::Variables variables;
     variables.AddVariable(hcurlvarparams);
@@ -170,7 +170,7 @@ TEST_F(TestAVFormSource, CheckRun) {
   hephaestus::InputParameters params(test_params());
   mfem::ParMesh unrefined_pmesh(params.GetParam<mfem::ParMesh>("Mesh"));
 
-  int num_conv_refinements = 4;
+  int num_conv_refinements = 3;
   for (int par_ref_levels = 0; par_ref_levels < num_conv_refinements;
        ++par_ref_levels) {
 
