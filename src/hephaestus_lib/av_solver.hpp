@@ -22,7 +22,8 @@ public:
 
   void Init(mfem::Vector &X) override;
 
-  void buildA0(mfem::Coefficient *sigma, mfem::Coefficient *dtMuInv);
+  void buildA0(mfem::Coefficient *betaCoef, mfem::Coefficient *dtAlphaCoef);
+  void buildA1(mfem::Coefficient *betaCoef);
   void buildCurl(mfem::Coefficient *muInv);
   void buildGrad();
   void buildSource();
@@ -41,14 +42,16 @@ public:
   void DisplayToGLVis() override;
   mfem::common::H1_ParFESpace *H1FESpace_;
   mfem::common::ND_ParFESpace *HCurlFESpace_;
+  mfem::common::RT_ParFESpace *HDivFESpace_;
 
   double ElectricLosses() const;
 
-  std::string u_name, p_name, e_name;
-  std::string u_display_name, p_display_name, e_display_name;
+  std::string u_name, p_name, e_name, b_name;
+  std::string u_display_name, p_display_name, e_display_name, b_display_name;
   mfem::ParGridFunction u_, du_; // HCurl vector field
   mfem::ParGridFunction p_, dp_; // H1 scalar potential
   mfem::ParGridFunction e_;      // HCurl Electric Field
+  mfem::ParGridFunction b_;      // HDiv Magnetic Flux Density
   std::map<std::string, mfem::socketstream *> socks_;
 
 protected:
@@ -75,9 +78,9 @@ protected:
   mutable mfem::HyprePCG *pcg_a1;
 
   // temporary work vectors
-  mfem::ParLinearForm *b0, *b1;
+  mfem::ParLinearForm *b0, *b1, *b01, *b10;
 
-  double dt_A0;
+  double dt_A0, dt_A1;
   mfem::ConstantCoefficient dtCoef; // Coefficient for timestep scaling
   mfem::ConstantCoefficient oneCoef, negCoef; // Auxiliary coefficient
   mfem::Coefficient *alphaCoef;

@@ -41,7 +41,7 @@ protected:
         1.0 / (1.0 + variation_scale * cos(M_PI * x(0)) * cos(M_PI * x(1)));
     return mu;
   }
-  // Source field (not discretely divergence free)
+
   static void source_field(const mfem::Vector &x, double t, mfem::Vector &f) {
     f(0) = sin(M_PI * x(1)) * sin(M_PI * x(2)) * (t * 2 * M_PI * M_PI + 1);
     f(1) = 0.0;
@@ -73,10 +73,6 @@ protected:
     domain_properties.scalar_property_map["electrical_conductivity"] =
         new mfem::ConstantCoefficient(1.0);
 
-    // bc_map["ground_potential"] = new hephaestus::FunctionDirichletBC(
-    //     std::string("electric_potential"), mfem::Array<int>({1, 2, 3}),
-    //     new mfem::FunctionCoefficient(potential_ground));
-
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 1;
     mfem::FunctionCoefficient *ground_coeff =
@@ -85,16 +81,6 @@ protected:
         std::string("electric_potential"), mfem::Array<int>({1, 2, 3}),
         ground_coeff);
     domain_properties.scalar_property_map["ground_potential"] = ground_coeff;
-
-    // mfem::Array<int> high_terminal(1);
-    // high_terminal[0] = 2;
-    // mfem::VectorFunctionCoefficient *jVecCoef =
-    //     new mfem::VectorFunctionCoefficient(3, source_field);
-    // bc_map["current_inlet"] = new hephaestus::IntegratedBC(
-    //     std::string("electric_potential"), mfem::Array<int>({1, 2, 3}),
-    //     new mfem::BoundaryNormalLFIntegrator(*jVecCoef));
-    // domain_properties.vector_property_map["surface_normal_current_density"] =
-    //     jVecCoef;
 
     mfem::VectorFunctionCoefficient *JSrcCoef =
         new mfem::VectorFunctionCoefficient(3, source_field);
