@@ -99,41 +99,7 @@ void TransientExecutioner::Solve(const hephaestus::InputParameters &params) {
       }
       postprocessors.Update(t);
     }
-    delete ode_solver;
   }
 }
-
-// TransientExecutioner::Step(const hephaestus::InputParameters &params) {
-//   // Check if current time step is final
-//   if (t + dt >= t_final - dt / 2) {
-//     last_step = true;
-//   }
-
-//   // Advance time step.
-//   ode_solver->Step(F, t, dt);
-
-//   // Output data
-//   if (last_step || (it % vis_steps) == 0) {
-
-//     // Output timestep summary to console
-//     formulation->WriteConsoleSummary(t, it);
-
-//     // Make sure all ranks have sent their 'v' solution before initiating
-//     // another set of GLVis connections (one from each rank):
-//     MPI_Barrier(pmesh.GetComm());
-//     auxkernels.Solve(t);
-
-//     // Send output fields to GLVis for visualisation
-//     if (visualization) {
-//       formulation->DisplayToGLVis();
-//     }
-
-//     // Save output fields at timestep to DataCollections
-//     for (auto const &[name, dc_] : data_collections) {
-//       formulation->WriteOutputFields(dc_, it);
-//     }
-//     postprocessors.Update(t);
-//   }
-// }
 
 } // namespace hephaestus
