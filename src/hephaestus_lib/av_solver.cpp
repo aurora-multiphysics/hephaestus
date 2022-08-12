@@ -285,7 +285,6 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
 
   curl->Mult(u_, b_);
   curl->AddMult(du_, b_, dt);
-  std::cout << "finished";
 }
 
 void AVSolver::buildA0(mfem::Coefficient *betaCoef,
