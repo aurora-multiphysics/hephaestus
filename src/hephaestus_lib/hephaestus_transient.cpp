@@ -28,6 +28,7 @@ void transient_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   formulation->SetTime(t);
   mfem::ODESolver *ode_solver = new mfem::BackwardEulerSolver;
   ode_solver->Init(*formulation);
+  std::cout << "\nInitialised solver" << std::endl;
 
   // Set up DataCollections to track fields of interest.
   std::map<std::string, mfem::DataCollection *> data_collections(
@@ -45,7 +46,7 @@ void transient_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
     formulation->InitializeGLVis();
     formulation->DisplayToGLVis();
   }
-
+  std::cout << "\nStarting timestep" << std::endl;
   // Begin time evolution
   bool last_step = false;
   for (int it = 1; !last_step; it++) {
