@@ -196,9 +196,9 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   if (src_gf) {
     src_gf->ProjectCoefficient(*sourceVecCoef);
     // Compute the discretely divergence-free portion of src_gf
-    divFreeProj->Mult(*src_gf, *div_free_src_gf);
+    // divFreeProj->Mult(*src_gf, *div_free_src_gf);
     // Compute the dual of div_free_src_gf
-    hCurlMass->AddMult(*div_free_src_gf, *b1);
+    hCurlMass->AddMult(*src_gf, *b1);
   }
 
   mfem::ParGridFunction J_gf(HCurlFESpace_);
@@ -326,8 +326,8 @@ void HCurlSolver::buildSource() {
   // int irOrder = H1FESpace_->GetElementTransformation(0)->OrderW() +
   //               2 * H1FESpace_->GetOrder();
   int irOrder = H1FESpace_->GetElementTransformation(0)->OrderW() + 2 * 2;
-  divFreeProj = new mfem::common::DivergenceFreeProjector(
-      *H1FESpace_, *HCurlFESpace_, irOrder, NULL, NULL, NULL);
+  // divFreeProj = new mfem::common::DivergenceFreeProjector(
+  //     *H1FESpace_, *HCurlFESpace_, irOrder, NULL, NULL, NULL);
   hCurlMass = new mfem::ParBilinearForm(HCurlFESpace_);
   hCurlMass->AddDomainIntegrator(new mfem::VectorFEMassIntegrator());
   hCurlMass->Assemble();
