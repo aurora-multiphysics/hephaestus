@@ -1,4 +1,7 @@
-#include "hephaestus_transient.hpp"
+#include "../common/pfem_extras.hpp"
+#include "executioner.hpp"
+#include "factory.hpp"
+#include "inputs.hpp"
 #include <gtest/gtest.h>
 
 extern const char *DATA_DIR;
@@ -8,7 +11,6 @@ protected:
   static double potential_high(const mfem::Vector &x, double t) {
     double wj_(2.0 * M_PI / 60.0);
     return cos(wj_ * t);
-    // return 0;
   }
   static double potential_ground(const mfem::Vector &x, double t) {
     return 0.0;
@@ -21,7 +23,7 @@ protected:
     b[2] = 2 * sin(wj_ * t);
   }
 
-  hephaestus::Inputs hform_rod_inputs() {
+  hephaestus::InputParameters test_params() {
     double sigma = 2.0 * M_PI * 10;
 
     double sigmaAir;
@@ -66,8 +68,13 @@ protected:
         std::string("magnetic_potential"), ground_terminal,
         new mfem::FunctionCoefficient(potential_ground));
 
-    hephaestus::Executioner executioner(std::string("transient"), 0.5, 0.0,
-                                        2.5);
+    hephaestus::InputParameters exec_params;
+    exec_params.SetParam("TimeStep", float(0.5));
+    exec_params.SetParam("StartTime", float(0.0));
+    exec_params.SetParam("EndTime", float(2.5));
+    hephaestus::TransientExecutioner *executioner =
+        new hephaestus::TransientExecutioner(exec_params);
+
     mfem::Mesh mesh(
         (std::string(DATA_DIR) + std::string("./cylinder-hex-q2.gen")).c_str(),
         1, 1);
@@ -78,14 +85,30 @@ protected:
     data_collections["ParaViewDataCollection"] =
         new mfem::ParaViewDataCollection("HFormParaView");
     hephaestus::Outputs outputs(data_collections);
-    hephaestus::Inputs inputs(mesh, std::string("HForm"), 2, bc_map,
-                              domain_properties, executioner, outputs);
-    return inputs;
+
+    hephaestus::Variables variables;
+    hephaestus::AuxKernels auxkernels;
+    hephaestus::Postprocessors postprocessors;
+
+    hephaestus::InputParameters params;
+    params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
+    params.SetParam("Executioner", executioner);
+    params.SetParam("Order", 2);
+    params.SetParam("BoundaryConditions", bc_map);
+    params.SetParam("DomainProperties", domain_properties);
+    params.SetParam("Variables", variables);
+    params.SetParam("AuxKernels", auxkernels);
+    params.SetParam("Postprocessors", postprocessors);
+    params.SetParam("Outputs", outputs);
+    params.SetParam("FormulationName", std::string("HForm"));
+
+    return params;
   }
 };
 
 TEST_F(TestHFormRod, CheckRun) {
-  hephaestus::Inputs inputs(hform_rod_inputs());
-  std::vector<char *> argv;
-  transient_solve(0, argv.data(), inputs);
+  hephaestus::InputParameters params(test_params());
+  hephaestus::TransientExecutioner *executioner(
+      params.GetParam<hephaestus::TransientExecutioner *>("Executioner"));
+  executioner->Solve(params);
 }
