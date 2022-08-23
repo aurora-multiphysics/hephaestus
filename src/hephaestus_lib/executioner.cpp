@@ -26,7 +26,6 @@ void TransientExecutioner::Solve(const hephaestus::InputParameters &params) {
   hephaestus::Outputs outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
   std::string formulation_name(params.GetParam<std::string>("FormulationName"));
 
-  //   mfem::ParMesh pmesh(MPI_COMM_WORLD, mesh);
   hephaestus::TransientFormulation *formulation =
       hephaestus::Factory::createTransientFormulation(
           formulation_name, pmesh, order, variables.gfs, bc_map,
