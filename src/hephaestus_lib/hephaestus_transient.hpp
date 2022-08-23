@@ -1,9 +1,7 @@
-// Solves a time-domain formulation->
-// TODO: Add to Executioners?
+// Header file for transient formulations.
 
 #pragma once
 #include "../common/pfem_extras.hpp"
+#include "executioner.hpp"
 #include "factory.hpp"
 #include "inputs.hpp"
-
-void transient_solve(int argc, char *argv[], hephaestus::Inputs inputs);
