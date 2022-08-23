@@ -1,9 +1,4 @@
-#include "auxkernels.hpp"
-#include "executioner.hpp"
-
 #include "hephaestus_transient.hpp"
-#include "postprocessors.hpp"
-
 #include <gtest/gtest.h>
 
 extern const char *DATA_DIR;

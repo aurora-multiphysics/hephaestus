@@ -1,7 +1,4 @@
-#include "../common/pfem_extras.hpp"
-#include "executioner.hpp"
-#include "factory.hpp"
-#include "inputs.hpp"
+#include "hephaestus_transient.hpp"
 #include <gtest/gtest.h>
 
 extern const char *DATA_DIR;
