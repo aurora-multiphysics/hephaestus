@@ -1,11 +1,5 @@
 // Based on an H form MMS test provided by Joseph Dean
-
-#include "auxkernels.hpp"
-#include "executioner.hpp"
-
 #include "hephaestus_transient.hpp"
-#include "postprocessors.hpp"
-
 #include <gtest/gtest.h>
 
 extern const char *DATA_DIR;
