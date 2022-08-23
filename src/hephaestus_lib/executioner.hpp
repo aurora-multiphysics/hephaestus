@@ -10,18 +10,24 @@
 namespace hephaestus {
 
 class TransientExecutioner {
-public:
-  TransientExecutioner() {}
-  TransientExecutioner(const hephaestus::InputParameters &params);
-  void Solve(const hephaestus::InputParameters &params);
+private:
+  mutable double dt;  // Time step
+  double t_initial;   // Start time
+  double t_final;     // End time
+  mutable double t;   // Current time
+  int vis_steps;      // Number of cyces between each output update
+  bool visualization; // Flag to control whether GLVis visualisation is required
+  mutable bool last_step; // Flag to check if current step is final
 
-  double dt;
-  double t_initial;
-  double t_final;
-  double t;
-  int vis_steps;
-  bool visualization;
-  bool last_step;
+public:
+  TransientExecutioner() = default;
+  explicit TransientExecutioner(const hephaestus::InputParameters &params);
+
+  // Solve transient FE problem.
+  void Solve(const hephaestus::InputParameters &params) const;
+
+  // Enable output to GLVis
+  void EnableVisualisation() { visualization = true; };
 };
 
 } // namespace hephaestus

@@ -7,9 +7,10 @@ TransientExecutioner::TransientExecutioner(
     : dt(params.GetParam<float>("TimeStep")),
       t_initial(params.GetParam<float>("StartTime")),
       t_final(params.GetParam<float>("EndTime")), t(t_initial), vis_steps(1),
-      visualization(true) {}
+      visualization(false), last_step(false) {}
 
-void TransientExecutioner::Solve(const hephaestus::InputParameters &params) {
+void TransientExecutioner::Solve(
+    const hephaestus::InputParameters &params) const {
   // Read in inputs, and initialise solver
   mfem::ParMesh pmesh(params.GetParam<mfem::ParMesh>("Mesh"));
   int order(params.GetParam<int>("Order"));
@@ -31,14 +32,8 @@ void TransientExecutioner::Solve(const hephaestus::InputParameters &params) {
           formulation_name, pmesh, order, variables.gfs, bc_map,
           domain_properties);
 
-  int myid;
-  MPI_Comm_rank(MPI_COMM_WORLD, &myid);
-
   mfem::BlockVector F(formulation->true_offsets); // Vector of dofs
   formulation->Init(F);                           // Set up initial conditions
-
-  int vis_steps = 1;
-  double t = t_initial; // current time
 
   formulation->SetTime(t);
   mfem::ODESolver *ode_solver = new mfem::BackwardEulerSolver;
@@ -60,13 +55,11 @@ void TransientExecutioner::Solve(const hephaestus::InputParameters &params) {
 
   // Initialize GLVis visualization and send the initial condition
   // by socket to a GLVis server.
-  bool visualization = true;
   if (visualization) {
     formulation->InitializeGLVis();
     formulation->DisplayToGLVis();
   }
   // Begin time evolution
-  bool last_step = false;
   for (int it = 1; !last_step; it++) {
     // Check if current time step is final
     if (t + dt >= t_final - dt / 2) {
