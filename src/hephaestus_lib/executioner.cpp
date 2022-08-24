@@ -60,6 +60,8 @@ void TransientExecutioner::Solve(
     formulation->DisplayToGLVis();
   }
   // Begin time evolution
+  t = t_initial;
+  last_step = false;
   for (int it = 1; !last_step; it++) {
     // Check if current time step is final
     if (t + dt >= t_final - dt / 2) {

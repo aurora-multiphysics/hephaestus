@@ -243,35 +243,19 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   hBlocks(1, 1) = A1;
   blockA = mfem::HypreParMatrixFromBlocks(hBlocks);
 
+#ifdef MFEM_USE_MUMPS
   mfem::MUMPSSolver mumps;
   mumps.SetPrintLevel(0);
   mumps.SetMatrixSymType(mfem::MUMPSSolver::MatType::UNSYMMETRIC);
   mumps.SetOperator(*blockA);
   mumps.Mult(trueRhs, trueX);
-
-  // We only need to create the solver and preconditioner once
-  // mfem::BlockOperator B(true_offsets, true_offsets);
-  // B.SetBlock(0, 0, A0);
-  // B.SetBlock(0, 1, A10);
-  // B.SetBlock(1, 0, A01);
-  // B.SetBlock(1, 1, A1);
-  // if (ams_a0 == NULL) {
-  //   ams_a0 = new mfem::HypreAMS(*A0, HCurlFESpace_);
-  //   ams_a0->SetSingularProblem();
-  // }
-  // if (amg_a0 == NULL) {
-  //   amg_a0 = new mfem::HypreBoomerAMG(*A1);
-  // }
-  // mfem::BlockDiagonalPreconditioner P(block_trueOffsets);
-  // P.SetDiagonalBlock(0, ams_a0);
-
-  // mfem::CGSolver pcg(MPI_COMM_WORLD);
-  // pcg.SetOperator(B);
-  // pcg.SetPreconditioner(P);
-  // pcg.SetRelTol(1e-4);
-  // pcg.SetMaxIter(1000);
-  // pcg.SetPrintLevel(1);
-  // pcg.Mult(trueRhs, trueX);
+#else
+  mfem::GMRESSolver gmres(HCurlFESpace_->GetComm());
+  gmres.SetOperator(*blockA);
+  gmres.SetAbsTol(1e-16);
+  gmres.SetMaxIter(10000);
+  gmres.Mult(trueRhs, trueX);
+#endif
 
   trueX.GetBlock(0).SyncAliasMemory(trueX);
   trueX.GetBlock(1).SyncAliasMemory(trueX);
