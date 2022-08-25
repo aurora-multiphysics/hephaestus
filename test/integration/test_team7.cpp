@@ -43,12 +43,12 @@ protected:
   }
   static void source_current(const mfem::Vector &xv, double t,
                              mfem::Vector &J) {
-    double x0(194e-3); // Coil centre x coordinate
-    double y0(100e-3); // Coil centre y coordinate
-    double a(50e-3);   // Coil thickness
-    double I0(2742);   // Coil current in Ampere-turns
-    double S(2.5e-3);  // Coil cross sectional area
-    double freq(50.0); // Frequency in Hz
+    double x0(194e-3);  // Coil centre x coordinate
+    double y0(100e-3);  // Coil centre y coordinate
+    double a(50e-3);    // Coil thickness
+    double I0(2742);    // Coil current in Ampere-turns
+    double S(2.5e-3);   // Coil cross sectional area
+    double freq(200.0); // Frequency in Hz
 
     double Jmag = (I0 / S) * sin(2 * M_PI * freq * t);
 
@@ -158,9 +158,9 @@ protected:
 
     std::map<std::string, mfem::DataCollection *> data_collections;
     data_collections["VisItDataCollection"] =
-        new mfem::VisItDataCollection("AVFormVisIt");
+        new mfem::VisItDataCollection("Team7VisIt");
     data_collections["ParaViewDataCollection"] =
-        new mfem::ParaViewDataCollection("AVFormParaView");
+        new mfem::ParaViewDataCollection("Team7ParaView");
     hephaestus::Outputs outputs(data_collections);
 
     hephaestus::InputParameters hcurlvarparams;
@@ -168,7 +168,7 @@ protected:
                             std::string("analytic_vector_potential"));
     hcurlvarparams.SetParam("FESpaceName", std::string("HCurl"));
     hcurlvarparams.SetParam("FESpaceType", std::string("Nedelec"));
-    hcurlvarparams.SetParam("order", 2);
+    hcurlvarparams.SetParam("order", 1);
     hcurlvarparams.SetParam("components", 3);
     hephaestus::Variables variables;
     variables.AddVariable(hcurlvarparams);
@@ -197,21 +197,23 @@ protected:
     hephaestus::InputParameters exec_params;
     exec_params.SetParam("TimeStep", float(0.001));
     exec_params.SetParam("StartTime", float(0.00));
-    exec_params.SetParam("EndTime", float(0.05));
+    exec_params.SetParam("EndTime", float(0.02));
+
+    // exec_params.SetParam("EndTime", float(0.05));
     hephaestus::TransientExecutioner *executioner =
         new hephaestus::TransientExecutioner(exec_params);
 
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("Executioner", executioner);
-    params.SetParam("Order", 1);
+    params.SetParam("Order", 2);
     params.SetParam("BoundaryConditions", bc_map);
     params.SetParam("DomainProperties", domain_properties);
     params.SetParam("Variables", variables);
     params.SetParam("AuxKernels", auxkernels);
     params.SetParam("Postprocessors", postprocessors);
     params.SetParam("Outputs", outputs);
-    params.SetParam("FormulationName", std::string("AVForm"));
+    params.SetParam("FormulationName", std::string("AForm"));
     std::cout << "Created params ";
     return params;
   }
