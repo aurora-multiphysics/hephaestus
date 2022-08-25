@@ -51,13 +51,16 @@ HCurlSolver::HCurlSolver(mfem::ParMesh &pmesh, int order,
           new mfem::common::H1_ParFESpace(&pmesh, order, pmesh.Dimension())),
       HCurlFESpace_(
           new mfem::common::ND_ParFESpace(&pmesh, order, pmesh.Dimension())),
+      HDivFESpace_(
+          new mfem::common::RT_ParFESpace(&pmesh, order, pmesh.Dimension())),
       a1(NULL), amg_a0(NULL), pcg_a0(NULL), ams_a1(NULL), pcg_a1(NULL),
       m1(NULL), grad(NULL), curl(NULL), curlCurl(NULL), sourceVecCoef(NULL),
       src_gf(NULL), div_free_src_gf(NULL), hCurlMass(NULL), divFreeProj(NULL),
       p_(mfem::ParGridFunction(H1FESpace_)),
       u_(mfem::ParGridFunction(HCurlFESpace_)),
       dp_(mfem::ParGridFunction(H1FESpace_)),
-      du_(mfem::ParGridFunction(HCurlFESpace_)) {
+      du_(mfem::ParGridFunction(HCurlFESpace_)),
+      curl_u_(mfem::ParGridFunction(HDivFESpace_)) {
   // Initialize MPI variables
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh.GetComm(), &myid_);
@@ -76,7 +79,7 @@ void HCurlSolver::Init(mfem::Vector &X) {
   SetVariableNames();
   _variables.Register(u_name, &u_, false);
   _variables.Register(p_name, &p_, false);
-
+  _variables.Register("magnetic_flux", &curl_u_, false);
   // Define material property coefficients
   dtCoef = mfem::ConstantCoefficient(1.0);
   oneCoef = mfem::ConstantCoefficient(1.0);
@@ -194,11 +197,59 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   grad->Mult(p_, du_);
   m1->AddMult(du_, *b1, 1.0);
   if (src_gf) {
-    src_gf->ProjectCoefficient(*sourceVecCoef);
+
+    /// get int rule (approach followed my MFEM Tesla Miniapp)
+    int irOrder = H1FESpace_->GetElementTransformation(0)->OrderW() + 2 * 2;
+    int geom = H1FESpace_->GetFE(0)->GetGeomType();
+    const mfem::IntegrationRule *ir = &mfem::IntRules.Get(geom, irOrder);
+
+    /// Create a H(curl) mass matrix for integrating grid functions
+    mfem::BilinearFormIntegrator *h_curl_mass_integ =
+        new mfem::VectorFEMassIntegrator;
+    h_curl_mass_integ->SetIntRule(ir);
+    mfem::ParBilinearForm h_curl_mass(HCurlFESpace_);
+    h_curl_mass.AddDomainIntegrator(h_curl_mass_integ);
+    // assemble mass matrix
+    h_curl_mass.Assemble();
+    h_curl_mass.Finalize();
+
+    mfem::ParLinearForm J(HCurlFESpace_);
+    J.AddDomainIntegrator(new mfem::VectorFEDomainLFIntegrator(*sourceVecCoef));
+    J.Assemble();
+
+    mfem::ParGridFunction j(HCurlFESpace_);
+    j.ProjectCoefficient(*sourceVecCoef);
+    {
+      mfem::HypreParMatrix M;
+      mfem::Vector X, RHS;
+      mfem::Array<int> ess_tdof_list;
+      h_curl_mass.FormLinearSystem(ess_tdof_list, j, J, M, X, RHS);
+
+      // if (rank == 0)
+      //   std::cout << "solving for J in H(curl)\n";
+
+      mfem::HypreBoomerAMG amg(M);
+      amg.SetPrintLevel(0);
+      mfem::HypreGMRES gmres(M);
+      gmres.SetTol(1e-12);
+      gmres.SetMaxIter(200);
+      gmres.SetPrintLevel(0);
+      gmres.SetPreconditioner(amg);
+      gmres.Mult(RHS, X);
+
+      h_curl_mass.RecoverFEMSolution(X, J, j);
+    }
+    h_curl_mass.Assemble();
+    h_curl_mass.Finalize();
+
+    *div_free_src_gf = 0.0;
+    divFreeProj->Mult(j, *div_free_src_gf);
+
+    // src_gf->ProjectCoefficient(*sourceVecCoef);
     // Compute the discretely divergence-free portion of src_gf
     // divFreeProj->Mult(*src_gf, *div_free_src_gf);
     // Compute the dual of div_free_src_gf
-    hCurlMass->AddMult(*src_gf, *b1);
+    h_curl_mass.AddMult(*div_free_src_gf, *b1);
   }
 
   mfem::ParGridFunction J_gf(HCurlFESpace_);
@@ -214,21 +265,30 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   a1->FormLinearSystem(ess_tdof_list, J_gf, *b1, *A1, *X1, *B1);
 
   // We only need to create the solver and preconditioner once
-  if (ams_a1 == NULL) {
-    ams_a1 = new mfem::HypreAMS(*A1, HCurlFESpace_);
-    ams_a1->SetSingularProblem();
-  }
-  if (pcg_a1 == NULL) {
-    pcg_a1 = new mfem::HyprePCG(*A1);
-    pcg_a1->SetTol(1.0e-16);
-    pcg_a1->SetMaxIter(1000);
-    pcg_a1->SetPrintLevel(0);
-    pcg_a1->SetPreconditioner(*ams_a1);
-  }
+  // if (ams_a1 == NULL) {
+  //   ams_a1 = new mfem::HypreAMS(*A1, HCurlFESpace_);
+  //   ams_a1->SetSingularProblem();
+  // }
+  // if (pcg_a1 == NULL) {
+  //   pcg_a1 = new mfem::HyprePCG(*A1);
+  //   pcg_a1->SetTol(1.0e-16);
+  //   pcg_a1->SetMaxIter(1000);
+  //   pcg_a1->SetPrintLevel(0);
+  //   pcg_a1->SetPreconditioner(*ams_a1);
+  // }
   // solve the system
-  pcg_a1->Mult(*B1, *X1);
+  // pcg_a1->Mult(*B1, *X1);
+
+  mfem::MUMPSSolver mumps;
+  mumps.SetPrintLevel(0);
+  mumps.SetMatrixSymType(mfem::MUMPSSolver::MatType::UNSYMMETRIC);
+  mumps.SetOperator(*A1);
+  mumps.Mult(*B1, *X1);
 
   a1->RecoverFEMSolution(*X1, *b1, du_);
+
+  curl->Mult(u_, curl_u_);
+  curl->AddMult(du_, curl_u_, dt);
 }
 
 void HCurlSolver::buildA1(mfem::Coefficient *Sigma,
@@ -284,6 +344,14 @@ void HCurlSolver::buildCurl(mfem::Coefficient *MuInv) {
   curlCurl->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*MuInv));
   curlCurl->Assemble();
 
+  // Discrete Curl operator
+  if (curl != NULL) {
+    delete curl;
+  }
+  curl = new mfem::ParDiscreteLinearOperator(HCurlFESpace_, HDivFESpace_);
+  curl->AddDomainInterpolator(new mfem::CurlInterpolator());
+  curl->Assemble();
+
   // no ParallelAssemble since this will be applied to GridFunctions
 }
 
@@ -326,8 +394,8 @@ void HCurlSolver::buildSource() {
   // int irOrder = H1FESpace_->GetElementTransformation(0)->OrderW() +
   //               2 * H1FESpace_->GetOrder();
   int irOrder = H1FESpace_->GetElementTransformation(0)->OrderW() + 2 * 2;
-  // divFreeProj = new mfem::common::DivergenceFreeProjector(
-  //     *H1FESpace_, *HCurlFESpace_, irOrder, NULL, NULL, NULL);
+  divFreeProj = new mfem::common::DivergenceFreeProjector(
+      *H1FESpace_, *HCurlFESpace_, irOrder, NULL, NULL, NULL);
   hCurlMass = new mfem::ParBilinearForm(HCurlFESpace_);
   hCurlMass->AddDomainIntegrator(new mfem::VectorFEMassIntegrator());
   hCurlMass->Assemble();
