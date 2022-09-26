@@ -163,7 +163,8 @@ TEST_F(TestAFormSource, CheckRun) {
 
     hephaestus::TransientExecutioner *executioner(
         params.GetParam<hephaestus::TransientExecutioner *>("Executioner"));
-    executioner->Solve(params);
+    executioner->Init(params);
+    executioner->Solve();
   }
 
   hephaestus::L2ErrorVectorPostprocessor l2errpostprocessor =

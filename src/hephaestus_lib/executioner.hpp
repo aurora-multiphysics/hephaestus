@@ -19,15 +19,32 @@ private:
   bool visualization; // Flag to control whether GLVis visualisation is required
   mutable bool last_step; // Flag to check if current step is final
 
+  mfem::ParMesh * pmesh;
+  hephaestus::BCMap * bc_map;
+  hephaestus::DomainProperties * domain_properties;
+  hephaestus::AuxKernels * auxkernels;
+  hephaestus::Postprocessors * postprocessors;
+  hephaestus::Outputs * outputs;
+  hephaestus::TransientFormulation * formulation;
+  mfem::ODESolver *ode_solver;
+  mfem::BlockVector *F;
+
 public:
   TransientExecutioner() = default;
   explicit TransientExecutioner(const hephaestus::InputParameters &params);
 
-  // Solve transient FE problem.
-  void Solve(const hephaestus::InputParameters &params) const;
+  void Init(const hephaestus::InputParameters &params);
+
+  // // Solve transient FE problem.
+  // void Solve(const hephaestus::InputParameters &params) const;
+
+  void Solve() const;
+
 
   // Enable output to GLVis
   void EnableVisualisation() { visualization = true; };
+  hephaestus::Variables * variables;
+
 };
 
 } // namespace hephaestus

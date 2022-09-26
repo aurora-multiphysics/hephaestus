@@ -109,5 +109,6 @@ TEST_F(TestHJFormRod, CheckRun) {
   hephaestus::InputParameters params(test_params());
   hephaestus::TransientExecutioner *executioner(
       params.GetParam<hephaestus::TransientExecutioner *>("Executioner"));
-  executioner->Solve(params);
+  executioner->Init(params);
+  executioner->Solve();
 }

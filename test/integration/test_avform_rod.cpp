@@ -109,5 +109,6 @@ TEST_F(TestAVFormRod, CheckRun) {
 
   hephaestus::TransientExecutioner *executioner(
       params.GetParam<hephaestus::TransientExecutioner *>("Executioner"));
-  executioner->Solve(params);
+  executioner->Init(params);
+  executioner->Solve();
 }
