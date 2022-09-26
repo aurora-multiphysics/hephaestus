@@ -36,7 +36,9 @@ Factory::createParFESpace(hephaestus::InputParameters params,
                           mfem::ParMesh &pmesh) {
   std::string FEType(params.GetParam<std::string>("FESpaceType"));
   int order(params.GetParam<int>("order"));
-  int components(params.GetParam<int>("components"));
+  int components(params.GetParam<int>(
+      "components")); // spatial dimension of mesh. Use
+                      // FiniteElementCollection::New instead
   if (FEType == "H1") {
     return new mfem::common::H1_ParFESpace(&pmesh, order, components);
   } else if (FEType == "Nedelec") {
