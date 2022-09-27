@@ -2,10 +2,11 @@
 
 namespace hephaestus {
 
-HJDualSolver::HJDualSolver(mfem::ParMesh &pmesh, int order,
-                           hephaestus::BCMap &bc_map,
-                           hephaestus::DomainProperties &domain_properties)
-    : DualSolver(pmesh, order, bc_map, domain_properties) {}
+HJDualSolver::HJDualSolver(
+    mfem::ParMesh &pmesh, int order,
+    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+    hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties)
+    : DualSolver(pmesh, order, variables, bc_map, domain_properties) {}
 
 void HJDualSolver::SetVariableNames() {
   p_name = "magnetic_potential";

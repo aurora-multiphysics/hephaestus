@@ -8,10 +8,10 @@ hephaestus::TransientFormulation *Factory::createTransientFormulation(
     hephaestus::BCMap &bc_map,
     hephaestus::DomainProperties &domain_properties) {
   if (formulation == "EBForm") {
-    return new hephaestus::EBDualSolver(pmesh, order, bc_map,
+    return new hephaestus::EBDualSolver(pmesh, order, variables, bc_map,
                                         domain_properties);
   } else if (formulation == "HJForm") {
-    return new hephaestus::HJDualSolver(pmesh, order, bc_map,
+    return new hephaestus::HJDualSolver(pmesh, order, variables, bc_map,
                                         domain_properties);
   } else if (formulation == "HForm") {
     return new hephaestus::HFormSolver(pmesh, order, variables, bc_map,
@@ -41,7 +41,7 @@ Factory::createParFESpace(hephaestus::InputParameters params,
                       // FiniteElementCollection::New instead
   if (FEType == "H1") {
     return new mfem::common::H1_ParFESpace(&pmesh, order, components);
-  } else if (FEType == "Nedelec") {
+  } else if (FEType == "ND") {
     return new mfem::common::ND_ParFESpace(&pmesh, order, components);
   } else {
     std::cout << "FESpaceType " << FEType << " not recognised. \n";

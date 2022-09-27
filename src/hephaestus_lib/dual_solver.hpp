@@ -11,7 +11,9 @@ class DualSolver : public TransientFormulation {
   virtual void SetVariableNames();
 
 public:
-  DualSolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
+  DualSolver(mfem::ParMesh &pmesh, int order,
+             mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+             hephaestus::BCMap &bc_map,
              hephaestus::DomainProperties &domain_properties);
 
   ~DualSolver(){};
@@ -54,9 +56,10 @@ public:
 protected:
   int myid_;
   int num_procs_;
+  mfem::ParMesh *pmesh_;
+  mfem::NamedFieldsMap<mfem::ParGridFunction> &_variables;
   hephaestus::BCMap _bc_map;
   hephaestus::DomainProperties _domain_properties;
-  mfem::ParMesh *pmesh_;
 
   mfem::ParBilinearForm *a0, *a1, *m1;
   mfem::HypreParMatrix *A0, *A1;
