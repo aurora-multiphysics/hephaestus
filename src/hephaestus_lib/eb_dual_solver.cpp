@@ -2,10 +2,11 @@
 
 namespace hephaestus {
 
-EBDualSolver::EBDualSolver(mfem::ParMesh &pmesh, int order,
-                           hephaestus::BCMap &bc_map,
-                           hephaestus::DomainProperties &domain_properties)
-    : DualSolver(pmesh, order, bc_map, domain_properties) {}
+EBDualSolver::EBDualSolver(
+    mfem::ParMesh &pmesh, int order,
+    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+    hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties)
+    : DualSolver(pmesh, order, variables, bc_map, domain_properties) {}
 
 void EBDualSolver::SetVariableNames() {
   p_name = "electric_potential";

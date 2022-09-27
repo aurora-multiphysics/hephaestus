@@ -45,10 +45,11 @@
 namespace hephaestus {
 
 DualSolver::DualSolver(mfem::ParMesh &pmesh, int order,
+                       mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
                        hephaestus::BCMap &bc_map,
                        hephaestus::DomainProperties &domain_properties)
-    : myid_(0), num_procs_(1), pmesh_(&pmesh), _bc_map(bc_map),
-      _domain_properties(domain_properties),
+    : myid_(0), num_procs_(1), pmesh_(&pmesh), _variables(variables),
+      _bc_map(bc_map), _domain_properties(domain_properties),
       H1FESpace_(
           new mfem::common::H1_ParFESpace(&pmesh, order, pmesh.Dimension())),
       HCurlFESpace_(
@@ -79,13 +80,16 @@ DualSolver::DualSolver(mfem::ParMesh &pmesh, int order,
 }
 
 void DualSolver::Init(mfem::Vector &X) {
+  SetVariableNames();
+  _variables.Register(u_name, &u_, false);
+  _variables.Register(v_name, &v_, false);
+  _variables.Register(p_name, &p_, false);
+
   // Define material property coefficients
   dtCoef = mfem::ConstantCoefficient(1.0);
   oneCoef = mfem::ConstantCoefficient(1.0);
   SetMaterialCoefficients(_domain_properties);
   dtAlphaCoef = new mfem::TransformedCoefficient(&dtCoef, alphaCoef, prodFunc);
-
-  SetVariableNames();
 
   // a0(p, p') = (β ∇ p, ∇ p')
   a0 = new mfem::ParBilinearForm(H1FESpace_);
@@ -328,9 +332,9 @@ void DualSolver::SetMaterialCoefficients(
 
 void DualSolver::RegisterOutputFields(mfem::DataCollection *dc_) {
   dc_->SetMesh(pmesh_);
-  dc_->RegisterField(u_name, &u_);
-  dc_->RegisterField(v_name, &v_);
-  dc_->RegisterField(p_name, &p_);
+  for (auto var = _variables.begin(); var != _variables.end(); ++var) {
+    dc_->RegisterField(var->first, var->second);
+  }
 }
 
 void DualSolver::WriteConsoleSummary(double t, int it) {
@@ -355,14 +359,10 @@ void DualSolver::InitializeGLVis() {
     std::cout << "Opening GLVis sockets." << std::endl;
   }
 
-  socks_[u_name] = new mfem::socketstream;
-  socks_[u_name]->precision(8);
-
-  socks_[v_name] = new mfem::socketstream;
-  socks_[v_name]->precision(8);
-
-  socks_[p_name] = new mfem::socketstream;
-  socks_[p_name]->precision(8);
+  for (auto var = _variables.begin(); var != _variables.end(); ++var) {
+    socks_[var->first] = new mfem::socketstream;
+    socks_[var->first]->precision(8);
+  }
 
   if (myid_ == 0) {
     std::cout << "GLVis sockets open." << std::endl;
@@ -377,17 +377,12 @@ void DualSolver::DisplayToGLVis() {
   int Ww = 350, Wh = 350;             // window size
   int offx = Ww + 10, offy = Wh + 45; // window offsets
 
-  mfem::common::VisualizeField(*socks_[u_name], vishost, visport, u_,
-                               u_display_name.c_str(), Wx, Wy, Ww, Wh);
-  Wx += offx;
-
-  mfem::common::VisualizeField(*socks_[v_name], vishost, visport, v_,
-                               v_display_name.c_str(), Wx, Wy, Ww, Wh);
-  Wx += offx;
-
-  mfem::common::VisualizeField(*socks_[p_name], vishost, visport, p_,
-                               p_display_name.c_str(), Wx, Wy, Ww, Wh);
-  Wx += offx;
+  for (auto var = _variables.begin(); var != _variables.end(); ++var) {
+    mfem::common::VisualizeField(*socks_[var->first], vishost, visport,
+                                 *(var->second), (var->first).c_str(), Wx, Wy,
+                                 Ww, Wh);
+    Wx += offx;
+  }
 }
 
 } // namespace hephaestus

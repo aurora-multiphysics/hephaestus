@@ -11,7 +11,9 @@ class EBDualSolver : public hephaestus::DualSolver {
   virtual void SetVariableNames() override;
 
 public:
-  EBDualSolver(mfem::ParMesh &pmesh, int order, hephaestus::BCMap &bc_map,
+  EBDualSolver(mfem::ParMesh &pmesh, int order,
+               mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+               hephaestus::BCMap &bc_map,
                hephaestus::DomainProperties &domain_properties);
 
   ~EBDualSolver(){};

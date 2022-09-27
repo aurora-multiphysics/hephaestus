@@ -13,7 +13,7 @@ TEST(VariablesTest, CheckSetup) {
 
   hcurlvarparams.SetParam("VariableName", std::string("vector_potential"));
   hcurlvarparams.SetParam("FESpaceName", std::string("HCurl"));
-  hcurlvarparams.SetParam("FESpaceType", std::string("Nedelec"));
+  hcurlvarparams.SetParam("FESpaceType", std::string("ND"));
   hcurlvarparams.SetParam("order", 2);
   hcurlvarparams.SetParam("components", 3);
 

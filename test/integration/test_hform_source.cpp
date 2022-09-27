@@ -96,7 +96,7 @@ protected:
     hcurlvarparams.SetParam("VariableName",
                             std::string("analytic_magnetic_field"));
     hcurlvarparams.SetParam("FESpaceName", std::string("HCurl"));
-    hcurlvarparams.SetParam("FESpaceType", std::string("Nedelec"));
+    hcurlvarparams.SetParam("FESpaceType", std::string("ND"));
     hcurlvarparams.SetParam("order", 2);
     hcurlvarparams.SetParam("components", 3);
     hephaestus::Variables variables;
