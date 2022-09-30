@@ -7,7 +7,7 @@ TransientExecutioner::TransientExecutioner(
     : t_step(params.GetParam<float>("TimeStep")),
       t_initial(params.GetParam<float>("StartTime")),
       t_final(params.GetParam<float>("EndTime")), t(t_initial), vis_steps(1),
-      visualization(true), last_step(false) {}
+      visualization(false), last_step(false) {}
 
 void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
   // Read in inputs, and initialise solver
@@ -60,10 +60,6 @@ void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
     formulation->InitializeGLVis();
     formulation->DisplayToGLVis();
   }
-
-  // Initialise time variables
-  t = t_initial;
-  last_step = false;
 }
 
 void TransientExecutioner::Step(double dt, int it) const {
@@ -100,6 +96,10 @@ void TransientExecutioner::Step(double dt, int it) const {
 }
 
 void TransientExecutioner::Solve() const {
+  // Initialise time variables
+  t = t_initial;
+  last_step = false;
+
   for (int it = 1; !last_step; it++) {
     Step(t_step, it);
   }
