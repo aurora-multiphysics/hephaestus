@@ -75,6 +75,7 @@ RUN cd /$WORKDIR && \
 RUN cd /$WORKDIR && \
     git clone https://github.com/mfem/mfem.git && \
     cd mfem && \
+    sed -i "s|list|# list|g" /$WORKDIR/mfem/config/cmake/modules/FindNetCDF.cmake && \
     mkdir build && \
     cd build && \
     cmake .. -DCMAKE_BUILD_TYPE=Debug -DMFEM_USE_MPI=YES -DMFEM_USE_METIS_5=YES -DMETIS_DIR=../../metis-5.1.0 \
