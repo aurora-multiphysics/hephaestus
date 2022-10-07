@@ -43,6 +43,10 @@ Factory::createParFESpace(hephaestus::InputParameters params,
     return new mfem::common::H1_ParFESpace(&pmesh, order, components);
   } else if (FEType == "ND") {
     return new mfem::common::ND_ParFESpace(&pmesh, order, components);
+  } else if (FEType == "RT") {
+    return new mfem::common::RT_ParFESpace(&pmesh, order, components);
+  } else if (FEType == "L2") {
+    return new mfem::common::L2_ParFESpace(&pmesh, order, components);
   } else {
     std::cout << "FESpaceType " << FEType << " not recognised. \n";
   }

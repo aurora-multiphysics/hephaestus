@@ -19,10 +19,11 @@ void Variables::Init(mfem::ParMesh &pmesh) {
     fespaces.Register(params.GetParam<std::string>("FESpaceName"), parfespace,
                       true);
 
-    mfem::ParGridFunction *gridfunc = new mfem::ParGridFunction(fespaces.Get(params.GetParam<std::string>("FESpaceName")));
+    mfem::ParGridFunction *gridfunc = new mfem::ParGridFunction(
+        fespaces.Get(params.GetParam<std::string>("FESpaceName")));
 
     std::string fespacetype = params.GetParam<std::string>("FESpaceType");
-    if (fespacetype == std::string("H1")) {
+    if (fespacetype == std::string("H1") || fespacetype == std::string("L2")) {
       gridfunc->ProjectCoefficient(Zero);
     } else {
       gridfunc->ProjectCoefficient(Zero_vec);
