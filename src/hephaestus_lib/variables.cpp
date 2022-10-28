@@ -17,7 +17,7 @@ void Variables::Init(mfem::ParMesh &pmesh) {
         hephaestus::Factory::createParFESpace(params, pmesh);
 
     fespaces.Register(params.GetParam<std::string>("FESpaceName"), parfespace,
-                      true);
+                      false);
 
     mfem::ParGridFunction *gridfunc = new mfem::ParGridFunction(
         fespaces.Get(params.GetParam<std::string>("FESpaceName")));
@@ -29,7 +29,7 @@ void Variables::Init(mfem::ParMesh &pmesh) {
       gridfunc->ProjectCoefficient(Zero_vec);
     }
 
-    gfs.Register(params.GetParam<std::string>("VariableName"), gridfunc, true);
+    gfs.Register(params.GetParam<std::string>("VariableName"), gridfunc, false);
   }
 }
 
