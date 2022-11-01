@@ -13,6 +13,8 @@ public:
 
   virtual void Init(mfem::Vector &X){};
 
+  virtual void RegisterVariables(){};
+
   virtual void RegisterOutputFields(mfem::DataCollection *dc_){};
 
   virtual void WriteOutputFields(mfem::DataCollection *dc_, int it = 0){};

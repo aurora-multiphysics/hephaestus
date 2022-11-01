@@ -8,7 +8,7 @@ EBDualSolver::EBDualSolver(
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties)
     : DualSolver(pmesh, order, variables, bc_map, domain_properties) {}
 
-void EBDualSolver::SetVariableNames() {
+void EBDualSolver::RegisterVariables() {
   p_name = "electric_potential";
   p_display_name = "Scalar Potential (V)";
 
@@ -17,6 +17,10 @@ void EBDualSolver::SetVariableNames() {
 
   v_name = "magnetic_flux_density";
   v_display_name = "Magnetic Flux Density (B)";
+
+  _variables.Register(u_name, &u_, false);
+  _variables.Register(v_name, &v_, false);
+  _variables.Register(p_name, &p_, false);
 }
 
 void EBDualSolver::SetMaterialCoefficients(

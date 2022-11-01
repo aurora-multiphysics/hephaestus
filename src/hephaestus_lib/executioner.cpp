@@ -34,6 +34,9 @@ void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
       formulation_name, *pmesh, order, variables->gfs, *bc_map,
       *domain_properties);
 
+  formulation->RegisterVariables();
+  postprocessors->Init(variables->gfs, *domain_properties);
+
   F = new mfem::BlockVector(formulation->true_offsets); // Vector of dofs
   formulation->Init(*F); // Set up initial conditions
 
@@ -43,7 +46,6 @@ void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
 
   variables->Init(*pmesh);
   auxkernels->Init(variables->gfs, *domain_properties);
-  postprocessors->Init(variables->gfs, *domain_properties);
 
   auxkernels->Solve(t);
 
