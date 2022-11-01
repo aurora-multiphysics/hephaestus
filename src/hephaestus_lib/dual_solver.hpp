@@ -8,7 +8,7 @@ namespace hephaestus {
 class DualSolver : public TransientFormulation {
   virtual void
   SetMaterialCoefficients(hephaestus::DomainProperties &domain_properties);
-  virtual void SetVariableNames();
+  virtual void RegisterVariables();
 
 public:
   DualSolver(mfem::ParMesh &pmesh, int order,

@@ -3,6 +3,8 @@
 #include "mfem.hpp"
 #include "variables.hpp"
 
+// Specify kernels to modify and solve auxiliary variables using one or more
+// DomainProperties.
 namespace hephaestus {
 
 class AuxKernel {

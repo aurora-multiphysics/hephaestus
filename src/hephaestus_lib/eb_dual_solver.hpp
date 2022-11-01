@@ -8,7 +8,7 @@ namespace hephaestus {
 class EBDualSolver : public hephaestus::DualSolver {
   virtual void SetMaterialCoefficients(
       hephaestus::DomainProperties &domain_properties) override;
-  virtual void SetVariableNames() override;
+  virtual void RegisterVariables() override;
 
 public:
   EBDualSolver(mfem::ParMesh &pmesh, int order,

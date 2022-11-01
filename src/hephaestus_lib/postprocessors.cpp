@@ -41,6 +41,43 @@ void Postprocessors::Update(double t) {
     postprocessor->Update(t);
   }
 }
+// Constructor:
+//  - name one or more variable names used in coef eval.
+//  - provide name of coef
+// Init: pass variables and domain properties, and assign ptrs.
+//   - Create coef if not present.
+// Eval: return coeff value at point
+
+// Inherit from mfem::Coefficient or PostProcessor?
+// Logic:
+// Just need a PostProcessor that names coupled variable in constructor,
+// adds its coef to domainproperties at init,
+// and updates at update
+//
+// input: coupled var name, coef name, function
+
+CoupledCoefficient::CoupledCoefficient(
+    const hephaestus::InputParameters &params)
+    : Postprocessor(params),
+      coupled_var_name(params.GetParam<std::string>("CoupledVariableName")) {}
+
+void CoupledCoefficient::Init(
+    const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+    hephaestus::DomainProperties &domain_properties) {
+  if (variables.Has(coupled_var_name)) {
+    gf = variables.Get(coupled_var_name);
+  } else {
+    const std::string error_message = coupled_var_name +
+                                      " not found in variables when "
+                                      "creating CoupledCoefficient\n";
+    mfem::mfem_error(error_message.c_str());
+  }
+}
+
+double CoupledCoefficient::Eval(mfem::ElementTransformation &T,
+                                const mfem::IntegrationPoint &ip) {
+  return gf->GetValue(T, ip);
+}
 
 L2ErrorVectorPostprocessor::L2ErrorVectorPostprocessor(
     const hephaestus::InputParameters &params)
