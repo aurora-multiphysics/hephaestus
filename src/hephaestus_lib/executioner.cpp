@@ -35,7 +35,8 @@ void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
       *domain_properties);
 
   formulation->RegisterVariables();
-  postprocessors->Init(variables->gfs, *domain_properties);
+  variables->Init(*pmesh);
+  auxkernels->Init(variables->gfs, *domain_properties);
 
   F = new mfem::BlockVector(formulation->true_offsets); // Vector of dofs
   formulation->Init(*F); // Set up initial conditions
@@ -44,9 +45,7 @@ void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
   ode_solver = new mfem::BackwardEulerSolver;
   ode_solver->Init(*formulation);
 
-  variables->Init(*pmesh);
-  auxkernels->Init(variables->gfs, *domain_properties);
-
+  postprocessors->Init(variables->gfs, *domain_properties);
   auxkernels->Solve(t);
 
   // Set up DataCollections to track fields of interest.

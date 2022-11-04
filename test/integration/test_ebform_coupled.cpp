@@ -38,7 +38,7 @@ protected:
     sigmaAir = 1.0e-6 * sigma;
 
     // materialCopper instances and get property coefs? init can be for all...
-    // CoupledCoefficients must also be added to Postprocessors
+    // CoupledCoefficients must also be added to Auxkernels
     hephaestus::InputParameters copper_conductivity_params;
     copper_conductivity_params.SetParam("CoupledVariableName",
                                         std::string("electric_potential"));
@@ -46,8 +46,8 @@ protected:
     hephaestus::CoupledCoefficient *wireConductivity =
         new CopperConductivityCoefficient(copper_conductivity_params);
 
-    hephaestus::Postprocessors postprocessors;
-    postprocessors.Register("CoupledCoefficient", wireConductivity, false);
+    hephaestus::AuxKernels auxkernels;
+    auxkernels.Register("CoupledCoefficient", wireConductivity, false);
 
     hephaestus::Subdomain wire("wire", 1);
     wire.property_map["electrical_conductivity"] = wireConductivity;
@@ -107,7 +107,7 @@ protected:
     hephaestus::Outputs outputs(data_collections);
 
     hephaestus::Variables variables;
-    hephaestus::AuxKernels auxkernels;
+    hephaestus::Postprocessors postprocessors;
 
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
