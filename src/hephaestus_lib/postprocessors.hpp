@@ -62,28 +62,6 @@ public:
   void Update(double t = 0.0);
 };
 
-// Class to allow creation of coefficients that are coupled to gridfunctions.
-class CoupledCoefficient : public mfem::Coefficient, public Postprocessor {
-protected:
-  // pointer to coupled variable (could just be to vars?)
-  mfem::ParGridFunction *gf;
-  double scalar_val;
-
-public:
-  CoupledCoefficient(const hephaestus::InputParameters &params);
-
-  virtual void
-  Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-       hephaestus::DomainProperties &domain_properties) override;
-
-  virtual double Eval(mfem::ElementTransformation &T,
-                      const mfem::IntegrationPoint &ip) override;
-
-  virtual ~CoupledCoefficient() {}
-
-  std::string coupled_var_name; // name of the variable
-};
-
 // Class to calculate and store the L2 error
 // of a grid function with respect to a (Vector)Coefficient
 class L2ErrorVectorPostprocessor : public Postprocessor {
