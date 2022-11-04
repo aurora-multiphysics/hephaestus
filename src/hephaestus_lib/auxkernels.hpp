@@ -27,6 +27,22 @@ public:
   void Solve(double t = 0.0);
 };
 
+class CoefficientAuxKernel : public AuxKernel {
+public:
+  CoefficientAuxKernel(const hephaestus::InputParameters &params);
+
+  void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+            hephaestus::DomainProperties &domain_properties) override;
+
+  void Solve(double t = 0.0) override;
+
+  std::string var_name;  // name of the variable
+  std::string coef_name; // name of the coefficient
+
+  mfem::ParGridFunction *gf;
+  mfem::Coefficient *coeff;
+};
+
 class VectorCoefficientAuxKernel : public AuxKernel {
 public:
   VectorCoefficientAuxKernel(const hephaestus::InputParameters &params);
@@ -44,6 +60,7 @@ public:
 };
 
 // Class to allow creation of coefficients that are coupled to gridfunctions.
+// Should be separate to Auxkernels? Most similar to MOOSE materials...
 class CoupledCoefficient : public mfem::Coefficient, public AuxKernel {
 protected:
   // pointer to coupled variable (could just be to vars?)

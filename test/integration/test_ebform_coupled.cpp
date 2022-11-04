@@ -13,6 +13,32 @@ public:
   }
 };
 
+class JouleHeatingCoefficient : public hephaestus::CoupledCoefficient {
+private:
+  mfem::Coefficient *sigma;
+  std::string conductivity_coef_name;
+
+public:
+  JouleHeatingCoefficient(const hephaestus::InputParameters &params)
+      : hephaestus::CoupledCoefficient(params),
+        conductivity_coef_name(
+            params.GetParam<std::string>("ConductivityCoefName")){};
+
+  void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+            hephaestus::DomainProperties &domain_properties) {
+    hephaestus::CoupledCoefficient::Init(variables, domain_properties);
+    sigma = domain_properties.scalar_property_map[conductivity_coef_name];
+  }
+  virtual double Eval(mfem::ElementTransformation &T,
+                      const mfem::IntegrationPoint &ip) {
+    mfem::Vector E;
+    double thisSigma;
+    gf->GetVectorValue(T, ip, E);
+    thisSigma = sigma->Eval(T, ip);
+    return thisSigma * (E * E);
+  }
+};
+
 class TestEBFormCoupled : public testing::Test {
 protected:
   static double potential_high(const mfem::Vector &x, double t) {
@@ -42,12 +68,8 @@ protected:
     hephaestus::InputParameters copper_conductivity_params;
     copper_conductivity_params.SetParam("CoupledVariableName",
                                         std::string("electric_potential"));
-
     hephaestus::CoupledCoefficient *wireConductivity =
         new CopperConductivityCoefficient(copper_conductivity_params);
-
-    hephaestus::AuxKernels auxkernels;
-    auxkernels.Register("CoupledCoefficient", wireConductivity, false);
 
     hephaestus::Subdomain wire("wire", 1);
     wire.property_map["electrical_conductivity"] = wireConductivity;
@@ -62,6 +84,19 @@ protected:
     domain_properties.scalar_property_map["electrical_conductivity"] =
         new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
             std::string("electrical_conductivity")));
+
+    hephaestus::InputParameters joule_heating_params;
+    joule_heating_params.SetParam("CoupledVariableName",
+                                  std::string("electric_field"));
+    joule_heating_params.SetParam("ConductivityCoefName",
+                                  std::string("electrical_conductivity"));
+    JouleHeatingCoefficient *jouleHeating =
+        new JouleHeatingCoefficient(joule_heating_params);
+    domain_properties.scalar_property_map["JouleHeating"] = jouleHeating;
+
+    hephaestus::AuxKernels auxkernels;
+    auxkernels.Register("CoupledCoefficient", wireConductivity, false);
+    auxkernels.Register("JouleHeating", jouleHeating, false);
 
     hephaestus::BCMap bc_map;
     mfem::VectorFunctionCoefficient *edotVecCoef =
@@ -107,6 +142,24 @@ protected:
     hephaestus::Outputs outputs(data_collections);
 
     hephaestus::Variables variables;
+    hephaestus::InputParameters jouleheatingvarparams;
+    jouleheatingvarparams.SetParam("VariableName",
+                                   std::string("joule_heating_load"));
+    jouleheatingvarparams.SetParam("FESpaceName", std::string("L2"));
+    jouleheatingvarparams.SetParam("FESpaceType", std::string("L2"));
+    jouleheatingvarparams.SetParam("order", 1);
+    jouleheatingvarparams.SetParam("components", 3);
+    variables.AddVariable(jouleheatingvarparams);
+
+    hephaestus::InputParameters jouleheatingauxparams;
+    jouleheatingauxparams.SetParam("VariableName",
+                                   std::string("joule_heating_load"));
+    jouleheatingauxparams.SetParam("CoefficientName",
+                                   std::string("JouleHeating"));
+    auxkernels.Register(
+        "CoefficientAuxKernel",
+        new hephaestus::CoefficientAuxKernel(jouleheatingauxparams), true);
+
     hephaestus::Postprocessors postprocessors;
 
     hephaestus::InputParameters params;
