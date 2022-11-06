@@ -63,11 +63,29 @@ protected:
 
     sigmaAir = 1.0e-6 * sigma;
 
+    hephaestus::Variables variables;
+    hephaestus::InputParameters jouleheatingvarparams;
+    jouleheatingvarparams.SetParam("VariableName",
+                                   std::string("joule_heating_load"));
+    jouleheatingvarparams.SetParam("FESpaceName", std::string("L2"));
+    jouleheatingvarparams.SetParam("FESpaceType", std::string("L2"));
+    jouleheatingvarparams.SetParam("order", 1);
+    jouleheatingvarparams.SetParam("components", 3);
+    variables.AddVariable(jouleheatingvarparams);
+
+    hephaestus::InputParameters temperaturevarparams;
+    temperaturevarparams.SetParam("VariableName", std::string("temperature"));
+    temperaturevarparams.SetParam("FESpaceName", std::string("H1"));
+    temperaturevarparams.SetParam("FESpaceType", std::string("H1"));
+    temperaturevarparams.SetParam("order", 1);
+    temperaturevarparams.SetParam("components", 3);
+    variables.AddVariable(temperaturevarparams);
+
     // materialCopper instances and get property coefs? init can be for all...
     // CoupledCoefficients must also be added to Auxkernels
     hephaestus::InputParameters copper_conductivity_params;
     copper_conductivity_params.SetParam("CoupledVariableName",
-                                        std::string("electric_potential"));
+                                        std::string("temperature"));
     hephaestus::CoupledCoefficient *wireConductivity =
         new CopperConductivityCoefficient(copper_conductivity_params);
 
@@ -140,16 +158,6 @@ protected:
     data_collections["ParaViewDataCollection"] =
         new mfem::ParaViewDataCollection("EBFormParaView");
     hephaestus::Outputs outputs(data_collections);
-
-    hephaestus::Variables variables;
-    hephaestus::InputParameters jouleheatingvarparams;
-    jouleheatingvarparams.SetParam("VariableName",
-                                   std::string("joule_heating_load"));
-    jouleheatingvarparams.SetParam("FESpaceName", std::string("L2"));
-    jouleheatingvarparams.SetParam("FESpaceType", std::string("L2"));
-    jouleheatingvarparams.SetParam("order", 1);
-    jouleheatingvarparams.SetParam("components", 3);
-    variables.AddVariable(jouleheatingvarparams);
 
     hephaestus::InputParameters jouleheatingauxparams;
     jouleheatingauxparams.SetParam("VariableName",
