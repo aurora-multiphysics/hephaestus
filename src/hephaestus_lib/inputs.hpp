@@ -29,6 +29,7 @@ protected:
 
 public:
   InputParameters(){};
+  InputParameters(std::map<std::string, std::any> _params) : params(_params){};
   void SetParam(std::string param_name, std::any value) {
     params[param_name] = value;
   };
