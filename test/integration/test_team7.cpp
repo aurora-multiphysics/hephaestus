@@ -167,7 +167,7 @@ protected:
     hcurlvarparams.SetParam("VariableName",
                             std::string("analytic_vector_potential"));
     hcurlvarparams.SetParam("FESpaceName", std::string("HCurl"));
-    hcurlvarparams.SetParam("FESpaceType", std::string("Nedelec"));
+    hcurlvarparams.SetParam("FESpaceType", std::string("ND"));
     hcurlvarparams.SetParam("order", 1);
     hcurlvarparams.SetParam("components", 3);
     hephaestus::Variables variables;
@@ -197,7 +197,8 @@ protected:
     hephaestus::InputParameters exec_params;
     exec_params.SetParam("TimeStep", float(0.001));
     exec_params.SetParam("StartTime", float(0.00));
-    exec_params.SetParam("EndTime", float(0.02));
+    exec_params.SetParam("EndTime", float(0.002));
+    // exec_params.SetParam("EndTime", float(0.02));
 
     // exec_params.SetParam("EndTime", float(0.05));
     hephaestus::TransientExecutioner *executioner =
@@ -225,7 +226,8 @@ TEST_F(TestTeam7, CheckRun) {
   hephaestus::TransientExecutioner *executioner(
       params.GetParam<hephaestus::TransientExecutioner *>("Executioner"));
   std::cout << "Created exec ";
-  executioner->Solve(params);
+  executioner->Init(params);
+  executioner->Solve();
 
   //   hephaestus::L2ErrorVectorPostprocessor l2errpostprocessor =
   //       *(dynamic_cast<hephaestus::L2ErrorVectorPostprocessor *>(

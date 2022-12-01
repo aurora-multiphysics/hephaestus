@@ -265,25 +265,25 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   a1->FormLinearSystem(ess_tdof_list, J_gf, *b1, *A1, *X1, *B1);
 
   // We only need to create the solver and preconditioner once
-  // if (ams_a1 == NULL) {
-  //   ams_a1 = new mfem::HypreAMS(*A1, HCurlFESpace_);
-  //   ams_a1->SetSingularProblem();
-  // }
-  // if (pcg_a1 == NULL) {
-  //   pcg_a1 = new mfem::HyprePCG(*A1);
-  //   pcg_a1->SetTol(1.0e-16);
-  //   pcg_a1->SetMaxIter(1000);
-  //   pcg_a1->SetPrintLevel(0);
-  //   pcg_a1->SetPreconditioner(*ams_a1);
-  // }
+  if (ams_a1 == NULL) {
+    ams_a1 = new mfem::HypreAMS(*A1, HCurlFESpace_);
+    ams_a1->SetSingularProblem();
+  }
+  if (pcg_a1 == NULL) {
+    pcg_a1 = new mfem::HyprePCG(*A1);
+    pcg_a1->SetTol(1.0e-16);
+    pcg_a1->SetMaxIter(1000);
+    pcg_a1->SetPrintLevel(0);
+    pcg_a1->SetPreconditioner(*ams_a1);
+  }
   // solve the system
-  // pcg_a1->Mult(*B1, *X1);
+  pcg_a1->Mult(*B1, *X1);
 
-  mfem::MUMPSSolver mumps;
-  mumps.SetPrintLevel(0);
-  mumps.SetMatrixSymType(mfem::MUMPSSolver::MatType::UNSYMMETRIC);
-  mumps.SetOperator(*A1);
-  mumps.Mult(*B1, *X1);
+  // mfem::MUMPSSolver mumps;
+  // mumps.SetPrintLevel(0);
+  // mumps.SetMatrixSymType(mfem::MUMPSSolver::MatType::UNSYMMETRIC);
+  // mumps.SetOperator(*A1);
+  // mumps.Mult(*B1, *X1);
 
   a1->RecoverFEMSolution(*X1, *b1, du_);
 
