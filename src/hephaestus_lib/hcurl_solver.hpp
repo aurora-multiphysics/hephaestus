@@ -14,6 +14,7 @@ class HCurlSolver : public TransientFormulation {
 
 public:
   HCurlSolver(mfem::ParMesh &pmesh, int order,
+              mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
               mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
               hephaestus::BCMap &bc_map,
               hephaestus::DomainProperties &domain_properties);
@@ -57,6 +58,7 @@ protected:
   int myid_;
   int num_procs_;
   mfem::ParMesh *pmesh_;
+  mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &_fespaces;
   mfem::NamedFieldsMap<mfem::ParGridFunction> &_variables;
   hephaestus::BCMap _bc_map;
   hephaestus::DomainProperties _domain_properties;

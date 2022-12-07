@@ -31,8 +31,8 @@ void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
   std::string formulation_name(params.GetParam<std::string>("FormulationName"));
 
   formulation = hephaestus::Factory::createTransientFormulation(
-      formulation_name, *pmesh, order, variables->gfs, *bc_map,
-      *domain_properties);
+      formulation_name, *pmesh, order, variables->fespaces, variables->gfs,
+      *bc_map, *domain_properties);
 
   formulation->RegisterVariables();
   variables->Init(*pmesh);

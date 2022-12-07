@@ -41,12 +41,14 @@
 
 namespace hephaestus {
 
-HCurlSolver::HCurlSolver(mfem::ParMesh &pmesh, int order,
-                         mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-                         hephaestus::BCMap &bc_map,
-                         hephaestus::DomainProperties &domain_properties)
-    : myid_(0), num_procs_(1), pmesh_(&pmesh), _variables(variables),
-      _bc_map(bc_map), _domain_properties(domain_properties),
+HCurlSolver::HCurlSolver(
+    mfem::ParMesh &pmesh, int order,
+    mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+    hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties)
+    : myid_(0), num_procs_(1), pmesh_(&pmesh), _fespaces(fespaces),
+      _variables(variables), _bc_map(bc_map),
+      _domain_properties(domain_properties),
       H1FESpace_(
           new mfem::common::H1_ParFESpace(&pmesh, order, pmesh.Dimension())),
       HCurlFESpace_(
@@ -80,6 +82,11 @@ void HCurlSolver::Init(mfem::Vector &X) {
   _variables.Register(u_name, &u_, false);
   _variables.Register(p_name, &p_, false);
   _variables.Register("magnetic_flux", &curl_u_, false);
+
+  _fespaces.Register("_H1FESpace", H1FESpace_, false);
+  _fespaces.Register("_HCurlFESpace", HCurlFESpace_, false);
+  _fespaces.Register("_HDivFESpace", HDivFESpace_, false);
+
   // Define material property coefficients
   dtCoef = mfem::ConstantCoefficient(1.0);
   oneCoef = mfem::ConstantCoefficient(1.0);
