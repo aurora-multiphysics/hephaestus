@@ -4,11 +4,13 @@ namespace hephaestus {
 
 EBDualSolver::EBDualSolver(
     mfem::ParMesh &pmesh, int order,
+    mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties)
-    : DualSolver(pmesh, order, variables, bc_map, domain_properties) {}
+    : DualSolver(pmesh, order, fespaces, variables, bc_map, domain_properties) {
+}
 
-void EBDualSolver::RegisterVariables() {
+void EBDualSolver::SetVariableNames() {
   p_name = "electric_potential";
   p_display_name = "Scalar Potential (V)";
 
@@ -17,10 +19,6 @@ void EBDualSolver::RegisterVariables() {
 
   v_name = "magnetic_flux_density";
   v_display_name = "Magnetic Flux Density (B)";
-
-  _variables.Register(u_name, &u_, false);
-  _variables.Register(v_name, &v_, false);
-  _variables.Register(p_name, &p_, false);
 }
 
 void EBDualSolver::SetMaterialCoefficients(
