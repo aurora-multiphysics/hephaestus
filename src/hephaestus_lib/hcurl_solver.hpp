@@ -2,6 +2,7 @@
 #include "../common/pfem_extras.hpp"
 #include "formulation.hpp"
 #include "inputs.hpp"
+#include "sources.hpp"
 
 namespace hephaestus {
 
@@ -85,6 +86,7 @@ protected:
   mfem::Coefficient *dtAlphaCoef;
   mfem::Coefficient *betaCoef;
 
+  hephaestus::Source *source;
   mfem::VectorCoefficient *sourceVecCoef;
   mfem::ParGridFunction *src_gf, *div_free_src_gf; // Source field
   mfem::ParBilinearForm *hCurlMass;
