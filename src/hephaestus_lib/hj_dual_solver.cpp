@@ -6,9 +6,10 @@ HJDualSolver::HJDualSolver(
     mfem::ParMesh &pmesh, int order,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties)
-    : DualSolver(pmesh, order, fespaces, variables, bc_map, domain_properties) {
-}
+    hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
+    hephaestus::Sources &sources)
+    : DualSolver(pmesh, order, fespaces, variables, bc_map, domain_properties,
+                 sources) {}
 
 void HJDualSolver::SetVariableNames() {
   p_name = "magnetic_potential";

@@ -1,6 +1,7 @@
 #pragma once
 #include "../common/pfem_extras.hpp"
 #include "inputs.hpp"
+#include "sources.hpp"
 
 namespace hephaestus {
 // Specifies output interfaces of a time-domain EM formulation.

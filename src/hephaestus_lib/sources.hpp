@@ -15,6 +15,14 @@ public:
   virtual void ApplySource(mfem::LinearForm *lf){};
 };
 
+class Sources : public mfem::NamedFieldsMap<hephaestus::Source> {
+public:
+  void Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+            const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+            hephaestus::DomainProperties &domain_properties);
+  void ApplySources(mfem::LinearForm *lf);
+};
+
 class DivFreeVolumetricSource : public hephaestus::Source {
 public:
   DivFreeVolumetricSource(const hephaestus::InputParameters &params);

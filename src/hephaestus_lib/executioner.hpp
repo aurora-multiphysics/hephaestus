@@ -2,6 +2,7 @@
 #include "auxkernels.hpp"
 #include "inputs.hpp"
 #include "postprocessors.hpp"
+#include "sources.hpp"
 #include "variables.hpp"
 #include <fstream>
 #include <iostream>
@@ -24,6 +25,7 @@ private:
   hephaestus::DomainProperties *domain_properties;
   hephaestus::AuxKernels *auxkernels;
   hephaestus::Postprocessors *postprocessors;
+  hephaestus::Sources *sources;
   hephaestus::Outputs *outputs;
   std::map<std::string, mfem::DataCollection *> *data_collections;
   hephaestus::TransientFormulation *formulation;
