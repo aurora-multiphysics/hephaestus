@@ -45,7 +45,8 @@ AVSolver::AVSolver(mfem::ParMesh &pmesh, int order,
                    mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
                    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
                    hephaestus::BCMap &bc_map,
-                   hephaestus::DomainProperties &domain_properties)
+                   hephaestus::DomainProperties &domain_properties,
+                   hephaestus::Sources &sources)
     : myid_(0), num_procs_(1), order_(order), pmesh_(&pmesh),
       _fespaces(fespaces), _variables(variables), _bc_map(bc_map),
       _domain_properties(domain_properties),

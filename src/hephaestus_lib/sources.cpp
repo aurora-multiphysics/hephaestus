@@ -2,6 +2,19 @@
 
 namespace hephaestus {
 
+void Sources::Init(
+    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+    const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+    hephaestus::DomainProperties &domain_properties) {
+  for (const auto &[name, source] : GetMap()) {
+    source->Init(variables, fespaces, domain_properties);
+  }
+}
+void ApplySources(mfem::LinearForm *lf) {
+  for (const auto &[name, source] : GetMap()) {
+    source->ApplySource(lf);
+  }
+}
 DivFreeVolumetricSource::DivFreeVolumetricSource(
     const hephaestus::InputParameters &params)
     : src_coef_name(params.GetParam<std::string>("SourceName")),

@@ -6,9 +6,10 @@ EFormSolver::EFormSolver(
     mfem::ParMesh &pmesh, int order,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties)
-    : HCurlSolver(pmesh, order, fespaces, variables, bc_map,
-                  domain_properties) {}
+    hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
+    hephaestus::Sources &sources)
+    : HCurlSolver(pmesh, order, fespaces, variables, bc_map, domain_properties,
+                  sources) {}
 
 void EFormSolver::SetVariableNames() {
   p_name = "electric_potential";

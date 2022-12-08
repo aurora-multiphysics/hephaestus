@@ -45,9 +45,10 @@ HCurlSolver::HCurlSolver(
     mfem::ParMesh &pmesh, int order,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties)
+    hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
+    hephaestus::Sources &sources)
     : myid_(0), num_procs_(1), pmesh_(&pmesh), _fespaces(fespaces),
-      _variables(variables), _bc_map(bc_map),
+      _variables(variables), _bc_map(bc_map), _sources(sources),
       _domain_properties(domain_properties),
       H1FESpace_(
           new mfem::common::H1_ParFESpace(&pmesh, order, pmesh.Dimension())),
@@ -93,14 +94,17 @@ void HCurlSolver::Init(mfem::Vector &X) {
   SetMaterialCoefficients(_domain_properties);
   dtAlphaCoef = new mfem::TransformedCoefficient(&dtCoef, alphaCoef, prodFunc);
 
-  hephaestus::InputParameters div_free_source_params;
-  div_free_source_params.SetParam("SourceName", std::string("source"));
-  div_free_source_params.SetParam("HCurlFESpaceName",
-                                  std::string("_HCurlFESpace"));
-  div_free_source_params.SetParam("H1FESpaceName", std::string("_H1FESpace"));
+  // hephaestus::InputParameters div_free_source_params;
+  // div_free_source_params.SetParam("SourceName", std::string("source"));
+  // div_free_source_params.SetParam("HCurlFESpaceName",
+  //                                 std::string("_HCurlFESpace"));
+  // div_free_source_params.SetParam("H1FESpaceName",
+  // std::string("_H1FESpace"));
 
-  source = new hephaestus::DivFreeVolumetricSource(div_free_source_params);
-  source->Init(_variables, _fespaces, _domain_properties);
+  // source = new hephaestus::DivFreeVolumetricSource(div_free_source_params);
+  // source->Init(_variables, _fespaces, _domain_properties);
+
+  _sources->Init(_variables, _fespaces, _domain_properties);
 
   // a0(p, p') = (β ∇ p, ∇ p')
   a0 = new mfem::ParBilinearForm(H1FESpace_);
@@ -208,7 +212,8 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   grad->Mult(p_, du_);
   m1->AddMult(du_, *b1, 1.0);
 
-  source->ApplySource(b1);
+  // source->ApplySource(b1);
+  _sources->ApplySources(b1);
 
   mfem::ParGridFunction J_gf(HCurlFESpace_);
   mfem::Array<int> ess_tdof_list;

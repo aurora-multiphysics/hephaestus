@@ -23,6 +23,8 @@ void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
       params.GetParam<hephaestus::AuxKernels>("AuxKernels"));
   postprocessors = new hephaestus::Postprocessors(
       params.GetParam<hephaestus::Postprocessors>("Postprocessors"));
+  sources =
+      new hephaestus::Sources(params.GetParam<hephaestus::Sources>("Sources"));
   outputs =
       new hephaestus::Outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
   data_collections = new std::map<std::string, mfem::DataCollection *>(
@@ -32,7 +34,7 @@ void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
 
   formulation = hephaestus::Factory::createTransientFormulation(
       formulation_name, *pmesh, order, variables->fespaces, variables->gfs,
-      *bc_map, *domain_properties);
+      *bc_map, *domain_properties, *sources);
 
   formulation->RegisterVariables();
   variables->Init(*pmesh);

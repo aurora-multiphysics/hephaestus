@@ -18,7 +18,8 @@ public:
               mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
               mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
               hephaestus::BCMap &bc_map,
-              hephaestus::DomainProperties &domain_properties);
+              hephaestus::DomainProperties &domain_properties,
+              hephaestus::Sources &sources);
 
   ~HCurlSolver(){};
 
@@ -86,7 +87,8 @@ protected:
   mfem::Coefficient *dtAlphaCoef;
   mfem::Coefficient *betaCoef;
 
-  hephaestus::Source *source;
+  // hephaestus::Source *source;
+  hephaestus::Sources *_sources;
   mfem::VectorCoefficient *sourceVecCoef;
   mfem::ParGridFunction *src_gf, *div_free_src_gf; // Source field
   mfem::ParBilinearForm *hCurlMass;
