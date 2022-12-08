@@ -4,18 +4,28 @@ namespace hephaestus {
 
 DivFreeVolumetricSource::DivFreeVolumetricSource(
     const hephaestus::InputParameters &params)
-    : src_gf_name(params.GetParam<std::string>("SourceName")),
+    : src_coef_name(params.GetParam<std::string>("SourceName")),
+      src_gf_name(params.GetParam<std::string>("SourceName")),
       hcurl_fespace_name(params.GetParam<std::string>("HCurlFESpaceName")),
       h1_fespace_name(params.GetParam<std::string>("H1FESpaceName")) {}
 
 void DivFreeVolumetricSource::Init(
-    const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces) {
+    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+    const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+    hephaestus::DomainProperties &domain_properties) {
   H1FESpace_ = fespaces.Get(h1_fespace_name);
   HCurlFESpace_ = fespaces.Get(hcurl_fespace_name);
 
+  if (domain_properties.vector_property_map.find(src_coef_name) !=
+      domain_properties.vector_property_map.end()) {
+    sourceVecCoef = domain_properties.vector_property_map[src_coef_name];
+  } else {
+    std::cout << "SOURCE NOT FOUND";
+    exit;
+  }
+
   div_free_src_gf = new mfem::ParGridFunction(HCurlFESpace_);
-  // _variables.Register(src_gf_name, div_free_src_gf, false);
+  variables.Register(src_gf_name, div_free_src_gf, false);
 
   /// get int rule (approach followed my MFEM Tesla Miniapp)
   int irOrder = H1FESpace_->GetElementTransformation(0)->OrderW() + 2 * 2;
