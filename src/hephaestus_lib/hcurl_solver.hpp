@@ -62,6 +62,7 @@ protected:
   mfem::ParMesh *pmesh_;
   mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &_fespaces;
   mfem::NamedFieldsMap<mfem::ParGridFunction> &_variables;
+  hephaestus::Sources &_sources;
   hephaestus::BCMap _bc_map;
   hephaestus::DomainProperties _domain_properties;
 
@@ -88,7 +89,6 @@ protected:
   mfem::Coefficient *betaCoef;
 
   // hephaestus::Source *source;
-  hephaestus::Sources *_sources;
   mfem::VectorCoefficient *sourceVecCoef;
   mfem::ParGridFunction *src_gf, *div_free_src_gf; // Source field
   mfem::ParBilinearForm *hCurlMass;

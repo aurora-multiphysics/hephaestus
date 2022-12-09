@@ -10,7 +10,7 @@ void Sources::Init(
     source->Init(variables, fespaces, domain_properties);
   }
 }
-void ApplySources(mfem::LinearForm *lf) {
+void Sources::ApplySources(mfem::LinearForm *lf) {
   for (const auto &[name, source] : GetMap()) {
     source->ApplySource(lf);
   }

@@ -204,6 +204,16 @@ protected:
     hephaestus::TransientExecutioner *executioner =
         new hephaestus::TransientExecutioner(exec_params);
 
+    hephaestus::InputParameters div_free_source_params;
+    div_free_source_params.SetParam("SourceName", std::string("source"));
+    div_free_source_params.SetParam("HCurlFESpaceName",
+                                    std::string("_HCurlFESpace"));
+    div_free_source_params.SetParam("H1FESpaceName", std::string("_H1FESpace"));
+    hephaestus::Sources sources;
+    sources.Register(
+        "source",
+        new hephaestus::DivFreeVolumetricSource(div_free_source_params), true);
+
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("Executioner", executioner);
@@ -214,6 +224,7 @@ protected:
     params.SetParam("AuxKernels", auxkernels);
     params.SetParam("Postprocessors", postprocessors);
     params.SetParam("Outputs", outputs);
+    params.SetParam("Sources", sources);
     params.SetParam("FormulationName", std::string("AForm"));
     std::cout << "Created params ";
     return params;
