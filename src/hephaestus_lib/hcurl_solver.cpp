@@ -94,17 +94,7 @@ void HCurlSolver::Init(mfem::Vector &X) {
   SetMaterialCoefficients(_domain_properties);
   dtAlphaCoef = new mfem::TransformedCoefficient(&dtCoef, alphaCoef, prodFunc);
 
-  // hephaestus::InputParameters div_free_source_params;
-  // div_free_source_params.SetParam("SourceName", std::string("source"));
-  // div_free_source_params.SetParam("HCurlFESpaceName",
-  //                                 std::string("_HCurlFESpace"));
-  // div_free_source_params.SetParam("H1FESpaceName",
-  // std::string("_H1FESpace"));
-
-  // source = new hephaestus::DivFreeVolumetricSource(div_free_source_params);
-  // source->Init(_variables, _fespaces, _domain_properties);
-
-  _sources->Init(_variables, _fespaces, _domain_properties);
+  _sources.Init(_variables, _fespaces, _domain_properties);
 
   // a0(p, p') = (β ∇ p, ∇ p')
   a0 = new mfem::ParBilinearForm(H1FESpace_);
@@ -213,7 +203,7 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   m1->AddMult(du_, *b1, 1.0);
 
   // source->ApplySource(b1);
-  _sources->ApplySources(b1);
+  _sources.ApplySources(b1);
 
   mfem::ParGridFunction J_gf(HCurlFESpace_);
   mfem::Array<int> ess_tdof_list;
