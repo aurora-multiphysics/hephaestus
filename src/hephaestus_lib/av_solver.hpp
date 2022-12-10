@@ -8,9 +8,7 @@ namespace hephaestus {
 class AVSolver : public TransientFormulation {
   virtual void
   SetMaterialCoefficients(hephaestus::DomainProperties &domain_properties);
-  virtual void
-  SetSourceCoefficient(hephaestus::DomainProperties &domain_properties);
-  virtual void SetVariableNames();
+  virtual void RegisterVariables();
 
 public:
   AVSolver(mfem::ParMesh &pmesh, int order,
@@ -28,7 +26,6 @@ public:
   void buildA1(mfem::Coefficient *betaCoef);
   void buildCurl(mfem::Coefficient *muInv);
   void buildGrad();
-  void buildSource();
 
   void ImplicitSolve(const double dt, const mfem::Vector &X,
                      mfem::Vector &dX_dt) override;
@@ -63,6 +60,7 @@ protected:
   mfem::ParMesh *pmesh_;
   mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &_fespaces;
   mfem::NamedFieldsMap<mfem::ParGridFunction> &_variables;
+  hephaestus::Sources &_sources;
   hephaestus::BCMap _bc_map;
   hephaestus::DomainProperties _domain_properties;
 
@@ -89,11 +87,6 @@ protected:
   mfem::Coefficient *alphaCoef;
   mfem::Coefficient *dtAlphaCoef;
   mfem::Coefficient *betaCoef, *negBetaCoef;
-
-  mfem::VectorCoefficient *sourceVecCoef;
-  mfem::ParGridFunction *src_gf, *div_free_src_gf; // Source field
-  mfem::ParBilinearForm *hCurlMass;
-  mfem::common::DivergenceFreeProjector *divFreeProj;
 
   // Sockets used to communicate with GLVis
 };

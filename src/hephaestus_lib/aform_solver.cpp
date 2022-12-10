@@ -11,12 +11,16 @@ AFormSolver::AFormSolver(
     : HCurlSolver(pmesh, order, fespaces, variables, bc_map, domain_properties,
                   sources) {}
 
-void AFormSolver::SetVariableNames() {
+void AFormSolver::RegisterVariables() {
   p_name = "electric_potential";
   p_display_name = "Scalar Potential (V)";
 
   u_name = "magnetic_vector_potential";
   u_display_name = "Magnetic Vector Potential (A)";
+
+  _variables.Register(u_name, &u_, false);
+  _variables.Register(p_name, &p_, false);
+  _variables.Register("magnetic_flux_density", &curl_u_, false);
 }
 
 void AFormSolver::SetMaterialCoefficients(

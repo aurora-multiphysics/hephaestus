@@ -8,7 +8,7 @@ namespace hephaestus {
 class AFormSolver : public hephaestus::HCurlSolver {
   virtual void SetMaterialCoefficients(
       hephaestus::DomainProperties &domain_properties) override;
-  virtual void SetVariableNames() override;
+  virtual void RegisterVariables() override;
 
 public:
   AFormSolver(mfem::ParMesh &pmesh, int order,

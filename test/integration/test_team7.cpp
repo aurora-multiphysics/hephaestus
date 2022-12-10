@@ -1,5 +1,3 @@
-// Based on an H form MMS test provided by Joseph Dean
-
 #include "auxkernels.hpp"
 #include "executioner.hpp"
 
@@ -109,45 +107,6 @@ protected:
         new mfem::ConstantCoefficient(M_PI * 4.0e-7);
 
     hephaestus::BCMap bc_map;
-    // mfem::VectorFunctionCoefficient *adotVecCoef =
-    //     new mfem::VectorFunctionCoefficient(3, adot_bc);
-    // bc_map["tangential_dAdt"] = new hephaestus::VectorFunctionDirichletBC(
-    //     std::string("magnetic_vector_potential"), mfem::Array<int>({1, 2,
-    //     3}), adotVecCoef);
-    // domain_properties.vector_property_map["surface_tangential_dAdt"] =
-    //     adotVecCoef;
-    // domain_properties.scalar_property_map["electrical_conductivity"] =
-    //     new mfem::ConstantCoefficient(1.0);
-
-    // mfem::Array<int> ground_terminal(1);
-    // ground_terminal[0] = 1;
-    // mfem::FunctionCoefficient *ground_coeff =
-    //     new mfem::FunctionCoefficient(potential_ground);
-    // bc_map["ground_potential"] = new hephaestus::FunctionDirichletBC(
-    //     std::string("electric_potential"), mfem::Array<int>({1, 2, 3}),
-    //     ground_coeff);
-    // domain_properties.scalar_property_map["ground_potential"] = ground_coeff;
-
-    mfem::VectorFunctionCoefficient *JSrcCoef =
-        new mfem::VectorFunctionCoefficient(3, source_current);
-
-    mfem::Array<mfem::VectorCoefficient *> sourcecoefs(4);
-    sourcecoefs[0] = JSrcCoef;
-    sourcecoefs[1] = JSrcCoef;
-    sourcecoefs[2] = JSrcCoef;
-    sourcecoefs[3] = JSrcCoef;
-
-    mfem::Array<int> coilsegments(4);
-    coilsegments[0] = 3;
-    coilsegments[1] = 4;
-    coilsegments[2] = 5;
-    coilsegments[3] = 6;
-
-    mfem::PWVectorCoefficient *JSrcRestricted =
-        new mfem::PWVectorCoefficient(3, coilsegments, sourcecoefs);
-
-    domain_properties.vector_property_map["unblockedsource"] = JSrcCoef;
-    domain_properties.vector_property_map["source"] = JSrcRestricted;
 
     mfem::VectorFunctionCoefficient *A_exact =
         new mfem::VectorFunctionCoefficient(3, A_exact_expr);
@@ -204,12 +163,28 @@ protected:
     hephaestus::TransientExecutioner *executioner =
         new hephaestus::TransientExecutioner(exec_params);
 
+    hephaestus::Sources sources;
+    mfem::VectorFunctionCoefficient *JSrcCoef =
+        new mfem::VectorFunctionCoefficient(3, source_current);
+    mfem::Array<mfem::VectorCoefficient *> sourcecoefs(4);
+    sourcecoefs[0] = JSrcCoef;
+    sourcecoefs[1] = JSrcCoef;
+    sourcecoefs[2] = JSrcCoef;
+    sourcecoefs[3] = JSrcCoef;
+    mfem::Array<int> coilsegments(4);
+    coilsegments[0] = 3;
+    coilsegments[1] = 4;
+    coilsegments[2] = 5;
+    coilsegments[3] = 6;
+    mfem::PWVectorCoefficient *JSrcRestricted =
+        new mfem::PWVectorCoefficient(3, coilsegments, sourcecoefs);
+    domain_properties.vector_property_map["unblockedsource"] = JSrcCoef;
+    domain_properties.vector_property_map["source"] = JSrcRestricted;
     hephaestus::InputParameters div_free_source_params;
     div_free_source_params.SetParam("SourceName", std::string("source"));
     div_free_source_params.SetParam("HCurlFESpaceName",
                                     std::string("_HCurlFESpace"));
     div_free_source_params.SetParam("H1FESpaceName", std::string("_H1FESpace"));
-    hephaestus::Sources sources;
     sources.Register(
         "source",
         new hephaestus::DivFreeVolumetricSource(div_free_source_params), true);

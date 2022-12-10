@@ -83,10 +83,7 @@ DualSolver::DualSolver(
 }
 
 void DualSolver::Init(mfem::Vector &X) {
-  SetVariableNames();
-  _variables.Register(u_name, &u_, false);
-  _variables.Register(v_name, &v_, false);
-  _variables.Register(p_name, &p_, false);
+  RegisterVariables();
 
   _fespaces.Register("_H1FESpace", H1FESpace_, false);
   _fespaces.Register("_HCurlFESpace", HCurlFESpace_, false);
@@ -312,7 +309,7 @@ void DualSolver::buildCurl(mfem::Coefficient *MuInv) {
   // no ParallelAssemble since this will be applied to GridFunctions
 }
 
-void DualSolver::SetVariableNames() {
+void DualSolver::RegisterVariables() {
   p_name = "scalar_potential";
   p_display_name = "Scalar Potential";
 
@@ -321,6 +318,10 @@ void DualSolver::SetVariableNames() {
 
   v_name = "h_div_var";
   v_display_name = "H(Div) variable";
+
+  _variables.Register(u_name, &u_, false);
+  _variables.Register(v_name, &v_, false);
+  _variables.Register(p_name, &p_, false);
 }
 
 void DualSolver::SetMaterialCoefficients(
