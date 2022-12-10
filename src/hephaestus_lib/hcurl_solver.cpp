@@ -57,8 +57,7 @@ HCurlSolver::HCurlSolver(
       HDivFESpace_(
           new mfem::common::RT_ParFESpace(&pmesh, order, pmesh.Dimension())),
       a1(NULL), amg_a0(NULL), pcg_a0(NULL), ams_a1(NULL), pcg_a1(NULL),
-      m1(NULL), grad(NULL), curl(NULL), curlCurl(NULL), sourceVecCoef(NULL),
-      src_gf(NULL), div_free_src_gf(NULL), hCurlMass(NULL), divFreeProj(NULL),
+      m1(NULL), grad(NULL), curl(NULL), curlCurl(NULL),
       p_(mfem::ParGridFunction(H1FESpace_)),
       u_(mfem::ParGridFunction(HCurlFESpace_)),
       dp_(mfem::ParGridFunction(H1FESpace_)),
@@ -79,11 +78,7 @@ HCurlSolver::HCurlSolver(
 }
 
 void HCurlSolver::Init(mfem::Vector &X) {
-  SetVariableNames();
-  _variables.Register(u_name, &u_, false);
-  _variables.Register(p_name, &p_, false);
-  _variables.Register("magnetic_flux", &curl_u_, false);
-
+  RegisterVariables();
   _fespaces.Register("_H1FESpace", H1FESpace_, false);
   _fespaces.Register("_HCurlFESpace", HCurlFESpace_, false);
   _fespaces.Register("_HDivFESpace", HDivFESpace_, false);
@@ -202,7 +197,6 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   grad->Mult(p_, du_);
   m1->AddMult(du_, *b1, 1.0);
 
-  // source->ApplySource(b1);
   _sources.ApplySources(b1);
 
   mfem::ParGridFunction J_gf(HCurlFESpace_);
@@ -308,12 +302,16 @@ void HCurlSolver::buildCurl(mfem::Coefficient *MuInv) {
   // no ParallelAssemble since this will be applied to GridFunctions
 }
 
-void HCurlSolver::SetVariableNames() {
+void HCurlSolver::RegisterVariables() {
   p_name = "scalar_potential";
   p_display_name = "Scalar Potential";
 
   u_name = "h_curl_var";
   u_display_name = "H(Curl) variable";
+
+  _variables.Register(u_name, &u_, false);
+  _variables.Register(p_name, &p_, false);
+  _variables.Register("curl h_curl_var", &curl_u_, false);
 }
 
 void HCurlSolver::SetMaterialCoefficients(
@@ -328,30 +326,6 @@ void HCurlSolver::SetMaterialCoefficients(
   }
   alphaCoef = domain_properties.scalar_property_map["alpha"];
   betaCoef = domain_properties.scalar_property_map["beta"];
-}
-
-void HCurlSolver::SetSourceCoefficient(
-    hephaestus::DomainProperties &domain_properties) {
-  if (domain_properties.vector_property_map.find("source") !=
-      domain_properties.vector_property_map.end()) {
-    sourceVecCoef = domain_properties.vector_property_map["source"];
-  }
-}
-
-void HCurlSolver::buildSource() {
-  // Replace with class to calculate div free source from input
-  // VectorCoefficient
-  src_gf = new mfem::ParGridFunction(HCurlFESpace_);
-  div_free_src_gf = new mfem::ParGridFunction(HCurlFESpace_);
-  _variables.Register("source", div_free_src_gf, false);
-  // int irOrder = H1FESpace_->GetElementTransformation(0)->OrderW() +
-  //               2 * H1FESpace_->GetOrder();
-  int irOrder = H1FESpace_->GetElementTransformation(0)->OrderW() + 2 * 2;
-  divFreeProj = new mfem::common::DivergenceFreeProjector(
-      *H1FESpace_, *HCurlFESpace_, irOrder, NULL, NULL, NULL);
-  hCurlMass = new mfem::ParBilinearForm(HCurlFESpace_);
-  hCurlMass->AddDomainIntegrator(new mfem::VectorFEMassIntegrator());
-  hCurlMass->Assemble();
 }
 
 void HCurlSolver::RegisterOutputFields(mfem::DataCollection *dc_) {

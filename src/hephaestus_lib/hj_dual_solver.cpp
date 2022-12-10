@@ -11,7 +11,7 @@ HJDualSolver::HJDualSolver(
     : DualSolver(pmesh, order, fespaces, variables, bc_map, domain_properties,
                  sources) {}
 
-void HJDualSolver::SetVariableNames() {
+void HJDualSolver::RegisterVariables() {
   p_name = "magnetic_potential";
   p_display_name = "Scalar Potential (V)";
 
@@ -20,6 +20,10 @@ void HJDualSolver::SetVariableNames() {
 
   v_name = "current_density";
   v_display_name = "Current Density (J)";
+
+  _variables.Register(u_name, &u_, false);
+  _variables.Register(v_name, &v_, false);
+  _variables.Register(p_name, &p_, false);
 }
 
 void HJDualSolver::SetMaterialCoefficients(

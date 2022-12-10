@@ -49,7 +49,7 @@ AVSolver::AVSolver(mfem::ParMesh &pmesh, int order,
                    hephaestus::Sources &sources)
     : myid_(0), num_procs_(1), order_(order), pmesh_(&pmesh),
       _fespaces(fespaces), _variables(variables), _bc_map(bc_map),
-      _domain_properties(domain_properties),
+      _sources(sources), _domain_properties(domain_properties),
       H1FESpace_(
           new mfem::common::H1_ParFESpace(&pmesh, order, pmesh.Dimension())),
       HCurlFESpace_(
@@ -58,9 +58,7 @@ AVSolver::AVSolver(mfem::ParMesh &pmesh, int order,
           new mfem::common::RT_ParFESpace(&pmesh, order, pmesh.Dimension())),
       a0(NULL), a1(NULL), a01(NULL), a10(NULL), amg_a0(NULL), pcg_a0(NULL),
       ams_a0(NULL), pcg_a1(NULL), m1(NULL), negBetaCoef(NULL), grad(NULL),
-      curl(NULL), curlCurl(NULL), sourceVecCoef(NULL), src_gf(NULL),
-      div_free_src_gf(NULL), hCurlMass(NULL), divFreeProj(NULL),
-      p_(mfem::ParGridFunction(H1FESpace_)),
+      curl(NULL), curlCurl(NULL), p_(mfem::ParGridFunction(H1FESpace_)),
       u_(mfem::ParGridFunction(HCurlFESpace_)),
       dp_(mfem::ParGridFunction(H1FESpace_)),
       du_(mfem::ParGridFunction(HCurlFESpace_)),
@@ -87,11 +85,7 @@ AVSolver::AVSolver(mfem::ParMesh &pmesh, int order,
 }
 
 void AVSolver::Init(mfem::Vector &X) {
-  SetVariableNames();
-  _variables.Register(u_name, &u_, false);
-  _variables.Register(p_name, &p_, false);
-  _variables.Register(e_name, &e_, false);
-  _variables.Register(b_name, &b_, false);
+  RegisterVariables();
 
   _fespaces.Register("_H1FESpace", H1FESpace_, false);
   _fespaces.Register("_HCurlFESpace", HCurlFESpace_, false);
@@ -102,10 +96,8 @@ void AVSolver::Init(mfem::Vector &X) {
   oneCoef = mfem::ConstantCoefficient(1.0);
   SetMaterialCoefficients(_domain_properties);
   dtAlphaCoef = new mfem::TransformedCoefficient(&dtCoef, alphaCoef, prodFunc);
-  SetSourceCoefficient(_domain_properties);
-  if (sourceVecCoef) {
-    buildSource();
-  }
+
+  _sources.Init(_variables, _fespaces, _domain_properties);
 
   this->buildCurl(alphaCoef); // (α∇×u_{n}, ∇×u')
   this->buildGrad();          // (s0_{n+1}, u')
@@ -194,61 +186,7 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   _bc_map.applyIntegratedBCs(u_name, *b0, pmesh_);
   b0->Assemble();
 
-  if (src_gf) {
-    src_gf->ProjectCoefficient(*sourceVecCoef);
-
-    // /// get int rule (approach followed my MFEM Tesla Miniapp)
-    // int irOrder = H1FESpace_->GetElementTransformation(0)->OrderW() + 2 * 2;
-    // int geom = H1FESpace_->GetFE(0)->GetGeomType();
-    // const mfem::IntegrationRule *ir = &mfem::IntRules.Get(geom, irOrder);
-
-    // /// Create a H(curl) mass matrix for integrating grid functions
-    // mfem::BilinearFormIntegrator *h_curl_mass_integ =
-    //     new mfem::VectorFEMassIntegrator;
-    // h_curl_mass_integ->SetIntRule(ir);
-    // mfem::ParBilinearForm h_curl_mass(HCurlFESpace_);
-    // h_curl_mass.AddDomainIntegrator(h_curl_mass_integ);
-    // // assemble mass matrix
-    // h_curl_mass.Assemble();
-    // h_curl_mass.Finalize();
-
-    // mfem::ParLinearForm J(HCurlFESpace_);
-    // J.AddDomainIntegrator(new
-    // mfem::VectorFEDomainLFIntegrator(*sourceVecCoef)); J.Assemble();
-
-    // mfem::ParGridFunction j(HCurlFESpace_);
-    // j.ProjectCoefficient(*sourceVecCoef);
-    // {
-    //   mfem::HypreParMatrix M;
-    //   mfem::Vector X, RHS;
-    //   mfem::Array<int> ess_tdof_list;
-    //   h_curl_mass.FormLinearSystem(ess_tdof_list, j, J, M, X, RHS);
-
-    //   // if (rank == 0)
-    //   //   std::cout << "solving for J in H(curl)\n";
-
-    //   mfem::HypreBoomerAMG amg(M);
-    //   amg.SetPrintLevel(0);
-    //   mfem::HypreGMRES gmres(M);
-    //   gmres.SetTol(1e-12);
-    //   gmres.SetMaxIter(200);
-    //   gmres.SetPrintLevel(0);
-    //   gmres.SetPreconditioner(amg);
-    //   gmres.Mult(RHS, X);
-
-    //   h_curl_mass.RecoverFEMSolution(X, J, j);
-    // }
-    // h_curl_mass.Assemble();
-    // h_curl_mass.Finalize();
-
-    // *div_free_src_gf = 0.0;
-    // divFreeProj->Mult(j, *div_free_src_gf);
-
-    // Compute the discretely divergence-free portion of src_gf
-    divFreeProj->Mult(*src_gf, *div_free_src_gf);
-    // Compute the dual of div_free_src_gf
-    hCurlMass->AddMult(*div_free_src_gf, *b0);
-  }
+  _sources.ApplySources(b0);
 
   mfem::ParGridFunction Phi_gf(H1FESpace_);
   mfem::Array<int> poisson_ess_tdof_list;
@@ -403,7 +341,7 @@ void AVSolver::buildCurl(mfem::Coefficient *MuInv) {
   curl->Assemble();
 }
 
-void AVSolver::SetVariableNames() {
+void AVSolver::RegisterVariables() {
   p_name = "electric_potential";
   p_display_name = "Electric Scalar Potential";
 
@@ -415,6 +353,11 @@ void AVSolver::SetVariableNames() {
 
   b_name = "magnetic_flux_density";
   b_display_name = "Magnetic Flux Density";
+
+  _variables.Register(u_name, &u_, false);
+  _variables.Register(p_name, &p_, false);
+  _variables.Register(e_name, &e_, false);
+  _variables.Register(b_name, &b_, false);
 }
 
 void AVSolver::SetMaterialCoefficients(
@@ -435,28 +378,6 @@ void AVSolver::SetMaterialCoefficients(
       &oneCoef, domain_properties.scalar_property_map["magnetic_permeability"],
       fracFunc);
   betaCoef = domain_properties.scalar_property_map["electrical_conductivity"];
-}
-
-void AVSolver::SetSourceCoefficient(
-    hephaestus::DomainProperties &domain_properties) {
-  if (domain_properties.vector_property_map.find("source") !=
-      domain_properties.vector_property_map.end()) {
-    sourceVecCoef = domain_properties.vector_property_map["source"];
-  }
-}
-
-void AVSolver::buildSource() {
-  // Replace with class to calculate div free source from input
-  // VectorCoefficient
-  src_gf = new mfem::ParGridFunction(HCurlFESpace_);
-  div_free_src_gf = new mfem::ParGridFunction(HCurlFESpace_);
-  _variables.Register("source", src_gf, false);
-  int irOrder = H1FESpace_->GetElementTransformation(0)->OrderW() + 2 * order_;
-  divFreeProj = new mfem::common::DivergenceFreeProjector(
-      *H1FESpace_, *HCurlFESpace_, irOrder, NULL, NULL, NULL);
-  hCurlMass = new mfem::ParBilinearForm(HCurlFESpace_);
-  hCurlMass->AddDomainIntegrator(new mfem::VectorFEMassIntegrator());
-  hCurlMass->Assemble();
 }
 
 void AVSolver::RegisterOutputFields(mfem::DataCollection *dc_) {

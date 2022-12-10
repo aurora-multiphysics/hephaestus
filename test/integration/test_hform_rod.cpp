@@ -86,6 +86,7 @@ protected:
     hephaestus::Variables variables;
     hephaestus::AuxKernels auxkernels;
     hephaestus::Postprocessors postprocessors;
+    hephaestus::Sources sources;
 
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
@@ -97,6 +98,7 @@ protected:
     params.SetParam("AuxKernels", auxkernels);
     params.SetParam("Postprocessors", postprocessors);
     params.SetParam("Outputs", outputs);
+    params.SetParam("Sources", sources);
     params.SetParam("FormulationName", std::string("HForm"));
 
     return params;

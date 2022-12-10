@@ -76,10 +76,6 @@ protected:
         std::string("magnetic_potential"), mfem::Array<int>({1, 2, 3}),
         new mfem::FunctionCoefficient(potential_ground));
 
-    mfem::VectorFunctionCoefficient *JSrcCoef =
-        new mfem::VectorFunctionCoefficient(3, source_field);
-    domain_properties.vector_property_map["source"] = JSrcCoef;
-
     mfem::VectorFunctionCoefficient *A_exact =
         new mfem::VectorFunctionCoefficient(3, A_exact_expr);
     domain_properties.vector_property_map["a_exact_coeff"] = A_exact;
@@ -130,6 +126,19 @@ protected:
     hephaestus::TransientExecutioner *executioner =
         new hephaestus::TransientExecutioner(exec_params);
 
+    hephaestus::Sources sources;
+    mfem::VectorFunctionCoefficient *JSrcCoef =
+        new mfem::VectorFunctionCoefficient(3, source_field);
+    domain_properties.vector_property_map["source"] = JSrcCoef;
+    hephaestus::InputParameters div_free_source_params;
+    div_free_source_params.SetParam("SourceName", std::string("source"));
+    div_free_source_params.SetParam("HCurlFESpaceName",
+                                    std::string("_HCurlFESpace"));
+    div_free_source_params.SetParam("H1FESpaceName", std::string("_H1FESpace"));
+    sources.Register(
+        "source",
+        new hephaestus::DivFreeVolumetricSource(div_free_source_params), true);
+
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("Executioner", executioner);
@@ -140,6 +149,7 @@ protected:
     params.SetParam("AuxKernels", auxkernels);
     params.SetParam("Postprocessors", postprocessors);
     params.SetParam("Outputs", outputs);
+    params.SetParam("Sources", sources);
     params.SetParam("FormulationName", std::string("AForm"));
 
     return params;
@@ -178,7 +188,7 @@ TEST_F(TestAFormSource, CheckRun) {
         l2errpostprocessor.ndofs[i], l2errpostprocessor.ndofs[i - 1],
         l2errpostprocessor.l2_errs[i], l2errpostprocessor.l2_errs[i - 1], 3);
     std::cout << r << std::endl;
-    ASSERT_TRUE(r > params.GetParam<int>("Order"));
+    ASSERT_TRUE(r > params.GetParam<int>("Order") - 0.05);
     ASSERT_TRUE(r < params.GetParam<int>("Order") + 1.0);
   }
 }

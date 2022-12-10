@@ -8,7 +8,7 @@ namespace hephaestus {
 class HJDualSolver : public hephaestus::DualSolver {
   virtual void SetMaterialCoefficients(
       hephaestus::DomainProperties &domain_properties) override;
-  virtual void SetVariableNames() override;
+  virtual void RegisterVariables() override;
 
 public:
   HJDualSolver(mfem::ParMesh &pmesh, int order,

@@ -9,9 +9,7 @@ namespace hephaestus {
 class HCurlSolver : public TransientFormulation {
   virtual void
   SetMaterialCoefficients(hephaestus::DomainProperties &domain_properties);
-  virtual void
-  SetSourceCoefficient(hephaestus::DomainProperties &domain_properties);
-  virtual void SetVariableNames();
+  virtual void RegisterVariables();
 
 public:
   HCurlSolver(mfem::ParMesh &pmesh, int order,
@@ -87,12 +85,6 @@ protected:
   mfem::Coefficient *alphaCoef;
   mfem::Coefficient *dtAlphaCoef;
   mfem::Coefficient *betaCoef;
-
-  // hephaestus::Source *source;
-  mfem::VectorCoefficient *sourceVecCoef;
-  mfem::ParGridFunction *src_gf, *div_free_src_gf; // Source field
-  mfem::ParBilinearForm *hCurlMass;
-  mfem::common::DivergenceFreeProjector *divFreeProj;
 
   // Sockets used to communicate with GLVis
 };
