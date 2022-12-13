@@ -10,7 +10,7 @@ void Sources::Init(
     source->Init(variables, fespaces, domain_properties);
   }
 }
-void Sources::ApplySources(mfem::LinearForm *lf) {
+void Sources::ApplySources(mfem::ParLinearForm *lf) {
   for (const auto &[name, source] : GetMap()) {
     source->ApplySource(lf);
   }
@@ -39,8 +39,9 @@ void DivFreeVolumetricSource::Init(
 
   div_free_src_gf = new mfem::ParGridFunction(HCurlFESpace_);
   variables.Register(src_gf_name, div_free_src_gf, false);
+}
 
-  /// get int rule (approach followed my MFEM Tesla Miniapp)
+void DivFreeVolumetricSource::ApplySource(mfem::ParLinearForm *lf) {
   int irOrder = H1FESpace_->GetElementTransformation(0)->OrderW() + 2 * 2;
   int geom = H1FESpace_->GetFE(0)->GetGeomType();
   const mfem::IntegrationRule *ir = &mfem::IntRules.Get(geom, irOrder);
@@ -48,11 +49,12 @@ void DivFreeVolumetricSource::Init(
       *H1FESpace_, *HCurlFESpace_, irOrder, NULL, NULL, NULL);
 
   /// Create a H(curl) mass matrix for integrating grid functions
-  mfem::BilinearFormIntegrator *h_curl_mass_integ =
+  mfem::VectorFEMassIntegrator *h_curl_mass_integ =
       new mfem::VectorFEMassIntegrator;
+  mfem::ParBilinearForm *h_curl_mass = new mfem::ParBilinearForm(HCurlFESpace_);
+
   h_curl_mass_integ->SetIntRule(ir);
 
-  h_curl_mass = new mfem::ParBilinearForm(HCurlFESpace_);
   h_curl_mass->AddDomainIntegrator(h_curl_mass_integ);
   // assemble mass matrix
   h_curl_mass->Assemble();
@@ -83,12 +85,9 @@ void DivFreeVolumetricSource::Init(
   }
   h_curl_mass->Assemble();
   h_curl_mass->Finalize();
-
   *div_free_src_gf = 0.0;
   divFreeProj->Mult(j, *div_free_src_gf);
-}
 
-void DivFreeVolumetricSource::ApplySource(mfem::LinearForm *lf) {
   // Compute the dual of div_free_src_gf
   h_curl_mass->AddMult(*div_free_src_gf, *lf);
 }
