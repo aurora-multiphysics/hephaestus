@@ -10,35 +10,6 @@ extern const char *DATA_DIR;
 
 class TestTeam7 : public testing::Test {
 protected:
-  static double estimate_convergence_rate(HYPRE_BigInt n_i, HYPRE_BigInt n_imo,
-                                          double error_i, double error_imo,
-                                          int dim) {
-    return std::log(error_i / error_imo) /
-           std::log(std::pow(n_imo / static_cast<double>(n_i), 1.0 / dim));
-  }
-
-  static double potential_ground(const mfem::Vector &x, double t) {
-    return -x(0);
-  }
-
-  static void adot_bc(const mfem::Vector &x, double t, mfem::Vector &H) {
-    H(0) = 1 + sin(x(1) * M_PI) * sin(x(2) * M_PI);
-    H(1) = 0;
-    H(2) = 0;
-  }
-
-  static void A_exact_expr(const mfem::Vector &x, double t,
-                           mfem::Vector &A_exact) {
-    A_exact(0) = (1 + sin(x(1) * M_PI) * sin(x(2) * M_PI)) * t;
-    A_exact(1) = 0;
-    A_exact(2) = 0;
-  }
-  static double mu_expr(const mfem::Vector &x) {
-    double variation_scale = 0.0;
-    double mu =
-        1.0 / (1.0 + variation_scale * cos(M_PI * x(0)) * cos(M_PI * x(1)));
-    return mu;
-  }
   static void source_current(const mfem::Vector &xv, double t,
                              mfem::Vector &J) {
     double x0(194e-3);  // Coil centre x coordinate
@@ -48,10 +19,13 @@ protected:
     double S(2.5e-3);   // Coil cross sectional area
     double freq(200.0); // Frequency in Hz
 
-    double Jmag = (I0 / S) * sin(2 * M_PI * freq * t);
-
     double x = xv(0);
     double y = xv(1);
+
+    // Current density magnitude
+    double Jmag = (I0 / S) * sin(2 * M_PI * freq * t);
+
+    // Calculate x component of current density unit vector
     if (abs(x - x0) < a) {
       J(0) = -(y - y0) / abs(y - y0);
     } else if (abs(y - y0) < a) {
@@ -62,6 +36,7 @@ protected:
                    y - (y0 + a * ((y - y0) / abs(y - y0))));
     }
 
+    // Calculate y component of current density unit vector
     if (abs(y - y0) < a) {
       J(1) = (x - x0) / abs(x - x0);
     } else if (abs(x - x0) < a) {
@@ -72,10 +47,10 @@ protected:
                    y - (y0 + a * ((y - y0) / abs(y - y0))));
     }
 
-    // J(0) = 0.0;
-    // // sin(M_PI * x(1)) * sin(M_PI * x(2)) * (t * 2 * M_PI * M_PI + 1);
-    // J(1) = 0.0;
+    // Calculate z component of current density unit vector
     J(2) = 0.0;
+
+    // Scale by current density magnitude
     J *= Jmag;
   }
 
@@ -108,10 +83,6 @@ protected:
 
     hephaestus::BCMap bc_map;
 
-    mfem::VectorFunctionCoefficient *A_exact =
-        new mfem::VectorFunctionCoefficient(3, A_exact_expr);
-    domain_properties.vector_property_map["a_exact_coeff"] = A_exact;
-
     mfem::Mesh mesh(
         (std::string(DATA_DIR) + std::string("./team7_small.g")).c_str(), 1, 1);
 
@@ -122,44 +93,15 @@ protected:
         new mfem::ParaViewDataCollection("Team7ParaView");
     hephaestus::Outputs outputs(data_collections);
 
-    hephaestus::InputParameters hcurlvarparams;
-    hcurlvarparams.SetParam("VariableName",
-                            std::string("analytic_vector_potential"));
-    hcurlvarparams.SetParam("FESpaceName", std::string("HCurl"));
-    hcurlvarparams.SetParam("FESpaceType", std::string("ND"));
-    hcurlvarparams.SetParam("order", 1);
-    hcurlvarparams.SetParam("components", 3);
     hephaestus::Variables variables;
-    variables.AddVariable(hcurlvarparams);
-
-    hephaestus::InputParameters l2errpostprocparams;
-    l2errpostprocparams.SetParam("VariableName",
-                                 std::string("magnetic_vector_potential"));
-    l2errpostprocparams.SetParam("VectorCoefficientName",
-                                 std::string("a_exact_coeff"));
     hephaestus::Postprocessors postprocessors;
-    postprocessors.Register(
-        "L2ErrorPostprocessor",
-        new hephaestus::L2ErrorVectorPostprocessor(l2errpostprocparams), true);
-
-    hephaestus::InputParameters vectorcoeffauxparams;
-    vectorcoeffauxparams.SetParam("VariableName",
-                                  std::string("analytic_vector_potential"));
-    vectorcoeffauxparams.SetParam("VectorCoefficientName",
-                                  std::string("a_exact_coeff"));
-
     hephaestus::AuxKernels auxkernels;
-    auxkernels.Register(
-        "VectorCoefficientAuxKernel",
-        new hephaestus::VectorCoefficientAuxKernel(vectorcoeffauxparams), true);
 
     hephaestus::InputParameters exec_params;
     exec_params.SetParam("TimeStep", float(0.001));
     exec_params.SetParam("StartTime", float(0.00));
     exec_params.SetParam("EndTime", float(0.002));
-    // exec_params.SetParam("EndTime", float(0.02));
 
-    // exec_params.SetParam("EndTime", float(0.05));
     hephaestus::TransientExecutioner *executioner =
         new hephaestus::TransientExecutioner(exec_params);
 
@@ -178,8 +120,8 @@ protected:
     coilsegments[3] = 6;
     mfem::PWVectorCoefficient *JSrcRestricted =
         new mfem::PWVectorCoefficient(3, coilsegments, sourcecoefs);
-    domain_properties.vector_property_map["unblockedsource"] = JSrcCoef;
     domain_properties.vector_property_map["source"] = JSrcRestricted;
+
     hephaestus::InputParameters div_free_source_params;
     div_free_source_params.SetParam("SourceName", std::string("source"));
     div_free_source_params.SetParam("HCurlFESpaceName",
@@ -214,20 +156,4 @@ TEST_F(TestTeam7, CheckRun) {
   std::cout << "Created exec ";
   executioner->Init(params);
   executioner->Solve();
-
-  //   hephaestus::L2ErrorVectorPostprocessor l2errpostprocessor =
-  //       *(dynamic_cast<hephaestus::L2ErrorVectorPostprocessor *>(
-  //           params.GetParam<hephaestus::Postprocessors>("Postprocessors")
-  //               .Get("L2ErrorPostprocessor")));
-
-  //   double r;
-  //   for (std::size_t i = 1; i < l2errpostprocessor.ndofs.Size(); ++i) {
-  //     r = estimate_convergence_rate(
-  //         l2errpostprocessor.ndofs[i], l2errpostprocessor.ndofs[i - 1],
-  //         l2errpostprocessor.l2_errs[i], l2errpostprocessor.l2_errs[i - 1],
-  //         3);
-  //     std::cout << r << std::endl;
-  //     ASSERT_TRUE(r > params.GetParam<int>("Order"));
-  //     ASSERT_TRUE(r < params.GetParam<int>("Order") + 1.0);
-  //   }
 }
