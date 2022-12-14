@@ -188,7 +188,7 @@ TEST_F(TestAFormSource, CheckRun) {
         l2errpostprocessor.ndofs[i], l2errpostprocessor.ndofs[i - 1],
         l2errpostprocessor.l2_errs[i], l2errpostprocessor.l2_errs[i - 1], 3);
     std::cout << r << std::endl;
-    ASSERT_TRUE(r > params.GetParam<int>("Order") - 0.05);
+    ASSERT_TRUE(r > params.GetParam<int>("Order") - 0.15);
     ASSERT_TRUE(r < params.GetParam<int>("Order") + 1.0);
   }
 }
