@@ -74,17 +74,8 @@ void DivFreeVolumetricSource::ApplySource(mfem::ParLinearForm *lf) {
     mfem::Array<int> ess_tdof_list;
     h_curl_mass->FormLinearSystem(ess_tdof_list, j, J, M, X, RHS);
 
-    mfem::HypreBoomerAMG amg(M);
-    amg.SetPrintLevel(0);
-    mfem::HypreGMRES gmres(M);
-    gmres.SetTol(1e-12);
-    gmres.SetMaxIter(200);
-    gmres.SetPrintLevel(0);
-    gmres.SetPreconditioner(amg);
-    gmres.Mult(RHS, X);
-
-    // DefaultGMRESSolver solver(solver_options, M);
-    // solver.Mult(RHS, X);
+    DefaultGMRESSolver solver(solver_options, M);
+    solver.Mult(RHS, X);
 
     h_curl_mass->RecoverFEMSolution(X, J, j);
   }
