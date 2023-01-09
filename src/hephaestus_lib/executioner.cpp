@@ -7,7 +7,7 @@ TransientExecutioner::TransientExecutioner(
     : t_step(params.GetParam<float>("TimeStep")),
       t_initial(params.GetParam<float>("StartTime")),
       t_final(params.GetParam<float>("EndTime")), t(t_initial), vis_steps(1),
-      visualization(false), last_step(false) {}
+      visualization(true), last_step(false) {}
 
 void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
   // Read in inputs, and initialise solver
@@ -29,12 +29,15 @@ void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
       new hephaestus::Outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
   data_collections = new std::map<std::string, mfem::DataCollection *>(
       outputs->data_collections);
+  solver_options = new hephaestus::InputParameters(
+      params.GetOptionalParam<hephaestus::InputParameters>(
+          "SolverOptions", hephaestus::InputParameters()));
 
   std::string formulation_name(params.GetParam<std::string>("FormulationName"));
 
   formulation = hephaestus::Factory::createTransientFormulation(
       formulation_name, *pmesh, order, variables->fespaces, variables->gfs,
-      *bc_map, *domain_properties, *sources);
+      *bc_map, *domain_properties, *sources, *solver_options);
 
   formulation->RegisterVariables();
   variables->Init(*pmesh);

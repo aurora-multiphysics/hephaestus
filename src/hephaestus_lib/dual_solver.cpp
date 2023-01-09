@@ -49,7 +49,7 @@ DualSolver::DualSolver(
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
-    hephaestus::Sources &sources)
+    hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
     : myid_(0), num_procs_(1), pmesh_(&pmesh), _fespaces(fespaces),
       _variables(variables), _bc_map(bc_map),
       _domain_properties(domain_properties),
