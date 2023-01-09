@@ -28,6 +28,8 @@ private:
   hephaestus::Sources *sources;
   hephaestus::Outputs *outputs;
   std::map<std::string, mfem::DataCollection *> *data_collections;
+  hephaestus::InputParameters *solver_options;
+
   hephaestus::TransientFormulation *formulation;
   mfem::ODESolver *ode_solver;
   mfem::BlockVector *F;

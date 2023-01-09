@@ -7,25 +7,30 @@ hephaestus::TransientFormulation *Factory::createTransientFormulation(
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
-    hephaestus::Sources &sources) {
+    hephaestus::Sources &sources, hephaestus::InputParameters &solver_options) {
   if (formulation == "EBForm") {
     return new hephaestus::EBDualSolver(pmesh, order, fespaces, variables,
-                                        bc_map, domain_properties, sources);
+                                        bc_map, domain_properties, sources,
+                                        solver_options);
   } else if (formulation == "HJForm") {
     return new hephaestus::HJDualSolver(pmesh, order, fespaces, variables,
-                                        bc_map, domain_properties, sources);
+                                        bc_map, domain_properties, sources,
+                                        solver_options);
   } else if (formulation == "HForm") {
     return new hephaestus::HFormSolver(pmesh, order, fespaces, variables,
-                                       bc_map, domain_properties, sources);
+                                       bc_map, domain_properties, sources,
+                                       solver_options);
   } else if (formulation == "AForm") {
     return new hephaestus::AFormSolver(pmesh, order, fespaces, variables,
-                                       bc_map, domain_properties, sources);
+                                       bc_map, domain_properties, sources,
+                                       solver_options);
   } else if (formulation == "EForm") {
     return new hephaestus::EFormSolver(pmesh, order, fespaces, variables,
-                                       bc_map, domain_properties, sources);
+                                       bc_map, domain_properties, sources,
+                                       solver_options);
   } else if (formulation == "AVForm") {
     return new hephaestus::AVSolver(pmesh, order, fespaces, variables, bc_map,
-                                    domain_properties, sources);
+                                    domain_properties, sources, solver_options);
   } else {
     std::cout << "Formulation name " << formulation << " not recognised. \n";
   }

@@ -7,9 +7,9 @@ HFormSolver::HFormSolver(
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
-    hephaestus::Sources &sources)
+    hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
     : HCurlSolver(pmesh, order, fespaces, variables, bc_map, domain_properties,
-                  sources) {}
+                  sources, solver_options) {}
 
 void HFormSolver::RegisterVariables() {
   p_name = "magnetic_potential";
