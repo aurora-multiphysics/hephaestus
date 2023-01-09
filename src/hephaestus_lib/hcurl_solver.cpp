@@ -49,15 +49,15 @@ HCurlSolver::HCurlSolver(
     hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
     : myid_(0), num_procs_(1), pmesh_(&pmesh), _fespaces(fespaces),
       _variables(variables), _bc_map(bc_map), _sources(sources),
-      _domain_properties(domain_properties),
+      _domain_properties(domain_properties), _solver_options(solver_options),
       H1FESpace_(
           new mfem::common::H1_ParFESpace(&pmesh, order, pmesh.Dimension())),
       HCurlFESpace_(
           new mfem::common::ND_ParFESpace(&pmesh, order, pmesh.Dimension())),
       HDivFESpace_(
           new mfem::common::RT_ParFESpace(&pmesh, order, pmesh.Dimension())),
-      a1(NULL), amg_a0(NULL), pcg_a0(NULL), ams_a1(NULL), pcg_a1(NULL),
-      m1(NULL), grad(NULL), curl(NULL), curlCurl(NULL),
+      a1(NULL), amg_a0(NULL), pcg_a0(NULL), a1_solver(NULL), m1(NULL),
+      grad(NULL), curl(NULL), curlCurl(NULL),
       p_(mfem::ParGridFunction(H1FESpace_)),
       u_(mfem::ParGridFunction(HCurlFESpace_)),
       dp_(mfem::ParGridFunction(H1FESpace_)),
@@ -212,25 +212,11 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   a1->FormLinearSystem(ess_tdof_list, J_gf, *b1, *A1, *X1, *B1);
 
   // We only need to create the solver and preconditioner once
-  if (ams_a1 == NULL) {
-    ams_a1 = new mfem::HypreAMS(*A1, HCurlFESpace_);
-    ams_a1->SetSingularProblem();
+  if (a1_solver == NULL) {
+    a1_solver =
+        new hephaestus::DefaultPCGSolver(_solver_options, *A1, HCurlFESpace_);
   }
-  if (pcg_a1 == NULL) {
-    pcg_a1 = new mfem::HyprePCG(*A1);
-    pcg_a1->SetTol(1.0e-16);
-    pcg_a1->SetMaxIter(1000);
-    pcg_a1->SetPrintLevel(0);
-    pcg_a1->SetPreconditioner(*ams_a1);
-  }
-  // solve the system
-  pcg_a1->Mult(*B1, *X1);
-
-  // mfem::MUMPSSolver mumps;
-  // mumps.SetPrintLevel(0);
-  // mumps.SetMatrixSymType(mfem::MUMPSSolver::MatType::UNSYMMETRIC);
-  // mumps.SetOperator(*A1);
-  // mumps.Mult(*B1, *X1);
+  a1_solver->Mult(*B1, *X1);
 
   a1->RecoverFEMSolution(*X1, *b1, du_);
 
