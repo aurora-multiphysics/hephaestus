@@ -37,9 +37,22 @@ public:
     T param;
     try {
       param = std::any_cast<T>(params.at(param_name));
-    } catch (const std::bad_any_cast &e) {
-      std::cout << "Bad cast for parameter " << param_name << '\n';
+    } catch (const std::exception &e) {
+      std::cout << "Exception raised when trying to cast required parameter "
+                << param_name << '\n';
       std::cout << e.what() << '\n';
+    }
+    return param;
+  };
+  template <typename T>
+  T GetOptionalParam(std::string param_name, T value) const {
+    T param;
+    try {
+      param = std::any_cast<T>(params.at(param_name));
+    } catch (...) {
+      std::cout << "No valid optional parameter for " << param_name
+                << " given. Using default... \n";
+      param = value;
     }
     return param;
   };

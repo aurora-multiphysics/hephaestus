@@ -20,7 +20,9 @@ DivFreeVolumetricSource::DivFreeVolumetricSource(
     : src_coef_name(params.GetParam<std::string>("SourceName")),
       src_gf_name(params.GetParam<std::string>("SourceName")),
       hcurl_fespace_name(params.GetParam<std::string>("HCurlFESpaceName")),
-      h1_fespace_name(params.GetParam<std::string>("H1FESpaceName")) {}
+      h1_fespace_name(params.GetParam<std::string>("H1FESpaceName")),
+      solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
+          "SolverOptions", hephaestus::InputParameters())) {}
 
 void DivFreeVolumetricSource::Init(
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
@@ -80,6 +82,9 @@ void DivFreeVolumetricSource::ApplySource(mfem::ParLinearForm *lf) {
     gmres.SetPrintLevel(0);
     gmres.SetPreconditioner(amg);
     gmres.Mult(RHS, X);
+
+    // DefaultGMRESSolver solver(solver_options, M);
+    // solver.Mult(RHS, X);
 
     h_curl_mass->RecoverFEMSolution(X, J, j);
   }

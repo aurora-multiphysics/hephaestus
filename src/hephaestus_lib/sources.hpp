@@ -41,6 +41,30 @@ public:
   mfem::common::DivergenceFreeProjector *divFreeProj;
   mfem::ParFiniteElementSpace *H1FESpace_;
   mfem::ParFiniteElementSpace *HCurlFESpace_;
-};
+  mfem::Solver *solver;
 
-} // namespace hephaestus
+  const hephaestus::InputParameters solver_options;
+
+protected:
+  class DefaultGMRESSolver : public mfem::HypreGMRES {
+  public:
+    DefaultGMRESSolver(const hephaestus::InputParameters &params,
+                       const mfem::HypreParMatrix &M)
+        : mfem::HypreGMRES(M), amg(M),
+          tol(params.GetOptionalParam<double>("Tolerance", 1e-12)),
+          max_iter(params.GetOptionalParam<int>("MaxIter", 200)),
+          print_level(params.GetOptionalParam<int>("PrintLevel", 0)) {
+
+      SetPrintLevel(0);
+      SetTol(tol);
+      SetMaxIter(max_iter);
+      SetPrintLevel(print_level);
+      SetPreconditioner(amg);
+    }
+    mfem::HypreBoomerAMG amg;
+    double tol;
+    int max_iter;
+    int print_level;
+  };
+};
+}; // namespace hephaestus
