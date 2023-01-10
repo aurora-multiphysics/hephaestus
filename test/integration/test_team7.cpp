@@ -101,7 +101,8 @@ protected:
     exec_params.SetParam("TimeStep", float(0.001));
     exec_params.SetParam("StartTime", float(0.00));
     exec_params.SetParam("EndTime", float(0.002));
-
+    exec_params.SetParam("VisualisationSteps", int(1));
+    exec_params.SetParam("UseGLVis", false);
     hephaestus::TransientExecutioner *executioner =
         new hephaestus::TransientExecutioner(exec_params);
 
@@ -129,7 +130,7 @@ protected:
     div_free_source_params.SetParam("H1FESpaceName", std::string("_H1FESpace"));
     hephaestus::InputParameters current_solver_options;
     current_solver_options.SetParam("Tolerance", float(1.0e-12));
-    current_solver_options.SetParam("MaxIter", 200);
+    current_solver_options.SetParam("MaxIter", (unsigned int)200);
     current_solver_options.SetParam("PrintLevel", 0);
     div_free_source_params.SetParam("SolverOptions", current_solver_options);
     sources.Register(

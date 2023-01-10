@@ -123,6 +123,8 @@ protected:
     exec_params.SetParam("TimeStep", float(0.05));
     exec_params.SetParam("StartTime", float(0.00));
     exec_params.SetParam("EndTime", float(0.05));
+    exec_params.SetParam("VisualisationSteps", int(1));
+    exec_params.SetParam("UseGLVis", false);
     hephaestus::TransientExecutioner *executioner =
         new hephaestus::TransientExecutioner(exec_params);
 
