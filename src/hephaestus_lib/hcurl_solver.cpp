@@ -74,6 +74,19 @@ HCurlSolver::HCurlSolver(
 
   this->height = true_offsets[2];
   this->width = true_offsets[2];
+
+  HYPRE_BigInt size_h1 = H1FESpace_->GlobalTrueVSize();
+  HYPRE_BigInt size_nd = HCurlFESpace_->GlobalTrueVSize();
+  if (myid_ == 0) {
+    std::cout << "Total number of         DOFs: " << size_h1 + size_nd
+              << std::endl;
+    std::cout << "------------------------------------" << std::endl;
+    std::cout << "Total number of         DOFs: " << size_h1 + size_nd
+              << std::endl;
+    std::cout << "Total number of H1      DOFs: " << size_h1 << std::endl;
+    std::cout << "Total number of H(Curl) DOFs: " << size_nd << std::endl;
+    std::cout << "------------------------------------" << std::endl;
+  }
 }
 
 void HCurlSolver::Init(mfem::Vector &X) {
