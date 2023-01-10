@@ -10,9 +10,10 @@ public:
                      const mfem::HypreParMatrix &M)
       : mfem::HyprePCG(M), amg(M),
         tol(params.GetOptionalParam<float>("Tolerance", 1.0e-9)),
-        max_iter(params.GetOptionalParam<int>("MaxIter", 1000)),
-        print_level(params.GetOptionalParam<int>("PrintLevel", 0)) {
+        max_iter(params.GetOptionalParam<unsigned int>("MaxIter", 1000)),
+        print_level(params.GetOptionalParam<int>("PrintLevel", -1)) {
 
+    amg.SetPrintLevel(print_level);
     SetTol(tol);
     SetMaxIter(max_iter);
     SetPrintLevel(print_level);
@@ -31,10 +32,11 @@ public:
                         mfem::ParFiniteElementSpace *edge_fespace)
       : mfem::HyprePCG(M), ams(M, edge_fespace),
         tol(params.GetOptionalParam<float>("Tolerance", 1.0e-16)),
-        max_iter(params.GetOptionalParam<int>("MaxIter", 1000)),
-        print_level(params.GetOptionalParam<int>("PrintLevel", 0)) {
+        max_iter(params.GetOptionalParam<unsigned int>("MaxIter", 1000)),
+        print_level(params.GetOptionalParam<int>("PrintLevel", -1)) {
 
     ams.SetSingularProblem();
+    ams.SetPrintLevel(print_level);
     SetTol(tol);
     SetMaxIter(max_iter);
     SetPrintLevel(print_level);
@@ -52,9 +54,10 @@ public:
                      const mfem::HypreParMatrix &M)
       : mfem::HypreGMRES(M), amg(M),
         tol(params.GetOptionalParam<float>("Tolerance", 1e-12)),
-        max_iter(params.GetOptionalParam<int>("MaxIter", 200)),
-        print_level(params.GetOptionalParam<int>("PrintLevel", 0)) {
+        max_iter(params.GetOptionalParam<unsigned int>("MaxIter", 200)),
+        print_level(params.GetOptionalParam<int>("PrintLevel", -1)) {
 
+    amg.SetPrintLevel(print_level);
     SetTol(tol);
     SetMaxIter(max_iter);
     SetPrintLevel(print_level);

@@ -174,8 +174,8 @@ void DualSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   if (a0_solver == NULL) {
     hephaestus::InputParameters h1_solver_options;
     h1_solver_options.SetParam("Tolerance", float(1.0e-9));
-    h1_solver_options.SetParam("MaxIter", 1000);
-    h1_solver_options.SetParam("PrintLevel", 0);
+    h1_solver_options.SetParam("MaxIter", (unsigned int)1000);
+    h1_solver_options.SetParam("PrintLevel", -1);
     a0_solver = new hephaestus::DefaultH1PCGSolver(h1_solver_options, *A0);
   }
   // Solve
