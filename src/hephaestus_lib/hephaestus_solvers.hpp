@@ -13,7 +13,6 @@ public:
         max_iter(params.GetOptionalParam<int>("MaxIter", 1000)),
         print_level(params.GetOptionalParam<int>("PrintLevel", 0)) {
 
-    SetPrintLevel(0);
     SetTol(tol);
     SetMaxIter(max_iter);
     SetPrintLevel(print_level);
@@ -36,7 +35,6 @@ public:
         print_level(params.GetOptionalParam<int>("PrintLevel", 0)) {
 
     ams.SetSingularProblem();
-    SetPrintLevel(0);
     SetTol(tol);
     SetMaxIter(max_iter);
     SetPrintLevel(print_level);
@@ -57,7 +55,6 @@ public:
         max_iter(params.GetOptionalParam<int>("MaxIter", 200)),
         print_level(params.GetOptionalParam<int>("PrintLevel", 0)) {
 
-    SetPrintLevel(0);
     SetTol(tol);
     SetMaxIter(max_iter);
     SetPrintLevel(print_level);
