@@ -56,9 +56,8 @@ HCurlSolver::HCurlSolver(
           new mfem::common::ND_ParFESpace(&pmesh, order, pmesh.Dimension())),
       HDivFESpace_(
           new mfem::common::RT_ParFESpace(&pmesh, order, pmesh.Dimension())),
-      a1(NULL), amg_a0(NULL), pcg_a0(NULL), a1_solver(NULL), m1(NULL),
-      grad(NULL), curl(NULL), curlCurl(NULL),
-      p_(mfem::ParGridFunction(H1FESpace_)),
+      a1(NULL), a0_solver(NULL), a1_solver(NULL), m1(NULL), grad(NULL),
+      curl(NULL), curlCurl(NULL), p_(mfem::ParGridFunction(H1FESpace_)),
       u_(mfem::ParGridFunction(HCurlFESpace_)),
       dp_(mfem::ParGridFunction(H1FESpace_)),
       du_(mfem::ParGridFunction(HCurlFESpace_)),
@@ -162,19 +161,15 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   b0->Assemble();
   a0->FormLinearSystem(poisson_ess_tdof_list, Phi_gf, *b0, *A0, *X0, *B0);
 
-  if (amg_a0 == NULL) {
-    amg_a0 = new mfem::HypreBoomerAMG(*A0);
+  if (a0_solver == NULL) {
+    hephaestus::InputParameters h1_solver_options;
+    h1_solver_options.SetParam("Tolerance", float(1.0e-9));
+    h1_solver_options.SetParam("MaxIter", 1000);
+    h1_solver_options.SetParam("PrintLevel", 0);
+    a0_solver = new hephaestus::DefaultH1PCGSolver(h1_solver_options, *A0);
   }
-  if (pcg_a0 == NULL) {
-    pcg_a0 = new mfem::HyprePCG(*A0);
-    pcg_a0->SetTol(1.0e-9);
-    pcg_a0->SetMaxIter(1000);
-    pcg_a0->SetPrintLevel(0);
-    pcg_a0->SetPreconditioner(*amg_a0);
-  }
-  // pcg "Mult" operation is a solve
-  // X0 = A0^-1 * B0
-  pcg_a0->Mult(*B0, *X0);
+  // Solve
+  a0_solver->Mult(*B0, *X0);
 
   // "undo" the static condensation saving result in grid function dP
   a0->RecoverFEMSolution(*X0, *b0, p_);
@@ -213,8 +208,8 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
 
   // We only need to create the solver and preconditioner once
   if (a1_solver == NULL) {
-    a1_solver =
-        new hephaestus::DefaultPCGSolver(_solver_options, *A1, HCurlFESpace_);
+    a1_solver = new hephaestus::DefaultHCurlPCGSolver(_solver_options, *A1,
+                                                      HCurlFESpace_);
   }
   a1_solver->Mult(*B1, *X1);
 

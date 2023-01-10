@@ -64,6 +64,7 @@ protected:
   mfem::NamedFieldsMap<mfem::ParGridFunction> &_variables;
   hephaestus::BCMap _bc_map;
   hephaestus::DomainProperties _domain_properties;
+  hephaestus::InputParameters _solver_options;
 
   mfem::ParBilinearForm *a0, *a1, *m1;
   mfem::HypreParMatrix *A0, *A1;
@@ -74,8 +75,8 @@ protected:
   mfem::ParMixedBilinearForm *weakCurl;
   mutable mfem::HypreSolver *amg_a0;
   mutable mfem::HyprePCG *pcg_a0;
-  mutable mfem::HypreAMS *ams_a1;
-  mutable mfem::HyprePCG *pcg_a1;
+  mutable hephaestus::DefaultH1PCGSolver *a0_solver;
+  mutable hephaestus::DefaultHCurlPCGSolver *a1_solver;
 
   // temporary work vectors
   mfem::ParLinearForm *b0, *b1;

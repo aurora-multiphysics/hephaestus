@@ -75,7 +75,8 @@ protected:
   mfem::ParBilinearForm *curlCurl;
   mutable mfem::HypreSolver *amg_a0;
   mutable mfem::HyprePCG *pcg_a0;
-  mutable hephaestus::DefaultPCGSolver *a1_solver;
+  mutable hephaestus::DefaultH1PCGSolver *a0_solver;
+  mutable hephaestus::DefaultHCurlPCGSolver *a1_solver;
 
   // temporary work vectors
   mfem::ParLinearForm *b0, *b1;
