@@ -79,6 +79,19 @@ DualSolver::DualSolver(
 
   this->height = true_offsets[3];
   this->width = true_offsets[3];
+
+  HYPRE_BigInt size_h1 = H1FESpace_->GlobalTrueVSize();
+  HYPRE_BigInt size_nd = HCurlFESpace_->GlobalTrueVSize();
+  HYPRE_BigInt size_rt = HDivFESpace_->GlobalTrueVSize();
+  if (myid_ == 0) {
+    std::cout << "Total number of         DOFs: " << size_h1 + size_nd + size_rt
+              << std::endl;
+    std::cout << "------------------------------------" << std::endl;
+    std::cout << "Total number of H1      DOFs: " << size_h1 << std::endl;
+    std::cout << "Total number of H(Curl) DOFs: " << size_nd << std::endl;
+    std::cout << "Total number of H(Div)  DOFs: " << size_rt << std::endl;
+    std::cout << "------------------------------------" << std::endl;
+  }
 }
 
 void DualSolver::Init(mfem::Vector &X) {
