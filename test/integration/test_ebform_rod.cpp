@@ -90,6 +90,11 @@ protected:
     hephaestus::Postprocessors postprocessors;
     hephaestus::Sources sources;
 
+    hephaestus::InputParameters solver_options;
+    solver_options.SetParam("Tolerance", float(1.0e-9));
+    solver_options.SetParam("MaxIter", 1000);
+    solver_options.SetParam("PrintLevel", 0);
+
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("Executioner", executioner);
@@ -102,6 +107,7 @@ protected:
     params.SetParam("Sources", sources);
     params.SetParam("Outputs", outputs);
     params.SetParam("FormulationName", std::string("EBForm"));
+    params.SetParam("SolverOptions", solver_options);
 
     return params;
   }

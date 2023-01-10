@@ -83,6 +83,11 @@ protected:
         new mfem::ParaViewDataCollection("HFormParaView");
     hephaestus::Outputs outputs(data_collections);
 
+    hephaestus::InputParameters solver_options;
+    solver_options.SetParam("Tolerance", float(1.0e-16));
+    solver_options.SetParam("MaxIter", 1000);
+    solver_options.SetParam("PrintLevel", 0);
+
     hephaestus::Variables variables;
     hephaestus::AuxKernels auxkernels;
     hephaestus::Postprocessors postprocessors;
@@ -100,6 +105,7 @@ protected:
     params.SetParam("Outputs", outputs);
     params.SetParam("Sources", sources);
     params.SetParam("FormulationName", std::string("HForm"));
+    params.SetParam("SolverOptions", solver_options);
 
     return params;
   }

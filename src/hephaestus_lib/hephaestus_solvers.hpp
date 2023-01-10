@@ -4,13 +4,34 @@
 
 namespace hephaestus {
 
-class DefaultPCGSolver : public mfem::HyprePCG {
+class DefaultH1PCGSolver : public mfem::HyprePCG {
 public:
-  DefaultPCGSolver(const hephaestus::InputParameters &params,
-                   const mfem::HypreParMatrix &M,
-                   mfem::ParFiniteElementSpace *edge_fespace)
+  DefaultH1PCGSolver(const hephaestus::InputParameters &params,
+                     const mfem::HypreParMatrix &M)
+      : mfem::HyprePCG(M), amg(M),
+        tol(params.GetOptionalParam<float>("Tolerance", 1.0e-9)),
+        max_iter(params.GetOptionalParam<int>("MaxIter", 1000)),
+        print_level(params.GetOptionalParam<int>("PrintLevel", 0)) {
+
+    SetPrintLevel(0);
+    SetTol(tol);
+    SetMaxIter(max_iter);
+    SetPrintLevel(print_level);
+    SetPreconditioner(amg);
+  }
+  mfem::HypreBoomerAMG amg;
+  double tol;
+  int max_iter;
+  int print_level;
+};
+
+class DefaultHCurlPCGSolver : public mfem::HyprePCG {
+public:
+  DefaultHCurlPCGSolver(const hephaestus::InputParameters &params,
+                        const mfem::HypreParMatrix &M,
+                        mfem::ParFiniteElementSpace *edge_fespace)
       : mfem::HyprePCG(M), ams(M, edge_fespace),
-        tol(params.GetOptionalParam<double>("Tolerance", 1.0e-16)),
+        tol(params.GetOptionalParam<float>("Tolerance", 1.0e-16)),
         max_iter(params.GetOptionalParam<int>("MaxIter", 1000)),
         print_level(params.GetOptionalParam<int>("PrintLevel", 0)) {
 
@@ -32,7 +53,7 @@ public:
   DefaultGMRESSolver(const hephaestus::InputParameters &params,
                      const mfem::HypreParMatrix &M)
       : mfem::HypreGMRES(M), amg(M),
-        tol(params.GetOptionalParam<double>("Tolerance", 1e-12)),
+        tol(params.GetOptionalParam<float>("Tolerance", 1e-12)),
         max_iter(params.GetOptionalParam<int>("MaxIter", 200)),
         print_level(params.GetOptionalParam<int>("PrintLevel", 0)) {
 

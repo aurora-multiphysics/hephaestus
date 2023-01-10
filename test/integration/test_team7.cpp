@@ -127,9 +127,19 @@ protected:
     div_free_source_params.SetParam("HCurlFESpaceName",
                                     std::string("_HCurlFESpace"));
     div_free_source_params.SetParam("H1FESpaceName", std::string("_H1FESpace"));
+    hephaestus::InputParameters current_solver_options;
+    current_solver_options.SetParam("Tolerance", float(1.0e-12));
+    current_solver_options.SetParam("MaxIter", 200);
+    current_solver_options.SetParam("PrintLevel", 0);
+    div_free_source_params.SetParam("SolverOptions", current_solver_options);
     sources.Register(
         "source",
         new hephaestus::DivFreeVolumetricSource(div_free_source_params), true);
+
+    hephaestus::InputParameters solver_options;
+    solver_options.SetParam("Tolerance", float(1.0e-16));
+    solver_options.SetParam("MaxIter", 1000);
+    solver_options.SetParam("PrintLevel", 0);
 
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
@@ -143,6 +153,7 @@ protected:
     params.SetParam("Outputs", outputs);
     params.SetParam("Sources", sources);
     params.SetParam("FormulationName", std::string("AForm"));
+    params.SetParam("SolverOptions", solver_options);
     std::cout << "Created params ";
     return params;
   }
