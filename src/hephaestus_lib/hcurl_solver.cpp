@@ -81,8 +81,6 @@ HCurlSolver::HCurlSolver(
     std::cout << "Total number of         DOFs: " << size_h1 + size_nd
               << std::endl;
     std::cout << "------------------------------------" << std::endl;
-    std::cout << "Total number of         DOFs: " << size_h1 + size_nd
-              << std::endl;
     std::cout << "Total number of H1      DOFs: " << size_h1 << std::endl;
     std::cout << "Total number of H(Curl) DOFs: " << size_nd << std::endl;
     std::cout << "------------------------------------" << std::endl;
@@ -101,7 +99,7 @@ void HCurlSolver::Init(mfem::Vector &X) {
   SetMaterialCoefficients(_domain_properties);
   dtAlphaCoef = new mfem::TransformedCoefficient(&dtCoef, alphaCoef, prodFunc);
 
-  _sources.Init(_variables, _fespaces, _domain_properties);
+  _sources.Init(_variables, _fespaces, _bc_map, _domain_properties);
 
   // a0(p, p') = (β ∇ p, ∇ p')
   a0 = new mfem::ParBilinearForm(H1FESpace_);

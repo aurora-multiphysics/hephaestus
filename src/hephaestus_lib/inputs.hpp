@@ -41,6 +41,7 @@ public:
       std::cout << "Exception raised when trying to cast required parameter "
                 << param_name << '\n';
       std::cout << e.what() << '\n';
+      exit;
     }
     return param;
   };
