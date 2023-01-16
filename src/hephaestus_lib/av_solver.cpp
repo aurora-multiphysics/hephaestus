@@ -98,7 +98,7 @@ void AVSolver::Init(mfem::Vector &X) {
   SetMaterialCoefficients(_domain_properties);
   dtAlphaCoef = new mfem::TransformedCoefficient(&dtCoef, alphaCoef, prodFunc);
 
-  _sources.Init(_variables, _fespaces, _domain_properties);
+  _sources.Init(_variables, _fespaces, _bc_map, _domain_properties);
 
   this->buildCurl(alphaCoef); // (α∇×u_{n}, ∇×u')
   this->buildGrad();          // (s0_{n+1}, u')
