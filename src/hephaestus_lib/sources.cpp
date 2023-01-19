@@ -28,7 +28,8 @@ ScalarPotentialSource::ScalarPotentialSource(
       h1_fespace_name(params.GetParam<std::string>("H1FESpaceName")),
       beta_coef_name(params.GetParam<std::string>("ConductivityCoefName")),
       solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
-          "SolverOptions", hephaestus::InputParameters())) {}
+          "SolverOptions", hephaestus::InputParameters())),
+      grad(NULL), m1(NULL), a0_solver(NULL) {}
 
 void ScalarPotentialSource::Init(
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
@@ -40,15 +41,20 @@ void ScalarPotentialSource::Init(
   p_ = variables.Get(potential_gf_name);
   _bc_map = &bc_map;
 
-  betaCoef = domain_properties.scalar_property_map["beta_coef_name"];
+  betaCoef = domain_properties.scalar_property_map[beta_coef_name];
+
+  a0 = new mfem::ParBilinearForm(H1FESpace_);
+  a0->AddDomainIntegrator(new mfem::DiffusionIntegrator(*betaCoef));
+  a0->Assemble();
 
   this->buildGrad();
   this->buildM1(betaCoef);
   // a0(p, p') = (β ∇ p, ∇ p')
-  a0 = new mfem::ParBilinearForm(H1FESpace_);
-  a0->AddDomainIntegrator(new mfem::DiffusionIntegrator(*betaCoef));
-  a0->Assemble();
   b0 = new mfem::ParLinearForm(H1FESpace_);
+  A0 = new mfem::HypreParMatrix;
+  X0 = new mfem::Vector;
+  B0 = new mfem::Vector;
+
   grad_p_ = new mfem::ParGridFunction(HCurlFESpace_);
   variables.Register(src_gf_name, grad_p_, false);
 }
@@ -78,7 +84,10 @@ void ScalarPotentialSource::buildGrad() {
 }
 
 void ScalarPotentialSource::ApplySource(mfem::ParLinearForm *lf) {
-
+  // -(s0_{n+1}, ∇ p') + <n.s0_{n+1}, p'> = 0
+  // a0(p_{n+1}, p') = b0(p')
+  // a0(p, p') = (β ∇ p, ∇ p')
+  // b0(p') = <n.s0, p'>
   mfem::ParGridFunction Phi_gf(H1FESpace_);
   mfem::Array<int> poisson_ess_tdof_list;
   Phi_gf = 0.0;
@@ -88,6 +97,7 @@ void ScalarPotentialSource::ApplySource(mfem::ParLinearForm *lf) {
   _bc_map->applyIntegratedBCs(potential_gf_name, *b0,
                               (H1FESpace_->GetParMesh()));
   b0->Assemble();
+
   a0->FormLinearSystem(poisson_ess_tdof_list, Phi_gf, *b0, *A0, *X0, *B0);
 
   if (a0_solver == NULL) {

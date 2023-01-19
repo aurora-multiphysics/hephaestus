@@ -56,8 +56,8 @@ HCurlSolver::HCurlSolver(
           new mfem::common::ND_ParFESpace(&pmesh, order, pmesh.Dimension())),
       HDivFESpace_(
           new mfem::common::RT_ParFESpace(&pmesh, order, pmesh.Dimension())),
-      a1(NULL), a0_solver(NULL), a1_solver(NULL), m1(NULL), grad(NULL),
-      curl(NULL), curlCurl(NULL), p_(mfem::ParGridFunction(H1FESpace_)),
+      a1(NULL), a1_solver(NULL), curl(NULL), curlCurl(NULL),
+      p_(mfem::ParGridFunction(H1FESpace_)),
       u_(mfem::ParGridFunction(HCurlFESpace_)),
       dp_(mfem::ParGridFunction(H1FESpace_)),
       du_(mfem::ParGridFunction(HCurlFESpace_)),
@@ -102,20 +102,10 @@ void HCurlSolver::Init(mfem::Vector &X) {
   _sources.Init(_variables, _fespaces, _bc_map, _domain_properties);
 
   // a0(p, p') = (β ∇ p, ∇ p')
-  a0 = new mfem::ParBilinearForm(H1FESpace_);
-  a0->AddDomainIntegrator(new mfem::DiffusionIntegrator(*betaCoef));
-  a0->Assemble();
-
-  this->buildM1(betaCoef);    // (βu, u')
   this->buildCurl(alphaCoef); // (α∇×u_{n}, ∇×u')
-  this->buildGrad();          // (s0_{n+1}, u')
-  b0 = new mfem::ParLinearForm(H1FESpace_);
   b1 = new mfem::ParLinearForm(HCurlFESpace_);
-  A0 = new mfem::HypreParMatrix;
   A1 = new mfem::HypreParMatrix;
-  X0 = new mfem::Vector;
   X1 = new mfem::Vector;
-  B0 = new mfem::Vector;
   B1 = new mfem::Vector;
 
   mfem::Vector zero_vec(3);
@@ -159,31 +149,6 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
 
   _domain_properties.SetTime(this->GetTime());
 
-  // -(s0_{n+1}, ∇ p') + <n.s0_{n+1}, p'> = 0
-  // a0(p_{n+1}, p') = b0(p')
-  // a0(p, p') = (β ∇ p, ∇ p')
-  // b0(p') = <n.s0, p'>
-  mfem::ParGridFunction Phi_gf(H1FESpace_);
-  mfem::Array<int> poisson_ess_tdof_list;
-  Phi_gf = 0.0;
-  *b0 = 0.0;
-  _bc_map.applyEssentialBCs(p_name, poisson_ess_tdof_list, Phi_gf, pmesh_);
-  _bc_map.applyIntegratedBCs(p_name, *b0, pmesh_);
-  b0->Assemble();
-  a0->FormLinearSystem(poisson_ess_tdof_list, Phi_gf, *b0, *A0, *X0, *B0);
-
-  if (a0_solver == NULL) {
-    hephaestus::InputParameters h1_solver_options;
-    h1_solver_options.SetParam("Tolerance", float(1.0e-9));
-    h1_solver_options.SetParam("MaxIter", (unsigned int)1000);
-    h1_solver_options.SetParam("PrintLevel", -1);
-    a0_solver = new hephaestus::DefaultH1PCGSolver(h1_solver_options, *A0);
-  }
-  // Solve
-  a0_solver->Mult(*B0, *X0);
-
-  // "undo" the static condensation saving result in grid function dP
-  a0->RecoverFEMSolution(*X0, *b0, p_);
   dp_ = 0.0;
   //////////////////////////////////////////////////////////////////////////////
   // (α∇×u_{n}, ∇×u') + (αdt∇×du/dt_{n+1}, ∇×u') + (βdu/dt_{n+1}, u')
@@ -197,11 +162,6 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   // v_ is a grid function but curlCurl is not parallel assembled so is OK
   curlCurl->MultTranspose(u_, *b1);
   *b1 *= -1.0;
-
-  // use du_ as a temporary
-  // (s0_{n+1}, u')
-  grad->Mult(p_, du_);
-  m1->AddMult(du_, *b1, 1.0);
 
   _sources.ApplySources(b1);
 
@@ -248,30 +208,6 @@ void HCurlSolver::buildA1(mfem::Coefficient *Sigma,
   // Don't finalize or parallel assemble this is done in FormLinearSystem.
 
   dt_A1 = dtCoef.constant;
-}
-
-void HCurlSolver::buildM1(mfem::Coefficient *Sigma) {
-  if (m1 != NULL) {
-    delete m1;
-  }
-
-  m1 = new mfem::ParBilinearForm(HCurlFESpace_);
-  m1->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*Sigma));
-  m1->Assemble();
-
-  // Don't finalize or parallel assemble this is done in FormLinearSystem.
-}
-
-void HCurlSolver::buildGrad() {
-  if (grad != NULL) {
-    delete grad;
-  }
-
-  grad = new mfem::ParDiscreteLinearOperator(H1FESpace_, HCurlFESpace_);
-  grad->AddDomainInterpolator(new mfem::GradientInterpolator());
-  grad->Assemble();
-
-  // no ParallelAssemble since this will be applied to GridFunctions
 }
 
 void HCurlSolver::buildCurl(mfem::Coefficient *MuInv) {
