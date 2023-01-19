@@ -12,9 +12,6 @@ EBDualSolver::EBDualSolver(
                  sources, solver_options) {}
 
 void EBDualSolver::RegisterVariables() {
-  p_name = "electric_potential";
-  p_display_name = "Scalar Potential (V)";
-
   u_name = "electric_field";
   u_display_name = "Electric Field (E)";
 
@@ -23,7 +20,6 @@ void EBDualSolver::RegisterVariables() {
 
   _variables.Register(u_name, &u_, false);
   _variables.Register(v_name, &v_, false);
-  _variables.Register(p_name, &p_, false);
 }
 
 void EBDualSolver::SetMaterialCoefficients(
@@ -47,26 +43,4 @@ void EBDualSolver::SetMaterialCoefficients(
   betaCoef = domain_properties.scalar_property_map["electrical_conductivity"];
 }
 
-void EBDualSolver::WriteConsoleSummary(double t, int it) {
-  // Write a summary of the timestep to console.
-
-  // Output Ohmic losses to console
-  double el = this->ElectricLosses();
-  if (myid_ == 0) {
-    std::cout << std::fixed;
-    std::cout << "step " << std::setw(6) << it << ",\tt = " << std::setw(6)
-              << std::setprecision(3) << t
-              << ",\tdot(E, J) = " << std::setprecision(8) << el << std::endl;
-  }
-}
-
-double EBDualSolver::ElectricLosses() const {
-  double el = m1->InnerProduct(u_, u_);
-
-  double global_el;
-  MPI_Allreduce(&el, &global_el, 1, MPI_DOUBLE, MPI_SUM,
-                m1->ParFESpace()->GetComm());
-
-  return el;
-}
 } // namespace hephaestus
