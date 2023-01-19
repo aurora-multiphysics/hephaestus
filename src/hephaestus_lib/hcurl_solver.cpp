@@ -57,23 +57,20 @@ HCurlSolver::HCurlSolver(
       HDivFESpace_(
           new mfem::common::RT_ParFESpace(&pmesh, order, pmesh.Dimension())),
       a1(NULL), a1_solver(NULL), curl(NULL), curlCurl(NULL),
-      p_(mfem::ParGridFunction(H1FESpace_)),
       u_(mfem::ParGridFunction(HCurlFESpace_)),
-      dp_(mfem::ParGridFunction(H1FESpace_)),
       du_(mfem::ParGridFunction(HCurlFESpace_)),
       curl_u_(mfem::ParGridFunction(HDivFESpace_)) {
   // Initialize MPI variables
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh.GetComm(), &myid_);
 
-  true_offsets.SetSize(3);
+  true_offsets.SetSize(2);
   true_offsets[0] = 0;
-  true_offsets[1] = H1FESpace_->GetVSize();
-  true_offsets[2] = HCurlFESpace_->GetVSize();
+  true_offsets[1] = HCurlFESpace_->GetVSize();
   true_offsets.PartialSum();
 
-  this->height = true_offsets[2];
-  this->width = true_offsets[2];
+  this->height = true_offsets[1];
+  this->width = true_offsets[1];
 
   HYPRE_BigInt size_h1 = H1FESpace_->GlobalTrueVSize();
   HYPRE_BigInt size_nd = HCurlFESpace_->GlobalTrueVSize();
@@ -113,10 +110,7 @@ void HCurlSolver::Init(mfem::Vector &X) {
   mfem::VectorConstantCoefficient Zero_vec(zero_vec);
   mfem::ConstantCoefficient Zero(0.0);
 
-  p_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
-  u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
-
-  p_.ProjectCoefficient(Zero);
+  u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
   u_.ProjectCoefficient(Zero_vec);
 }
 
@@ -141,15 +135,11 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   dX_dt = 0.0;
   dtCoef.constant = dt;
 
-  p_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
-  u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
-
-  dp_.MakeRef(H1FESpace_, dX_dt, true_offsets[0]);
-  du_.MakeRef(HCurlFESpace_, dX_dt, true_offsets[1]);
+  u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
+  du_.MakeRef(HCurlFESpace_, dX_dt, true_offsets[0]);
 
   _domain_properties.SetTime(this->GetTime());
 
-  dp_ = 0.0;
   //////////////////////////////////////////////////////////////////////////////
   // (α∇×u_{n}, ∇×u') + (αdt∇×du/dt_{n+1}, ∇×u') + (βdu/dt_{n+1}, u')
   // - (s0_{n+1}, u') - <(α∇×u_{n+1}) × n, u'> = 0
@@ -231,14 +221,10 @@ void HCurlSolver::buildCurl(mfem::Coefficient *MuInv) {
 }
 
 void HCurlSolver::RegisterVariables() {
-  p_name = "scalar_potential";
-  p_display_name = "Scalar Potential";
-
   u_name = "h_curl_var";
   u_display_name = "H(Curl) variable";
 
   _variables.Register(u_name, &u_, false);
-  _variables.Register(p_name, &p_, false);
   _variables.Register("curl h_curl_var", &curl_u_, false);
 }
 

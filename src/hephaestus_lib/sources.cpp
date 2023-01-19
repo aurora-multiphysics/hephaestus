@@ -38,7 +38,11 @@ void ScalarPotentialSource::Init(
     hephaestus::DomainProperties &domain_properties) {
   H1FESpace_ = fespaces.Get(h1_fespace_name);
   HCurlFESpace_ = fespaces.Get(hcurl_fespace_name);
+
+  p_ = new mfem::ParGridFunction(H1FESpace_);
+  variables.Register(potential_gf_name, p_, false);
   p_ = variables.Get(potential_gf_name);
+
   _bc_map = &bc_map;
 
   betaCoef = domain_properties.scalar_property_map[beta_coef_name];
