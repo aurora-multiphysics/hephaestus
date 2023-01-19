@@ -14,7 +14,8 @@ public:
        const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
        hephaestus::BCMap &bc_map,
        hephaestus::DomainProperties &domain_properties){};
-  virtual void ApplySource(mfem::ParLinearForm *lf){};
+  virtual void ApplyKernel(mfem::ParLinearForm *lf){};
+  virtual void SubtractSource(mfem::ParGridFunction *gf){};
 };
 
 class Sources : public mfem::NamedFieldsMap<hephaestus::Source> {
@@ -23,7 +24,8 @@ public:
             const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
             hephaestus::BCMap &bc_map,
             hephaestus::DomainProperties &domain_properties);
-  void ApplySources(mfem::ParLinearForm *lf);
+  void ApplyKernels(mfem::ParLinearForm *lf);
+  void SubtractSources(mfem::ParGridFunction *gf);
 };
 
 class ScalarPotentialSource : public hephaestus::Source {
@@ -33,7 +35,8 @@ public:
             const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
             hephaestus::BCMap &bc_map,
             hephaestus::DomainProperties &domain_properties) override;
-  void ApplySource(mfem::ParLinearForm *lf) override;
+  void ApplyKernel(mfem::ParLinearForm *lf) override;
+  void SubtractSource(mfem::ParGridFunction *gf) override;
   void buildM1(mfem::Coefficient *Sigma);
   void buildGrad();
 
@@ -76,7 +79,8 @@ public:
             const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
             hephaestus::BCMap &bc_map,
             hephaestus::DomainProperties &domain_properties) override;
-  void ApplySource(mfem::ParLinearForm *lf) override;
+  void ApplyKernel(mfem::ParLinearForm *lf) override;
+  void SubtractSource(mfem::ParGridFunction *gf) override;
 
   std::string src_gf_name;
   std::string src_coef_name;
@@ -86,6 +90,9 @@ public:
   mfem::VectorCoefficient *sourceVecCoef;
   mfem::ParGridFunction *div_free_src_gf; // Source field
   mfem::common::DivergenceFreeProjector *divFreeProj;
+  mfem::VectorFEMassIntegrator *h_curl_mass_integ;
+  mfem::ParBilinearForm *h_curl_mass;
+
   mfem::ParFiniteElementSpace *H1FESpace_;
   mfem::ParFiniteElementSpace *HCurlFESpace_;
   mfem::Solver *solver;

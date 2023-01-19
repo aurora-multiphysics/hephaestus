@@ -11,9 +11,16 @@ void Sources::Init(
     source->Init(variables, fespaces, bc_map, domain_properties);
   }
 }
-void Sources::ApplySources(mfem::ParLinearForm *lf) {
+
+void Sources::ApplyKernels(mfem::ParLinearForm *lf) {
   for (const auto &[name, source] : GetMap()) {
-    source->ApplySource(lf);
+    source->ApplyKernel(lf);
+  }
+}
+
+void Sources::SubtractSources(mfem::ParGridFunction *gf) {
+  for (const auto &[name, source] : GetMap()) {
+    source->SubtractSource(gf);
   }
 }
 
@@ -87,7 +94,7 @@ void ScalarPotentialSource::buildGrad() {
   // no ParallelAssemble since this will be applied to GridFunctions
 }
 
-void ScalarPotentialSource::ApplySource(mfem::ParLinearForm *lf) {
+void ScalarPotentialSource::ApplyKernel(mfem::ParLinearForm *lf) {
   // -(s0_{n+1}, ∇ p') + <n.s0_{n+1}, p'> = 0
   // a0(p_{n+1}, p') = b0(p')
   // a0(p, p') = (β ∇ p, ∇ p')
@@ -105,11 +112,7 @@ void ScalarPotentialSource::ApplySource(mfem::ParLinearForm *lf) {
   a0->FormLinearSystem(poisson_ess_tdof_list, Phi_gf, *b0, *A0, *X0, *B0);
 
   if (a0_solver == NULL) {
-    hephaestus::InputParameters h1_solver_options;
-    h1_solver_options.SetParam("Tolerance", float(1.0e-9));
-    h1_solver_options.SetParam("MaxIter", (unsigned int)1000);
-    h1_solver_options.SetParam("PrintLevel", -1);
-    a0_solver = new hephaestus::DefaultH1PCGSolver(h1_solver_options, *A0);
+    a0_solver = new hephaestus::DefaultH1PCGSolver(solver_options, *A0);
   }
   // Solve
   a0_solver->Mult(*B0, *X0);
@@ -119,6 +122,10 @@ void ScalarPotentialSource::ApplySource(mfem::ParLinearForm *lf) {
 
   grad->Mult(*p_, *grad_p_);
   m1->AddMult(*grad_p_, *lf, 1.0);
+}
+
+void ScalarPotentialSource::SubtractSource(mfem::ParGridFunction *gf) {
+  grad->AddMult(*p_, *gf, -1.0);
 }
 
 DivFreeVolumetricSource::DivFreeVolumetricSource(
@@ -148,27 +155,23 @@ void DivFreeVolumetricSource::Init(
 
   div_free_src_gf = new mfem::ParGridFunction(HCurlFESpace_);
   variables.Register(src_gf_name, div_free_src_gf, false);
-}
 
-void DivFreeVolumetricSource::ApplySource(mfem::ParLinearForm *lf) {
   int irOrder = H1FESpace_->GetElementTransformation(0)->OrderW() + 2 * 2;
   int geom = H1FESpace_->GetFE(0)->GetGeomType();
   const mfem::IntegrationRule *ir = &mfem::IntRules.Get(geom, irOrder);
   divFreeProj = new mfem::common::DivergenceFreeProjector(
       *H1FESpace_, *HCurlFESpace_, irOrder, NULL, NULL, NULL);
-
-  /// Create a H(curl) mass matrix for integrating grid functions
-  mfem::VectorFEMassIntegrator *h_curl_mass_integ =
-      new mfem::VectorFEMassIntegrator;
-  mfem::ParBilinearForm *h_curl_mass = new mfem::ParBilinearForm(HCurlFESpace_);
-
+  h_curl_mass_integ = new mfem::VectorFEMassIntegrator;
+  h_curl_mass = new mfem::ParBilinearForm(HCurlFESpace_);
   h_curl_mass_integ->SetIntRule(ir);
 
   h_curl_mass->AddDomainIntegrator(h_curl_mass_integ);
   // assemble mass matrix
   h_curl_mass->Assemble();
   h_curl_mass->Finalize();
+}
 
+void DivFreeVolumetricSource::ApplyKernel(mfem::ParLinearForm *lf) {
   mfem::ParLinearForm J(HCurlFESpace_);
   J.AddDomainIntegrator(new mfem::VectorFEDomainLFIntegrator(*sourceVecCoef));
   J.Assemble();
@@ -193,6 +196,10 @@ void DivFreeVolumetricSource::ApplySource(mfem::ParLinearForm *lf) {
 
   // Compute the dual of div_free_src_gf
   h_curl_mass->AddMult(*div_free_src_gf, *lf);
+}
+
+void DivFreeVolumetricSource::SubtractSource(mfem::ParGridFunction *gf) {
+  h_curl_mass->AddMult(*div_free_src_gf, *gf, -1.0);
 }
 
 } // namespace hephaestus

@@ -20,8 +20,5 @@ public:
                hephaestus::InputParameters &solver_options);
 
   ~EBDualSolver(){};
-
-  virtual void WriteConsoleSummary(double t, int it) override;
-  double ElectricLosses() const;
 };
 } // namespace hephaestus

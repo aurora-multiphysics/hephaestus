@@ -153,7 +153,7 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   curlCurl->MultTranspose(u_, *b1);
   *b1 *= -1.0;
 
-  _sources.ApplySources(b1);
+  _sources.ApplyKernels(b1);
 
   mfem::ParGridFunction J_gf(HCurlFESpace_);
   mfem::Array<int> ess_tdof_list;

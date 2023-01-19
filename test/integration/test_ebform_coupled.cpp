@@ -146,7 +146,7 @@ protected:
     exec_params.SetParam("StartTime", float(0.0));
     exec_params.SetParam("EndTime", float(2.5));
     exec_params.SetParam("VisualisationSteps", int(1));
-    exec_params.SetParam("UseGLVis", false);
+    exec_params.SetParam("UseGLVis", true);
     hephaestus::TransientExecutioner *executioner =
         new hephaestus::TransientExecutioner(exec_params);
 
@@ -172,6 +172,27 @@ protected:
 
     hephaestus::Postprocessors postprocessors;
     hephaestus::Sources sources;
+    hephaestus::InputParameters scalar_potential_source_params;
+    scalar_potential_source_params.SetParam("SourceName",
+                                            std::string("source"));
+    scalar_potential_source_params.SetParam("PotentialName",
+                                            std::string("electric_potential"));
+    scalar_potential_source_params.SetParam("HCurlFESpaceName",
+                                            std::string("_HCurlFESpace"));
+    scalar_potential_source_params.SetParam("H1FESpaceName",
+                                            std::string("_H1FESpace"));
+    scalar_potential_source_params.SetParam(
+        "ConductivityCoefName", std::string("electrical_conductivity"));
+    hephaestus::InputParameters current_solver_options;
+    current_solver_options.SetParam("Tolerance", float(1.0e-9));
+    current_solver_options.SetParam("MaxIter", (unsigned int)1000);
+    current_solver_options.SetParam("PrintLevel", -1);
+    scalar_potential_source_params.SetParam("SolverOptions",
+                                            current_solver_options);
+    sources.Register(
+        "source",
+        new hephaestus::ScalarPotentialSource(scalar_potential_source_params),
+        true);
 
     hephaestus::InputParameters solver_options;
     solver_options.SetParam("Tolerance", float(1.0e-9));

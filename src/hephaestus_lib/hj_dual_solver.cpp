@@ -12,9 +12,6 @@ HJDualSolver::HJDualSolver(
                  sources, solver_options) {}
 
 void HJDualSolver::RegisterVariables() {
-  p_name = "magnetic_potential";
-  p_display_name = "Scalar Potential (V)";
-
   u_name = "magnetic_field";
   u_display_name = "Magnetic Field (H)";
 
@@ -23,7 +20,6 @@ void HJDualSolver::RegisterVariables() {
 
   _variables.Register(u_name, &u_, false);
   _variables.Register(v_name, &v_, false);
-  _variables.Register(p_name, &p_, false);
 }
 
 void HJDualSolver::SetMaterialCoefficients(

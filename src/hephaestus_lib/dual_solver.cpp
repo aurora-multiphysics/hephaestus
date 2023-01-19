@@ -51,7 +51,7 @@ DualSolver::DualSolver(
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
     hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
     : myid_(0), num_procs_(1), pmesh_(&pmesh), _fespaces(fespaces),
-      _variables(variables), _bc_map(bc_map),
+      _variables(variables), _bc_map(bc_map), _sources(sources),
       _domain_properties(domain_properties), _solver_options(solver_options),
       H1FESpace_(
           new mfem::common::H1_ParFESpace(&pmesh, order, pmesh.Dimension())),
@@ -59,26 +59,23 @@ DualSolver::DualSolver(
           new mfem::common::ND_ParFESpace(&pmesh, order, pmesh.Dimension())),
       HDivFESpace_(
           new mfem::common::RT_ParFESpace(&pmesh, order, pmesh.Dimension())),
-      a1(NULL), a0_solver(NULL), a1_solver(NULL), m1(NULL), grad(NULL),
-      curl(NULL), weakCurl(NULL), p_(mfem::ParGridFunction(H1FESpace_)),
+      a1(NULL), a1_solver(NULL), curl(NULL), weakCurl(NULL),
       u_(mfem::ParGridFunction(HCurlFESpace_)),
       v_(mfem::ParGridFunction(HDivFESpace_)),
-      dp_(mfem::ParGridFunction(H1FESpace_)),
       du_(mfem::ParGridFunction(HCurlFESpace_)),
       dv_(mfem::ParGridFunction(HDivFESpace_)) {
   // Initialize MPI variables
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh.GetComm(), &myid_);
 
-  true_offsets.SetSize(4);
+  true_offsets.SetSize(3);
   true_offsets[0] = 0;
-  true_offsets[1] = H1FESpace_->GetVSize();
-  true_offsets[2] = HCurlFESpace_->GetVSize();
-  true_offsets[3] = HDivFESpace_->GetVSize();
+  true_offsets[1] = HCurlFESpace_->GetVSize();
+  true_offsets[2] = HDivFESpace_->GetVSize();
   true_offsets.PartialSum();
 
-  this->height = true_offsets[3];
-  this->width = true_offsets[3];
+  this->height = true_offsets[2];
+  this->width = true_offsets[2];
 
   HYPRE_BigInt size_h1 = H1FESpace_->GlobalTrueVSize();
   HYPRE_BigInt size_nd = HCurlFESpace_->GlobalTrueVSize();
@@ -96,7 +93,6 @@ DualSolver::DualSolver(
 
 void DualSolver::Init(mfem::Vector &X) {
   RegisterVariables();
-
   _fespaces.Register("_H1FESpace", H1FESpace_, false);
   _fespaces.Register("_HCurlFESpace", HCurlFESpace_, false);
   _fespaces.Register("_HDivFESpace", HDivFESpace_, false);
@@ -107,21 +103,12 @@ void DualSolver::Init(mfem::Vector &X) {
   SetMaterialCoefficients(_domain_properties);
   dtAlphaCoef = new mfem::TransformedCoefficient(&dtCoef, alphaCoef, prodFunc);
 
-  // a0(p, p') = (β ∇ p, ∇ p')
-  a0 = new mfem::ParBilinearForm(H1FESpace_);
-  a0->AddDomainIntegrator(new mfem::DiffusionIntegrator(*betaCoef));
-  a0->Assemble();
+  _sources.Init(_variables, _fespaces, _bc_map, _domain_properties);
 
-  this->buildM1(betaCoef);    // (βu, u')
   this->buildCurl(alphaCoef); // (αv_{n}, ∇×u')
-  this->buildGrad();          // (s0_{n+1}, u')
-  b0 = new mfem::ParLinearForm(H1FESpace_);
   b1 = new mfem::ParLinearForm(HCurlFESpace_);
-  A0 = new mfem::HypreParMatrix;
   A1 = new mfem::HypreParMatrix;
-  X0 = new mfem::Vector;
   X1 = new mfem::Vector;
-  B0 = new mfem::Vector;
   B1 = new mfem::Vector;
 
   mfem::Vector zero_vec(3);
@@ -129,11 +116,9 @@ void DualSolver::Init(mfem::Vector &X) {
   mfem::VectorConstantCoefficient Zero_vec(zero_vec);
   mfem::ConstantCoefficient Zero(0.0);
 
-  p_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
-  u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
-  v_.MakeRef(HDivFESpace_, const_cast<mfem::Vector &>(X), true_offsets[2]);
+  u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
+  v_.MakeRef(HDivFESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
 
-  p_.ProjectCoefficient(Zero);
   u_.ProjectCoefficient(Zero_vec);
   v_.ProjectCoefficient(Zero_vec);
 }
@@ -161,42 +146,14 @@ void DualSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   dX_dt = 0.0;
   dtCoef.constant = dt;
 
-  p_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
-  u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
-  v_.MakeRef(HDivFESpace_, const_cast<mfem::Vector &>(X), true_offsets[2]);
+  u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
+  v_.MakeRef(HDivFESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
 
-  dp_.MakeRef(H1FESpace_, dX_dt, true_offsets[0]);
-  du_.MakeRef(HCurlFESpace_, dX_dt, true_offsets[1]);
-  dv_.MakeRef(HDivFESpace_, dX_dt, true_offsets[2]);
+  du_.MakeRef(HCurlFESpace_, dX_dt, true_offsets[0]);
+  dv_.MakeRef(HDivFESpace_, dX_dt, true_offsets[1]);
 
   _domain_properties.SetTime(this->GetTime());
 
-  // -(s0_{n+1}, ∇ p') + <n.s0_{n+1}, p'> = 0
-  // a0(p_{n+1}, p') = b0(p')
-  // a0(p, p') = (β ∇ p, ∇ p')
-  // b0(p') = <n.s0, p'>
-  mfem::ParGridFunction Phi_gf(H1FESpace_);
-  mfem::Array<int> poisson_ess_tdof_list;
-  Phi_gf = 0.0;
-  *b0 = 0.0;
-  _bc_map.applyEssentialBCs(p_name, poisson_ess_tdof_list, Phi_gf, pmesh_);
-  _bc_map.applyIntegratedBCs(p_name, *b0, pmesh_);
-  b0->Assemble();
-  a0->FormLinearSystem(poisson_ess_tdof_list, Phi_gf, *b0, *A0, *X0, *B0);
-
-  if (a0_solver == NULL) {
-    hephaestus::InputParameters h1_solver_options;
-    h1_solver_options.SetParam("Tolerance", float(1.0e-9));
-    h1_solver_options.SetParam("MaxIter", (unsigned int)1000);
-    h1_solver_options.SetParam("PrintLevel", -1);
-    a0_solver = new hephaestus::DefaultH1PCGSolver(h1_solver_options, *A0);
-  }
-  // Solve
-  a0_solver->Mult(*B0, *X0);
-
-  // "undo" the static condensation saving result in grid function dP
-  a0->RecoverFEMSolution(*X0, *b0, p_);
-  dp_ = 0.0;
   //////////////////////////////////////////////////////////////////////////////
   // (αv_{n}, ∇×u') - (αdt∇×u_{n+1}, ∇×u') - (βu_{n+1}, u') - (s0_{n+1}, u') -
   // <(α∇×u_{n+1}) × n, u'> = 0
@@ -209,10 +166,7 @@ void DualSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   // v_ is a grid function but weakCurl is not parallel assembled so is OK
   weakCurl->MultTranspose(v_, *b1);
 
-  // use u_ as a temporary, E = Grad v
-  // (s0_{n+1}, u')
-  grad->Mult(p_, u_);
-  m1->AddMult(u_, *b1, 1.0);
+  _sources.ApplyKernels(b1);
 
   mfem::ParGridFunction J_gf(HCurlFESpace_);
   mfem::Array<int> ess_tdof_list;
@@ -239,7 +193,7 @@ void DualSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   du_ = 0.0;
 
   // Subtract off contribution from source
-  grad->AddMult(p_, u_, -1.0);
+  _sources.SubtractSources(&u_);
 
   // dv/dt_{n+1} = -∇×u
   // note curl maps GF to GF
@@ -266,30 +220,6 @@ void DualSolver::buildA1(mfem::Coefficient *Sigma, mfem::Coefficient *DtMuInv) {
   dt_A1 = dtCoef.constant;
 }
 
-void DualSolver::buildM1(mfem::Coefficient *Sigma) {
-  if (m1 != NULL) {
-    delete m1;
-  }
-
-  m1 = new mfem::ParBilinearForm(HCurlFESpace_);
-  m1->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*Sigma));
-  m1->Assemble();
-
-  // Don't finalize or parallel assemble this is done in FormLinearSystem.
-}
-
-void DualSolver::buildGrad() {
-  if (grad != NULL) {
-    delete grad;
-  }
-
-  grad = new mfem::ParDiscreteLinearOperator(H1FESpace_, HCurlFESpace_);
-  grad->AddDomainInterpolator(new mfem::GradientInterpolator());
-  grad->Assemble();
-
-  // no ParallelAssemble since this will be applied to GridFunctions
-}
-
 void DualSolver::buildCurl(mfem::Coefficient *MuInv) {
   if (curl != NULL) {
     delete curl;
@@ -310,9 +240,6 @@ void DualSolver::buildCurl(mfem::Coefficient *MuInv) {
 }
 
 void DualSolver::RegisterVariables() {
-  p_name = "scalar_potential";
-  p_display_name = "Scalar Potential";
-
   u_name = "h_curl_var";
   u_display_name = "H(Curl) variable";
 
@@ -321,7 +248,6 @@ void DualSolver::RegisterVariables() {
 
   _variables.Register(u_name, &u_, false);
   _variables.Register(v_name, &v_, false);
-  _variables.Register(p_name, &p_, false);
 }
 
 void DualSolver::SetMaterialCoefficients(
