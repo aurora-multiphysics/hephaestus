@@ -66,20 +66,16 @@ protected:
   hephaestus::DomainProperties _domain_properties;
   hephaestus::InputParameters _solver_options;
 
-  mfem::ParBilinearForm *a0, *a1, *m1;
-  mfem::HypreParMatrix *A0, *A1;
-  mfem::Vector *X0, *X1, *B0, *B1;
+  mfem::ParBilinearForm *a1;
+  mfem::HypreParMatrix *A1;
+  mfem::Vector *X1, *B1;
 
-  mfem::ParDiscreteLinearOperator *grad;
   mfem::ParDiscreteLinearOperator *curl;
   mfem::ParBilinearForm *curlCurl;
-  mutable mfem::HypreSolver *amg_a0;
-  mutable mfem::HyprePCG *pcg_a0;
-  mutable hephaestus::DefaultH1PCGSolver *a0_solver;
   mutable hephaestus::DefaultHCurlPCGSolver *a1_solver;
 
   // temporary work vectors
-  mfem::ParLinearForm *b0, *b1;
+  mfem::ParLinearForm *b1;
 
   double dt_A1;
   mfem::ConstantCoefficient dtCoef;  // Coefficient for timestep scaling
