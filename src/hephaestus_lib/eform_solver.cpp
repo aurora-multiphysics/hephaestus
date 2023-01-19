@@ -12,14 +12,10 @@ EFormSolver::EFormSolver(
                   sources, solver_options) {}
 
 void EFormSolver::RegisterVariables() {
-  p_name = "electric_potential";
-  p_display_name = "Electric Potential (V)";
-
   u_name = "electric_field";
   u_display_name = "Electric Field (E)";
 
   _variables.Register(u_name, &u_, false);
-  _variables.Register(p_name, &p_, false);
   _variables.Register("-dB_dt", &curl_u_, false);
 }
 

@@ -48,10 +48,10 @@ public:
 
   double ElectricLosses() const;
 
-  std::string u_name, p_name;
-  std::string u_display_name, p_display_name;
+  std::string u_name;
+  std::string u_display_name;
   mfem::ParGridFunction u_, du_; // HCurl vector field
-  mfem::ParGridFunction p_, dp_; // H1 scalar potential
+  mfem::ParGridFunction p_;      // H1 scalar potential
   mfem::ParGridFunction curl_u_; // HDiv Magnetic Flux Density
   std::map<std::string, mfem::socketstream *> socks_;
 
