@@ -189,6 +189,7 @@ void DivFreeVolumetricSource::ApplyKernel(mfem::ParLinearForm *lf) {
 
     h_curl_mass->RecoverFEMSolution(X, J, j);
   }
+  h_curl_mass->Update();
   h_curl_mass->Assemble();
   h_curl_mass->Finalize();
   *div_free_src_gf = 0.0;
