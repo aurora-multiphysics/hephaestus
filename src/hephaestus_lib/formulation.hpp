@@ -2,6 +2,7 @@
 #include "../common/pfem_extras.hpp"
 #include "hephaestus_solvers.hpp"
 #include "inputs.hpp"
+#include "kernels.hpp"
 #include "sources.hpp"
 
 namespace hephaestus {

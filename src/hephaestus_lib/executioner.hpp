@@ -1,6 +1,7 @@
 #pragma once
 #include "auxkernels.hpp"
 #include "inputs.hpp"
+#include "kernels.hpp"
 #include "postprocessors.hpp"
 #include "sources.hpp"
 #include "variables.hpp"

@@ -98,6 +98,14 @@ void HCurlSolver::Init(mfem::Vector &X) {
 
   _sources.Init(_variables, _fespaces, _bc_map, _domain_properties);
 
+  hephaestus::InputParameters weakCurlCurlParams;
+  weakCurlCurlParams.SetParam("VariableName", u_name);
+  weakCurlCurlParams.SetParam("CoefficientName", beta_coef_name);
+  _kernels.Register("WeakCurlCurlKernel",
+                    new hephaestus::WeakCurlCurlKernel(weakCurlCurlParams),
+                    true);
+  _kernels.Init(_variables, _fespaces, _bc_map, _domain_properties);
+
   // a0(p, p') = (β ∇ p, ∇ p')
   this->buildCurl(alphaCoef); // (α∇×u_{n}, ∇×u')
   b1 = new mfem::ParLinearForm(HCurlFESpace_);
@@ -150,8 +158,10 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
 
   // (α∇×u_{n}, ∇×u')
   // v_ is a grid function but curlCurl is not parallel assembled so is OK
-  curlCurl->MultTranspose(u_, *b1);
-  *b1 *= -1.0;
+
+  _kernels.ApplyKernels(u_name, b1);
+  // curlCurl->MultTranspose(u_, *b1);
+  // *b1 *= -1.0;
 
   _sources.ApplyKernels(b1);
 
@@ -238,8 +248,10 @@ void HCurlSolver::SetMaterialCoefficients(
     domain_properties.scalar_property_map["beta"] = new mfem::PWCoefficient(
         domain_properties.getGlobalScalarProperty(std::string("beta")));
   }
-  alphaCoef = domain_properties.scalar_property_map["alpha"];
-  betaCoef = domain_properties.scalar_property_map["beta"];
+  alpha_coef_name = std::string("alpha");
+  beta_coef_name = std::string("beta");
+  alphaCoef = domain_properties.scalar_property_map[alpha_coef_name];
+  betaCoef = domain_properties.scalar_property_map[beta_coef_name];
 }
 
 void HCurlSolver::RegisterOutputFields(mfem::DataCollection *dc_) {

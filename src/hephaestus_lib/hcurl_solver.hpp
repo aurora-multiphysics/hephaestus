@@ -2,7 +2,6 @@
 #include "../common/pfem_extras.hpp"
 #include "formulation.hpp"
 #include "inputs.hpp"
-#include "sources.hpp"
 
 namespace hephaestus {
 
@@ -50,6 +49,8 @@ public:
 
   std::string u_name;
   std::string u_display_name;
+  std::string alpha_coef_name, beta_coef_name;
+
   mfem::ParGridFunction u_, du_; // HCurl vector field
   mfem::ParGridFunction p_;      // H1 scalar potential
   mfem::ParGridFunction curl_u_; // HDiv Magnetic Flux Density
@@ -61,6 +62,7 @@ protected:
   mfem::ParMesh *pmesh_;
   mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &_fespaces;
   mfem::NamedFieldsMap<mfem::ParGridFunction> &_variables;
+  hephaestus::Kernels _kernels;
   hephaestus::Sources &_sources;
   hephaestus::BCMap _bc_map;
   hephaestus::DomainProperties _domain_properties;
