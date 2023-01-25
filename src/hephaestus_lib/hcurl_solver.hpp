@@ -24,10 +24,7 @@ public:
   void Init(mfem::Vector &X) override;
 
   void buildA1(mfem::Coefficient *sigma, mfem::Coefficient *dtMuInv);
-  void buildM1(mfem::Coefficient *sigma);
   void buildCurl(mfem::Coefficient *muInv);
-  void buildGrad();
-  void buildSource();
 
   void ImplicitSolve(const double dt, const mfem::Vector &X,
                      mfem::Vector &dX_dt) override;
@@ -49,7 +46,7 @@ public:
 
   std::string u_name;
   std::string u_display_name;
-  std::string alpha_coef_name, beta_coef_name;
+  std::string alpha_coef_name, beta_coef_name, dtAlpha_coef_name;
 
   mfem::ParGridFunction u_, du_; // HCurl vector field
   mfem::ParGridFunction p_;      // H1 scalar potential

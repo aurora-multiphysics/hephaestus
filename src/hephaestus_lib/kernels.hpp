@@ -17,8 +17,8 @@ public:
        hephaestus::DomainProperties &domain_properties){};
 
   std::string variable_name;
-  virtual void ApplyKernel(mfem::ParLinearForm *lf){};
-  virtual void ApplyKernel(mfem::ParBilinearForm *blf){};
+  virtual void ApplyKernel(mfem::ParLinearForm *lf) = 0;
+  virtual void ApplyKernel(mfem::ParBilinearForm *blf) = 0;
 };
 
 class Kernels : public mfem::NamedFieldsMap<hephaestus::Kernel> {
@@ -60,26 +60,6 @@ public:
   };
 };
 
-// class VectorFEMassKernel : public Kernel {
-// public:
-//   VectorFEMassKernel(const hephaestus::InputParameters &params);
-//   mfem::ParBilinearForm *curlCurl;
-//   virtual void
-//   Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-//        const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-//        hephaestus::BCMap &bc_map,
-//        hephaestus::DomainProperties &domain_properties) override {
-
-//     curlCurl = new mfem::ParBilinearForm(HCurlFESpace_);
-//     curlCurl->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*MuInv));
-//     curlCurl->Assemble();
-//   };
-
-//   virtual void ApplyKernel(mfem::ParBilinearForm *blf) {
-//     blf->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*Sigma));
-//   };
-// };
-
 class WeakCurlCurlKernel : public Kernel {
   // (α∇×u_{n}, ∇×u')
 public:
@@ -89,6 +69,7 @@ public:
        const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
        hephaestus::BCMap &bc_map,
        hephaestus::DomainProperties &domain_properties) override;
+  virtual void ApplyKernel(mfem::ParBilinearForm *blf) override{};
   virtual void ApplyKernel(mfem::ParLinearForm *lf) override;
 
   std::string gf_name, coef_name;
@@ -96,6 +77,36 @@ public:
   mfem::ParFiniteElementSpace *H1FESpace_;
   mfem::Coefficient *coef;
   mfem::ParBilinearForm *curlCurl;
+};
+
+class CurlCurlKernel : public Kernel {
+  // (α∇×u, ∇×u')
+public:
+  CurlCurlKernel(const hephaestus::InputParameters &params);
+  virtual void
+  Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+       const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+       hephaestus::BCMap &bc_map,
+       hephaestus::DomainProperties &domain_properties) override;
+  virtual void ApplyKernel(mfem::ParBilinearForm *blf) override;
+  virtual void ApplyKernel(mfem::ParLinearForm *lf) override{};
+  std::string coef_name;
+  mfem::Coefficient *coef;
+};
+
+class VectorFEMassKernel : public Kernel {
+  //(βu, u')
+public:
+  VectorFEMassKernel(const hephaestus::InputParameters &params);
+  virtual void
+  Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+       const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+       hephaestus::BCMap &bc_map,
+       hephaestus::DomainProperties &domain_properties) override;
+  virtual void ApplyKernel(mfem::ParBilinearForm *blf) override;
+  virtual void ApplyKernel(mfem::ParLinearForm *lf) override{};
+  std::string coef_name;
+  mfem::Coefficient *coef;
 };
 
 }; // namespace hephaestus

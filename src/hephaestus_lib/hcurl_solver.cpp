@@ -94,19 +94,39 @@ void HCurlSolver::Init(mfem::Vector &X) {
   dtCoef = mfem::ConstantCoefficient(1.0);
   oneCoef = mfem::ConstantCoefficient(1.0);
   SetMaterialCoefficients(_domain_properties);
-  dtAlphaCoef = new mfem::TransformedCoefficient(&dtCoef, alphaCoef, prodFunc);
+  dtAlpha_coef_name = std::string("_dtAlpha");
+  _domain_properties.scalar_property_map[dtAlpha_coef_name] =
+      new mfem::TransformedCoefficient(&dtCoef, alphaCoef, prodFunc);
+  dtAlphaCoef = _domain_properties.scalar_property_map[dtAlpha_coef_name];
 
   _sources.Init(_variables, _fespaces, _bc_map, _domain_properties);
 
+  // (α∇×u_{n}, ∇×u')
   hephaestus::InputParameters weakCurlCurlParams;
   weakCurlCurlParams.SetParam("VariableName", u_name);
-  weakCurlCurlParams.SetParam("CoefficientName", beta_coef_name);
+  weakCurlCurlParams.SetParam("CoefficientName", alpha_coef_name);
   _kernels.Register("WeakCurlCurlKernel",
                     new hephaestus::WeakCurlCurlKernel(weakCurlCurlParams),
                     true);
+
+  // (αdt∇×du/dt_{n+1}, ∇×u')
+  hephaestus::InputParameters curlCurlParams;
+  curlCurlParams.SetParam("VariableName", u_name);
+  curlCurlParams.SetParam("CoefficientName", dtAlpha_coef_name);
+  _kernels.Register("CurlCurlKernel",
+                    new hephaestus::CurlCurlKernel(curlCurlParams), true);
+
+  // (βdu/dt_{n+1}, u')
+  hephaestus::InputParameters vectorFEMassParams;
+  vectorFEMassParams.SetParam("VariableName", u_name);
+  vectorFEMassParams.SetParam("CoefficientName", beta_coef_name);
+  _kernels.Register("VectorFEMassKernel",
+                    new hephaestus::VectorFEMassKernel(vectorFEMassParams),
+                    true);
+
+  // a1(du/dt_{n+1}, u') = (βdu/dt_{n+1}, u') + (αdt∇×du/dt_{n+1}, ∇×u')
   _kernels.Init(_variables, _fespaces, _bc_map, _domain_properties);
 
-  // a0(p, p') = (β ∇ p, ∇ p')
   this->buildCurl(alphaCoef); // (α∇×u_{n}, ∇×u')
   b1 = new mfem::ParLinearForm(HCurlFESpace_);
   A1 = new mfem::HypreParMatrix;
@@ -159,9 +179,8 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   // (α∇×u_{n}, ∇×u')
   // v_ is a grid function but curlCurl is not parallel assembled so is OK
 
+  *b1 = 0.0;
   _kernels.ApplyKernels(u_name, b1);
-  // curlCurl->MultTranspose(u_, *b1);
-  // *b1 *= -1.0;
 
   _sources.ApplyKernels(b1);
 
@@ -173,7 +192,10 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
 
   // a1(du/dt_{n+1}, u') = (βdu/dt_{n+1}, u') + (αdt∇×du/dt_{n+1}, ∇×u')
   if (a1 == NULL || fabs(dt - dt_A1) > 1.0e-12 * dt) {
-    this->buildA1(betaCoef, dtAlphaCoef);
+    a1 = new mfem::ParBilinearForm(HCurlFESpace_);
+    _kernels.ApplyKernels(u_name, a1);
+    a1->Assemble();
+    dt_A1 = dtCoef.constant;
   }
   a1->FormLinearSystem(ess_tdof_list, J_gf, *b1, *A1, *X1, *B1);
 
@@ -186,6 +208,7 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
 
   a1->RecoverFEMSolution(*X1, *b1, du_);
 
+  // Postprocessing
   curl->Mult(u_, curl_u_);
   curl->AddMult(du_, curl_u_, dt);
 }
