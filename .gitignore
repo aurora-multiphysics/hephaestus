@@ -1,9 +1,9 @@
-./build
+build/
 ./lib
-./bin
+bin/
 .vscode
 *.o
 *.d
-./cmake/* 
-./test/*
+cmake/ 
+test/
 *.so
