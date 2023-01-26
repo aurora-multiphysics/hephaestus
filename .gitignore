@@ -1,7 +1,8 @@
-build
-lib
-bin
+./build
+./lib
+./bin
 .vscode
 *.o
+*.d
 ./cmake/* 
 ./test/*
