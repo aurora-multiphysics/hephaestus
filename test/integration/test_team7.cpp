@@ -106,7 +106,7 @@ protected:
     hephaestus::TransientExecutioner *executioner =
         new hephaestus::TransientExecutioner(exec_params);
 
-    hephaestus::Sources sources;
+    hephaestus::Kernels kernels;
     mfem::VectorFunctionCoefficient *JSrcCoef =
         new mfem::VectorFunctionCoefficient(3, source_current);
     mfem::Array<mfem::VectorCoefficient *> sourcecoefs(4);
@@ -133,7 +133,9 @@ protected:
     current_solver_options.SetParam("MaxIter", (unsigned int)200);
     current_solver_options.SetParam("PrintLevel", 0);
     div_free_source_params.SetParam("SolverOptions", current_solver_options);
-    sources.Register(
+    div_free_source_params.SetParam("VariableName",
+                                    std::string("magnetic_vector_potential"));
+    kernels.Register(
         "source",
         new hephaestus::DivFreeVolumetricSource(div_free_source_params), true);
 
@@ -152,7 +154,7 @@ protected:
     params.SetParam("AuxKernels", auxkernels);
     params.SetParam("Postprocessors", postprocessors);
     params.SetParam("Outputs", outputs);
-    params.SetParam("Sources", sources);
+    params.SetParam("Kernels", kernels);
     params.SetParam("FormulationName", std::string("AForm"));
     params.SetParam("SolverOptions", solver_options);
     std::cout << "Created params ";

@@ -80,7 +80,7 @@ protected:
     hephaestus::Variables variables;
     hephaestus::Postprocessors postprocessors;
     hephaestus::AuxKernels auxkernels;
-    hephaestus::Sources sources;
+    hephaestus::Kernels kernels;
 
     hephaestus::InputParameters exec_params;
     exec_params.SetParam("TimeStep", float(0.5));
@@ -101,7 +101,7 @@ protected:
     params.SetParam("AuxKernels", auxkernels);
     params.SetParam("Postprocessors", postprocessors);
     params.SetParam("Outputs", outputs);
-    params.SetParam("Sources", sources);
+    params.SetParam("Kernels", kernels);
     params.SetParam("FormulationName", std::string("AVForm"));
 
     return params;

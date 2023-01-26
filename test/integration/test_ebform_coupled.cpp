@@ -171,7 +171,7 @@ protected:
         new hephaestus::CoefficientAuxKernel(jouleheatingauxparams), true);
 
     hephaestus::Postprocessors postprocessors;
-    hephaestus::Sources sources;
+    hephaestus::Kernels kernels;
     hephaestus::InputParameters scalar_potential_source_params;
     scalar_potential_source_params.SetParam("SourceName",
                                             std::string("source"));
@@ -189,7 +189,9 @@ protected:
     current_solver_options.SetParam("PrintLevel", -1);
     scalar_potential_source_params.SetParam("SolverOptions",
                                             current_solver_options);
-    sources.Register(
+    scalar_potential_source_params.SetParam("VariableName",
+                                            std::string("electric_field"));
+    kernels.Register(
         "source",
         new hephaestus::ScalarPotentialSource(scalar_potential_source_params),
         true);
@@ -208,7 +210,7 @@ protected:
     params.SetParam("Variables", variables);
     params.SetParam("AuxKernels", auxkernels);
     params.SetParam("Postprocessors", postprocessors);
-    params.SetParam("Sources", sources);
+    params.SetParam("Kernels", kernels);
     params.SetParam("Outputs", outputs);
     params.SetParam("FormulationName", std::string("EBForm"));
     params.SetParam("SolverOptions", solver_options);

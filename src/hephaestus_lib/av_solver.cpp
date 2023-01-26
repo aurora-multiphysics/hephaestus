@@ -46,11 +46,11 @@ AVSolver::AVSolver(mfem::ParMesh &pmesh, int order,
                    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
                    hephaestus::BCMap &bc_map,
                    hephaestus::DomainProperties &domain_properties,
-                   hephaestus::Sources &sources,
+                   hephaestus::Kernels &kernels,
                    hephaestus::InputParameters &solver_options)
     : myid_(0), num_procs_(1), order_(order), pmesh_(&pmesh),
       _fespaces(fespaces), _variables(variables), _bc_map(bc_map),
-      _sources(sources), _domain_properties(domain_properties),
+      _kernels(kernels), _domain_properties(domain_properties),
       H1FESpace_(
           new mfem::common::H1_ParFESpace(&pmesh, order, pmesh.Dimension())),
       HCurlFESpace_(
@@ -98,7 +98,7 @@ void AVSolver::Init(mfem::Vector &X) {
   SetMaterialCoefficients(_domain_properties);
   dtAlphaCoef = new mfem::TransformedCoefficient(&dtCoef, alphaCoef, prodFunc);
 
-  _sources.Init(_variables, _fespaces, _bc_map, _domain_properties);
+  _kernels.Init(_variables, _fespaces, _bc_map, _domain_properties);
 
   this->buildCurl(alphaCoef); // (α∇×u_{n}, ∇×u')
   this->buildGrad();          // (s0_{n+1}, u')
@@ -187,7 +187,7 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   _bc_map.applyIntegratedBCs(u_name, *b0, pmesh_);
   b0->Assemble();
 
-  _sources.ApplyKernels(b0);
+  _kernels.ApplyKernels(b0);
 
   mfem::ParGridFunction Phi_gf(H1FESpace_);
   mfem::Array<int> poisson_ess_tdof_list;

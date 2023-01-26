@@ -127,7 +127,7 @@ protected:
     hephaestus::TransientExecutioner *executioner =
         new hephaestus::TransientExecutioner(exec_params);
 
-    hephaestus::Sources sources;
+    hephaestus::Kernels kernels;
     mfem::VectorFunctionCoefficient *dBdtSrcCoef =
         new mfem::VectorFunctionCoefficient(3, source_field);
     domain_properties.vector_property_map["source"] = dBdtSrcCoef;
@@ -141,7 +141,9 @@ protected:
     current_solver_options.SetParam("MaxIter", (unsigned int)200);
     current_solver_options.SetParam("PrintLevel", 0);
     div_free_source_params.SetParam("SolverOptions", current_solver_options);
-    sources.Register(
+    div_free_source_params.SetParam("VariableName",
+                                    std::string("magnetic_field"));
+    kernels.Register(
         "source",
         new hephaestus::DivFreeVolumetricSource(div_free_source_params), true);
 
@@ -159,7 +161,7 @@ protected:
     params.SetParam("Variables", variables);
     params.SetParam("AuxKernels", auxkernels);
     params.SetParam("Postprocessors", postprocessors);
-    params.SetParam("Sources", sources);
+    params.SetParam("Kernels", kernels);
     params.SetParam("Outputs", outputs);
     params.SetParam("FormulationName", std::string("HForm"));
     params.SetParam("SolverOptions", solver_options);

@@ -2,34 +2,12 @@
 
 namespace hephaestus {
 
-void Sources::Init(
-    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    hephaestus::BCMap &bc_map,
-    hephaestus::DomainProperties &domain_properties) {
-  for (const auto &[name, source] : GetMap()) {
-    source->Init(variables, fespaces, bc_map, domain_properties);
-  }
-}
-
-void Sources::ApplyKernels(mfem::ParLinearForm *lf) {
-  for (const auto &[name, source] : GetMap()) {
-    source->ApplyKernel(lf);
-  }
-}
-
-void Sources::SubtractSources(mfem::ParGridFunction *gf) {
-  for (const auto &[name, source] : GetMap()) {
-    source->SubtractSource(gf);
-  }
-}
-
 // Create a scalar potential source that can add terms of the form
 // J0_{n+1} ∈ H(div) source field, where J0 = -β∇p and β is a conductivity
 // coefficient.
 ScalarPotentialSource::ScalarPotentialSource(
     const hephaestus::InputParameters &params)
-    : src_gf_name(params.GetParam<std::string>("SourceName")),
+    : Source(params), src_gf_name(params.GetParam<std::string>("SourceName")),
       potential_gf_name(params.GetParam<std::string>("PotentialName")),
       hcurl_fespace_name(params.GetParam<std::string>("HCurlFESpaceName")),
       h1_fespace_name(params.GetParam<std::string>("H1FESpaceName")),
@@ -130,7 +108,7 @@ void ScalarPotentialSource::SubtractSource(mfem::ParGridFunction *gf) {
 
 DivFreeVolumetricSource::DivFreeVolumetricSource(
     const hephaestus::InputParameters &params)
-    : src_coef_name(params.GetParam<std::string>("SourceName")),
+    : Source(params), src_coef_name(params.GetParam<std::string>("SourceName")),
       src_gf_name(params.GetParam<std::string>("SourceName")),
       hcurl_fespace_name(params.GetParam<std::string>("HCurlFESpaceName")),
       h1_fespace_name(params.GetParam<std::string>("H1FESpaceName")),

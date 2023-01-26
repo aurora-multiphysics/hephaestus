@@ -49,9 +49,9 @@ DualSolver::DualSolver(
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
-    hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
+    hephaestus::Kernels &kernels, hephaestus::InputParameters &solver_options)
     : myid_(0), num_procs_(1), pmesh_(&pmesh), _fespaces(fespaces),
-      _variables(variables), _bc_map(bc_map), _sources(sources),
+      _variables(variables), _bc_map(bc_map), _kernels(kernels),
       _domain_properties(domain_properties), _solver_options(solver_options),
       H1FESpace_(
           new mfem::common::H1_ParFESpace(&pmesh, order, pmesh.Dimension())),
@@ -103,7 +103,7 @@ void DualSolver::Init(mfem::Vector &X) {
   SetMaterialCoefficients(_domain_properties);
   dtAlphaCoef = new mfem::TransformedCoefficient(&dtCoef, alphaCoef, prodFunc);
 
-  _sources.Init(_variables, _fespaces, _bc_map, _domain_properties);
+  _kernels.Init(_variables, _fespaces, _bc_map, _domain_properties);
 
   this->buildCurl(alphaCoef); // (αv_{n}, ∇×u')
   b1 = new mfem::ParLinearForm(HCurlFESpace_);
@@ -166,7 +166,7 @@ void DualSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   // v_ is a grid function but weakCurl is not parallel assembled so is OK
   weakCurl->MultTranspose(v_, *b1);
 
-  _sources.ApplyKernels(b1);
+  _kernels.ApplyKernels(b1);
 
   mfem::ParGridFunction J_gf(HCurlFESpace_);
   mfem::Array<int> ess_tdof_list;
@@ -193,13 +193,18 @@ void DualSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   du_ = 0.0;
 
   // Subtract off contribution from source
-  _sources.SubtractSources(&u_);
+  for (const auto &[name, kernel] : _kernels.GetMap()) {
+    hephaestus::Source *source = dynamic_cast<hephaestus::Source *>(kernel);
+    if (source != NULL) {
+      source->SubtractSource(&u_);
+    }
+  }
 
   // dv/dt_{n+1} = -∇×u
   // note curl maps GF to GF
   curl->Mult(u_, dv_);
   dv_ *= -1.0;
-}
+} // namespace hephaestus
 
 void DualSolver::buildA1(mfem::Coefficient *Sigma, mfem::Coefficient *DtMuInv) {
   if (a1 != NULL) {

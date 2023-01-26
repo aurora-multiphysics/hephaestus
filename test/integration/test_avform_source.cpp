@@ -128,7 +128,7 @@ protected:
     hephaestus::TransientExecutioner *executioner =
         new hephaestus::TransientExecutioner(exec_params);
 
-    hephaestus::Sources sources;
+    hephaestus::Kernels kernels;
     mfem::VectorFunctionCoefficient *JSrcCoef =
         new mfem::VectorFunctionCoefficient(3, source_field);
     domain_properties.vector_property_map["source"] = JSrcCoef;
@@ -137,7 +137,9 @@ protected:
     div_free_source_params.SetParam("HCurlFESpaceName",
                                     std::string("_HCurlFESpace"));
     div_free_source_params.SetParam("H1FESpaceName", std::string("_H1FESpace"));
-    sources.Register(
+    div_free_source_params.SetParam("VariableName",
+                                    std::string("electric_field"));
+    kernels.Register(
         "source",
         new hephaestus::DivFreeVolumetricSource(div_free_source_params), true);
 
@@ -151,7 +153,7 @@ protected:
     params.SetParam("AuxKernels", auxkernels);
     params.SetParam("Postprocessors", postprocessors);
     params.SetParam("Outputs", outputs);
-    params.SetParam("Sources", sources);
+    params.SetParam("Kernels", kernels);
     params.SetParam("FormulationName", std::string("AVForm"));
 
     return params;

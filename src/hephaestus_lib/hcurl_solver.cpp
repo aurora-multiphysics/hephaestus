@@ -46,9 +46,9 @@ HCurlSolver::HCurlSolver(
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
-    hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
+    hephaestus::Kernels &kernels, hephaestus::InputParameters &solver_options)
     : myid_(0), num_procs_(1), pmesh_(&pmesh), _fespaces(fespaces),
-      _variables(variables), _bc_map(bc_map), _sources(sources),
+      _variables(variables), _bc_map(bc_map), _kernels(kernels),
       _domain_properties(domain_properties), _solver_options(solver_options),
       H1FESpace_(
           new mfem::common::H1_ParFESpace(&pmesh, order, pmesh.Dimension())),
@@ -99,7 +99,7 @@ void HCurlSolver::Init(mfem::Vector &X) {
       new mfem::TransformedCoefficient(&dtCoef, alphaCoef, prodFunc);
   dtAlphaCoef = _domain_properties.scalar_property_map[dtAlpha_coef_name];
 
-  _sources.Init(_variables, _fespaces, _bc_map, _domain_properties);
+  _kernels.Init(_variables, _fespaces, _bc_map, _domain_properties);
 
   // (α∇×u_{n}, ∇×u')
   hephaestus::InputParameters weakCurlCurlParams;
@@ -181,8 +181,6 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
 
   *b1 = 0.0;
   _kernels.ApplyKernels(u_name, b1);
-
-  _sources.ApplyKernels(b1);
 
   mfem::ParGridFunction J_gf(HCurlFESpace_);
   mfem::Array<int> ess_tdof_list;

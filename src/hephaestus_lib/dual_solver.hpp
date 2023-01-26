@@ -16,7 +16,7 @@ public:
              mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
              hephaestus::BCMap &bc_map,
              hephaestus::DomainProperties &domain_properties,
-             hephaestus::Sources &sources,
+             hephaestus::Kernels &kernels,
              hephaestus::InputParameters &solver_options);
 
   ~DualSolver(){};
@@ -59,7 +59,7 @@ protected:
   mfem::ParMesh *pmesh_;
   mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &_fespaces;
   mfem::NamedFieldsMap<mfem::ParGridFunction> &_variables;
-  hephaestus::Sources &_sources;
+  hephaestus::Kernels &_kernels;
   hephaestus::BCMap _bc_map;
   hephaestus::DomainProperties _domain_properties;
   hephaestus::InputParameters _solver_options;

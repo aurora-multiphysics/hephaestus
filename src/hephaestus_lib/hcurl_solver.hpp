@@ -16,7 +16,7 @@ public:
               mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
               hephaestus::BCMap &bc_map,
               hephaestus::DomainProperties &domain_properties,
-              hephaestus::Sources &sources,
+              hephaestus::Kernels &kernels,
               hephaestus::InputParameters &solver_options);
 
   ~HCurlSolver(){};
@@ -60,7 +60,6 @@ protected:
   mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &_fespaces;
   mfem::NamedFieldsMap<mfem::ParGridFunction> &_variables;
   hephaestus::Kernels _kernels;
-  hephaestus::Sources &_sources;
   hephaestus::BCMap _bc_map;
   hephaestus::DomainProperties _domain_properties;
   hephaestus::InputParameters _solver_options;

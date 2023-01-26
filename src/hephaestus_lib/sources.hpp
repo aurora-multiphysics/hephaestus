@@ -2,30 +2,18 @@
 #include "../common/pfem_extras.hpp"
 #include "hephaestus_solvers.hpp"
 #include "inputs.hpp"
+#include "kernels.hpp"
 #include "materials.hpp"
 
 namespace hephaestus {
 
-class Source {
+class Source : public hephaestus::Kernel {
 public:
-  Source() {}
-  virtual void
-  Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-       const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-       hephaestus::BCMap &bc_map,
-       hephaestus::DomainProperties &domain_properties){};
-  virtual void ApplyKernel(mfem::ParLinearForm *lf){};
+  Source();
+  Source(const hephaestus::InputParameters &params) : Kernel(params){};
+  virtual void ApplyKernel(mfem::ParBilinearForm *blf) override{};
+  virtual void ApplyKernel(mfem::ParLinearForm *lf) override = 0;
   virtual void SubtractSource(mfem::ParGridFunction *gf){};
-};
-
-class Sources : public mfem::NamedFieldsMap<hephaestus::Source> {
-public:
-  void Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-            const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-            hephaestus::BCMap &bc_map,
-            hephaestus::DomainProperties &domain_properties);
-  void ApplyKernels(mfem::ParLinearForm *lf);
-  void SubtractSources(mfem::ParGridFunction *gf);
 };
 
 class ScalarPotentialSource : public hephaestus::Source {

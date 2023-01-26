@@ -7,9 +7,9 @@ EFormSolver::EFormSolver(
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
-    hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
+    hephaestus::Kernels &kernels, hephaestus::InputParameters &solver_options)
     : HCurlSolver(pmesh, order, fespaces, variables, bc_map, domain_properties,
-                  sources, solver_options) {}
+                  kernels, solver_options) {}
 
 void EFormSolver::RegisterVariables() {
   u_name = "electric_field";
