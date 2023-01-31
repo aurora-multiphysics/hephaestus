@@ -59,7 +59,7 @@ void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
   for (auto const &[name, dc_] : *data_collections) {
     formulation->RegisterOutputFields(dc_);
     // Write initial fields to disk
-    formulation->WriteOutputFields(dc_, 0);
+    // formulation->WriteOutputFields(dc_, 0);
   }
 
   // Initialize GLVis visualization and send the initial condition
