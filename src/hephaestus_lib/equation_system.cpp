@@ -2,7 +2,7 @@
 
 namespace hephaestus {
 
-Equation::Equation(const std::string test_var_name,
+WeakForm::WeakForm(const std::string test_var_name,
                    mfem::ParGridFunction &test_variable)
     : _test_var_name(test_var_name), test_pfes(test_variable.ParFESpace()),
       blf(new mfem::ParBilinearForm(test_pfes)),
@@ -11,47 +11,47 @@ Equation::Equation(const std::string test_var_name,
   *lf = 0.0;
 }
 
-void Equation::applyBoundaryConditions(hephaestus::BCMap &bc_map) {
+void WeakForm::applyBoundaryConditions(hephaestus::BCMap &bc_map) {
   x = 0.0;
   bc_map.applyEssentialBCs(_test_var_name, ess_tdof_list, x,
                            test_pfes->GetParMesh());
   bc_map.applyIntegratedBCs(_test_var_name, *lf, test_pfes->GetParMesh());
 }
 
-void Equation::FormLinearSystem(mfem::HypreParMatrix &A, mfem::Vector &X,
+void WeakForm::FormLinearSystem(mfem::HypreParMatrix &A, mfem::Vector &X,
                                 mfem::Vector &B) {
   blf->FormLinearSystem(ess_tdof_list, x, *lf, A, X, B);
 }
 
-void Equation::RecoverFEMSolution(mfem::Vector &X,
+void WeakForm::RecoverFEMSolution(mfem::Vector &X,
                                   mfem::ParGridFunction &test_variable) {
   blf->RecoverFEMSolution(X, *lf, test_variable);
 }
 
-TimeDependentEquation::TimeDependentEquation(
+TimeDependentWeakForm::TimeDependentWeakForm(
     const std::string test_var_name, mfem::ParGridFunction &test_variable)
-    : Equation(test_var_name, test_variable), dtCoef(1.0) {}
+    : WeakForm(test_var_name, test_variable), dtCoef(1.0) {}
 
-void TimeDependentEquation::setTimeStep(double dt) { dtCoef.constant = dt; }
+void TimeDependentWeakForm::setTimeStep(double dt) { dtCoef.constant = dt; }
 
-void TimeDependentEquation::updateWeakForm(hephaestus::BCMap &bc_map,
+void TimeDependentWeakForm::updateWeakForm(hephaestus::BCMap &bc_map,
                                            hephaestus::Sources &sources) {
   buildLinearForm(bc_map, sources);
 };
 
-HCurlEquation::HCurlEquation(const std::string test_var_name,
-                             mfem::ParGridFunction &test_variable,
-                             mfem::ParGridFunction &coupled_variable,
-                             mfem::Coefficient *alphaCoef_,
-                             mfem::Coefficient *betaCoef_)
-    : TimeDependentEquation(test_var_name, test_variable),
+CurlCurlWeakForm::CurlCurlWeakForm(const std::string test_var_name,
+                                   mfem::ParGridFunction &test_variable,
+                                   mfem::ParGridFunction &coupled_variable,
+                                   mfem::Coefficient *alphaCoef_,
+                                   mfem::Coefficient *betaCoef_)
+    : TimeDependentWeakForm(test_var_name, test_variable),
       curlCurl(new mfem::ParBilinearForm(test_pfes)), u_(coupled_variable),
       alphaCoef(alphaCoef_), betaCoef(betaCoef_),
       dtAlphaCoef(
           new mfem::TransformedCoefficient(&dtCoef, alphaCoef, prodFunc)) {}
 
-void HCurlEquation::buildLinearForm(hephaestus::BCMap &bc_map,
-                                    hephaestus::Sources &sources) {
+void CurlCurlWeakForm::buildLinearForm(hephaestus::BCMap &bc_map,
+                                       hephaestus::Sources &sources) {
   if (curlCurl != NULL) {
     delete curlCurl;
   }
@@ -70,7 +70,7 @@ void HCurlEquation::buildLinearForm(hephaestus::BCMap &bc_map,
   sources.ApplyKernels(lf);
 }
 
-void HCurlEquation::buildBilinearForm() {
+void CurlCurlWeakForm::buildBilinearForm() {
   if (blf != NULL) {
     delete blf;
   }
@@ -80,26 +80,25 @@ void HCurlEquation::buildBilinearForm() {
   blf->Assemble();
 }
 
-void HCurlEquation::buildWeakForm(hephaestus::BCMap &bc_map,
-                                  hephaestus::Sources &sources) {
+void CurlCurlWeakForm::buildWeakForm(hephaestus::BCMap &bc_map,
+                                     hephaestus::Sources &sources) {
   buildLinearForm(bc_map, sources);
   buildBilinearForm();
 }
 
-void HCurlEquation::updateWeakForm(hephaestus::BCMap &bc_map,
-                                   hephaestus::Sources &sources) {
-
+void CurlCurlWeakForm::updateWeakForm(hephaestus::BCMap &bc_map,
+                                      hephaestus::Sources &sources) {
   buildLinearForm(bc_map, sources);
 };
 
-void HCurlEquation::setTimeStep(double dt) {
+void CurlCurlWeakForm::setTimeStep(double dt) {
   if (blf == NULL || fabs(dt - dtCoef.constant) > 1.0e-12 * dt) {
-    TimeDependentEquation::setTimeStep(dt);
+    TimeDependentWeakForm::setTimeStep(dt);
     blf->Update();
     blf->Assemble();
   }
 }
-// EquationSystem::EquationSystem(NamedFieldsMap<hephaestus::Equation> eqns) {
+// EquationSystem::EquationSystem(NamedFieldsMap<hephaestus::WeakForm> eqns) {
 
 // }
 
@@ -133,7 +132,8 @@ void HCurlEquation::setTimeStep(double dt) {
 //   this->width = true_offsets[vars.Size() - 1];
 // }
 
-// // HCurlEquation::buildMixedBilinearForm(const std::string trial_var_name,
+// // CurlCurlWeakForm::buildMixedBilinearForm(const std::string
+// trial_var_name,
 // //                                       mfem::ParGridFunction
 // &trial_variable)
 // //                                       {

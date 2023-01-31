@@ -10,12 +10,12 @@ namespace hephaestus {
 Class to store weak form components (bilinear and linear forms, and optionally
 mixed and nonlinear forms) and build methods
 */
-class Equation {
+class WeakForm {
 public:
-  Equation(const std::string test_var_name,
+  WeakForm(const std::string test_var_name,
            mfem::ParGridFunction &test_variable);
 
-  ~Equation(){};
+  ~WeakForm(){};
 
   // All should share the test variable FESpace
   std::string _test_var_name; // TODO: should remove by updating bcmap
@@ -48,11 +48,11 @@ protected:
 /*
 Class to store weak form components for time dependent PDEs
 */
-class TimeDependentEquation : public Equation {
+class TimeDependentWeakForm : public WeakForm {
 public:
-  TimeDependentEquation(const std::string test_var_name,
+  TimeDependentWeakForm(const std::string test_var_name,
                         mfem::ParGridFunction &test_variable);
-  ~TimeDependentEquation(){};
+  ~TimeDependentWeakForm(){};
   virtual void setTimeStep(double dt);
   virtual void updateWeakForm(hephaestus::BCMap &bc_map,
                               hephaestus::Sources &sources);
@@ -74,13 +74,13 @@ lf(u') = (s0_{n+1}, u') - (α∇×u_{n}, ∇×u') + <(α∇×u_{n+1}) × n, u'>
 using
 u_{n+1} = u_{n} + dt du/dt_{n+1}
 */
-class HCurlEquation : public TimeDependentEquation {
+class CurlCurlWeakForm : public TimeDependentWeakForm {
 public:
-  HCurlEquation(const std::string test_var_name,
-                mfem::ParGridFunction &test_variable,
-                mfem::ParGridFunction &coupled_variable,
-                mfem::Coefficient *alphaCoef_, mfem::Coefficient *betaCoef_);
-  ~HCurlEquation(){};
+  CurlCurlWeakForm(const std::string test_var_name,
+                   mfem::ParGridFunction &test_variable,
+                   mfem::ParGridFunction &coupled_variable,
+                   mfem::Coefficient *alphaCoef_, mfem::Coefficient *betaCoef_);
+  ~CurlCurlWeakForm(){};
   virtual void buildLinearForm(hephaestus::BCMap &bc_map,
                                hephaestus::Sources &sources) override;
   virtual void buildBilinearForm() override;
@@ -113,7 +113,7 @@ public:
 
 //   ~EquationSystem(){};
 
-//   mfem::NamedFieldsMap<hephaestus::Equation> eqns; // Named by test variable
+//   mfem::NamedFieldsMap<hephaestus::WeakForm> eqns; // Named by test variable
 
 //   mfem::HypreParMatrix *A1;
 //   mfem::Vector *X1, *B1;
@@ -137,7 +137,7 @@ public:
 
 //   ~EquationSystem(){};
 
-//   mfem::NamedFieldsMap<hephaestus::Equation> eqns; // Named by test variable
+//   mfem::NamedFieldsMap<hephaestus::WeakForm> eqns; // Named by test variable
 
 //   mfem::HypreParMatrix *A1;
 //   mfem::Vector *X1, *B1;

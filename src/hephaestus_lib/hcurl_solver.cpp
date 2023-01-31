@@ -109,9 +109,9 @@ void HCurlSolver::Init(mfem::Vector &X) {
   u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
   u_.ProjectCoefficient(Zero_vec);
 
-  _equation =
-      new hephaestus::HCurlEquation(u_name, du_, u_, alphaCoef, betaCoef);
-  _equation->buildWeakForm(_bc_map, _sources);
+  _weak_form =
+      new hephaestus::CurlCurlWeakForm(u_name, du_, u_, alphaCoef, betaCoef);
+  _weak_form->buildWeakForm(_bc_map, _sources);
 }
 
 /*
@@ -137,15 +137,15 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   du_.MakeRef(HCurlFESpace_, dX_dt, true_offsets[0]);
   _domain_properties.SetTime(this->GetTime());
 
-  _equation->setTimeStep(dt);
-  _equation->updateWeakForm(_bc_map, _sources);
-  _equation->FormLinearSystem(*A1, *X1, *B1);
+  _weak_form->setTimeStep(dt);
+  _weak_form->updateWeakForm(_bc_map, _sources);
+  _weak_form->FormLinearSystem(*A1, *X1, *B1);
   if (a1_solver == NULL) {
     a1_solver = new hephaestus::DefaultHCurlPCGSolver(_solver_options, *A1,
-                                                      _equation->test_pfes);
+                                                      _weak_form->test_pfes);
   }
   a1_solver->Mult(*B1, *X1);
-  _equation->RecoverFEMSolution(*X1, du_);
+  _weak_form->RecoverFEMSolution(*X1, du_);
 
   curl->Mult(u_, curl_u_);
   curl->AddMult(du_, curl_u_, dt);
