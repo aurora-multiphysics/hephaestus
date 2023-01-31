@@ -54,7 +54,8 @@ public:
                         mfem::ParGridFunction &test_variable);
   ~TimeDependentEquation(){};
   virtual void setTimeStep(double dt);
-
+  virtual void updateWeakForm(hephaestus::BCMap &bc_map,
+                              hephaestus::Sources &sources);
   mfem::ConstantCoefficient dtCoef; // Coefficient for timestep scaling
 };
 
@@ -70,6 +71,8 @@ with corresponding weak form
 blf(du/dt_{n+1}, u') = lf(u')
 blf(u, u') = (βu, u') + (αdt∇×u, ∇×u')
 lf(u') = (s0_{n+1}, u') - (α∇×u_{n}, ∇×u') + <(α∇×u_{n+1}) × n, u'>
+using
+u_{n+1} = u_{n} + dt du/dt_{n+1}
 */
 class HCurlEquation : public TimeDependentEquation {
 public:
@@ -83,6 +86,9 @@ public:
   virtual void buildBilinearForm() override;
   virtual void buildWeakForm(hephaestus::BCMap &bc_map,
                              hephaestus::Sources &sources) override;
+  virtual void setTimeStep(double dt) override;
+  virtual void updateWeakForm(hephaestus::BCMap &bc_map,
+                              hephaestus::Sources &sources) override;
 
   mfem::ParGridFunction &u_;
   mfem::Coefficient *alphaCoef;
