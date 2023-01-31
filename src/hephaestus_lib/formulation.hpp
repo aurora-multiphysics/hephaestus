@@ -1,5 +1,6 @@
 #pragma once
 #include "../common/pfem_extras.hpp"
+#include "equation_system.hpp"
 #include "hephaestus_solvers.hpp"
 #include "inputs.hpp"
 #include "sources.hpp"

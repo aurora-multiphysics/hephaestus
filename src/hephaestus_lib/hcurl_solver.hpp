@@ -66,6 +66,7 @@ protected:
   hephaestus::DomainProperties _domain_properties;
   hephaestus::InputParameters _solver_options;
 
+  hephaestus::HCurlEquation *_equation;
   mfem::ParBilinearForm *a1;
   mfem::HypreParMatrix *A1;
   mfem::Vector *X1, *B1;

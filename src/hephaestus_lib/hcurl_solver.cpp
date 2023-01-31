@@ -94,13 +94,10 @@ void HCurlSolver::Init(mfem::Vector &X) {
   dtCoef = mfem::ConstantCoefficient(1.0);
   oneCoef = mfem::ConstantCoefficient(1.0);
   SetMaterialCoefficients(_domain_properties);
-  dtAlphaCoef = new mfem::TransformedCoefficient(&dtCoef, alphaCoef, prodFunc);
 
   _sources.Init(_variables, _fespaces, _bc_map, _domain_properties);
 
-  // a0(p, p') = (β ∇ p, ∇ p')
   this->buildCurl(alphaCoef); // (α∇×u_{n}, ∇×u')
-  b1 = new mfem::ParLinearForm(HCurlFESpace_);
   A1 = new mfem::HypreParMatrix;
   X1 = new mfem::Vector;
   B1 = new mfem::Vector;
@@ -112,6 +109,9 @@ void HCurlSolver::Init(mfem::Vector &X) {
 
   u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
   u_.ProjectCoefficient(Zero_vec);
+
+  _equation =
+      new hephaestus::HCurlEquation(u_name, du_, u_, alphaCoef, betaCoef);
 }
 
 /*
@@ -133,71 +133,32 @@ u_{n+1} = u_{n} + dt du/dt_{n+1}
 void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
                                 mfem::Vector &dX_dt) {
   dX_dt = 0.0;
-  dtCoef.constant = dt;
-
   u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
   du_.MakeRef(HCurlFESpace_, dX_dt, true_offsets[0]);
-
   _domain_properties.SetTime(this->GetTime());
 
-  //////////////////////////////////////////////////////////////////////////////
-  // (α∇×u_{n}, ∇×u') + (αdt∇×du/dt_{n+1}, ∇×u') + (βdu/dt_{n+1}, u')
-  // - (s0_{n+1}, u') - <(α∇×u_{n+1}) × n, u'> = 0
-
-  // a1(du/dt_{n+1}, u') = b1(u')
-  // a1(u, u') = (βu, u') + (αdt∇×u, ∇×u')
-  // b1(u') = (s0_{n+1}, u') - (α∇×u_{n}, ∇×u') + <(α∇×u_{n+1}) × n, u'>
-
-  // (α∇×u_{n}, ∇×u')
-  // v_ is a grid function but curlCurl is not parallel assembled so is OK
-  curlCurl->MultTranspose(u_, *b1);
-  *b1 *= -1.0;
-
-  _sources.ApplyKernels(b1);
-
-  mfem::ParGridFunction J_gf(HCurlFESpace_);
-  mfem::Array<int> ess_tdof_list;
-  J_gf = 0.0;
-  _bc_map.applyEssentialBCs(u_name, ess_tdof_list, J_gf, pmesh_);
-  _bc_map.applyIntegratedBCs(u_name, *b1, pmesh_);
-
-  // a1(du/dt_{n+1}, u') = (βdu/dt_{n+1}, u') + (αdt∇×du/dt_{n+1}, ∇×u')
-  if (a1 == NULL || fabs(dt - dt_A1) > 1.0e-12 * dt) {
-    this->buildA1(betaCoef, dtAlphaCoef);
-  }
-  a1->FormLinearSystem(ess_tdof_list, J_gf, *b1, *A1, *X1, *B1);
-
+  _equation->setTimeStep(dt);
+  // TODO: Don't need to create entire weak form every time..
+  _equation->buildWeakForm(_bc_map, _sources);
+  _equation->FormLinearSystem(*A1, *X1, *B1);
   // We only need to create the solver and preconditioner once
-  if (a1_solver == NULL) {
-    a1_solver = new hephaestus::DefaultHCurlPCGSolver(_solver_options, *A1,
-                                                      HCurlFESpace_);
-  }
+  delete a1_solver;
+  a1_solver = new hephaestus::DefaultHCurlPCGSolver(_solver_options, *A1,
+                                                    HCurlFESpace_);
+  // if (a1_solver == NULL) {
+  //   a1_solver = new hephaestus::DefaultHCurlPCGSolver(_solver_options, *A1,
+  //                                                     HCurlFESpace_);
+  // }
   a1_solver->Mult(*B1, *X1);
-
-  a1->RecoverFEMSolution(*X1, *b1, du_);
+  _equation->RecoverFEMSolution(*X1, du_);
 
   curl->Mult(u_, curl_u_);
   curl->AddMult(du_, curl_u_, dt);
-}
 
-void HCurlSolver::buildA1(mfem::Coefficient *Sigma,
-                          mfem::Coefficient *DtMuInv) {
-  if (a1 != NULL) {
-    delete a1;
-  }
-
-  // First create and assemble the bilinear form.  For now we assume the mesh
-  // isn't moving, the materials are time independent, and dt is constant. So
-  // we only need to do this once.
-
-  a1 = new mfem::ParBilinearForm(HCurlFESpace_);
-  a1->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*Sigma));
-  a1->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*DtMuInv));
-  a1->Assemble();
-
-  // Don't finalize or parallel assemble this is done in FormLinearSystem.
-
-  dt_A1 = dtCoef.constant;
+  // a1(du/dt_{n+1}, u') = (βdu/dt_{n+1}, u') + (αdt∇×du/dt_{n+1}, ∇×u')
+  // if (a1 == NULL || fabs(dt - dt_A1) > 1.0e-12 * dt) {
+  //   this->buildA1(betaCoef, dtAlphaCoef);
+  // }
 }
 
 void HCurlSolver::buildCurl(mfem::Coefficient *MuInv) {

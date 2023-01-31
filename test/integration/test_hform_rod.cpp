@@ -70,7 +70,7 @@ protected:
     exec_params.SetParam("StartTime", float(0.0));
     exec_params.SetParam("EndTime", float(2.5));
     exec_params.SetParam("VisualisationSteps", int(1));
-    exec_params.SetParam("UseGLVis", true);
+    exec_params.SetParam("UseGLVis", false);
     hephaestus::TransientExecutioner *executioner =
         new hephaestus::TransientExecutioner(exec_params);
 
