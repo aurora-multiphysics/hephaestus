@@ -24,11 +24,7 @@ public:
 
   void Init(mfem::Vector &X) override;
 
-  void buildA1(mfem::Coefficient *sigma, mfem::Coefficient *dtMuInv);
-  void buildM1(mfem::Coefficient *sigma);
   void buildCurl(mfem::Coefficient *muInv);
-  void buildGrad();
-  void buildSource();
 
   void ImplicitSolve(const double dt, const mfem::Vector &X,
                      mfem::Vector &dX_dt) override;
@@ -51,7 +47,6 @@ public:
   std::string u_name;
   std::string u_display_name;
   mfem::ParGridFunction u_, du_; // HCurl vector field
-  mfem::ParGridFunction p_;      // H1 scalar potential
   mfem::ParGridFunction curl_u_; // HDiv Magnetic Flux Density
   std::map<std::string, mfem::socketstream *> socks_;
 
@@ -67,12 +62,10 @@ protected:
   hephaestus::InputParameters _solver_options;
 
   hephaestus::HCurlEquation *_equation;
-  mfem::ParBilinearForm *a1;
   mfem::HypreParMatrix *A1;
   mfem::Vector *X1, *B1;
 
   mfem::ParDiscreteLinearOperator *curl;
-  mfem::ParBilinearForm *curlCurl;
   mutable hephaestus::DefaultHCurlPCGSolver *a1_solver;
 
   // temporary work vectors

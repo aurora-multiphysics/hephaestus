@@ -56,8 +56,7 @@ HCurlSolver::HCurlSolver(
           new mfem::common::ND_ParFESpace(&pmesh, order, pmesh.Dimension())),
       HDivFESpace_(
           new mfem::common::RT_ParFESpace(&pmesh, order, pmesh.Dimension())),
-      a1(NULL), a1_solver(NULL), curl(NULL), curlCurl(NULL),
-      u_(mfem::ParGridFunction(HCurlFESpace_)),
+      a1_solver(NULL), curl(NULL), u_(mfem::ParGridFunction(HCurlFESpace_)),
       du_(mfem::ParGridFunction(HCurlFESpace_)),
       curl_u_(mfem::ParGridFunction(HDivFESpace_)) {
   // Initialize MPI variables
@@ -112,6 +111,7 @@ void HCurlSolver::Init(mfem::Vector &X) {
 
   _equation =
       new hephaestus::HCurlEquation(u_name, du_, u_, alphaCoef, betaCoef);
+  _equation->buildWeakForm(_bc_map, _sources);
 }
 
 /*
@@ -138,38 +138,20 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   _domain_properties.SetTime(this->GetTime());
 
   _equation->setTimeStep(dt);
-  // TODO: Don't need to create entire weak form every time..
-  _equation->buildWeakForm(_bc_map, _sources);
+  _equation->updateWeakForm(_bc_map, _sources);
   _equation->FormLinearSystem(*A1, *X1, *B1);
-  // We only need to create the solver and preconditioner once
-  delete a1_solver;
-  a1_solver = new hephaestus::DefaultHCurlPCGSolver(_solver_options, *A1,
-                                                    HCurlFESpace_);
-  // if (a1_solver == NULL) {
-  //   a1_solver = new hephaestus::DefaultHCurlPCGSolver(_solver_options, *A1,
-  //                                                     HCurlFESpace_);
-  // }
+  if (a1_solver == NULL) {
+    a1_solver = new hephaestus::DefaultHCurlPCGSolver(_solver_options, *A1,
+                                                      _equation->test_pfes);
+  }
   a1_solver->Mult(*B1, *X1);
   _equation->RecoverFEMSolution(*X1, du_);
 
   curl->Mult(u_, curl_u_);
   curl->AddMult(du_, curl_u_, dt);
-
-  // a1(du/dt_{n+1}, u') = (βdu/dt_{n+1}, u') + (αdt∇×du/dt_{n+1}, ∇×u')
-  // if (a1 == NULL || fabs(dt - dt_A1) > 1.0e-12 * dt) {
-  //   this->buildA1(betaCoef, dtAlphaCoef);
-  // }
 }
 
 void HCurlSolver::buildCurl(mfem::Coefficient *MuInv) {
-  if (curlCurl != NULL) {
-    delete curlCurl;
-  }
-
-  curlCurl = new mfem::ParBilinearForm(HCurlFESpace_);
-  curlCurl->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*MuInv));
-  curlCurl->Assemble();
-
   // Discrete Curl operator
   if (curl != NULL) {
     delete curl;
