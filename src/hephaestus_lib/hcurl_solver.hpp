@@ -9,7 +9,6 @@ namespace hephaestus {
 class HCurlSolver : public TransientFormulation {
   virtual void
   SetMaterialCoefficients(hephaestus::DomainProperties &domain_properties);
-  virtual void RegisterVariables();
 
 public:
   HCurlSolver(mfem::ParMesh &pmesh, int order,
@@ -23,6 +22,7 @@ public:
   ~HCurlSolver(){};
 
   void Init(mfem::Vector &X) override;
+  virtual void RegisterVariables();
 
   void buildCurl(mfem::Coefficient *muInv);
 
@@ -38,22 +38,20 @@ public:
   void InitializeGLVis() override;
 
   void DisplayToGLVis() override;
-  mfem::common::H1_ParFESpace *H1FESpace_;
-  mfem::common::ND_ParFESpace *HCurlFESpace_;
-  mfem::common::RT_ParFESpace *HDivFESpace_;
 
   double ElectricLosses() const;
 
-  std::string u_name;
+  std::string u_name, curl_u_name;
   std::string u_display_name;
-  mfem::ParGridFunction u_, du_; // HCurl vector field
-  mfem::ParGridFunction curl_u_; // HDiv Magnetic Flux Density
+  mfem::ParGridFunction *u_, *du_; // HCurl vector field
+  mfem::ParGridFunction *curl_u_;  // HDiv Magnetic Flux Density
   std::map<std::string, mfem::socketstream *> socks_;
 
 protected:
   int myid_;
   int num_procs_;
   mfem::ParMesh *pmesh_;
+  int _order;
   mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &_fespaces;
   mfem::NamedFieldsMap<mfem::ParGridFunction> &_variables;
   hephaestus::Sources &_sources;

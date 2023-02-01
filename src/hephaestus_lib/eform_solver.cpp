@@ -14,9 +14,9 @@ EFormSolver::EFormSolver(
 void EFormSolver::RegisterVariables() {
   u_name = "electric_field";
   u_display_name = "Electric Field (E)";
+  curl_u_name = "-dB_dt";
 
-  _variables.Register(u_name, &u_, false);
-  _variables.Register("-dB_dt", &curl_u_, false);
+  HCurlSolver::RegisterVariables();
 }
 
 void EFormSolver::SetMaterialCoefficients(

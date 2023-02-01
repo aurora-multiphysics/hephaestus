@@ -14,9 +14,9 @@ HFormSolver::HFormSolver(
 void HFormSolver::RegisterVariables() {
   u_name = "magnetic_field";
   u_display_name = "Magnetic Field (H)";
+  curl_u_name = "current_density";
 
-  _variables.Register(u_name, &u_, false);
-  _variables.Register("current_density", &curl_u_, false);
+  HCurlSolver::RegisterVariables();
 }
 
 void HFormSolver::SetMaterialCoefficients(
