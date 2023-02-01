@@ -44,7 +44,20 @@ void ScalarPotentialSource::Init(
     hephaestus::BCMap &bc_map,
     hephaestus::DomainProperties &domain_properties) {
   H1FESpace_ = fespaces.Get(h1_fespace_name);
+  if (H1FESpace_ == NULL) {
+    const std::string error_message = h1_fespace_name +
+                                      " not found in fespaces when "
+                                      "creating ScalarPotentialSource\n";
+    mfem::mfem_error(error_message.c_str());
+  }
+
   HCurlFESpace_ = fespaces.Get(hcurl_fespace_name);
+  if (HCurlFESpace_ == NULL) {
+    const std::string error_message = hcurl_fespace_name +
+                                      " not found in fespaces when "
+                                      "creating ScalarPotentialSource\n";
+    mfem::mfem_error(error_message.c_str());
+  }
 
   p_ = new mfem::ParGridFunction(H1FESpace_);
   variables.Register(potential_gf_name, p_, false);
@@ -143,8 +156,20 @@ void DivFreeVolumetricSource::Init(
     hephaestus::BCMap &bc_map,
     hephaestus::DomainProperties &domain_properties) {
   H1FESpace_ = fespaces.Get(h1_fespace_name);
-  HCurlFESpace_ = fespaces.Get(hcurl_fespace_name);
+  if (H1FESpace_ == NULL) {
+    const std::string error_message = h1_fespace_name +
+                                      " not found in fespaces when "
+                                      "creating ScalarPotentialSource\n";
+    mfem::mfem_error(error_message.c_str());
+  }
 
+  HCurlFESpace_ = fespaces.Get(hcurl_fespace_name);
+  if (HCurlFESpace_ == NULL) {
+    const std::string error_message = hcurl_fespace_name +
+                                      " not found in fespaces when "
+                                      "creating ScalarPotentialSource\n";
+    mfem::mfem_error(error_message.c_str());
+  }
   if (domain_properties.vector_property_map.find(src_coef_name) !=
       domain_properties.vector_property_map.end()) {
     sourceVecCoef = domain_properties.vector_property_map[src_coef_name];

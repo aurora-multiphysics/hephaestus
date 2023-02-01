@@ -42,6 +42,8 @@ void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
       *bc_map, *domain_properties, *sources, *solver_options);
 
   formulation->RegisterVariables();
+  MPI_Barrier(pmesh->GetComm());
+
   variables->Init(*pmesh);
   auxkernels->Init(variables->gfs, *domain_properties);
 
@@ -59,7 +61,7 @@ void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
   for (auto const &[name, dc_] : *data_collections) {
     formulation->RegisterOutputFields(dc_);
     // Write initial fields to disk
-    // formulation->WriteOutputFields(dc_, 0);
+    formulation->WriteOutputFields(dc_, 0);
   }
 
   // Initialize GLVis visualization and send the initial condition

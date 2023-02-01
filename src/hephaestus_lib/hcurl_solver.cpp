@@ -47,47 +47,21 @@ HCurlSolver::HCurlSolver(
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
     hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
-    : myid_(0), num_procs_(1), pmesh_(&pmesh), _fespaces(fespaces),
-      _variables(variables), _bc_map(bc_map), _sources(sources),
-      _domain_properties(domain_properties), _solver_options(solver_options),
-      H1FESpace_(
-          new mfem::common::H1_ParFESpace(&pmesh, order, pmesh.Dimension())),
-      HCurlFESpace_(
-          new mfem::common::ND_ParFESpace(&pmesh, order, pmesh.Dimension())),
-      HDivFESpace_(
-          new mfem::common::RT_ParFESpace(&pmesh, order, pmesh.Dimension())),
-      a1_solver(NULL), curl(NULL), u_(mfem::ParGridFunction(HCurlFESpace_)),
-      du_(mfem::ParGridFunction(HCurlFESpace_)),
-      curl_u_(mfem::ParGridFunction(HDivFESpace_)) {
+    : myid_(0), num_procs_(1), pmesh_(&pmesh), _order(order),
+      _fespaces(fespaces), _variables(variables), _bc_map(bc_map),
+      _sources(sources), _domain_properties(domain_properties),
+      _solver_options(solver_options), a1_solver(NULL), curl(NULL), u_(NULL),
+      du_(NULL), curl_u_(NULL) {
   // Initialize MPI variables
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh.GetComm(), &myid_);
 
-  true_offsets.SetSize(2);
-  true_offsets[0] = 0;
-  true_offsets[1] = HCurlFESpace_->GetVSize();
-  true_offsets.PartialSum();
-
-  this->height = true_offsets[1];
-  this->width = true_offsets[1];
-
-  HYPRE_BigInt size_h1 = H1FESpace_->GlobalTrueVSize();
-  HYPRE_BigInt size_nd = HCurlFESpace_->GlobalTrueVSize();
-  if (myid_ == 0) {
-    std::cout << "Total number of         DOFs: " << size_h1 + size_nd
-              << std::endl;
-    std::cout << "------------------------------------" << std::endl;
-    std::cout << "Total number of H1      DOFs: " << size_h1 << std::endl;
-    std::cout << "Total number of H(Curl) DOFs: " << size_nd << std::endl;
-    std::cout << "------------------------------------" << std::endl;
-  }
+  u_name = "h_curl_var";
+  u_display_name = "H(Curl) variable";
+  curl_u_name = "curl h_curl_var";
 }
 
 void HCurlSolver::Init(mfem::Vector &X) {
-  RegisterVariables();
-  _fespaces.Register("_H1FESpace", H1FESpace_, false);
-  _fespaces.Register("_HCurlFESpace", HCurlFESpace_, false);
-  _fespaces.Register("_HDivFESpace", HDivFESpace_, false);
 
   // Define material property coefficients
   dtCoef = mfem::ConstantCoefficient(1.0);
@@ -106,11 +80,11 @@ void HCurlSolver::Init(mfem::Vector &X) {
   mfem::VectorConstantCoefficient Zero_vec(zero_vec);
   mfem::ConstantCoefficient Zero(0.0);
 
-  u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
-  u_.ProjectCoefficient(Zero_vec);
+  u_->MakeRef(u_->ParFESpace(), const_cast<mfem::Vector &>(X), true_offsets[0]);
+  u_->ProjectCoefficient(Zero_vec);
 
   _weak_form =
-      new hephaestus::CurlCurlWeakForm(u_name, du_, u_, alphaCoef, betaCoef);
+      new hephaestus::CurlCurlWeakForm(u_name, *du_, *u_, alphaCoef, betaCoef);
   _weak_form->buildWeakForm(_bc_map, _sources);
 }
 
@@ -133,8 +107,8 @@ u_{n+1} = u_{n} + dt du/dt_{n+1}
 void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
                                 mfem::Vector &dX_dt) {
   dX_dt = 0.0;
-  u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
-  du_.MakeRef(HCurlFESpace_, dX_dt, true_offsets[0]);
+  u_->MakeRef(u_->ParFESpace(), const_cast<mfem::Vector &>(X), true_offsets[0]);
+  du_->MakeRef(u_->ParFESpace(), dX_dt, true_offsets[0]);
   _domain_properties.SetTime(this->GetTime());
 
   _weak_form->setTimeStep(dt);
@@ -145,10 +119,10 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
                                                       _weak_form->test_pfes);
   }
   a1_solver->Mult(*B1, *X1);
-  _weak_form->RecoverFEMSolution(*X1, du_);
+  _weak_form->RecoverFEMSolution(*X1, *du_);
 
-  curl->Mult(u_, curl_u_);
-  curl->AddMult(du_, curl_u_, dt);
+  curl->Mult(*u_, *curl_u_);
+  curl->AddMult(*du_, *curl_u_, dt);
 }
 
 void HCurlSolver::buildCurl(mfem::Coefficient *MuInv) {
@@ -156,7 +130,8 @@ void HCurlSolver::buildCurl(mfem::Coefficient *MuInv) {
   if (curl != NULL) {
     delete curl;
   }
-  curl = new mfem::ParDiscreteLinearOperator(HCurlFESpace_, HDivFESpace_);
+  curl = new mfem::ParDiscreteLinearOperator(u_->ParFESpace(),
+                                             curl_u_->ParFESpace());
   curl->AddDomainInterpolator(new mfem::CurlInterpolator());
   curl->Assemble();
 
@@ -164,11 +139,46 @@ void HCurlSolver::buildCurl(mfem::Coefficient *MuInv) {
 }
 
 void HCurlSolver::RegisterVariables() {
-  u_name = "h_curl_var";
-  u_display_name = "H(Curl) variable";
+  _fespaces.Register(
+      "_H1FESpace",
+      new mfem::common::H1_ParFESpace(pmesh_, _order, pmesh_->Dimension()),
+      true);
+  _fespaces.Register(
+      "_HCurlFESpace",
+      new mfem::common::ND_ParFESpace(pmesh_, _order, pmesh_->Dimension()),
+      true);
+  _fespaces.Register(
+      "_HDivFESpace",
+      new mfem::common::RT_ParFESpace(pmesh_, _order, pmesh_->Dimension()),
+      true);
 
-  _variables.Register(u_name, &u_, false);
-  _variables.Register("curl h_curl_var", &curl_u_, false);
+  _variables.Register(
+      u_name, new mfem::ParGridFunction(_fespaces.Get("_HCurlFESpace")), true);
+  _variables.Register(curl_u_name,
+                      new mfem::ParGridFunction(_fespaces.Get("_HDivFESpace")),
+                      true);
+  _variables.Register(
+      "du", new mfem::ParGridFunction(_fespaces.Get("_HCurlFESpace")), true);
+
+  u_ = _variables.Get(u_name);
+  curl_u_ = _variables.Get(curl_u_name);
+  du_ = _variables.Get("du");
+
+  true_offsets.SetSize(2);
+  true_offsets[0] = 0;
+  true_offsets[1] = u_->ParFESpace()->GetVSize();
+  true_offsets.PartialSum();
+
+  this->height = true_offsets[1];
+  this->width = true_offsets[1];
+
+  HYPRE_BigInt size_nd = u_->ParFESpace()->GlobalTrueVSize();
+  if (myid_ == 0) {
+    std::cout << "Total number of         DOFs: " << size_nd << std::endl;
+    std::cout << "------------------------------------" << std::endl;
+    std::cout << "Total number of H(Curl) DOFs: " << size_nd << std::endl;
+    std::cout << "------------------------------------" << std::endl;
+  }
 }
 
 void HCurlSolver::SetMaterialCoefficients(

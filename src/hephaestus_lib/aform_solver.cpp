@@ -14,9 +14,9 @@ AFormSolver::AFormSolver(
 void AFormSolver::RegisterVariables() {
   u_name = "magnetic_vector_potential";
   u_display_name = "Magnetic Vector Potential (A)";
+  curl_u_name = "magnetic_flux_density";
 
-  _variables.Register(u_name, &u_, false);
-  _variables.Register("magnetic_flux_density", &curl_u_, false);
+  HCurlSolver::RegisterVariables();
 }
 
 void AFormSolver::SetMaterialCoefficients(
