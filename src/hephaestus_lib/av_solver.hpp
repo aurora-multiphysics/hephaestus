@@ -31,20 +31,9 @@ public:
   void ImplicitSolve(const double dt, const mfem::Vector &X,
                      mfem::Vector &dX_dt) override;
 
-  void RegisterOutputFields(mfem::DataCollection *dc_) override;
-
-  void WriteOutputFields(mfem::DataCollection *dc_, int it = 0) override;
-
-  virtual void WriteConsoleSummary(double t, int it) override;
-
-  void InitializeGLVis() override;
-
-  void DisplayToGLVis() override;
   mfem::common::H1_ParFESpace *H1FESpace_;
   mfem::common::ND_ParFESpace *HCurlFESpace_;
   mfem::common::RT_ParFESpace *HDivFESpace_;
-
-  double ElectricLosses() const;
 
   std::string u_name, p_name, e_name, b_name;
   std::string u_display_name, p_display_name, e_display_name, b_display_name;

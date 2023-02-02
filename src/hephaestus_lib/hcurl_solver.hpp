@@ -29,18 +29,6 @@ public:
   void ImplicitSolve(const double dt, const mfem::Vector &X,
                      mfem::Vector &dX_dt) override;
 
-  void RegisterOutputFields(mfem::DataCollection *dc_) override;
-
-  void WriteOutputFields(mfem::DataCollection *dc_, int it = 0) override;
-
-  virtual void WriteConsoleSummary(double t, int it) override;
-
-  void InitializeGLVis() override;
-
-  void DisplayToGLVis() override;
-
-  double ElectricLosses() const;
-
   std::string u_name, curl_u_name;
   std::string u_display_name;
   mfem::ParGridFunction *u_, *du_; // HCurl vector field
@@ -75,7 +63,5 @@ protected:
   mfem::Coefficient *alphaCoef;
   mfem::Coefficient *dtAlphaCoef;
   mfem::Coefficient *betaCoef;
-
-  // Sockets used to communicate with GLVis
 };
 } // namespace hephaestus

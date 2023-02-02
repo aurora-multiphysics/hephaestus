@@ -31,15 +31,6 @@ public:
   void ImplicitSolve(const double dt, const mfem::Vector &X,
                      mfem::Vector &dX_dt) override;
 
-  void RegisterOutputFields(mfem::DataCollection *dc_) override;
-
-  void WriteOutputFields(mfem::DataCollection *dc_, int it = 0) override;
-
-  virtual void WriteConsoleSummary(double t, int it) override;
-
-  void InitializeGLVis() override;
-
-  void DisplayToGLVis() override;
   mfem::common::H1_ParFESpace *H1FESpace_;
   mfem::common::ND_ParFESpace *HCurlFESpace_;
   mfem::common::RT_ParFESpace *HDivFESpace_;

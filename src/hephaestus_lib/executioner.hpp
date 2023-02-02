@@ -19,6 +19,8 @@ private:
   int vis_steps;         // Number of cyces between each output update
   bool visualization; // Flag to control whether GLVis visualisation is required
   mutable bool last_step; // Flag to check if current step is final
+  int myid_;
+  int num_procs_;
 
   mfem::ParMesh *pmesh;
   hephaestus::BCMap *bc_map;
@@ -39,9 +41,6 @@ public:
   explicit TransientExecutioner(const hephaestus::InputParameters &params);
 
   void Init(const hephaestus::InputParameters &params);
-
-  // // Solve transient FE problem.
-  // void Solve(const hephaestus::InputParameters &params) const;
 
   void Step(double dt, int it) const;
 
