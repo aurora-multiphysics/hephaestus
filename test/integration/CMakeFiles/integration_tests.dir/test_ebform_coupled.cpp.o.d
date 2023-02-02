@@ -369,11 +369,10 @@ test/integration/CMakeFiles/integration_tests.dir/test_ebform_coupled.cpp.o: \
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/eform_solver.hpp \
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/hform_solver.hpp \
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/hj_dual_solver.hpp \
+ /opt/apollo/contrib/hephaestus/src/hephaestus_lib/linear_elastic_solver.hpp \
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/postprocessors.hpp \
- /opt/apollo/contrib/hephaestus/test/googletest-prefix/src/googletest/googletest/include/gtest/gtest.h \
- /opt/apollo/contrib/hephaestus/test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-assertion-result.h \
- /opt/apollo/contrib/hephaestus/test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-message.h \
- /opt/apollo/contrib/hephaestus/test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-port.h \
+ /usr/include/gtest/gtest.h /usr/include/gtest/internal/gtest-internal.h \
+ /usr/include/gtest/internal/gtest-port.h \
  /usr/include/x86_64-linux-gnu/sys/stat.h \
  /usr/include/x86_64-linux-gnu/bits/stat.h \
  /usr/include/x86_64-linux-gnu/bits/statx.h /usr/include/linux/stat.h \
@@ -388,25 +387,14 @@ test/integration/CMakeFiles/integration_tests.dir/test_ebform_coupled.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/statx-generic.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_statx_timestamp.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_statx.h \
- /opt/apollo/contrib/hephaestus/test/googletest-prefix/src/googletest/googletest/include/gtest/internal/custom/gtest-port.h \
- /opt/apollo/contrib/hephaestus/test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-port-arch.h \
- /usr/include/unistd.h /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
+ /usr/include/gtest/internal/gtest-port-arch.h \
+ /usr/include/gtest/internal/custom/gtest-port.h /usr/include/unistd.h \
+ /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
  /usr/include/x86_64-linux-gnu/bits/environments.h \
  /usr/include/x86_64-linux-gnu/bits/confname.h \
  /usr/include/x86_64-linux-gnu/bits/getopt_posix.h \
  /usr/include/x86_64-linux-gnu/bits/getopt_core.h \
  /usr/include/x86_64-linux-gnu/bits/unistd_ext.h /usr/include/regex.h \
- /usr/include/c++/9/condition_variable /usr/include/c++/9/chrono \
- /usr/include/c++/9/ratio /usr/include/c++/9/bits/parse_numbers.h \
- /usr/include/c++/9/bits/std_mutex.h \
- /usr/include/c++/9/bits/unique_lock.h /usr/include/c++/9/mutex \
- /usr/include/c++/9/variant \
- /opt/apollo/contrib/hephaestus/test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-death-test.h \
- /opt/apollo/contrib/hephaestus/test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-death-test-internal.h \
- /opt/apollo/contrib/hephaestus/test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-matchers.h \
- /usr/include/c++/9/atomic \
- /opt/apollo/contrib/hephaestus/test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-printers.h \
- /opt/apollo/contrib/hephaestus/test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-internal.h \
  /usr/include/x86_64-linux-gnu/sys/wait.h /usr/include/signal.h \
  /usr/include/x86_64-linux-gnu/bits/signum.h \
  /usr/include/x86_64-linux-gnu/bits/signum-generic.h \
@@ -428,16 +416,19 @@ test/integration/CMakeFiles/integration_tests.dir/test_ebform_coupled.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/types/struct_sigstack.h \
  /usr/include/x86_64-linux-gnu/bits/sigthread.h \
  /usr/include/x86_64-linux-gnu/bits/signal_ext.h \
- /opt/apollo/contrib/hephaestus/test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-filepath.h \
- /opt/apollo/contrib/hephaestus/test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-string.h \
- /opt/apollo/contrib/hephaestus/test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-type-util.h \
+ /usr/include/gtest/gtest-message.h \
+ /usr/include/gtest/internal/gtest-filepath.h \
+ /usr/include/gtest/internal/gtest-string.h \
+ /usr/include/gtest/internal/gtest-type-util.h \
  /usr/include/c++/9/cxxabi.h \
  /usr/include/x86_64-linux-gnu/c++/9/bits/cxxabi_tweaks.h \
- /opt/apollo/contrib/hephaestus/test/googletest-prefix/src/googletest/googletest/include/gtest/internal/custom/gtest-printers.h \
- /opt/apollo/contrib/hephaestus/test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-param-test.h \
- /usr/include/c++/9/iterator /usr/include/c++/9/bits/stream_iterator.h \
- /opt/apollo/contrib/hephaestus/test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-param-util.h \
- /opt/apollo/contrib/hephaestus/test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-test-part.h \
- /opt/apollo/contrib/hephaestus/test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-typed-test.h \
- /opt/apollo/contrib/hephaestus/test/googletest-prefix/src/googletest/googletest/include/gtest/gtest_pred_impl.h \
- /opt/apollo/contrib/hephaestus/test/googletest-prefix/src/googletest/googletest/include/gtest/gtest_prod.h
+ /usr/include/gtest/gtest-death-test.h \
+ /usr/include/gtest/internal/gtest-death-test-internal.h \
+ /usr/include/gtest/gtest-matchers.h /usr/include/gtest/gtest-printers.h \
+ /usr/include/gtest/internal/custom/gtest-printers.h \
+ /usr/include/gtest/gtest-param-test.h /usr/include/c++/9/iterator \
+ /usr/include/c++/9/bits/stream_iterator.h \
+ /usr/include/gtest/internal/gtest-param-util.h \
+ /usr/include/gtest/gtest_prod.h /usr/include/gtest/gtest-test-part.h \
+ /usr/include/gtest/gtest-typed-test.h \
+ /usr/include/gtest/gtest_pred_impl.h

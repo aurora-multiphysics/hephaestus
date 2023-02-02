@@ -404,6 +404,30 @@ test_joule_rod.cpp.s:
 	cd /opt/apollo/contrib/hephaestus && $(MAKE) $(MAKESILENT) -f test/integration/CMakeFiles/integration_tests.dir/build.make test/integration/CMakeFiles/integration_tests.dir/test_joule_rod.cpp.s
 .PHONY : test_joule_rod.cpp.s
 
+test_linear_elastic.o: test_linear_elastic.cpp.o
+.PHONY : test_linear_elastic.o
+
+# target to build an object file
+test_linear_elastic.cpp.o:
+	cd /opt/apollo/contrib/hephaestus && $(MAKE) $(MAKESILENT) -f test/integration/CMakeFiles/integration_tests.dir/build.make test/integration/CMakeFiles/integration_tests.dir/test_linear_elastic.cpp.o
+.PHONY : test_linear_elastic.cpp.o
+
+test_linear_elastic.i: test_linear_elastic.cpp.i
+.PHONY : test_linear_elastic.i
+
+# target to preprocess a source file
+test_linear_elastic.cpp.i:
+	cd /opt/apollo/contrib/hephaestus && $(MAKE) $(MAKESILENT) -f test/integration/CMakeFiles/integration_tests.dir/build.make test/integration/CMakeFiles/integration_tests.dir/test_linear_elastic.cpp.i
+.PHONY : test_linear_elastic.cpp.i
+
+test_linear_elastic.s: test_linear_elastic.cpp.s
+.PHONY : test_linear_elastic.s
+
+# target to generate assembly for a file
+test_linear_elastic.cpp.s:
+	cd /opt/apollo/contrib/hephaestus && $(MAKE) $(MAKESILENT) -f test/integration/CMakeFiles/integration_tests.dir/build.make test/integration/CMakeFiles/integration_tests.dir/test_linear_elastic.cpp.s
+.PHONY : test_linear_elastic.cpp.s
+
 test_team7.o: test_team7.cpp.o
 .PHONY : test_team7.o
 
@@ -471,6 +495,9 @@ help:
 	@echo "... test_joule_rod.o"
 	@echo "... test_joule_rod.i"
 	@echo "... test_joule_rod.s"
+	@echo "... test_linear_elastic.o"
+	@echo "... test_linear_elastic.i"
+	@echo "... test_linear_elastic.s"
 	@echo "... test_team7.o"
 	@echo "... test_team7.i"
 	@echo "... test_team7.s"

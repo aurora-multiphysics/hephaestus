@@ -23,6 +23,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/integration_tests.dir/test_hjform_rod.cpp.o.d"
   "CMakeFiles/integration_tests.dir/test_joule_rod.cpp.o"
   "CMakeFiles/integration_tests.dir/test_joule_rod.cpp.o.d"
+  "CMakeFiles/integration_tests.dir/test_linear_elastic.cpp.o"
+  "CMakeFiles/integration_tests.dir/test_linear_elastic.cpp.o.d"
   "CMakeFiles/integration_tests.dir/test_team7.cpp.o"
   "CMakeFiles/integration_tests.dir/test_team7.cpp.o.d"
   "integration_tests[1]_tests.cmake"

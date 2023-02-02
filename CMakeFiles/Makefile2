@@ -261,7 +261,7 @@ test/CMakeFiles/googletest.dir/clean:
 test/unit/CMakeFiles/unit_tests.dir/all: test/CMakeFiles/googletest.dir/all
 	$(MAKE) $(MAKESILENT) -f test/unit/CMakeFiles/unit_tests.dir/build.make test/unit/CMakeFiles/unit_tests.dir/depend
 	$(MAKE) $(MAKESILENT) -f test/unit/CMakeFiles/unit_tests.dir/build.make test/unit/CMakeFiles/unit_tests.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/opt/apollo/contrib/hephaestus/CMakeFiles --progress-num=48,49,50,51,52 "Built target unit_tests"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/opt/apollo/contrib/hephaestus/CMakeFiles --progress-num=49,50,51,52,53 "Built target unit_tests"
 .PHONY : test/unit/CMakeFiles/unit_tests.dir/all
 
 # Build rule for subdir invocation for target.
@@ -287,12 +287,12 @@ test/unit/CMakeFiles/unit_tests.dir/clean:
 test/integration/CMakeFiles/integration_tests.dir/all: test/CMakeFiles/googletest.dir/all
 	$(MAKE) $(MAKESILENT) -f test/integration/CMakeFiles/integration_tests.dir/build.make test/integration/CMakeFiles/integration_tests.dir/depend
 	$(MAKE) $(MAKESILENT) -f test/integration/CMakeFiles/integration_tests.dir/build.make test/integration/CMakeFiles/integration_tests.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/opt/apollo/contrib/hephaestus/CMakeFiles --progress-num=33,34,35,36,37,38,39,40,41,42,43,44,45 "Built target integration_tests"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/opt/apollo/contrib/hephaestus/CMakeFiles --progress-num=33,34,35,36,37,38,39,40,41,42,43,44,45,46 "Built target integration_tests"
 .PHONY : test/integration/CMakeFiles/integration_tests.dir/all
 
 # Build rule for subdir invocation for target.
 test/integration/CMakeFiles/integration_tests.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /opt/apollo/contrib/hephaestus/CMakeFiles 21
+	$(CMAKE_COMMAND) -E cmake_progress_start /opt/apollo/contrib/hephaestus/CMakeFiles 22
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test/integration/CMakeFiles/integration_tests.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /opt/apollo/contrib/hephaestus/CMakeFiles 0
 .PHONY : test/integration/CMakeFiles/integration_tests.dir/rule
@@ -313,7 +313,7 @@ test/integration/CMakeFiles/integration_tests.dir/clean:
 test/regression/CMakeFiles/regression_tests.dir/all: test/CMakeFiles/googletest.dir/all
 	$(MAKE) $(MAKESILENT) -f test/regression/CMakeFiles/regression_tests.dir/build.make test/regression/CMakeFiles/regression_tests.dir/depend
 	$(MAKE) $(MAKESILENT) -f test/regression/CMakeFiles/regression_tests.dir/build.make test/regression/CMakeFiles/regression_tests.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/opt/apollo/contrib/hephaestus/CMakeFiles --progress-num=46,47 "Built target regression_tests"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/opt/apollo/contrib/hephaestus/CMakeFiles --progress-num=47,48 "Built target regression_tests"
 .PHONY : test/regression/CMakeFiles/regression_tests.dir/all
 
 # Build rule for subdir invocation for target.

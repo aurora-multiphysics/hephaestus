@@ -31,7 +31,11 @@ hephaestus::TransientFormulation *Factory::createTransientFormulation(
   } else if (formulation == "AVForm") {
     return new hephaestus::AVSolver(pmesh, order, fespaces, variables, bc_map,
                                     domain_properties, sources, solver_options);
-  } else {
+  } else if (formulation == "LinearElasticSolver") {
+    return new hephaestus::LinearElasticSolver(pmesh, order, fespaces, variables, bc_map,
+                                    domain_properties, sources, solver_options);
+  }
+   else {
     std::cout << "Formulation name " << formulation << " not recognised. \n";
   }
   return nullptr;

@@ -365,4 +365,5 @@ src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/variables.cpp.o: \
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/dual_solver.hpp \
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/eform_solver.hpp \
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/hform_solver.hpp \
- /opt/apollo/contrib/hephaestus/src/hephaestus_lib/hj_dual_solver.hpp
+ /opt/apollo/contrib/hephaestus/src/hephaestus_lib/hj_dual_solver.hpp \
+ /opt/apollo/contrib/hephaestus/src/hephaestus_lib/linear_elastic_solver.hpp

@@ -6,6 +6,7 @@
 #include "eform_solver.hpp"
 #include "hform_solver.hpp"
 #include "hj_dual_solver.hpp"
+#include "linear_elastic_solver.hpp"
 #include "inputs.hpp"
 
 namespace hephaestus {

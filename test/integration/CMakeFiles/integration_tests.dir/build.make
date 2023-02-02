@@ -223,10 +223,24 @@ test/integration/CMakeFiles/integration_tests.dir/test_joule_rod.cpp.s: cmake_fo
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/integration_tests.dir/test_joule_rod.cpp.s"
 	cd /opt/apollo/contrib/hephaestus/test/integration && /usr/local/bin/mpicxx $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /opt/apollo/contrib/hephaestus/test/integration/test_joule_rod.cpp -o CMakeFiles/integration_tests.dir/test_joule_rod.cpp.s
 
+test/integration/CMakeFiles/integration_tests.dir/test_linear_elastic.cpp.o: test/integration/CMakeFiles/integration_tests.dir/flags.make
+test/integration/CMakeFiles/integration_tests.dir/test_linear_elastic.cpp.o: test/integration/test_linear_elastic.cpp
+test/integration/CMakeFiles/integration_tests.dir/test_linear_elastic.cpp.o: test/integration/CMakeFiles/integration_tests.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/opt/apollo/contrib/hephaestus/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object test/integration/CMakeFiles/integration_tests.dir/test_linear_elastic.cpp.o"
+	cd /opt/apollo/contrib/hephaestus/test/integration && /usr/local/bin/mpicxx $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT test/integration/CMakeFiles/integration_tests.dir/test_linear_elastic.cpp.o -MF CMakeFiles/integration_tests.dir/test_linear_elastic.cpp.o.d -o CMakeFiles/integration_tests.dir/test_linear_elastic.cpp.o -c /opt/apollo/contrib/hephaestus/test/integration/test_linear_elastic.cpp
+
+test/integration/CMakeFiles/integration_tests.dir/test_linear_elastic.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/integration_tests.dir/test_linear_elastic.cpp.i"
+	cd /opt/apollo/contrib/hephaestus/test/integration && /usr/local/bin/mpicxx $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /opt/apollo/contrib/hephaestus/test/integration/test_linear_elastic.cpp > CMakeFiles/integration_tests.dir/test_linear_elastic.cpp.i
+
+test/integration/CMakeFiles/integration_tests.dir/test_linear_elastic.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/integration_tests.dir/test_linear_elastic.cpp.s"
+	cd /opt/apollo/contrib/hephaestus/test/integration && /usr/local/bin/mpicxx $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /opt/apollo/contrib/hephaestus/test/integration/test_linear_elastic.cpp -o CMakeFiles/integration_tests.dir/test_linear_elastic.cpp.s
+
 test/integration/CMakeFiles/integration_tests.dir/test_team7.cpp.o: test/integration/CMakeFiles/integration_tests.dir/flags.make
 test/integration/CMakeFiles/integration_tests.dir/test_team7.cpp.o: test/integration/test_team7.cpp
 test/integration/CMakeFiles/integration_tests.dir/test_team7.cpp.o: test/integration/CMakeFiles/integration_tests.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/opt/apollo/contrib/hephaestus/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object test/integration/CMakeFiles/integration_tests.dir/test_team7.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/opt/apollo/contrib/hephaestus/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object test/integration/CMakeFiles/integration_tests.dir/test_team7.cpp.o"
 	cd /opt/apollo/contrib/hephaestus/test/integration && /usr/local/bin/mpicxx $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT test/integration/CMakeFiles/integration_tests.dir/test_team7.cpp.o -MF CMakeFiles/integration_tests.dir/test_team7.cpp.o.d -o CMakeFiles/integration_tests.dir/test_team7.cpp.o -c /opt/apollo/contrib/hephaestus/test/integration/test_team7.cpp
 
 test/integration/CMakeFiles/integration_tests.dir/test_team7.cpp.i: cmake_force
@@ -250,6 +264,7 @@ integration_tests_OBJECTS = \
 "CMakeFiles/integration_tests.dir/test_hform_source.cpp.o" \
 "CMakeFiles/integration_tests.dir/test_hjform_rod.cpp.o" \
 "CMakeFiles/integration_tests.dir/test_joule_rod.cpp.o" \
+"CMakeFiles/integration_tests.dir/test_linear_elastic.cpp.o" \
 "CMakeFiles/integration_tests.dir/test_team7.cpp.o"
 
 # External object files for target integration_tests
@@ -266,6 +281,7 @@ bin/integration_tests: test/integration/CMakeFiles/integration_tests.dir/test_hf
 bin/integration_tests: test/integration/CMakeFiles/integration_tests.dir/test_hform_source.cpp.o
 bin/integration_tests: test/integration/CMakeFiles/integration_tests.dir/test_hjform_rod.cpp.o
 bin/integration_tests: test/integration/CMakeFiles/integration_tests.dir/test_joule_rod.cpp.o
+bin/integration_tests: test/integration/CMakeFiles/integration_tests.dir/test_linear_elastic.cpp.o
 bin/integration_tests: test/integration/CMakeFiles/integration_tests.dir/test_team7.cpp.o
 bin/integration_tests: test/integration/CMakeFiles/integration_tests.dir/build.make
 bin/integration_tests: test/googletest-prefix/src/googletest-build/lib/libgtest.a
@@ -281,7 +297,7 @@ bin/integration_tests: /usr/local/lib/libnetcdf.so
 bin/integration_tests: /usr/lib/x86_64-linux-gnu/hdf5/mpich/lib/libhdf5_hl.so
 bin/integration_tests: /usr/lib/x86_64-linux-gnu/hdf5/mpich/lib/libhdf5.so
 bin/integration_tests: test/integration/CMakeFiles/integration_tests.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/opt/apollo/contrib/hephaestus/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Linking CXX executable ../../bin/integration_tests"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/opt/apollo/contrib/hephaestus/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Linking CXX executable ../../bin/integration_tests"
 	cd /opt/apollo/contrib/hephaestus/test/integration && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/integration_tests.dir/link.txt --verbose=$(VERBOSE)
 	cd /opt/apollo/contrib/hephaestus/test/integration && /usr/local/bin/cmake -D TEST_TARGET=integration_tests -D TEST_EXECUTABLE=/opt/apollo/contrib/hephaestus/bin/integration_tests -D TEST_EXECUTOR= -D TEST_WORKING_DIR=/opt/apollo/contrib/hephaestus/test/integration -D "TEST_EXTRA_ARGS=--data_directory;/opt/apollo/contrib/hephaestus/data/" -D TEST_PROPERTIES= -D TEST_PREFIX= -D TEST_SUFFIX= -D NO_PRETTY_TYPES=FALSE -D NO_PRETTY_VALUES=FALSE -D TEST_LIST=integration_tests_TESTS -D CTEST_FILE=/opt/apollo/contrib/hephaestus/test/integration/integration_tests[1]_tests.cmake -D TEST_DISCOVERY_TIMEOUT=5 -D TEST_XML_OUTPUT_DIR= -P /usr/local/share/cmake-3.21/Modules/GoogleTestAddTests.cmake
 

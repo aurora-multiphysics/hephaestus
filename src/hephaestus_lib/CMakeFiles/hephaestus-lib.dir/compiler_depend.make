@@ -1090,7 +1090,8 @@ src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/auxkernels.cpp.o: src/hephaestu
   src/hephaestus_lib/dual_solver.hpp \
   src/hephaestus_lib/eform_solver.hpp \
   src/hephaestus_lib/hform_solver.hpp \
-  src/hephaestus_lib/hj_dual_solver.hpp
+  src/hephaestus_lib/hj_dual_solver.hpp \
+  src/hephaestus_lib/linear_elastic_solver.hpp
 
 src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/av_solver.cpp.o: src/hephaestus_lib/av_solver.cpp \
   /usr/include/stdc-predef.h \
@@ -4335,6 +4336,7 @@ src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/executioner.cpp.o: src/hephaest
   src/hephaestus_lib/eform_solver.hpp \
   src/hephaestus_lib/hform_solver.hpp \
   src/hephaestus_lib/hj_dual_solver.hpp \
+  src/hephaestus_lib/linear_elastic_solver.hpp \
   src/hephaestus_lib/postprocessors.hpp
 
 src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/factory.cpp.o: src/hephaestus_lib/factory.cpp \
@@ -4883,7 +4885,8 @@ src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/factory.cpp.o: src/hephaestus_l
   src/hephaestus_lib/dual_solver.hpp \
   src/hephaestus_lib/eform_solver.hpp \
   src/hephaestus_lib/hform_solver.hpp \
-  src/hephaestus_lib/hj_dual_solver.hpp
+  src/hephaestus_lib/hj_dual_solver.hpp \
+  src/hephaestus_lib/linear_elastic_solver.hpp
 
 src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/hcurl_solver.cpp.o: src/hephaestus_lib/hcurl_solver.cpp \
   /usr/include/stdc-predef.h \
@@ -5975,7 +5978,8 @@ src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/hephaestus_hertz.cpp.o: src/hep
   src/hephaestus_lib/dual_solver.hpp \
   src/hephaestus_lib/eform_solver.hpp \
   src/hephaestus_lib/hform_solver.hpp \
-  src/hephaestus_lib/hj_dual_solver.hpp
+  src/hephaestus_lib/hj_dual_solver.hpp \
+  src/hephaestus_lib/linear_elastic_solver.hpp
 
 src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/hertz_solver.cpp.o: src/hephaestus_lib/hertz_solver.cpp \
   /usr/include/stdc-predef.h \
@@ -8676,7 +8680,8 @@ src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/joule_solver.cpp.o: src/hephaes
   src/hephaestus_lib/dual_solver.hpp \
   src/hephaestus_lib/eform_solver.hpp \
   src/hephaestus_lib/hform_solver.hpp \
-  src/hephaestus_lib/hj_dual_solver.hpp
+  src/hephaestus_lib/hj_dual_solver.hpp \
+  src/hephaestus_lib/linear_elastic_solver.hpp
 
 src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/linear_elastic_solver.cpp.o: src/hephaestus_lib/linear_elastic_solver.cpp \
   /usr/include/stdc-predef.h \
@@ -10828,7 +10833,8 @@ src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/postprocessors.cpp.o: src/hepha
   src/hephaestus_lib/dual_solver.hpp \
   src/hephaestus_lib/eform_solver.hpp \
   src/hephaestus_lib/hform_solver.hpp \
-  src/hephaestus_lib/hj_dual_solver.hpp
+  src/hephaestus_lib/hj_dual_solver.hpp \
+  src/hephaestus_lib/linear_elastic_solver.hpp
 
 src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/sources.cpp.o: src/hephaestus_lib/sources.cpp \
   /usr/include/stdc-predef.h \
@@ -11915,14 +11921,13 @@ src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/variables.cpp.o: src/hephaestus
   src/hephaestus_lib/dual_solver.hpp \
   src/hephaestus_lib/eform_solver.hpp \
   src/hephaestus_lib/hform_solver.hpp \
-  src/hephaestus_lib/hj_dual_solver.hpp
+  src/hephaestus_lib/hj_dual_solver.hpp \
+  src/hephaestus_lib/linear_elastic_solver.hpp
 
 
 src/hephaestus_lib/variables.cpp:
 
 src/hephaestus_lib/postprocessors.cpp:
-
-src/hephaestus_lib/linear_elastic_solver.hpp:
 
 src/hephaestus_lib/joule_solver.cpp:
 
@@ -11941,6 +11946,8 @@ src/hephaestus_lib/eform_solver.cpp:
 src/hephaestus_lib/eb_dual_solver.cpp:
 
 src/hephaestus_lib/av_solver.cpp:
+
+src/hephaestus_lib/linear_elastic_solver.hpp:
 
 src/hephaestus_lib/hform_solver.hpp:
 

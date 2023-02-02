@@ -1,41 +1,6 @@
-// Solves the equations
-// ∇⋅s0 = 0
-// ∇×(α∇×u) + βdu/dt = s0
-
-// where
-// s0 ∈ H(div) source field
-// u ∈ H(curl)
-// p ∈ H1
-
-// Dirichlet boundaries constrain du/dt
-// Integrated boundaries constrain (α∇×u) × n
-
-// Weak form (Space discretisation)
-// -(s0, ∇ p') + <n.s0, p'> = 0
-// (α∇×u, ∇×u') + (βdu/dt, u') - (s0, u') - <(α∇×u) × n, u'> = 0
-
-// Time discretisation using implicit scheme:
-// Unknowns
-// s0_{n+1} ∈ H(div) source field, where s0 = -β∇p
-// du/dt_{n+1} ∈ H(curl)
-// p_{n+1} ∈ H1
-
-// Fully discretised equations
-// -(s0_{n+1}, ∇ p') + <n.s0_{n+1}, p'> = 0
-// (α∇×u_{n}, ∇×u') + (αdt∇×du/dt_{n+1}, ∇×u') + (βdu/dt_{n+1}, u')
-// - (s0_{n+1}, u') - <(α∇×u_{n+1}) × n, u'> = 0
-// using
-// u_{n+1} = u_{n} + dt du/dt_{n+1}
-
-// Rewritten as
-// a0(p_{n+1}, p') = b0(p')
-// a1(du/dt_{n+1}, u') = b1(u')
-
-// where
-// a0(p, p') = (β ∇ p, ∇ p')
-// b0(p') = <n.s0, p'>
-// a1(u, u') = (βu, u') + (αdt∇×u, ∇×u')
-// b1(u') = (s0_{n+1}, u') - (α∇×u_{n}, ∇×u') + <(α∇×u_{n+1}) × n, u'>
+// Linear Elastic Solver
+// Mostly ripped from example two
+// *formulation*
 
 #include "linear_elastic_solver.hpp"
 
@@ -52,9 +17,9 @@ LinearElasticSolver::LinearElasticSolver(
       _domain_properties(domain_properties), _solver_options(solver_options),
       H1FESpace_(
           new mfem::common::H1_ParFESpace(&pmesh, order, pmesh.Dimension())),
-      a1(NULL), a1_solver(NULL), curl(NULL), curlCurl(NULL),
-      u_(mfem::ParGridFunction(HCurlFESpace_)),
-      du_(mfem::ParGridFunction(HCurlFESpace_)) {
+      a1(NULL), a1_solver(NULL),
+      u_(mfem::ParGridFunction(H1FESpace_)),
+      du_(mfem::ParGridFunction(H1FESpace_)) {
   // Initialize MPI variables
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh.GetComm(), &myid_);
@@ -82,20 +47,9 @@ void LinearElasticSolver::Init(mfem::Vector &X) {
   _fespaces.Register("_H1FESpace", H1FESpace_, false);
 
   // Initialise coefficients and store in DomainProperties
-  mfem::Vector lambda(pmesh_->attributes.Max());
-  lambda = 1.0;
-  lambda(0) = lambda(1)*50;
-  mfem::PWConstCoefficient lambda_func(lambda);
-  mfem::Vector mu(pmesh_->attributes.Max());
-  mu = 1.0;
-  mu(0) = mu(1)*50;
-  mfem::PWConstCoefficient mu_func(mu);
+  SetMaterialCoefficients(_domain_properties);
 
   //Allocate meory of bilinear forms, linear forms and matrices
-  a1 = new mfem::ParBilinearForm(H1FESpace_);
-  a1->AddDomainIntegrator(new mfem::ElasticityIntegrator(lambda_func, mu_func));
-  a1->Assemble();
-
 
   mfem::VectorArrayCoefficient f(pmesh_->Dimension());
   for (int i = 0; i < pmesh_->Dimension()-1; i++)
@@ -128,47 +82,13 @@ void LinearElasticSolver::Init(mfem::Vector &X) {
   zero_vec = 0.0;
   mfem::VectorConstantCoefficient Zero_vec(zero_vec);
   u_.ProjectCoefficient(Zero_vec);
-
-  // // Define material property coefficients
-  // dtCoef = mfem::ConstantCoefficient(1.0);
-  // oneCoef = mfem::ConstantCoefficient(1.0);
-  // SetMaterialCoefficients(_domain_properties);
-  // dtAlphaCoef = new mfem::TransformedCoefficient(&dtCoef, alphaCoef, prodFunc);
-
-  // _sources.Init(_variables, _fespaces, _bc_map, _domain_properties);
-
-  // // a0(p, p') = (β ∇ p, ∇ p')
-  // this->buildCurl(alphaCoef); // (α∇×u_{n}, ∇×u')
-  // b1 = new mfem::ParLinearForm(HCurlFESpace_);
-  // A1 = new mfem::HypreParMatrix;
-  // X1 = new mfem::Vector;
-  // B1 = new mfem::Vector;
-
-  // mfem::Vector zero_vec(3);
-  // zero_vec = 0.0;
-  // mfem::VectorConstantCoefficient Zero_vec(zero_vec);
-  // mfem::ConstantCoefficient Zero(0.0);
-
-  // u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
-  // u_.ProjectCoefficient(Zero_vec);
 }
 
 /*
 This is the main computational code that computes dX/dt implicitly
 where X is the state vector containing p, u and v.
-
-Unknowns
-s0_{n+1} ∈ H(div) source field, where s0 = -β∇p
-du/dt_{n+1} ∈ H(curl)
-p_{n+1} ∈ H1
-
-Fully discretised equations
--(s0_{n+1}, ∇ p') + <n.s0_{n+1}, p'> = 0
-(α∇×u_{n}, ∇×u') + (αdt∇×du/dt_{n+1}, ∇×u') + (βdu/dt_{n+1}, u')
-- (s0_{n+1}, u') - <(α∇×u_{n+1}) × n, u'> = 0
-using
-u_{n+1} = u_{n} + dt du/dt_{n+1}
 */
+
 void LinearElasticSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
                                 mfem::Vector &dX_dt) {
   dX_dt = 0.0;
@@ -178,7 +98,7 @@ void LinearElasticSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
   du_.MakeRef(HCurlFESpace_, dX_dt, true_offsets[0]);
 
-  // update time dependent coefficients
+  // Commented out as this is not currently time dependent 
   // _domain_properties.SetTime(this->GetTime());
 
   // Update linear form - can be given from bcmap 
@@ -191,24 +111,9 @@ void LinearElasticSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   H1FESpace_->GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
 
   x_gf = 0.0;
-  // _bc_map.applyEssentialBCs(u_name, ess_tdof_list, J_gf, pmesh_);
-  // _bc_map.applyIntegratedBCs(u_name, *b1, pmesh_);
 
    //Form linear system from blf and lf
   a1->FormLinearSystem(ess_tdof_list, x_gf, *b1, *A1, *X1, *B1);
-
-
-  //////////////////////////////////////////////////////////////////////////////
-  // (α∇×u_{n}, ∇×u') + (αdt∇×du/dt_{n+1}, ∇×u') + (βdu/dt_{n+1}, u')
-  // - (s0_{n+1}, u') - <(α∇×u_{n+1}) × n, u'> = 0
-
-  // a1(du/dt_{n+1}, u') = b1(u')
-  // a1(u, u') = (βu, u') + (αdt∇×u, ∇×u')
-  // b1(u') = (s0_{n+1}, u') - (α∇×u_{n}, ∇×u') + <(α∇×u_{n+1}) × n, u'>
-
-  // (α∇×u_{n}, ∇×u')
-  // v_ is a grid function but curlCurl is not parallel assembled so is OK
-
 
   // We only need to create the solver and preconditioner once
 
@@ -244,8 +149,7 @@ void LinearElasticSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
 
 }
 
-void LinearElasticSolver::buildA1(mfem::Coefficient *Sigma,
-                          mfem::Coefficient *DtMuInv) {
+void LinearElasticSolver::buildA1() {
   if (a1 != NULL) {
     delete a1;
   }
@@ -254,36 +158,16 @@ void LinearElasticSolver::buildA1(mfem::Coefficient *Sigma,
   // isn't moving, the materials are time independent, and dt is constant. So
   // we only need to do this once.
 
-  a1 = new mfem::ParBilinearForm(HCurlFESpace_);
-  a1->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*Sigma));
-  a1->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*DtMuInv));
+  a1 = new mfem::ParBilinearForm(H1FESpace_);
+  a1->AddDomainIntegrator(new mfem::ElasticityIntegrator(lambda_func, mu_func));
   a1->Assemble();
 
   // Don't finalize or parallel assemble this is done in FormLinearSystem.
-
+  
   dt_A1 = dtCoef.constant;
 }
 
-// void LinearElasticSolver::buildCurl(mfem::Coefficient *MuInv) {
-//   if (curlCurl != NULL) {
-//     delete curlCurl;
-//   }
-
-//   curlCurl = new mfem::ParBilinearForm(HCurlFESpace_);
-//   curlCurl->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*MuInv));
-//   curlCurl->Assemble();
-
-//   // Discrete Curl operator
-//   if (curl != NULL) {
-//     delete curl;
-//   }
-//   curl = new mfem::ParDiscreteLinearOperator(HCurlFESpace_, HDivFESpace_);
-//   curl->AddDomainInterpolator(new mfem::CurlInterpolator());
-//   curl->Assemble();
-
-//   // no ParallelAssemble since this will be applied to GridFunctions
-// }
-
+// Register strain variable "u_" in _variables
 void LinearElasticSolver::RegisterVariables() {
   u_name = "strain";
   _variables.Register(u_name, &u_, false);
@@ -291,6 +175,7 @@ void LinearElasticSolver::RegisterVariables() {
 
 void LinearElasticSolver::SetMaterialCoefficients(
     hephaestus::DomainProperties &domain_properties) {
+  /*
   if (domain_properties.scalar_property_map.count("alpha") == 0) {
     domain_properties.scalar_property_map["alpha"] = new mfem::PWCoefficient(
         domain_properties.getGlobalScalarProperty(std::string("alpha")));
@@ -301,8 +186,18 @@ void LinearElasticSolver::SetMaterialCoefficients(
   }
   alphaCoef = domain_properties.scalar_property_map["alpha"];
   betaCoef = domain_properties.scalar_property_map["beta"];
+  */
+  mfem::Vector lambda(pmesh_->attributes.Max());
+  lambda = 1.0;
+  lambda(0) = lambda(1)*50;
+  lambda_func = mfem::PWConstCoefficient(lambda);
+  mfem::Vector mu(pmesh_->attributes.Max());
+  mu = 1.0;
+  mu(0) = mu(1)*50;
+  mu_func = mfem::PWConstCoefficient(mu);
 }
 
+// Put our strain data into datacollection object dc_
 void LinearElasticSolver::RegisterOutputFields(mfem::DataCollection *dc_) {
   dc_->SetMesh(pmesh_);
   for (auto var = _variables.begin(); var != _variables.end(); ++var) {

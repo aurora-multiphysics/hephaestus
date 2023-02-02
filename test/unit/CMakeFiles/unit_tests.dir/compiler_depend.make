@@ -529,10 +529,9 @@ test/unit/CMakeFiles/unit_tests.dir/Main.cpp.o: test/unit/Main.cpp \
   /opt/mfem/fem/lor/lor.hpp \
   /opt/mfem/fem/bilinearform.hpp \
   /opt/mfem/fem/dgmassinv.hpp \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-assertion-result.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-message.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-port.h \
+  /usr/include/gtest/gtest.h \
+  /usr/include/gtest/internal/gtest-internal.h \
+  /usr/include/gtest/internal/gtest-port.h \
   /usr/include/x86_64-linux-gnu/sys/stat.h \
   /usr/include/x86_64-linux-gnu/bits/stat.h \
   /usr/include/x86_64-linux-gnu/bits/statx.h \
@@ -551,8 +550,8 @@ test/unit/CMakeFiles/unit_tests.dir/Main.cpp.o: test/unit/Main.cpp \
   /usr/include/x86_64-linux-gnu/bits/statx-generic.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_statx_timestamp.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_statx.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/custom/gtest-port.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-port-arch.h \
+  /usr/include/gtest/internal/gtest-port-arch.h \
+  /usr/include/gtest/internal/custom/gtest-port.h \
   /usr/include/unistd.h \
   /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
   /usr/include/x86_64-linux-gnu/bits/environments.h \
@@ -561,21 +560,6 @@ test/unit/CMakeFiles/unit_tests.dir/Main.cpp.o: test/unit/Main.cpp \
   /usr/include/x86_64-linux-gnu/bits/getopt_core.h \
   /usr/include/x86_64-linux-gnu/bits/unistd_ext.h \
   /usr/include/regex.h \
-  /usr/include/c++/9/condition_variable \
-  /usr/include/c++/9/chrono \
-  /usr/include/c++/9/ratio \
-  /usr/include/c++/9/bits/parse_numbers.h \
-  /usr/include/c++/9/bits/std_mutex.h \
-  /usr/include/c++/9/bits/unique_lock.h \
-  /usr/include/c++/9/mutex \
-  /usr/include/c++/9/any \
-  /usr/include/c++/9/variant \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-death-test.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-death-test-internal.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-matchers.h \
-  /usr/include/c++/9/atomic \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-printers.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-internal.h \
   /usr/include/x86_64-linux-gnu/sys/wait.h \
   /usr/include/signal.h \
   /usr/include/x86_64-linux-gnu/bits/signum.h \
@@ -598,20 +582,25 @@ test/unit/CMakeFiles/unit_tests.dir/Main.cpp.o: test/unit/Main.cpp \
   /usr/include/x86_64-linux-gnu/bits/types/struct_sigstack.h \
   /usr/include/x86_64-linux-gnu/bits/sigthread.h \
   /usr/include/x86_64-linux-gnu/bits/signal_ext.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-filepath.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-string.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-type-util.h \
+  /usr/include/gtest/gtest-message.h \
+  /usr/include/gtest/internal/gtest-filepath.h \
+  /usr/include/gtest/internal/gtest-string.h \
+  /usr/include/gtest/internal/gtest-type-util.h \
   /usr/include/c++/9/cxxabi.h \
   /usr/include/x86_64-linux-gnu/c++/9/bits/cxxabi_tweaks.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/custom/gtest-printers.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-param-test.h \
+  /usr/include/gtest/gtest-death-test.h \
+  /usr/include/gtest/internal/gtest-death-test-internal.h \
+  /usr/include/gtest/gtest-matchers.h \
+  /usr/include/gtest/gtest-printers.h \
+  /usr/include/gtest/internal/custom/gtest-printers.h \
+  /usr/include/gtest/gtest-param-test.h \
   /usr/include/c++/9/iterator \
   /usr/include/c++/9/bits/stream_iterator.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-param-util.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-test-part.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-typed-test.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest_pred_impl.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest_prod.h
+  /usr/include/gtest/internal/gtest-param-util.h \
+  /usr/include/gtest/gtest_prod.h \
+  /usr/include/gtest/gtest-test-part.h \
+  /usr/include/gtest/gtest-typed-test.h \
+  /usr/include/gtest/gtest_pred_impl.h
 
 test/unit/CMakeFiles/unit_tests.dir/test_bc.cpp.o: test/unit/test_bc.cpp \
   /usr/include/stdc-predef.h \
@@ -1143,10 +1132,9 @@ test/unit/CMakeFiles/unit_tests.dir/test_bc.cpp.o: test/unit/test_bc.cpp \
   /opt/mfem/fem/lor/lor.hpp \
   /opt/mfem/fem/bilinearform.hpp \
   /opt/mfem/fem/dgmassinv.hpp \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-assertion-result.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-message.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-port.h \
+  /usr/include/gtest/gtest.h \
+  /usr/include/gtest/internal/gtest-internal.h \
+  /usr/include/gtest/internal/gtest-port.h \
   /usr/include/x86_64-linux-gnu/sys/stat.h \
   /usr/include/x86_64-linux-gnu/bits/stat.h \
   /usr/include/x86_64-linux-gnu/bits/statx.h \
@@ -1165,8 +1153,8 @@ test/unit/CMakeFiles/unit_tests.dir/test_bc.cpp.o: test/unit/test_bc.cpp \
   /usr/include/x86_64-linux-gnu/bits/statx-generic.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_statx_timestamp.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_statx.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/custom/gtest-port.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-port-arch.h \
+  /usr/include/gtest/internal/gtest-port-arch.h \
+  /usr/include/gtest/internal/custom/gtest-port.h \
   /usr/include/unistd.h \
   /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
   /usr/include/x86_64-linux-gnu/bits/environments.h \
@@ -1175,21 +1163,6 @@ test/unit/CMakeFiles/unit_tests.dir/test_bc.cpp.o: test/unit/test_bc.cpp \
   /usr/include/x86_64-linux-gnu/bits/getopt_core.h \
   /usr/include/x86_64-linux-gnu/bits/unistd_ext.h \
   /usr/include/regex.h \
-  /usr/include/c++/9/condition_variable \
-  /usr/include/c++/9/chrono \
-  /usr/include/c++/9/ratio \
-  /usr/include/c++/9/bits/parse_numbers.h \
-  /usr/include/c++/9/bits/std_mutex.h \
-  /usr/include/c++/9/bits/unique_lock.h \
-  /usr/include/c++/9/mutex \
-  /usr/include/c++/9/any \
-  /usr/include/c++/9/variant \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-death-test.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-death-test-internal.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-matchers.h \
-  /usr/include/c++/9/atomic \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-printers.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-internal.h \
   /usr/include/x86_64-linux-gnu/sys/wait.h \
   /usr/include/signal.h \
   /usr/include/x86_64-linux-gnu/bits/signum.h \
@@ -1212,20 +1185,25 @@ test/unit/CMakeFiles/unit_tests.dir/test_bc.cpp.o: test/unit/test_bc.cpp \
   /usr/include/x86_64-linux-gnu/bits/types/struct_sigstack.h \
   /usr/include/x86_64-linux-gnu/bits/sigthread.h \
   /usr/include/x86_64-linux-gnu/bits/signal_ext.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-filepath.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-string.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-type-util.h \
+  /usr/include/gtest/gtest-message.h \
+  /usr/include/gtest/internal/gtest-filepath.h \
+  /usr/include/gtest/internal/gtest-string.h \
+  /usr/include/gtest/internal/gtest-type-util.h \
   /usr/include/c++/9/cxxabi.h \
   /usr/include/x86_64-linux-gnu/c++/9/bits/cxxabi_tweaks.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/custom/gtest-printers.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-param-test.h \
+  /usr/include/gtest/gtest-death-test.h \
+  /usr/include/gtest/internal/gtest-death-test-internal.h \
+  /usr/include/gtest/gtest-matchers.h \
+  /usr/include/gtest/gtest-printers.h \
+  /usr/include/gtest/internal/custom/gtest-printers.h \
+  /usr/include/gtest/gtest-param-test.h \
   /usr/include/c++/9/iterator \
   /usr/include/c++/9/bits/stream_iterator.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-param-util.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-test-part.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-typed-test.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest_pred_impl.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest_prod.h
+  /usr/include/gtest/internal/gtest-param-util.h \
+  /usr/include/gtest/gtest_prod.h \
+  /usr/include/gtest/gtest-test-part.h \
+  /usr/include/gtest/gtest-typed-test.h \
+  /usr/include/gtest/gtest_pred_impl.h
 
 test/unit/CMakeFiles/unit_tests.dir/test_inputs.cpp.o: test/unit/test_inputs.cpp \
   /usr/include/stdc-predef.h \
@@ -1761,10 +1739,9 @@ test/unit/CMakeFiles/unit_tests.dir/test_inputs.cpp.o: test/unit/test_inputs.cpp
   /opt/mfem/fem/dgmassinv.hpp \
   src/hephaestus_lib/materials.hpp \
   src/hephaestus_lib/outputs.hpp \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-assertion-result.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-message.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-port.h \
+  /usr/include/gtest/gtest.h \
+  /usr/include/gtest/internal/gtest-internal.h \
+  /usr/include/gtest/internal/gtest-port.h \
   /usr/include/x86_64-linux-gnu/sys/stat.h \
   /usr/include/x86_64-linux-gnu/bits/stat.h \
   /usr/include/x86_64-linux-gnu/bits/statx.h \
@@ -1783,8 +1760,8 @@ test/unit/CMakeFiles/unit_tests.dir/test_inputs.cpp.o: test/unit/test_inputs.cpp
   /usr/include/x86_64-linux-gnu/bits/statx-generic.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_statx_timestamp.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_statx.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/custom/gtest-port.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-port-arch.h \
+  /usr/include/gtest/internal/gtest-port-arch.h \
+  /usr/include/gtest/internal/custom/gtest-port.h \
   /usr/include/unistd.h \
   /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
   /usr/include/x86_64-linux-gnu/bits/environments.h \
@@ -1793,20 +1770,6 @@ test/unit/CMakeFiles/unit_tests.dir/test_inputs.cpp.o: test/unit/test_inputs.cpp
   /usr/include/x86_64-linux-gnu/bits/getopt_core.h \
   /usr/include/x86_64-linux-gnu/bits/unistd_ext.h \
   /usr/include/regex.h \
-  /usr/include/c++/9/condition_variable \
-  /usr/include/c++/9/chrono \
-  /usr/include/c++/9/ratio \
-  /usr/include/c++/9/bits/parse_numbers.h \
-  /usr/include/c++/9/bits/std_mutex.h \
-  /usr/include/c++/9/bits/unique_lock.h \
-  /usr/include/c++/9/mutex \
-  /usr/include/c++/9/variant \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-death-test.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-death-test-internal.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-matchers.h \
-  /usr/include/c++/9/atomic \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-printers.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-internal.h \
   /usr/include/x86_64-linux-gnu/sys/wait.h \
   /usr/include/signal.h \
   /usr/include/x86_64-linux-gnu/bits/signum.h \
@@ -1829,20 +1792,25 @@ test/unit/CMakeFiles/unit_tests.dir/test_inputs.cpp.o: test/unit/test_inputs.cpp
   /usr/include/x86_64-linux-gnu/bits/types/struct_sigstack.h \
   /usr/include/x86_64-linux-gnu/bits/sigthread.h \
   /usr/include/x86_64-linux-gnu/bits/signal_ext.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-filepath.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-string.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-type-util.h \
+  /usr/include/gtest/gtest-message.h \
+  /usr/include/gtest/internal/gtest-filepath.h \
+  /usr/include/gtest/internal/gtest-string.h \
+  /usr/include/gtest/internal/gtest-type-util.h \
   /usr/include/c++/9/cxxabi.h \
   /usr/include/x86_64-linux-gnu/c++/9/bits/cxxabi_tweaks.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/custom/gtest-printers.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-param-test.h \
+  /usr/include/gtest/gtest-death-test.h \
+  /usr/include/gtest/internal/gtest-death-test-internal.h \
+  /usr/include/gtest/gtest-matchers.h \
+  /usr/include/gtest/gtest-printers.h \
+  /usr/include/gtest/internal/custom/gtest-printers.h \
+  /usr/include/gtest/gtest-param-test.h \
   /usr/include/c++/9/iterator \
   /usr/include/c++/9/bits/stream_iterator.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-param-util.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-test-part.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-typed-test.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest_pred_impl.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest_prod.h
+  /usr/include/gtest/internal/gtest-param-util.h \
+  /usr/include/gtest/gtest_prod.h \
+  /usr/include/gtest/gtest-test-part.h \
+  /usr/include/gtest/gtest-typed-test.h \
+  /usr/include/gtest/gtest_pred_impl.h
 
 test/unit/CMakeFiles/unit_tests.dir/test_variables.cpp.o: test/unit/test_variables.cpp \
   /usr/include/stdc-predef.h \
@@ -2392,10 +2360,10 @@ test/unit/CMakeFiles/unit_tests.dir/test_variables.cpp.o: test/unit/test_variabl
   src/hephaestus_lib/eform_solver.hpp \
   src/hephaestus_lib/hform_solver.hpp \
   src/hephaestus_lib/hj_dual_solver.hpp \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-assertion-result.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-message.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-port.h \
+  src/hephaestus_lib/linear_elastic_solver.hpp \
+  /usr/include/gtest/gtest.h \
+  /usr/include/gtest/internal/gtest-internal.h \
+  /usr/include/gtest/internal/gtest-port.h \
   /usr/include/x86_64-linux-gnu/sys/stat.h \
   /usr/include/x86_64-linux-gnu/bits/stat.h \
   /usr/include/x86_64-linux-gnu/bits/statx.h \
@@ -2414,8 +2382,8 @@ test/unit/CMakeFiles/unit_tests.dir/test_variables.cpp.o: test/unit/test_variabl
   /usr/include/x86_64-linux-gnu/bits/statx-generic.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_statx_timestamp.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_statx.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/custom/gtest-port.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-port-arch.h \
+  /usr/include/gtest/internal/gtest-port-arch.h \
+  /usr/include/gtest/internal/custom/gtest-port.h \
   /usr/include/unistd.h \
   /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
   /usr/include/x86_64-linux-gnu/bits/environments.h \
@@ -2424,20 +2392,6 @@ test/unit/CMakeFiles/unit_tests.dir/test_variables.cpp.o: test/unit/test_variabl
   /usr/include/x86_64-linux-gnu/bits/getopt_core.h \
   /usr/include/x86_64-linux-gnu/bits/unistd_ext.h \
   /usr/include/regex.h \
-  /usr/include/c++/9/condition_variable \
-  /usr/include/c++/9/chrono \
-  /usr/include/c++/9/ratio \
-  /usr/include/c++/9/bits/parse_numbers.h \
-  /usr/include/c++/9/bits/std_mutex.h \
-  /usr/include/c++/9/bits/unique_lock.h \
-  /usr/include/c++/9/mutex \
-  /usr/include/c++/9/variant \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-death-test.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-death-test-internal.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-matchers.h \
-  /usr/include/c++/9/atomic \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-printers.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-internal.h \
   /usr/include/x86_64-linux-gnu/sys/wait.h \
   /usr/include/signal.h \
   /usr/include/x86_64-linux-gnu/bits/signum.h \
@@ -2460,39 +2414,32 @@ test/unit/CMakeFiles/unit_tests.dir/test_variables.cpp.o: test/unit/test_variabl
   /usr/include/x86_64-linux-gnu/bits/types/struct_sigstack.h \
   /usr/include/x86_64-linux-gnu/bits/sigthread.h \
   /usr/include/x86_64-linux-gnu/bits/signal_ext.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-filepath.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-string.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-type-util.h \
+  /usr/include/gtest/gtest-message.h \
+  /usr/include/gtest/internal/gtest-filepath.h \
+  /usr/include/gtest/internal/gtest-string.h \
+  /usr/include/gtest/internal/gtest-type-util.h \
   /usr/include/c++/9/cxxabi.h \
   /usr/include/x86_64-linux-gnu/c++/9/bits/cxxabi_tweaks.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/custom/gtest-printers.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-param-test.h \
+  /usr/include/gtest/gtest-death-test.h \
+  /usr/include/gtest/internal/gtest-death-test-internal.h \
+  /usr/include/gtest/gtest-matchers.h \
+  /usr/include/gtest/gtest-printers.h \
+  /usr/include/gtest/internal/custom/gtest-printers.h \
+  /usr/include/gtest/gtest-param-test.h \
   /usr/include/c++/9/iterator \
   /usr/include/c++/9/bits/stream_iterator.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-param-util.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-test-part.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-typed-test.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest_pred_impl.h \
-  test/googletest-prefix/src/googletest/googletest/include/gtest/gtest_prod.h
+  /usr/include/gtest/internal/gtest-param-util.h \
+  /usr/include/gtest/gtest_prod.h \
+  /usr/include/gtest/gtest-test-part.h \
+  /usr/include/gtest/gtest-typed-test.h \
+  /usr/include/gtest/gtest_pred_impl.h
 
+
+src/hephaestus_lib/linear_elastic_solver.hpp:
 
 src/hephaestus_lib/hj_dual_solver.hpp:
 
 src/hephaestus_lib/eform_solver.hpp:
-
-src/hephaestus_lib/dual_solver.hpp:
-
-src/hephaestus_lib/av_solver.hpp:
-
-src/hephaestus_lib/sources.hpp:
-
-src/hephaestus_lib/formulation.hpp:
-
-src/hephaestus_lib/hcurl_solver.hpp:
-
-src/hephaestus_lib/factory.hpp:
-
-/opt/mfem/miniapps/common/pfem_extras.hpp:
 
 /opt/mfem/general/socketstream.hpp:
 
@@ -2537,8 +2484,6 @@ src/hephaestus_lib/factory.hpp:
 /usr/include/c++/9/bits/algorithmfwd.h:
 
 /usr/include/c++/9/algorithm:
-
-/usr/include/c++/9/chrono:
 
 /usr/include/c++/9/bits/stl_heap.h:
 
@@ -2590,6 +2535,8 @@ src/hephaestus_lib/factory.hpp:
 
 /usr/include/x86_64-linux-gnu/c++/9/bits/error_constants.h:
 
+/usr/include/c++/9/array:
+
 /usr/include/c++/9/tuple:
 
 /usr/local/include/interpreter.h:
@@ -2620,6 +2567,8 @@ src/hephaestus_lib/factory.hpp:
 
 /usr/include/x86_64-linux-gnu/c++/9/bits/time_members.h:
 
+/usr/include/gtest/gtest_pred_impl.h:
+
 /usr/include/c++/9/bits/locale_facets_nonio.h:
 
 /usr/include/c++/9/streambuf:
@@ -2633,6 +2582,8 @@ src/hephaestus_lib/factory.hpp:
 /usr/include/c++/9/vector:
 
 /usr/include/c++/9/locale:
+
+/usr/include/gtest/internal/gtest-port-arch.h:
 
 /usr/local/include/mpi.h:
 
@@ -2718,6 +2669,8 @@ test/unit/test_bc.cpp:
 
 /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h:
 
+src/hephaestus_lib/hcurl_solver.hpp:
+
 /usr/include/x86_64-linux-gnu/bits/endianness.h:
 
 /opt/mfem/linalg/complex_operator.hpp:
@@ -2745,10 +2698,6 @@ test/unit/test_bc.cpp:
 /usr/include/c++/9/tr1/poly_laguerre.tcc:
 
 /usr/include/x86_64-linux-gnu/asm/errno.h:
-
-src/hephaestus_lib/hephaestus_solvers.hpp:
-
-/usr/include/c++/9/bits/istream.tcc:
 
 /usr/include/x86_64-linux-gnu/bits/types/struct_timeval.h:
 
@@ -2804,11 +2753,11 @@ src/hephaestus_lib/hephaestus_solvers.hpp:
 
 /opt/mfem/general/sets.hpp:
 
-/opt/mfem/general/optparser.hpp:
-
 /usr/include/x86_64-linux-gnu/bits/long-double.h:
 
 /usr/include/c++/9/iomanip:
+
+/usr/include/x86_64-linux-gnu/bits/stdint-intn.h:
 
 /usr/include/c++/9/bits/functional_hash.h:
 
@@ -2821,6 +2770,8 @@ src/hephaestus_lib/hephaestus_solvers.hpp:
 /usr/include/x86_64-linux-gnu/bits/signum-generic.h:
 
 /usr/include/c++/9/ext/type_traits.h:
+
+/usr/include/gtest/internal/gtest-port.h:
 
 test/unit/Main.cpp:
 
@@ -2841,8 +2792,6 @@ test/unit/Main.cpp:
 /usr/include/locale.h:
 
 /usr/include/x86_64-linux-gnu/bits/setjmp.h:
-
-test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-string.h:
 
 /usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h:
 
@@ -2892,6 +2841,12 @@ test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-st
 
 /usr/include/x86_64-linux-gnu/c++/9/bits/cpu_defines.h:
 
+/usr/include/x86_64-linux-gnu/bits/statx-generic.h:
+
+/usr/include/x86_64-linux-gnu/bits/stdlib-float.h:
+
+/usr/include/wchar.h:
+
 /opt/mfem/general/stable3d.hpp:
 
 /usr/include/c++/9/bits/ostream.tcc:
@@ -2901,8 +2856,6 @@ test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-st
 /usr/include/x86_64-linux-gnu/bits/waitstatus.h:
 
 /usr/include/x86_64-linux-gnu/bits/stat.h:
-
-test/googletest-prefix/src/googletest/googletest/include/gtest/internal/custom/gtest-port.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/locale_t.h:
 
@@ -2915,8 +2868,6 @@ test/googletest-prefix/src/googletest/googletest/include/gtest/internal/custom/g
 /usr/include/c++/9/bits/range_access.h:
 
 /opt/mfem/fem/lininteg.hpp:
-
-test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-death-test.h:
 
 /usr/include/c++/9/ext/atomicity.h:
 
@@ -2938,17 +2889,15 @@ test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-death-test.
 
 /usr/include/c++/9/bits/stringfwd.h:
 
-/usr/include/c++/9/mutex:
-
 /usr/include/c++/9/bits/vector.tcc:
 
 /usr/include/c++/9/bits/erase_if.h:
 
-test/googletest-prefix/src/googletest/googletest/include/gtest/gtest_prod.h:
-
 /usr/include/x86_64-linux-gnu/c++/9/bits/os_defines.h:
 
 /usr/include/signal.h:
+
+/usr/include/gtest/gtest-matchers.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/wint_t.h:
 
@@ -2978,6 +2927,10 @@ test/googletest-prefix/src/googletest/googletest/include/gtest/gtest_prod.h:
 
 /usr/include/c++/9/bits/exception_defines.h:
 
+/usr/include/x86_64-linux-gnu/bits/timesize.h:
+
+/usr/include/c++/9/bits/atomic_base.h:
+
 /usr/include/c++/9/ext/alloc_traits.h:
 
 /usr/include/x86_64-linux-gnu/bits/struct_mutex.h:
@@ -2991,8 +2944,6 @@ test/googletest-prefix/src/googletest/googletest/include/gtest/gtest_prod.h:
 /usr/include/x86_64-linux-gnu/c++/9/bits/c++locale.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/sigval_t.h:
-
-test/googletest-prefix/src/googletest/googletest/include/gtest/internal/custom/gtest-printers.h:
 
 /usr/include/c++/9/cwctype:
 
@@ -3012,23 +2963,17 @@ test/googletest-prefix/src/googletest/googletest/include/gtest/internal/custom/g
 
 /opt/mfem/linalg/sparsemat.hpp:
 
+/usr/include/gtest/internal/gtest-death-test-internal.h:
+
 /usr/include/c++/9/string:
 
 /usr/lib/gcc/x86_64-linux-gnu/9/include/syslimits.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/__fpos64_t.h:
 
 /usr/include/c++/9/bits/stl_algobase.h:
 
 /usr/include/c++/9/ctime:
 
-/usr/include/c++/9/variant:
-
 /opt/mfem/mesh/hexahedron.hpp:
-
-/usr/include/c++/9/array:
-
-test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-death-test-internal.h:
 
 /usr/include/c++/9/bits/ptr_traits.h:
 
@@ -3036,17 +2981,17 @@ test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-de
 
 /usr/include/c++/9/bits/locale_facets.tcc:
 
+/usr/include/c++/9/bits/basic_ios.h:
+
+/opt/mfem/config/config.hpp:
+
 /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h:
 
 /usr/include/libintl.h:
 
 /usr/include/x86_64-linux-gnu/bits/thread-shared-types.h:
 
-test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-typed-test.h:
-
 /usr/include/c++/9/bits/cpp_type_traits.h:
-
-test/googletest-prefix/src/googletest/googletest/include/gtest/gtest.h:
 
 /usr/include/c++/9/bits/stl_pair.h:
 
@@ -3059,10 +3004,6 @@ test/googletest-prefix/src/googletest/googletest/include/gtest/gtest.h:
 /opt/mfem/fem/fe_coll.hpp:
 
 /usr/include/c++/9/bits/move.h:
-
-src/hephaestus_lib/aform_solver.hpp:
-
-/usr/include/c++/9/type_traits:
 
 /usr/include/c++/9/bits/functexcept.h:
 
@@ -3086,11 +3027,11 @@ src/hephaestus_lib/aform_solver.hpp:
 
 /usr/include/c++/9/iostream:
 
-/usr/include/c++/9/bits/parse_numbers.h:
-
 /usr/include/x86_64-linux-gnu/sys/select.h:
 
 /usr/include/c++/9/bits/stl_uninitialized.h:
+
+/usr/include/x86_64-linux-gnu/asm/posix_types.h:
 
 /usr/include/c++/9/new:
 
@@ -3132,15 +3073,9 @@ src/hephaestus_lib/boundary_conditions.hpp:
 
 /usr/include/c++/9/cmath:
 
-/usr/include/c++/9/bits/unique_lock.h:
-
 /usr/include/x86_64-linux-gnu/bits/math-vector.h:
 
 /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h:
-
-/usr/include/x86_64-linux-gnu/bits/stdint-intn.h:
-
-test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-printers.h:
 
 /usr/include/c++/9/bits/stl_function.h:
 
@@ -3158,8 +3093,6 @@ test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-printers.h:
 
 /usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h:
 
-test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-param-test.h:
-
 /usr/include/x86_64-linux-gnu/bits/iscanonical.h:
 
 /usr/include/c++/9/tr1/gamma.tcc:
@@ -3169,8 +3102,6 @@ test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-param-test.
 /usr/include/c++/9/tr1/special_function_util.h:
 
 /usr/include/c++/9/bits/stl_construct.h:
-
-/usr/include/c++/9/bits/std_mutex.h:
 
 /usr/include/c++/9/tr1/bessel_function.tcc:
 
@@ -3191,6 +3122,8 @@ test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-param-test.
 /opt/mfem/fem/gslib.hpp:
 
 /usr/include/c++/9/random:
+
+/opt/mfem/miniapps/common/pfem_extras.hpp:
 
 /opt/mfem/linalg/matrix.hpp:
 
@@ -3234,6 +3167,10 @@ test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-param-test.
 
 /usr/include/x86_64-linux-gnu/bits/local_lim.h:
 
+/usr/include/gtest/internal/gtest-type-util.h:
+
+src/hephaestus_lib/av_solver.hpp:
+
 /usr/include/c++/9/math.h:
 
 /usr/include/linux/limits.h:
@@ -3270,21 +3207,15 @@ src/hephaestus_lib/eb_dual_solver.hpp:
 
 /usr/local/include/par_csr_block_matrix.h:
 
-test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-filepath.h:
-
-test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-param-util.h:
-
 /opt/mfem/linalg/hypre_parcsr.hpp:
 
 /usr/include/c++/9/complex:
 
-/opt/mfem/linalg/blockvector.hpp:
-
 /usr/include/x86_64-linux-gnu/bits/posix_opt.h:
 
-/opt/mfem/linalg/blockoperator.hpp:
+/opt/mfem/linalg/blockmatrix.hpp:
 
-test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-assertion-result.h:
+/opt/mfem/linalg/blockoperator.hpp:
 
 /usr/include/linux/types.h:
 
@@ -3295,10 +3226,6 @@ test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-assertion-r
 /opt/mfem/linalg/symmat.hpp:
 
 /opt/mfem/linalg/ode.hpp:
-
-test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-message.h:
-
-/usr/include/x86_64-linux-gnu/c++/9/bits/opt_random.h:
 
 /opt/mfem/linalg/handle.hpp:
 
@@ -3342,11 +3269,11 @@ test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-message.h:
 
 /opt/mfem/fem/tmop_amr.hpp:
 
-test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-port-arch.h:
-
-test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-matchers.h:
-
 /opt/mfem/fem/fe.hpp:
+
+/usr/include/x86_64-linux-gnu/c++/9/bits/opt_random.h:
+
+/usr/include/gtest/gtest.h:
 
 /usr/include/c++/9/bits/stl_multimap.h:
 
@@ -3355,6 +3282,10 @@ test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-matchers.h:
 /usr/include/x86_64-linux-gnu/bits/sigthread.h:
 
 /opt/mfem/fem/fe/fe_h1.hpp:
+
+/opt/mfem/linalg/blockvector.hpp:
+
+/usr/include/gtest/internal/custom/gtest-printers.h:
 
 /opt/mfem/fem/fe/fe_nd.hpp:
 
@@ -3368,13 +3299,25 @@ test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-matchers.h:
 
 /opt/mfem/mesh/tetrahedron.hpp:
 
+/usr/include/gtest/internal/gtest-string.h:
+
 /opt/mfem/mesh/vtk.hpp:
+
+/opt/mfem/general/optparser.hpp:
+
+/usr/include/gtest/internal/gtest-internal.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/__fpos64_t.h:
+
+/usr/include/gtest/gtest-test-part.h:
 
 /opt/mfem/general/binaryio.hpp:
 
 /usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h:
 
 /opt/mfem/fem/complex_fem.hpp:
+
+/usr/include/gtest/gtest-death-test.h:
 
 /usr/include/sched.h:
 
@@ -3414,6 +3357,8 @@ test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-matchers.h:
 
 /opt/mfem/fem/staticcond.hpp:
 
+/usr/include/gtest/gtest-message.h:
+
 src/hephaestus_lib/hform_solver.hpp:
 
 /opt/mfem/fem/pfespace.hpp:
@@ -3435,6 +3380,10 @@ src/hephaestus_lib/hform_solver.hpp:
 /opt/mfem/mesh/submesh/submesh_utils.hpp:
 
 /opt/mfem/mesh/pyramid.hpp:
+
+/usr/include/c++/9/bits/istream.tcc:
+
+src/hephaestus_lib/hephaestus_solvers.hpp:
 
 /opt/mfem/general/zstr.hpp:
 
@@ -3480,10 +3429,6 @@ src/hephaestus_lib/hform_solver.hpp:
 
 /opt/mfem/fem/dgmassinv.hpp:
 
-/usr/include/x86_64-linux-gnu/asm/posix_types.h:
-
-test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-port.h:
-
 /usr/include/x86_64-linux-gnu/bits/statx.h:
 
 /usr/include/unistd.h:
@@ -3496,9 +3441,13 @@ test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-po
 
 /usr/include/x86_64-linux-gnu/asm/bitsperlong.h:
 
+src/hephaestus_lib/sources.hpp:
+
 /usr/include/c++/9/functional:
 
 /usr/include/linux/posix_types.h:
+
+/usr/include/gtest/internal/custom/gtest-port.h:
 
 /usr/include/x86_64-linux-gnu/bits/confname.h:
 
@@ -3507,22 +3456,6 @@ test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-po
 /usr/include/x86_64-linux-gnu/bits/typesizes.h:
 
 /usr/include/regex.h:
-
-/usr/include/c++/9/condition_variable:
-
-/usr/include/c++/9/ratio:
-
-/usr/include/c++/9/any:
-
-/usr/include/x86_64-linux-gnu/bits/statx-generic.h:
-
-/usr/include/x86_64-linux-gnu/bits/stdlib-float.h:
-
-/usr/include/wchar.h:
-
-/usr/include/c++/9/atomic:
-
-test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-internal.h:
 
 /usr/include/x86_64-linux-gnu/bits/siginfo-consts.h:
 
@@ -3534,6 +3467,8 @@ test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-in
 
 /usr/include/x86_64-linux-gnu/bits/sigevent-consts.h:
 
+/usr/include/gtest/internal/gtest-filepath.h:
+
 /usr/include/x86_64-linux-gnu/bits/sigcontext.h:
 
 /usr/include/x86_64-linux-gnu/bits/sigstack.h:
@@ -3542,11 +3477,9 @@ test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-in
 
 /usr/include/x86_64-linux-gnu/bits/signal_ext.h:
 
-/usr/include/c++/9/bits/basic_ios.h:
+/usr/include/gtest/gtest-printers.h:
 
-/opt/mfem/config/config.hpp:
-
-test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-type-util.h:
+/usr/include/gtest/gtest-param-test.h:
 
 /opt/mfem/mesh/pncmesh.hpp:
 
@@ -3556,21 +3489,19 @@ test/googletest-prefix/src/googletest/googletest/include/gtest/internal/gtest-ty
 
 /usr/include/c++/9/bits/stream_iterator.h:
 
-/opt/mfem/linalg/blockmatrix.hpp:
+/usr/include/gtest/internal/gtest-param-util.h:
 
-test/googletest-prefix/src/googletest/googletest/include/gtest/gtest-test-part.h:
+/usr/include/gtest/gtest_prod.h:
 
-/usr/include/x86_64-linux-gnu/bits/timesize.h:
-
-/usr/include/c++/9/bits/atomic_base.h:
-
-test/googletest-prefix/src/googletest/googletest/include/gtest/gtest_pred_impl.h:
+/usr/include/gtest/gtest-typed-test.h:
 
 test/unit/test_inputs.cpp:
 
 /usr/include/x86_64-linux-gnu/bits/floatn-common.h:
 
 src/hephaestus_lib/inputs.hpp:
+
+/usr/include/c++/9/any:
 
 src/hephaestus_lib/materials.hpp:
 
@@ -3583,3 +3514,13 @@ test/unit/test_variables.cpp:
 /usr/local/include/multivector.h:
 
 src/hephaestus_lib/variables.hpp:
+
+src/hephaestus_lib/factory.hpp:
+
+/usr/include/c++/9/type_traits:
+
+src/hephaestus_lib/aform_solver.hpp:
+
+src/hephaestus_lib/formulation.hpp:
+
+src/hephaestus_lib/dual_solver.hpp:

@@ -1093,6 +1093,7 @@ src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/auxkernels.cpp.o
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/eform_solver.hpp
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/hform_solver.hpp
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/hj_dual_solver.hpp
+ /opt/apollo/contrib/hephaestus/src/hephaestus_lib/linear_elastic_solver.hpp
 
 src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/av_solver.cpp.o
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/av_solver.cpp
@@ -4343,6 +4344,7 @@ src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/executioner.cpp.o
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/eform_solver.hpp
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/hform_solver.hpp
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/hj_dual_solver.hpp
+ /opt/apollo/contrib/hephaestus/src/hephaestus_lib/linear_elastic_solver.hpp
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/postprocessors.hpp
 
 src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/factory.cpp.o
@@ -4893,6 +4895,7 @@ src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/factory.cpp.o
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/eform_solver.hpp
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/hform_solver.hpp
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/hj_dual_solver.hpp
+ /opt/apollo/contrib/hephaestus/src/hephaestus_lib/linear_elastic_solver.hpp
 
 src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/hcurl_solver.cpp.o
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/hcurl_solver.cpp
@@ -5987,6 +5990,7 @@ src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/hephaestus_hertz.cpp.o
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/eform_solver.hpp
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/hform_solver.hpp
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/hj_dual_solver.hpp
+ /opt/apollo/contrib/hephaestus/src/hephaestus_lib/linear_elastic_solver.hpp
 
 src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/hertz_solver.cpp.o
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/hertz_solver.cpp
@@ -8693,6 +8697,7 @@ src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/joule_solver.cpp.o
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/eform_solver.hpp
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/hform_solver.hpp
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/hj_dual_solver.hpp
+ /opt/apollo/contrib/hephaestus/src/hephaestus_lib/linear_elastic_solver.hpp
 
 src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/linear_elastic_solver.cpp.o
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/linear_elastic_solver.cpp
@@ -10849,6 +10854,7 @@ src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/postprocessors.cpp.o
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/eform_solver.hpp
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/hform_solver.hpp
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/hj_dual_solver.hpp
+ /opt/apollo/contrib/hephaestus/src/hephaestus_lib/linear_elastic_solver.hpp
 
 src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/sources.cpp.o
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/sources.cpp
@@ -11938,4 +11944,5 @@ src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/variables.cpp.o
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/eform_solver.hpp
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/hform_solver.hpp
  /opt/apollo/contrib/hephaestus/src/hephaestus_lib/hj_dual_solver.hpp
+ /opt/apollo/contrib/hephaestus/src/hephaestus_lib/linear_elastic_solver.hpp
 
