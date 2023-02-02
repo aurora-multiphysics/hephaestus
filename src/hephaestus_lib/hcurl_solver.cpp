@@ -37,6 +37,14 @@
 // a1(u, u') = (βu, u') + (αdt∇×u, ∇×u')
 // b1(u') = (s0_{n+1}, u') - (α∇×u_{n}, ∇×u') + <(α∇×u_{n+1}) × n, u'>
 
+// Formulation should add equation system(s) and required variables
+// - Add state equation system
+// Formulation - factory class for building:
+// -- state variables if not present
+// -- auxkernels if auxvariables exist
+// -- references to required coefficients
+// -- TimeDependentOperator for solve
+
 #include "hcurl_solver.hpp"
 
 namespace hephaestus {
@@ -62,7 +70,6 @@ HCurlSolver::HCurlSolver(
 }
 
 void HCurlSolver::Init(mfem::Vector &X) {
-
   // Define material property coefficients
   dtCoef = mfem::ConstantCoefficient(1.0);
   oneCoef = mfem::ConstantCoefficient(1.0);
@@ -193,61 +200,6 @@ void HCurlSolver::SetMaterialCoefficients(
   }
   alphaCoef = domain_properties.scalar_property_map["alpha"];
   betaCoef = domain_properties.scalar_property_map["beta"];
-}
-
-void HCurlSolver::RegisterOutputFields(mfem::DataCollection *dc_) {
-  dc_->SetMesh(pmesh_);
-  for (auto var = _variables.begin(); var != _variables.end(); ++var) {
-    dc_->RegisterField(var->first, var->second);
-  }
-}
-
-void HCurlSolver::WriteConsoleSummary(double t, int it) {
-  // Write a summary of the timestep to console.
-  if (myid_ == 0) {
-    std::cout << std::fixed;
-    std::cout << "step " << std::setw(6) << it << ",\tt = " << std::setw(6)
-              << std::setprecision(3) << t << std::endl;
-  }
-}
-
-void HCurlSolver::WriteOutputFields(mfem::DataCollection *dc_, int it) {
-  if (dc_) {
-    dc_->SetCycle(it);
-    dc_->SetTime(t);
-    dc_->Save();
-  }
-}
-
-void HCurlSolver::InitializeGLVis() {
-  if (myid_ == 0) {
-    std::cout << "Opening GLVis sockets." << std::endl;
-  }
-
-  for (auto var = _variables.begin(); var != _variables.end(); ++var) {
-    socks_[var->first] = new mfem::socketstream;
-    socks_[var->first]->precision(8);
-  }
-
-  if (myid_ == 0) {
-    std::cout << "GLVis sockets open." << std::endl;
-  }
-}
-
-void HCurlSolver::DisplayToGLVis() {
-  char vishost[] = "localhost";
-  int visport = 19916;
-
-  int Wx = 0, Wy = 0;                 // window position
-  int Ww = 350, Wh = 350;             // window size
-  int offx = Ww + 10, offy = Wh + 45; // window offsets
-
-  for (auto var = _variables.begin(); var != _variables.end(); ++var) {
-    mfem::common::VisualizeField(*socks_[var->first], vishost, visport,
-                                 *(var->second), (var->first).c_str(), Wx, Wy,
-                                 Ww, Wh);
-    Wx += offx;
-  }
 }
 
 } // namespace hephaestus

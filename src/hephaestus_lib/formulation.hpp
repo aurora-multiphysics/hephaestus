@@ -18,16 +18,6 @@ public:
 
   virtual void RegisterVariables(){};
 
-  virtual void RegisterOutputFields(mfem::DataCollection *dc_){};
-
-  virtual void WriteOutputFields(mfem::DataCollection *dc_, int it = 0){};
-
-  virtual void WriteConsoleSummary(double t, int it){};
-
-  virtual void InitializeGLVis(){};
-
-  virtual void DisplayToGLVis(){};
-
   mfem::Array<int> true_offsets;
 };
 } // namespace hephaestus

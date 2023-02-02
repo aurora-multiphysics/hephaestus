@@ -35,6 +35,9 @@ void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
       params.GetOptionalParam<hephaestus::InputParameters>(
           "SolverOptions", hephaestus::InputParameters()));
 
+  MPI_Comm_size(pmesh->GetComm(), &num_procs_);
+  MPI_Comm_rank(pmesh->GetComm(), &myid_);
+
   std::string formulation_name(params.GetParam<std::string>("FormulationName"));
 
   formulation = hephaestus::Factory::createTransientFormulation(
@@ -42,7 +45,6 @@ void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
       *bc_map, *domain_properties, *sources, *solver_options);
 
   formulation->RegisterVariables();
-  MPI_Barrier(pmesh->GetComm());
 
   variables->Init(*pmesh);
   auxkernels->Init(variables->gfs, *domain_properties);
@@ -59,16 +61,16 @@ void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
 
   // Set up DataCollections to track fields of interest.
   for (auto const &[name, dc_] : *data_collections) {
-    formulation->RegisterOutputFields(dc_);
+    outputs->RegisterOutputFields(dc_, pmesh, variables->gfs);
     // Write initial fields to disk
-    formulation->WriteOutputFields(dc_, 0);
+    outputs->WriteOutputFields(dc_, t, 0);
   }
 
   // Initialize GLVis visualization and send the initial condition
   // by socket to a GLVis server.
   if (visualization) {
-    formulation->InitializeGLVis();
-    formulation->DisplayToGLVis();
+    outputs->InitializeGLVis(myid_, variables->gfs);
+    outputs->DisplayToGLVis(variables->gfs);
   }
 }
 
@@ -85,7 +87,7 @@ void TransientExecutioner::Step(double dt, int it) const {
   if (last_step || (it % vis_steps) == 0) {
 
     // Output timestep summary to console
-    formulation->WriteConsoleSummary(t, it);
+    outputs->WriteConsoleSummary(myid_, t, it);
 
     // Make sure all ranks have sent their 'v' solution before initiating
     // another set of GLVis connections (one from each rank):
@@ -94,12 +96,12 @@ void TransientExecutioner::Step(double dt, int it) const {
 
     // Send output fields to GLVis for visualisation
     if (visualization) {
-      formulation->DisplayToGLVis();
+      outputs->DisplayToGLVis(variables->gfs);
     }
 
     // Save output fields at timestep to DataCollections
     for (auto const &[name, dc_] : *data_collections) {
-      formulation->WriteOutputFields(dc_, it);
+      outputs->WriteOutputFields(dc_, t, it);
     }
     postprocessors->Update(t);
   }
