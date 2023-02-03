@@ -51,6 +51,7 @@ void LinearElasticSolver::Init(mfem::Vector &X) {
 
   //Allocate meory of bilinear forms, linear forms and matrices
 
+  // Set up pull force for linear elastic problem
   mfem::VectorArrayCoefficient f(pmesh_->Dimension());
   for (int i = 0; i < pmesh_->Dimension()-1; i++)
   {
@@ -63,17 +64,16 @@ void LinearElasticSolver::Init(mfem::Vector &X) {
     f.Set(pmesh_->Dimension()-1, new mfem::PWConstCoefficient(pull_force));
   }
 
+  
   b1 = new mfem::ParLinearForm(H1FESpace_);
-  b1->AddBoundaryIntegrator(new mfem::VectorBoundaryLFIntegrator(f));
-  if (myid_ == 0)
-  {
-    std::cout << "r.h.s. ... " << std::flush;
-  }
-  b1->Assemble();
-
   A1 = new mfem::HypreParMatrix;
   X1 = new mfem::Vector;
   B1 = new mfem::Vector;
+
+  this->buildA1();
+  // Set up linear form for linear elastic problem
+  b1->AddBoundaryIntegrator(new mfem::VectorBoundaryLFIntegrator(f));
+  b1->Assemble();
 
   u_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
 
@@ -95,8 +95,8 @@ void LinearElasticSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   dtCoef.constant = dt;
 
   //Update gridfunctions to ref solution vector X and time derivative time dX/dt 
-  u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
-  du_.MakeRef(HCurlFESpace_, dX_dt, true_offsets[0]);
+  u_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
+  // du_.MakeRef(H1FESpace_, dX_dt, true_offsets[0]);
 
   // Commented out as this is not currently time dependent 
   // _domain_properties.SetTime(this->GetTime());
@@ -133,12 +133,6 @@ void LinearElasticSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   pcg->SetPreconditioner(*amg);
   pcg->Mult(*B1, *X1);
 
-  // if (a1_solver == NULL) {
-  //   a1_solver = new hephaestus::DefaultHCurlPCGSolver(_solver_options, *A1,
-  //                                                     HCurlFESpace_);
-  // }
-  // a1_solver->Mult(*B1, *X1);
-
   a1->RecoverFEMSolution(*X1, *b1, du_);
 
   //Deform mesh?
@@ -157,13 +151,11 @@ void LinearElasticSolver::buildA1() {
   // First create and assemble the bilinear form.  For now we assume the mesh
   // isn't moving, the materials are time independent, and dt is constant. So
   // we only need to do this once.
-
   a1 = new mfem::ParBilinearForm(H1FESpace_);
   a1->AddDomainIntegrator(new mfem::ElasticityIntegrator(lambda_func, mu_func));
   a1->Assemble();
 
   // Don't finalize or parallel assemble this is done in FormLinearSystem.
-  
   dt_A1 = dtCoef.constant;
 }
 
@@ -187,10 +179,14 @@ void LinearElasticSolver::SetMaterialCoefficients(
   alphaCoef = domain_properties.scalar_property_map["alpha"];
   betaCoef = domain_properties.scalar_property_map["beta"];
   */
+
+  // Set up lame coefficients
   mfem::Vector lambda(pmesh_->attributes.Max());
+  std::cout << "Number of attrs: " << pmesh_->attributes.Max() << std::endl;
   lambda = 1.0;
   lambda(0) = lambda(1)*50;
   lambda_func = mfem::PWConstCoefficient(lambda);
+
   mfem::Vector mu(pmesh_->attributes.Max());
   mu = 1.0;
   mu(0) = mu(1)*50;
