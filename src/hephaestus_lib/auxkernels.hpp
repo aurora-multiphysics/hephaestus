@@ -1,7 +1,7 @@
 #pragma once
+#include "inputs.hpp"
 #include "materials.hpp"
 #include "mfem.hpp"
-#include "variables.hpp"
 
 // Specify kernels to modify and solve auxiliary variables or coefficients using
 // one or more DomainProperties.
@@ -25,6 +25,22 @@ public:
   void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
             hephaestus::DomainProperties &domain_properties);
   void Solve(double t = 0.0);
+};
+
+class CurlAuxKernel : public AuxKernel {
+public:
+  CurlAuxKernel(const hephaestus::InputParameters &params);
+
+  void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+            hephaestus::DomainProperties &domain_properties) override;
+
+  void Solve(double t = 0.0) override;
+
+  std::string var_name;      // name of the variable
+  std::string curl_var_name; // Variable in which to store curl
+
+  mfem::ParGridFunction *u_, *curl_u_;
+  mfem::ParDiscreteLinearOperator *curl;
 };
 
 class CoefficientAuxKernel : public AuxKernel {

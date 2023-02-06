@@ -24,8 +24,6 @@ public:
   void Init(mfem::Vector &X) override;
   virtual void RegisterVariables();
 
-  void buildCurl(mfem::Coefficient *muInv);
-
   void ImplicitSolve(const double dt, const mfem::Vector &X,
                      mfem::Vector &dX_dt) override;
 
@@ -51,7 +49,6 @@ protected:
   mfem::HypreParMatrix *A1;
   mfem::Vector *X1, *B1;
 
-  mfem::ParDiscreteLinearOperator *curl;
   mutable hephaestus::DefaultHCurlPCGSolver *a1_solver;
 
   // temporary work vectors

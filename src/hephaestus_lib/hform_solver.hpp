@@ -9,6 +9,7 @@ class HFormSolver : public hephaestus::HCurlSolver {
   virtual void SetMaterialCoefficients(
       hephaestus::DomainProperties &domain_properties) override;
   virtual void RegisterVariables() override;
+  virtual void RegisterAuxKernels(hephaestus::AuxKernels &auxkernels) override;
 
 public:
   HFormSolver(mfem::ParMesh &pmesh, int order,
