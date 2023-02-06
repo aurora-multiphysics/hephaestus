@@ -45,6 +45,7 @@ void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
       *bc_map, *domain_properties, *sources, *solver_options);
 
   formulation->RegisterVariables();
+  formulation->RegisterAuxKernels(*auxkernels);
 
   variables->Init(*pmesh);
   auxkernels->Init(variables->gfs, *domain_properties);

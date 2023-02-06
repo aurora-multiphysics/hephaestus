@@ -1,5 +1,6 @@
 #pragma once
 #include "../common/pfem_extras.hpp"
+#include "auxkernels.hpp"
 #include "equation_system.hpp"
 #include "hephaestus_solvers.hpp"
 #include "inputs.hpp"
@@ -16,7 +17,8 @@ public:
 
   virtual void Init(mfem::Vector &X){};
 
-  virtual void RegisterVariables(){};
+  virtual void RegisterVariables() = 0;
+  virtual void RegisterAuxKernels(hephaestus::AuxKernels &auxkernels){};
 
   mfem::Array<int> true_offsets;
 };

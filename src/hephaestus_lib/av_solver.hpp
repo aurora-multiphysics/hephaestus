@@ -2,13 +2,14 @@
 #include "../common/pfem_extras.hpp"
 #include "formulation.hpp"
 #include "inputs.hpp"
+#include "sources.hpp"
 
 namespace hephaestus {
 
 class AVSolver : public TransientFormulation {
   virtual void
   SetMaterialCoefficients(hephaestus::DomainProperties &domain_properties);
-  virtual void RegisterVariables();
+  virtual void RegisterVariables() override;
 
 public:
   AVSolver(mfem::ParMesh &pmesh, int order,

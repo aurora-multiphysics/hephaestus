@@ -58,8 +58,8 @@ HCurlSolver::HCurlSolver(
     : myid_(0), num_procs_(1), pmesh_(&pmesh), _order(order),
       _fespaces(fespaces), _variables(variables), _bc_map(bc_map),
       _sources(sources), _domain_properties(domain_properties),
-      _solver_options(solver_options), a1_solver(NULL), curl(NULL), u_(NULL),
-      du_(NULL), curl_u_(NULL) {
+      _solver_options(solver_options), a1_solver(NULL), u_(NULL), du_(NULL),
+      curl_u_(NULL) {
   // Initialize MPI variables
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh.GetComm(), &myid_);
@@ -77,7 +77,6 @@ void HCurlSolver::Init(mfem::Vector &X) {
 
   _sources.Init(_variables, _fespaces, _bc_map, _domain_properties);
 
-  this->buildCurl(alphaCoef); // (α∇×u_{n}, ∇×u')
   A1 = new mfem::HypreParMatrix;
   X1 = new mfem::Vector;
   B1 = new mfem::Vector;
@@ -127,22 +126,6 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   }
   a1_solver->Mult(*B1, *X1);
   _weak_form->RecoverFEMSolution(*X1, *du_);
-
-  curl->Mult(*u_, *curl_u_);
-  curl->AddMult(*du_, *curl_u_, dt);
-}
-
-void HCurlSolver::buildCurl(mfem::Coefficient *MuInv) {
-  // Discrete Curl operator
-  if (curl != NULL) {
-    delete curl;
-  }
-  curl = new mfem::ParDiscreteLinearOperator(u_->ParFESpace(),
-                                             curl_u_->ParFESpace());
-  curl->AddDomainInterpolator(new mfem::CurlInterpolator());
-  curl->Assemble();
-
-  // no ParallelAssemble since this will be applied to GridFunctions
 }
 
 void HCurlSolver::RegisterVariables() {

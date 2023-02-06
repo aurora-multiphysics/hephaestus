@@ -19,6 +19,15 @@ void HFormSolver::RegisterVariables() {
   HCurlSolver::RegisterVariables();
 }
 
+void HFormSolver::RegisterAuxKernels(hephaestus::AuxKernels &auxkernels) {
+  hephaestus::InputParameters current_density_aux_params;
+  current_density_aux_params.SetParam("VariableName", u_name);
+  current_density_aux_params.SetParam("CurlVariableName", curl_u_name);
+  auxkernels.Register("_current_density_aux",
+                      new hephaestus::CurlAuxKernel(current_density_aux_params),
+                      true);
+}
+
 void HFormSolver::SetMaterialCoefficients(
     hephaestus::DomainProperties &domain_properties) {
   if (domain_properties.scalar_property_map.count("magnetic_permeability") ==
