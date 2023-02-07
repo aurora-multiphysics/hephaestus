@@ -1,5 +1,0 @@
-if(EXISTS "/opt/apollo/contrib/hephaestus/test/regression/regression_tests[1]_tests.cmake")
-  include("/opt/apollo/contrib/hephaestus/test/regression/regression_tests[1]_tests.cmake")
-else()
-  add_test(regression_tests_NOT_BUILT regression_tests_NOT_BUILT)
-endif()
