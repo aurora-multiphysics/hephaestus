@@ -9,14 +9,21 @@ AFormSolver::AFormSolver(
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
     hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
     : HCurlSolver(pmesh, order, fespaces, variables, bc_map, domain_properties,
-                  sources, solver_options) {}
+                  sources, solver_options) {
 
-void AFormSolver::RegisterVariables() {
-  u_name = "magnetic_vector_potential";
-  u_display_name = "Magnetic Vector Potential (A)";
-  curl_u_name = "magnetic_flux_density";
+  state_var_names.resize(1);
+  state_var_names[0] = "magnetic_vector_potential";
 
-  HCurlSolver::RegisterVariables();
+  aux_var_names.resize(1);
+  aux_var_names[0] = "magnetic_flux_density";
+}
+
+void AFormSolver::RegisterAuxKernels(hephaestus::AuxKernels &auxkernels) {
+  hephaestus::InputParameters b_field_aux_params;
+  b_field_aux_params.SetParam("VariableName", u_name);
+  b_field_aux_params.SetParam("CurlVariableName", curl_u_name);
+  auxkernels.Register("_magnetic_flux_density_aux",
+                      new hephaestus::CurlAuxKernel(b_field_aux_params), true);
 }
 
 void AFormSolver::SetMaterialCoefficients(

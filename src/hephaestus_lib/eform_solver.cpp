@@ -9,14 +9,13 @@ EFormSolver::EFormSolver(
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
     hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
     : HCurlSolver(pmesh, order, fespaces, variables, bc_map, domain_properties,
-                  sources, solver_options) {}
+                  sources, solver_options) {
 
-void EFormSolver::RegisterVariables() {
-  u_name = "electric_field";
-  u_display_name = "Electric Field (E)";
-  curl_u_name = "-dB_dt";
+  state_var_names.resize(1);
+  state_var_names[0] = "electric_field";
 
-  HCurlSolver::RegisterVariables();
+  aux_var_names.resize(1);
+  aux_var_names[0] = "-dB_dt";
 }
 
 void EFormSolver::SetMaterialCoefficients(

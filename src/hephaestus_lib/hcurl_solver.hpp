@@ -28,7 +28,6 @@ public:
                      mfem::Vector &dX_dt) override;
 
   std::string u_name, curl_u_name;
-  std::string u_display_name;
   mfem::ParGridFunction *u_, *du_; // HCurl vector field
   mfem::ParGridFunction *curl_u_;  // HDiv Magnetic Flux Density
   std::map<std::string, mfem::socketstream *> socks_;
