@@ -58,17 +58,16 @@ HCurlSolver::HCurlSolver(
     : myid_(0), num_procs_(1), pmesh_(&pmesh), _order(order),
       _fespaces(fespaces), _variables(variables), _bc_map(bc_map),
       _sources(sources), _domain_properties(domain_properties),
-      _solver_options(solver_options), a1_solver(NULL), u_(NULL), du_(NULL),
-      curl_u_(NULL) {
+      _solver_options(solver_options), a1_solver(NULL), u_(NULL), du_(NULL) {
   // Initialize MPI variables
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh.GetComm(), &myid_);
 
   state_var_names.resize(1);
-  state_var_names[0] = "h_curl_var";
+  state_var_names.at(0) = "h_curl_var";
 
   aux_var_names.resize(1);
-  aux_var_names[0] = "curl h_curl_var";
+  aux_var_names.at(0) = "curl h_curl_var";
 }
 
 void HCurlSolver::Init(mfem::Vector &X) {
@@ -131,33 +130,33 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
 }
 
 void HCurlSolver::RegisterVariables() {
-  u_name = state_var_names[0];
-  curl_u_name = aux_var_names[0];
+  u_name = state_var_names.at(0);
+
+  u_ = _variables.Get(u_name);
+  // Register default ParGridFunctions of state variables if not provided
+  if (u_ == NULL) {
+    if (myid_ == 0) {
+      std::cout
+          << u_name
+          << " not found in variables: building gridfunction from defaults"
+          << std::endl;
+    }
+    _fespaces.Register(
+        "_HCurlFESpace",
+        new mfem::common::ND_ParFESpace(pmesh_, _order, pmesh_->Dimension()),
+        true);
+    _variables.Register(
+        u_name, new mfem::ParGridFunction(_fespaces.Get("_HCurlFESpace")),
+        true);
+    u_ = _variables.Get(u_name);
+  }
+  _variables.Register("du", new mfem::ParGridFunction(u_->ParFESpace()), true);
+  du_ = _variables.Get("du");
 
   _fespaces.Register(
       "_H1FESpace",
       new mfem::common::H1_ParFESpace(pmesh_, _order, pmesh_->Dimension()),
       true);
-  _fespaces.Register(
-      "_HCurlFESpace",
-      new mfem::common::ND_ParFESpace(pmesh_, _order, pmesh_->Dimension()),
-      true);
-  _fespaces.Register(
-      "_HDivFESpace",
-      new mfem::common::RT_ParFESpace(pmesh_, _order, pmesh_->Dimension()),
-      true);
-
-  _variables.Register(
-      u_name, new mfem::ParGridFunction(_fespaces.Get("_HCurlFESpace")), true);
-  _variables.Register(curl_u_name,
-                      new mfem::ParGridFunction(_fespaces.Get("_HDivFESpace")),
-                      true);
-  _variables.Register(
-      "du", new mfem::ParGridFunction(_fespaces.Get("_HCurlFESpace")), true);
-
-  u_ = _variables.Get(u_name);
-  curl_u_ = _variables.Get(curl_u_name);
-  du_ = _variables.Get("du");
 
   true_offsets.SetSize(2);
   true_offsets[0] = 0;
@@ -173,6 +172,14 @@ void HCurlSolver::RegisterVariables() {
     std::cout << "------------------------------------" << std::endl;
     std::cout << "Total number of H(Curl) DOFs: " << size_nd << std::endl;
     std::cout << "------------------------------------" << std::endl;
+  }
+
+  // Populate vector of active auxiliary variables
+  active_aux_var_names.resize(0);
+  for (auto &aux_var_name : aux_var_names) {
+    if (_variables.Get(aux_var_name) != NULL) {
+      active_aux_var_names.push_back(aux_var_name);
+    }
   }
 }
 
