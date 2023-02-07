@@ -27,5 +27,8 @@ public:
   // Vector of names of recognised auxiliary variables that can be calculated
   // from formulation,
   std::vector<std::string> aux_var_names;
+  // Vector of names of active auxiliary variables that are being calculated
+  // in formulation,
+  std::vector<std::string> active_aux_var_names;
 };
 } // namespace hephaestus

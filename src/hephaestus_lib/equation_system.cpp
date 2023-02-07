@@ -106,9 +106,6 @@ void CurlCurlWeakForm::setTimeStep(double dt) {
 //   for (const auto &[var_name, variables] : GetMap()) {
 //   }
 
-//   enum Color { red, green, blue };
-//   Color r = red;
-
 //   for (eqn_name in eqn_names) {
 //     eqn = factory_buildEquation(eqn_name.Get(test_var_name));
 //     equations.Register(

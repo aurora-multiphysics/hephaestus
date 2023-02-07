@@ -12,10 +12,10 @@ EFormSolver::EFormSolver(
                   sources, solver_options) {
 
   state_var_names.resize(1);
-  state_var_names[0] = "electric_field";
+  state_var_names.at(0) = "electric_field";
 
   aux_var_names.resize(1);
-  aux_var_names[0] = "-dB_dt";
+  aux_var_names.at(0) = "-dB_dt";
 }
 
 void EFormSolver::SetMaterialCoefficients(

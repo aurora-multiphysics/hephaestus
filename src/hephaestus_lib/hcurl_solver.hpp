@@ -27,9 +27,8 @@ public:
   void ImplicitSolve(const double dt, const mfem::Vector &X,
                      mfem::Vector &dX_dt) override;
 
-  std::string u_name, curl_u_name;
+  std::string u_name;
   mfem::ParGridFunction *u_, *du_; // HCurl vector field
-  mfem::ParGridFunction *curl_u_;  // HDiv Magnetic Flux Density
   std::map<std::string, mfem::socketstream *> socks_;
 
 protected:

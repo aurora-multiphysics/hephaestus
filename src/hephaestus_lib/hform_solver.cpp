@@ -19,14 +19,23 @@ HFormSolver::HFormSolver(
 }
 
 void HFormSolver::RegisterAuxKernels(hephaestus::AuxKernels &auxkernels) {
-  hephaestus::InputParameters current_density_aux_params;
-  current_density_aux_params.SetParam("VariableName", u_name);
-  current_density_aux_params.SetParam("CurlVariableName", curl_u_name);
-  auxkernels.Register("_current_density_aux",
-                      new hephaestus::CurlAuxKernel(current_density_aux_params),
-                      true);
+  for (auto &active_aux_var_name : active_aux_var_names) {
+    // Check if current density should be added as auxvar
+    if (active_aux_var_name == aux_var_names.at(0)) {
+      if (myid_ == 0) {
+        std::cout << active_aux_var_name
+                  << " found in variables: building auxvar " << std::endl;
+      }
+      hephaestus::InputParameters current_density_aux_params;
+      current_density_aux_params.SetParam("VariableName", u_name);
+      current_density_aux_params.SetParam("CurlVariableName",
+                                          active_aux_var_name);
+      auxkernels.Register(
+          "_current_density_aux",
+          new hephaestus::CurlAuxKernel(current_density_aux_params), true);
+    }
+  }
 }
-
 void HFormSolver::SetMaterialCoefficients(
     hephaestus::DomainProperties &domain_properties) {
   if (domain_properties.scalar_property_map.count("magnetic_permeability") ==

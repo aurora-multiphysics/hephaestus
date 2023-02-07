@@ -12,18 +12,28 @@ AFormSolver::AFormSolver(
                   sources, solver_options) {
 
   state_var_names.resize(1);
-  state_var_names[0] = "magnetic_vector_potential";
+  state_var_names.at(0) = "magnetic_vector_potential";
 
   aux_var_names.resize(1);
-  aux_var_names[0] = "magnetic_flux_density";
+  aux_var_names.at(0) = "magnetic_flux_density";
 }
 
 void AFormSolver::RegisterAuxKernels(hephaestus::AuxKernels &auxkernels) {
-  hephaestus::InputParameters b_field_aux_params;
-  b_field_aux_params.SetParam("VariableName", u_name);
-  b_field_aux_params.SetParam("CurlVariableName", curl_u_name);
-  auxkernels.Register("_magnetic_flux_density_aux",
-                      new hephaestus::CurlAuxKernel(b_field_aux_params), true);
+  for (auto &active_aux_var_name : active_aux_var_names) {
+    // Check if magnetic flux density should be added as auxvar
+    if (active_aux_var_name == aux_var_names.at(0)) {
+      if (myid_ == 0) {
+        std::cout << active_aux_var_name
+                  << " found in variables: building auxvar " << std::endl;
+      }
+      hephaestus::InputParameters b_field_aux_params;
+      b_field_aux_params.SetParam("VariableName", u_name);
+      b_field_aux_params.SetParam("CurlVariableName", active_aux_var_name);
+      auxkernels.Register("_magnetic_flux_density_aux",
+                          new hephaestus::CurlAuxKernel(b_field_aux_params),
+                          true);
+    }
+  }
 }
 
 void AFormSolver::SetMaterialCoefficients(
