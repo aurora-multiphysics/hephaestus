@@ -4,13 +4,9 @@ namespace hephaestus {
 
 SteadyExecutioner::SteadyExecutioner(
     const hephaestus::InputParameters &params)
-    : t_step(params.GetParam<float>("TimeStep")),
-      t_initial(params.GetParam<float>("StartTime")),
-      t_final(params.GetParam<float>("EndTime")), t(t_initial),
-      vis_steps(params.GetOptionalParam<int>("VisualisationSteps", 1)),
-      visualization(params.GetOptionalParam<bool>("UseGLVis", false)),
-      last_step(false) {}
-
+    : vis_steps(params.GetOptionalParam<int>("VisualisationSteps", 1)),
+      visualization(params.GetOptionalParam<bool>("UseGLVis", false))
+      
 void SteadyExecutioner::Init(const hephaestus::InputParameters &params) {
   // Read in inputs, and initialise solver
   pmesh = new mfem::ParMesh(params.GetParam<mfem::ParMesh>("Mesh"));
