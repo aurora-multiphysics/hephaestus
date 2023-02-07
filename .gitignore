@@ -8,3 +8,5 @@ cmake/
 test/CMakeFiles/
 test/googletest-prefix
 *.so
+*.cmake
+CMakeFiles/
