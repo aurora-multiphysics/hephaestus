@@ -10,7 +10,7 @@
 
 namespace hephaestus {
 
-class TransientExecutioner {
+class SteadyExecutioner {
 private:
   int vis_steps;         // Number of cyces between each output update
   bool visualization; // Flag to control whether GLVis visualisation is required
@@ -32,8 +32,8 @@ private:
   mfem::BlockVector *F;
 
 public:
-  TransientExecutioner() = default;
-  explicit TransientExecutioner(const hephaestus::InputParameters &params);
+  SteadyExecutioner() = default;
+  explicit SteadyExecutioner(const hephaestus::InputParameters &params);
 
   void Init(const hephaestus::InputParameters &params);
 

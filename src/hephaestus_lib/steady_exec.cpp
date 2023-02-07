@@ -1,12 +1,12 @@
-#include "executioner.hpp"
+#include "steady_exec.hpp"
 
 namespace hephaestus {
 
 SteadyExecutioner::SteadyExecutioner(
     const hephaestus::InputParameters &params)
     : vis_steps(params.GetOptionalParam<int>("VisualisationSteps", 1)),
-      visualization(params.GetOptionalParam<bool>("UseGLVis", false))
-      
+      visualization(params.GetOptionalParam<bool>("UseGLVis", false)) {}
+
 void SteadyExecutioner::Init(const hephaestus::InputParameters &params) {
   // Read in inputs, and initialise solver
   pmesh = new mfem::ParMesh(params.GetParam<mfem::ParMesh>("Mesh"));
@@ -44,12 +44,10 @@ void SteadyExecutioner::Init(const hephaestus::InputParameters &params) {
   F = new mfem::BlockVector(formulation->true_offsets); // Vector of dofs
   formulation->Init(*F); // Set up initial conditions
 
-  formulation->SetTime(t);
-  ode_solver = new mfem::BackwardEulerSolver;
-  ode_solver->Init(*formulation);
+  // formulation->SetTime(t);
 
   postprocessors->Init(variables->gfs, *domain_properties);
-  auxkernels->Solve(t);
+  // auxkernels->Solve(t);
 
   // Set up DataCollections to track fields of interest.
   for (auto const &[name, dc_] : *data_collections) {
@@ -101,12 +99,12 @@ void SteadyExecutioner::Init(const hephaestus::InputParameters &params) {
 
 void SteadyExecutioner::Solve() const {
   // Call mult method from formulation
-  formulation->Mult();
+  formulation->Mult(*F);
 
     // Make sure all ranks have sent their 'v' solution before initiating
     // another set of GLVis connections (one from each rank):
   MPI_Barrier(pmesh->GetComm());
-  auxkernels->Solve(t);
+  // auxkernels->Solve(t);
 
   // Send output fields to GLVis for visualisation
   if (visualization) {
@@ -119,7 +117,7 @@ void SteadyExecutioner::Solve() const {
   for (auto const &[name, dc_] : *data_collections) {
     formulation->WriteOutputFields(dc_, it);
   }
-  postprocessors->Update(t);
+  // postprocessors->Update(t);
 
   
 }
