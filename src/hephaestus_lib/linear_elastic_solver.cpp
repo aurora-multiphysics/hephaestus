@@ -53,17 +53,17 @@ void LinearElasticSolver::Init(mfem::Vector &X) {
 
   // Set up pull force for linear elastic problem
   mfem::VectorArrayCoefficient f(pmesh_->Dimension());
+  // Set all components to 0
   for (int i = 0; i < pmesh_->Dimension()-1; i++)
   {
     f.Set(i, new mfem::ConstantCoefficient(0.0));
   }
-  {
-    mfem::Vector pull_force(pmesh_->bdr_attributes.Max());
-    pull_force = 0.0;
-    pull_force(1) = -1.0e-2;
-    f.Set(pmesh_->Dimension()-1, new mfem::PWConstCoefficient(pull_force));
-  }
-
+  
+  // Set Z component
+  mfem::Vector pull_force(pmesh_->bdr_attributes.Max());
+  pull_force = 0.0;
+  pull_force(1) = -1.0e-2;
+  f.Set(pmesh_->Dimension()-1, new mfem::PWConstCoefficient(pull_force));
   
   b1 = new mfem::ParLinearForm(H1FESpace_);
   A1 = new mfem::HypreParMatrix;
@@ -88,6 +88,44 @@ void LinearElasticSolver::Init(mfem::Vector &X) {
 This is the main computational code that computes dX/dt implicitly
 where X is the state vector containing p, u and v.
 */
+
+
+// Mult method is called instead of implicitSolve for steady state solves
+void LinearElasticSolver::Mult(const mfem::Vector &X)
+{
+  //Update gridfunctions to ref solution vector X and time derivative time dX/dt 
+  u_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
+
+  // Update linear form - can be given from bcmap 
+  *b1 = 0.0;
+  _sources.ApplyKernels(b1);
+  mfem::ParGridFunction x_gf(H1FESpace_);
+  mfem::Array<int> ess_tdof_list, ess_bdr(pmesh_->bdr_attributes.Max());
+  ess_bdr = 0;
+  ess_bdr[0] = 1;
+  H1FESpace_->GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
+
+  x_gf = 0.0;
+
+   //Form linear system from blf and lf
+  a1->FormLinearSystem(ess_tdof_list, x_gf, *b1, *A1, *X1, *B1);
+
+  // We only need to create the solver and preconditioner once
+  mfem::HypreBoomerAMG *amg = new mfem::HypreBoomerAMG(*A1);
+  
+  amg->SetSystemsOptions(pmesh_->Dimension(), false);
+  mfem::HyprePCG *pcg = new mfem::HyprePCG(*A1);
+  pcg->SetTol(1e-8);
+  pcg->SetMaxIter(500);
+  pcg->SetPrintLevel(2);
+  pcg->SetPreconditioner(*amg);
+  pcg->Mult(*B1, *X1);
+
+  a1->RecoverFEMSolution(*X1, *b1, du_);
+
+  pmesh_->SetNodalFESpace(H1FESpace_);
+}
+
 
 void LinearElasticSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
                                 mfem::Vector &dX_dt) {
@@ -167,18 +205,6 @@ void LinearElasticSolver::RegisterVariables() {
 
 void LinearElasticSolver::SetMaterialCoefficients(
     hephaestus::DomainProperties &domain_properties) {
-  /*
-  if (domain_properties.scalar_property_map.count("alpha") == 0) {
-    domain_properties.scalar_property_map["alpha"] = new mfem::PWCoefficient(
-        domain_properties.getGlobalScalarProperty(std::string("alpha")));
-  }
-  if (domain_properties.scalar_property_map.count("beta") == 0) {
-    domain_properties.scalar_property_map["beta"] = new mfem::PWCoefficient(
-        domain_properties.getGlobalScalarProperty(std::string("beta")));
-  }
-  alphaCoef = domain_properties.scalar_property_map["alpha"];
-  betaCoef = domain_properties.scalar_property_map["beta"];
-  */
 
   // Set up lame coefficients
   mfem::Vector lambda(pmesh_->attributes.Max());
