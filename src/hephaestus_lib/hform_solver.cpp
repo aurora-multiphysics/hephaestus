@@ -9,14 +9,13 @@ HFormSolver::HFormSolver(
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
     hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
     : HCurlSolver(pmesh, order, fespaces, variables, bc_map, domain_properties,
-                  sources, solver_options) {}
+                  sources, solver_options) {
 
-void HFormSolver::RegisterVariables() {
-  u_name = "magnetic_field";
-  u_display_name = "Magnetic Field (H)";
-  curl_u_name = "current_density";
+  state_var_names.resize(1);
+  state_var_names[0] = "magnetic_field";
 
-  HCurlSolver::RegisterVariables();
+  aux_var_names.resize(1);
+  aux_var_names[0] = "current_density";
 }
 
 void HFormSolver::RegisterAuxKernels(hephaestus::AuxKernels &auxkernels) {

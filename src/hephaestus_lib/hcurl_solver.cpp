@@ -64,9 +64,11 @@ HCurlSolver::HCurlSolver(
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh.GetComm(), &myid_);
 
-  u_name = "h_curl_var";
-  u_display_name = "H(Curl) variable";
-  curl_u_name = "curl h_curl_var";
+  state_var_names.resize(1);
+  state_var_names[0] = "h_curl_var";
+
+  aux_var_names.resize(1);
+  aux_var_names[0] = "curl h_curl_var";
 }
 
 void HCurlSolver::Init(mfem::Vector &X) {
@@ -129,6 +131,9 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
 }
 
 void HCurlSolver::RegisterVariables() {
+  u_name = state_var_names[0];
+  curl_u_name = aux_var_names[0];
+
   _fespaces.Register(
       "_H1FESpace",
       new mfem::common::H1_ParFESpace(pmesh_, _order, pmesh_->Dimension()),

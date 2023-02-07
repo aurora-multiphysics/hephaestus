@@ -21,5 +21,11 @@ public:
   virtual void RegisterAuxKernels(hephaestus::AuxKernels &auxkernels){};
 
   mfem::Array<int> true_offsets;
+  // Vector of names of state variables used in formulation, ordered by
+  // appearance in block vector during solve.
+  std::vector<std::string> state_var_names;
+  // Vector of names of recognised auxiliary variables that can be calculated
+  // from formulation,
+  std::vector<std::string> aux_var_names;
 };
 } // namespace hephaestus

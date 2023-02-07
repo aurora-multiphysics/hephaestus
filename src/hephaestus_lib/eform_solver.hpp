@@ -8,7 +8,6 @@ namespace hephaestus {
 class EFormSolver : public hephaestus::HCurlSolver {
   virtual void SetMaterialCoefficients(
       hephaestus::DomainProperties &domain_properties) override;
-  virtual void RegisterVariables() override;
 
 public:
   EFormSolver(mfem::ParMesh &pmesh, int order,
