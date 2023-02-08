@@ -93,7 +93,14 @@ protected:
         new mfem::ParaViewDataCollection("Team7ParaView");
     hephaestus::Outputs outputs(data_collections);
 
+    hephaestus::InputParameters h1fespaceparams;
+    h1fespaceparams.SetParam("FESpaceName", std::string("H1"));
+    h1fespaceparams.SetParam("FESpaceType", std::string("H1"));
+    h1fespaceparams.SetParam("order", 2);
+    h1fespaceparams.SetParam("components", 3);
     hephaestus::FESpaces fespaces;
+    fespaces.StoreInput(h1fespaceparams);
+
     hephaestus::GridFunctions gridfunctions;
     hephaestus::Postprocessors postprocessors;
     hephaestus::AuxKernels auxkernels;
@@ -128,7 +135,7 @@ protected:
     div_free_source_params.SetParam("SourceName", std::string("source"));
     div_free_source_params.SetParam("HCurlFESpaceName",
                                     std::string("_HCurlFESpace"));
-    div_free_source_params.SetParam("H1FESpaceName", std::string("_H1FESpace"));
+    div_free_source_params.SetParam("H1FESpaceName", std::string("H1"));
     hephaestus::InputParameters current_solver_options;
     current_solver_options.SetParam("Tolerance", float(1.0e-12));
     current_solver_options.SetParam("MaxIter", (unsigned int)200);
