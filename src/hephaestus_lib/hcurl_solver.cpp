@@ -89,6 +89,7 @@ void HCurlSolver::Init(mfem::Vector &X) {
 
   u_->MakeRef(u_->ParFESpace(), const_cast<mfem::Vector &>(X), true_offsets[0]);
   u_->ProjectCoefficient(Zero_vec);
+  du_->ProjectCoefficient(Zero_vec);
 
   _weak_form =
       new hephaestus::CurlCurlWeakForm(u_name, *du_, *u_, alphaCoef, betaCoef);
@@ -150,8 +151,9 @@ void HCurlSolver::RegisterVariables() {
         true);
     u_ = _variables.Get(u_name);
   }
-  _variables.Register("du", new mfem::ParGridFunction(u_->ParFESpace()), true);
-  du_ = _variables.Get("du");
+  _variables.Register(GetTimeDerivativeName(u_name),
+                      new mfem::ParGridFunction(u_->ParFESpace()), true);
+  du_ = _variables.Get(GetTimeDerivativeName(u_name));
 
   true_offsets.SetSize(2);
   true_offsets[0] = 0;
