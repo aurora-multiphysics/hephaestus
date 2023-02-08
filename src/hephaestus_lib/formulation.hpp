@@ -19,7 +19,9 @@ public:
 
   virtual void RegisterVariables() = 0;
   virtual void RegisterAuxKernels(hephaestus::AuxKernels &auxkernels){};
-
+  std::string GetTimeDerivativeName(std::string name) {
+    return std::string("d") + name + std::string("_dt");
+  }
   mfem::Array<int> true_offsets;
   // Vector of names of state variables used in formulation, ordered by
   // appearance in block vector during solve.
