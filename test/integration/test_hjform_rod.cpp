@@ -87,7 +87,8 @@ protected:
         new mfem::ParaViewDataCollection("HJFormParaView");
     hephaestus::Outputs outputs(data_collections);
 
-    hephaestus::Variables variables;
+    hephaestus::FESpaces fespaces;
+    hephaestus::GridFunctions gridfunctions;
     hephaestus::AuxKernels auxkernels;
     hephaestus::Postprocessors postprocessors;
     hephaestus::Sources sources;
@@ -124,7 +125,8 @@ protected:
     params.SetParam("Order", 2);
     params.SetParam("BoundaryConditions", bc_map);
     params.SetParam("DomainProperties", domain_properties);
-    params.SetParam("Variables", variables);
+    params.SetParam("FESpaces", fespaces);
+    params.SetParam("GridFunctions", gridfunctions);
     params.SetParam("AuxKernels", auxkernels);
     params.SetParam("Postprocessors", postprocessors);
     params.SetParam("Sources", sources);

@@ -19,8 +19,10 @@ void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
       params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
   domain_properties = new hephaestus::DomainProperties(
       params.GetParam<hephaestus::DomainProperties>("DomainProperties"));
-  variables = new hephaestus::Variables(
-      params.GetParam<hephaestus::Variables>("Variables"));
+  fespaces = new hephaestus::FESpaces(
+      params.GetParam<hephaestus::FESpaces>("FESpaces"));
+  gridfunctions = new hephaestus::GridFunctions(
+      params.GetParam<hephaestus::GridFunctions>("GridFunctions"));
   auxkernels = new hephaestus::AuxKernels(
       params.GetParam<hephaestus::AuxKernels>("AuxKernels"));
   postprocessors = new hephaestus::Postprocessors(
@@ -41,14 +43,15 @@ void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
   std::string formulation_name(params.GetParam<std::string>("FormulationName"));
 
   formulation = hephaestus::Factory::createTransientFormulation(
-      formulation_name, *pmesh, order, variables->fespaces, variables->gfs,
-      *bc_map, *domain_properties, *sources, *solver_options);
+      formulation_name, *pmesh, order, *fespaces, *gridfunctions, *bc_map,
+      *domain_properties, *sources, *solver_options);
 
   formulation->RegisterVariables();
   formulation->RegisterAuxKernels(*auxkernels);
 
-  variables->Init(*pmesh);
-  auxkernels->Init(variables->gfs, *domain_properties);
+  fespaces->Init(*pmesh);
+  gridfunctions->Init(*pmesh, *fespaces);
+  auxkernels->Init(*gridfunctions, *domain_properties);
 
   F = new mfem::BlockVector(formulation->true_offsets); // Vector of dofs
   formulation->Init(*F); // Set up initial conditions
@@ -57,12 +60,12 @@ void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
   ode_solver = new mfem::BackwardEulerSolver;
   ode_solver->Init(*formulation);
 
-  postprocessors->Init(variables->gfs, *domain_properties);
+  postprocessors->Init(*gridfunctions, *domain_properties);
   auxkernels->Solve(t);
 
   // Set up DataCollections to track fields of interest.
   for (auto const &[name, dc_] : *data_collections) {
-    outputs->RegisterOutputFields(dc_, pmesh, variables->gfs);
+    outputs->RegisterOutputFields(dc_, pmesh, *gridfunctions);
     // Write initial fields to disk
     outputs->WriteOutputFields(dc_, t, 0);
   }
@@ -70,8 +73,8 @@ void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
   // Initialize GLVis visualization and send the initial condition
   // by socket to a GLVis server.
   if (visualization) {
-    outputs->InitializeGLVis(myid_, variables->gfs);
-    outputs->DisplayToGLVis(variables->gfs);
+    outputs->InitializeGLVis(myid_, *gridfunctions);
+    outputs->DisplayToGLVis(*gridfunctions);
   }
 }
 
@@ -97,7 +100,7 @@ void TransientExecutioner::Step(double dt, int it) const {
 
     // Send output fields to GLVis for visualisation
     if (visualization) {
-      outputs->DisplayToGLVis(variables->gfs);
+      outputs->DisplayToGLVis(*gridfunctions);
     }
 
     // Save output fields at timestep to DataCollections

@@ -6,20 +6,21 @@
 
 namespace hephaestus {
 
-class VariableMap : public mfem::NamedFieldsMap<mfem::ParGridFunction> {};
-
-class Variables {
+class FESpaces : public mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> {
 public:
-  Variables() {}
-
-  Variables(const hephaestus::InputParameters);
-
-  void AddVariable(const hephaestus::InputParameters);
+  void StoreInput(const hephaestus::InputParameters);
   void Init(mfem::ParMesh &pmesh);
 
-  std::vector<hephaestus::InputParameters> variable_params;
-  mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> fespaces;
-  mfem::NamedFieldsMap<mfem::ParGridFunction> gfs;
+  std::vector<hephaestus::InputParameters> input_params;
+};
+
+class GridFunctions : public mfem::NamedFieldsMap<mfem::ParGridFunction> {
+public:
+  void StoreInput(const hephaestus::InputParameters);
+  void Init(mfem::ParMesh &pmesh,
+            mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces);
+
+  std::vector<hephaestus::InputParameters> input_params;
 };
 
 } // namespace hephaestus

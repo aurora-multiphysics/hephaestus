@@ -63,23 +63,33 @@ protected:
 
     sigmaAir = 1.0e-6 * sigma;
 
-    hephaestus::Variables variables;
-    hephaestus::InputParameters jouleheatingvarparams;
-    jouleheatingvarparams.SetParam("VariableName",
-                                   std::string("joule_heating_load"));
-    jouleheatingvarparams.SetParam("FESpaceName", std::string("L2"));
-    jouleheatingvarparams.SetParam("FESpaceType", std::string("L2"));
-    jouleheatingvarparams.SetParam("order", 1);
-    jouleheatingvarparams.SetParam("components", 3);
-    variables.AddVariable(jouleheatingvarparams);
+    hephaestus::FESpaces fespaces;
+    hephaestus::GridFunctions gridfunctions;
 
-    hephaestus::InputParameters temperaturevarparams;
-    temperaturevarparams.SetParam("VariableName", std::string("temperature"));
-    temperaturevarparams.SetParam("FESpaceName", std::string("H1"));
-    temperaturevarparams.SetParam("FESpaceType", std::string("H1"));
-    temperaturevarparams.SetParam("order", 1);
-    temperaturevarparams.SetParam("components", 3);
-    variables.AddVariable(temperaturevarparams);
+    hephaestus::InputParameters l2fespaceparams;
+    l2fespaceparams.SetParam("FESpaceName", std::string("L2"));
+    l2fespaceparams.SetParam("FESpaceType", std::string("L2"));
+    l2fespaceparams.SetParam("order", 1);
+    l2fespaceparams.SetParam("components", 3);
+    fespaces.StoreInput(l2fespaceparams);
+
+    hephaestus::InputParameters jouleheatinggfparams;
+    jouleheatinggfparams.SetParam("VariableName",
+                                  std::string("joule_heating_load"));
+    jouleheatinggfparams.SetParam("FESpaceName", std::string("L2"));
+    gridfunctions.StoreInput(jouleheatinggfparams);
+
+    hephaestus::InputParameters h1fespaceparams;
+    h1fespaceparams.SetParam("FESpaceName", std::string("H1"));
+    h1fespaceparams.SetParam("FESpaceType", std::string("H1"));
+    h1fespaceparams.SetParam("order", 1);
+    h1fespaceparams.SetParam("components", 3);
+    fespaces.StoreInput(h1fespaceparams);
+
+    hephaestus::InputParameters temperaturegfparams;
+    temperaturegfparams.SetParam("VariableName", std::string("temperature"));
+    temperaturegfparams.SetParam("FESpaceName", std::string("H1"));
+    gridfunctions.StoreInput(temperaturegfparams);
 
     // materialCopper instances and get property coefs? init can be for all...
     // CoupledCoefficients must also be added to Auxkernels
@@ -205,7 +215,8 @@ protected:
     params.SetParam("Order", 2);
     params.SetParam("BoundaryConditions", bc_map);
     params.SetParam("DomainProperties", domain_properties);
-    params.SetParam("Variables", variables);
+    params.SetParam("FESpaces", fespaces);
+    params.SetParam("GridFunctions", gridfunctions);
     params.SetParam("AuxKernels", auxkernels);
     params.SetParam("Postprocessors", postprocessors);
     params.SetParam("Sources", sources);
