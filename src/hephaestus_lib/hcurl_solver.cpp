@@ -153,11 +153,6 @@ void HCurlSolver::RegisterVariables() {
   _variables.Register("du", new mfem::ParGridFunction(u_->ParFESpace()), true);
   du_ = _variables.Get("du");
 
-  _fespaces.Register(
-      "_H1FESpace",
-      new mfem::common::H1_ParFESpace(pmesh_, _order, pmesh_->Dimension()),
-      true);
-
   true_offsets.SetSize(2);
   true_offsets[0] = 0;
   true_offsets[1] = u_->ParFESpace()->GetVSize();

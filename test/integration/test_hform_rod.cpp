@@ -90,7 +90,14 @@ protected:
     solver_options.SetParam("MaxIter", (unsigned int)1000);
     solver_options.SetParam("PrintLevel", 0);
 
+    hephaestus::InputParameters h1fespaceparams;
+    h1fespaceparams.SetParam("FESpaceName", std::string("H1"));
+    h1fespaceparams.SetParam("FESpaceType", std::string("H1"));
+    h1fespaceparams.SetParam("order", 2);
+    h1fespaceparams.SetParam("components", 3);
     hephaestus::FESpaces fespaces;
+    fespaces.StoreInput(h1fespaceparams);
+
     hephaestus::GridFunctions gridfunctions;
     hephaestus::AuxKernels auxkernels;
     hephaestus::Postprocessors postprocessors;
@@ -102,8 +109,7 @@ protected:
                                             std::string("magnetic_potential"));
     scalar_potential_source_params.SetParam("HCurlFESpaceName",
                                             std::string("_HCurlFESpace"));
-    scalar_potential_source_params.SetParam("H1FESpaceName",
-                                            std::string("_H1FESpace"));
+    scalar_potential_source_params.SetParam("H1FESpaceName", std::string("H1"));
     scalar_potential_source_params.SetParam(
         "ConductivityCoefName", std::string("magnetic_permeability"));
     hephaestus::InputParameters current_solver_options;
