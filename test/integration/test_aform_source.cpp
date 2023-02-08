@@ -88,15 +88,20 @@ protected:
         new mfem::VisItDataCollection("AFormVisIt");
     hephaestus::Outputs outputs(data_collections);
 
-    hephaestus::InputParameters hcurlvarparams;
-    hcurlvarparams.SetParam("VariableName",
+    hephaestus::InputParameters hcurlfespaceparams;
+    hcurlfespaceparams.SetParam("FESpaceName", std::string("HCurl"));
+    hcurlfespaceparams.SetParam("FESpaceType", std::string("ND"));
+    hcurlfespaceparams.SetParam("order", 2);
+    hcurlfespaceparams.SetParam("components", 3);
+    hephaestus::FESpaces fespaces;
+    fespaces.StoreInput(hcurlfespaceparams);
+
+    hephaestus::InputParameters analyicaparams;
+    analyicaparams.SetParam("VariableName",
                             std::string("analytic_vector_potential"));
-    hcurlvarparams.SetParam("FESpaceName", std::string("HCurl"));
-    hcurlvarparams.SetParam("FESpaceType", std::string("ND"));
-    hcurlvarparams.SetParam("order", 2);
-    hcurlvarparams.SetParam("components", 3);
-    hephaestus::Variables variables;
-    variables.AddVariable(hcurlvarparams);
+    analyicaparams.SetParam("FESpaceName", std::string("HCurl"));
+    hephaestus::GridFunctions gridfunctions;
+    gridfunctions.StoreInput(analyicaparams);
 
     hephaestus::InputParameters l2errpostprocparams;
     l2errpostprocparams.SetParam("VariableName",
@@ -157,7 +162,8 @@ protected:
     params.SetParam("Order", 2);
     params.SetParam("BoundaryConditions", bc_map);
     params.SetParam("DomainProperties", domain_properties);
-    params.SetParam("Variables", variables);
+    params.SetParam("FESpaces", fespaces);
+    params.SetParam("GridFunctions", gridfunctions);
     params.SetParam("AuxKernels", auxkernels);
     params.SetParam("Postprocessors", postprocessors);
     params.SetParam("Outputs", outputs);

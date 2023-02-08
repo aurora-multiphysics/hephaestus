@@ -90,7 +90,8 @@ protected:
     solver_options.SetParam("MaxIter", (unsigned int)1000);
     solver_options.SetParam("PrintLevel", 0);
 
-    hephaestus::Variables variables;
+    hephaestus::FESpaces fespaces;
+    hephaestus::GridFunctions gridfunctions;
     hephaestus::AuxKernels auxkernels;
     hephaestus::Postprocessors postprocessors;
     hephaestus::Sources sources;
@@ -122,7 +123,8 @@ protected:
     params.SetParam("Order", 2);
     params.SetParam("BoundaryConditions", bc_map);
     params.SetParam("DomainProperties", domain_properties);
-    params.SetParam("Variables", variables);
+    params.SetParam("FESpaces", fespaces);
+    params.SetParam("GridFunctions", gridfunctions);
     params.SetParam("AuxKernels", auxkernels);
     params.SetParam("Postprocessors", postprocessors);
     params.SetParam("Outputs", outputs);

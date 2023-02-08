@@ -48,7 +48,8 @@ public:
 
   // Enable output to GLVis
   void EnableVisualisation() { visualization = true; };
-  hephaestus::Variables *variables;
+  hephaestus::FESpaces *fespaces;
+  hephaestus::GridFunctions *gridfunctions;
 };
 
 } // namespace hephaestus
