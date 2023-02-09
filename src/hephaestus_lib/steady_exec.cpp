@@ -33,16 +33,18 @@ void SteadyExecutioner::Init(const hephaestus::InputParameters &params) {
 
   std::string formulation_name(params.GetParam<std::string>("FormulationName"));
 
-  formulation = hephaestus::Factory::createTransientFormulation(
+  formulation = hephaestus::Factory::createSteadyFormulation(
       formulation_name, *pmesh, order, variables->fespaces, variables->gfs,
       *bc_map, *domain_properties, *sources, *solver_options);
 
+  
   formulation->RegisterVariables();
   variables->Init(*pmesh);
   auxkernels->Init(variables->gfs, *domain_properties);
 
   F = new mfem::BlockVector(formulation->true_offsets); // Vector of dofs
   formulation->Init(*F); // Set up initial conditions
+  y = new mfem::BlockVector(*F);
 
   // formulation->SetTime(t);
 
@@ -99,24 +101,25 @@ void SteadyExecutioner::Init(const hephaestus::InputParameters &params) {
 
 void SteadyExecutioner::Solve() const {
   // Call mult method from formulation
-  formulation->Mult(*F);
+  std::cout << "Starting mult" << std::endl;
+  formulation->Mult(*F, *y);
 
     // Make sure all ranks have sent their 'v' solution before initiating
     // another set of GLVis connections (one from each rank):
-  MPI_Barrier(pmesh->GetComm());
-  // auxkernels->Solve(t);
+  // MPI_Barrier(pmesh->GetComm());
+  // // auxkernels->Solve(t);
 
-  // Send output fields to GLVis for visualisation
-  if (visualization) {
-    formulation->DisplayToGLVis();
-  }
+  // // Send output fields to GLVis for visualisation
+  // if (visualization) {
+  //   formulation->DisplayToGLVis();
+  // }
 
-  // Set it to 1 so the output fiels can be written
-  int it = 1;
-  // Save output fields at timestep to DataCollections
-  for (auto const &[name, dc_] : *data_collections) {
-    formulation->WriteOutputFields(dc_, it);
-  }
+  // // Set it to 1 so the output fiels can be written
+  // int it = 1;
+  // // Save output fields at timestep to DataCollections
+  // for (auto const &[name, dc_] : *data_collections) {
+  //   formulation->WriteOutputFields(dc_, it);
+  // }
   // postprocessors->Update(t);
 
   

@@ -1,5 +1,6 @@
 #pragma once
 #include "auxkernels.hpp"
+#include "steady_formulation.hpp"
 #include "inputs.hpp"
 #include "postprocessors.hpp"
 #include "sources.hpp"
@@ -27,9 +28,10 @@ private:
   hephaestus::InputParameters *solver_options;
 
   // Shouldn't be a TransientFormulation really
-  hephaestus::TransientFormulation *formulation;
+  hephaestus::SteadyFormulation *formulation;
   mfem::ODESolver *ode_solver;
   mfem::BlockVector *F;
+  mfem::Vector *y;
 
 public:
   SteadyExecutioner() = default;
