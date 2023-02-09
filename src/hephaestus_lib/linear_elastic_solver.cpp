@@ -49,39 +49,22 @@ void LinearElasticSolver::Init(mfem::Vector &X) {
   // Initialise coefficients and store in DomainProperties
   SetMaterialCoefficients(_domain_properties);
 
-  //Allocate meory of bilinear forms, linear forms and matrices
-
-  // Set up pull force for linear elastic problem
-  mfem::VectorArrayCoefficient f(pmesh_->Dimension());
-  // Set all components to 0
-  for (int i = 0; i < pmesh_->Dimension()-1; i++)
-  {
-    f.Set(i, new mfem::ConstantCoefficient(0.0));
-  }
-  
-  // Set Z component
-  mfem::Vector pull_force(pmesh_->bdr_attributes.Max());
-  pull_force = 0.0;
-  pull_force(1) = -1.0e-2;
-  f.Set(pmesh_->Dimension()-1, new mfem::PWConstCoefficient(pull_force));
-  
+  //Allocate meory of bilinear forms, linear forms and matrices  
   b1 = new mfem::ParLinearForm(H1FESpace_);
   A1 = new mfem::HypreParMatrix;
   X1 = new mfem::Vector;
   B1 = new mfem::Vector;
-
+  
   this->buildA1();
-  // Set up linear form for linear elastic problem
-  b1->AddBoundaryIntegrator(new mfem::VectorBoundaryLFIntegrator(f));
-  b1->Assemble();
-
+ 
   u_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
 
   //Initial state
-  mfem::Vector zero_vec;   
-  zero_vec = 0.0;
-  mfem::VectorConstantCoefficient Zero_vec(zero_vec);
-  u_.ProjectCoefficient(Zero_vec);
+  // mfem::Vector zero_vec;   
+  // zero_vec = 0.0;
+  // mfem::VectorConstantCoefficient Zero_vec(zero_vec);
+  // u_.ProjectCoefficient(Zero_vec);
+  u_ = 0.0;
 }
 
 /*
@@ -91,14 +74,33 @@ where X is the state vector containing p, u and v.
 
 
 // Mult method is called instead of implicitSolve for steady state solves
-void LinearElasticSolver::Mult(const mfem::Vector &X)
+void LinearElasticSolver::NotMult(const mfem::Vector& x, mfem::Vector& y)
 {
+  y = 0.0;
   //Update gridfunctions to ref solution vector X and time derivative time dX/dt 
-  u_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
+  u_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(x), true_offsets[0]);
+  du_.MakeRef(H1FESpace_, y, true_offsets[0]); 
+
+
+  // Set up pull force for linear elastic problem
+  mfem::VectorArrayCoefficient f(pmesh_->Dimension());
+  // Set all components to 0
+  for (int i = 0; i < pmesh_->Dimension()-1; i++)
+  {
+    f.Set(i, new mfem::ConstantCoefficient(0.0));
+  }
+  // Set Z component
+  mfem::Vector pull_force(pmesh_->bdr_attributes.Max());
+  pull_force = 0.0;
+  pull_force(1) = -1.0e-2;
+  f.Set(pmesh_->Dimension()-1, new mfem::PWConstCoefficient(pull_force));
 
   // Update linear form - can be given from bcmap 
   *b1 = 0.0;
-  _sources.ApplyKernels(b1);
+  // Set up linear form for linear elastic problem
+  b1->AddBoundaryIntegrator(new mfem::VectorBoundaryLFIntegrator(f));
+  b1->Assemble();
+
   mfem::ParGridFunction x_gf(H1FESpace_);
   mfem::Array<int> ess_tdof_list, ess_bdr(pmesh_->bdr_attributes.Max());
   ess_bdr = 0;
@@ -127,59 +129,59 @@ void LinearElasticSolver::Mult(const mfem::Vector &X)
 }
 
 
-void LinearElasticSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
-                                mfem::Vector &dX_dt) {
-  dX_dt = 0.0;
-  dtCoef.constant = dt;
+// void LinearElasticSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
+//                                 mfem::Vector &dX_dt) {
+//   dX_dt = 0.0;
+//   dtCoef.constant = dt;
 
-  //Update gridfunctions to ref solution vector X and time derivative time dX/dt 
-  u_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
-  // du_.MakeRef(H1FESpace_, dX_dt, true_offsets[0]);
+//   //Update gridfunctions to ref solution vector X and time derivative time dX/dt 
+//   u_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
+//   // du_.MakeRef(H1FESpace_, dX_dt, true_offsets[0]);
 
-  // Commented out as this is not currently time dependent 
-  // _domain_properties.SetTime(this->GetTime());
+//   // Commented out as this is not currently time dependent 
+//   // _domain_properties.SetTime(this->GetTime());
 
-  // Update linear form - can be given from bcmap 
-  *b1 = 0.0;
-  _sources.ApplyKernels(b1);
-  mfem::ParGridFunction x_gf(H1FESpace_);
-  mfem::Array<int> ess_tdof_list, ess_bdr(pmesh_->bdr_attributes.Max());
-  ess_bdr = 0;
-  ess_bdr[0] = 1;
-  H1FESpace_->GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
+//   // Update linear form - can be given from bcmap 
+//   *b1 = 0.0;
+//   _sources.ApplyKernels(b1);
+//   mfem::ParGridFunction x_gf(H1FESpace_);
+//   mfem::Array<int> ess_tdof_list, ess_bdr(pmesh_->bdr_attributes.Max());
+//   ess_bdr = 0;
+//   ess_bdr[0] = 1;
+//   H1FESpace_->GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
 
-  x_gf = 0.0;
+//   x_gf = 0.0;
 
-   //Form linear system from blf and lf
-  a1->FormLinearSystem(ess_tdof_list, x_gf, *b1, *A1, *X1, *B1);
+//    //Form linear system from blf and lf
+//   a1->FormLinearSystem(ess_tdof_list, x_gf, *b1, *A1, *X1, *B1);
 
-  // We only need to create the solver and preconditioner once
+//   // We only need to create the solver and preconditioner once
 
-  mfem::HypreBoomerAMG *amg = new mfem::HypreBoomerAMG(*A1);
-  // if (amg_elast && !a1->StaticCondensationIsEnabled())
-  // {
-  //   amg->SetElasticityOptions(H1FESpace_);
-  // }
-  // else
-  // {
-    amg->SetSystemsOptions(pmesh_->Dimension(), false);
-  // }
-  mfem::HyprePCG *pcg = new mfem::HyprePCG(*A1);
-  pcg->SetTol(1e-8);
-  pcg->SetMaxIter(500);
-  pcg->SetPrintLevel(2);
-  pcg->SetPreconditioner(*amg);
-  pcg->Mult(*B1, *X1);
+//   mfem::HypreBoomerAMG *amg = new mfem::HypreBoomerAMG(*A1);
+//   // if (amg_elast && !a1->StaticCondensationIsEnabled())
+//   // {
+//   //   amg->SetElasticityOptions(H1FESpace_);
+//   // }
+//   // else
+//   // {
+//     amg->SetSystemsOptions(pmesh_->Dimension(), false);
+//   // }
+//   mfem::HyprePCG *pcg = new mfem::HyprePCG(*A1);
+//   pcg->SetTol(1e-8);
+//   pcg->SetMaxIter(500);
+//   pcg->SetPrintLevel(2);
+//   pcg->SetPreconditioner(*amg);
+//   pcg->Mult(*B1, *X1);
 
-  a1->RecoverFEMSolution(*X1, *b1, du_);
+//   a1->RecoverFEMSolution(*X1, *b1, du_);
 
-  //Deform mesh?
-  //  if (!use_nodal_fespace)
-  //  {
-      pmesh_->SetNodalFESpace(H1FESpace_);
-  //  }
+//   //Deform mesh?
+//   //  if (!use_nodal_fespace)
+//   //  {
+//       pmesh_->SetNodalFESpace(H1FESpace_);
+//   //  }
 
-}
+// }
 
 void LinearElasticSolver::buildA1() {
   if (a1 != NULL) {

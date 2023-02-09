@@ -1,12 +1,12 @@
 #pragma once
 #include "../common/pfem_extras.hpp"
-#include "formulation.hpp"
+#include "steady_formulation.hpp"
 #include "inputs.hpp"
 #include "sources.hpp"
 
 namespace hephaestus {
 
-class LinearElasticSolver : public TransientFormulation {
+class LinearElasticSolver : public SteadyFormulation {
   virtual void
   SetMaterialCoefficients(hephaestus::DomainProperties &domain_properties);
   virtual void RegisterVariables();
@@ -28,14 +28,15 @@ public:
   void buildM1(mfem::Coefficient *sigma);
   void buildSource();
 
-  void ImplicitSolve(const double dt, const mfem::Vector &X,
-                     mfem::Vector &dX_dt) override;
-
   void RegisterOutputFields(mfem::DataCollection *dc_) override;
 
   void WriteOutputFields(mfem::DataCollection *dc_, int it = 0) override;
 
   virtual void WriteConsoleSummary(double t, int it) override;
+
+  void NotMult(const mfem::Vector& x, mfem::Vector& y);
+
+  virtual void Mult(const mfem::Vector& x, mfem::Vector& y) const override {};
 
   void InitializeGLVis() override;
 
@@ -81,6 +82,8 @@ protected:
   mfem::PWConstCoefficient lambda_func; // Lame coefficient
   mfem::ConstantCoefficient dtCoef;  // Coefficient for timestep scaling
   mfem::ConstantCoefficient oneCoef; // Auxiliary coefficient
+
+  double t = 1;
 
   // Sockets used to communicate with GLVis
 };
