@@ -8,27 +8,27 @@ protected:
   
   hephaestus::InputParameters test_params() {
 
-    hephaestus::Subdomain mat1("mat1", 1);
-    mat1.property_map["lambda"] =
-        new mfem::ConstantCoefficient(1.0);
+    // hephaestus::Subdomain mat1("mat1", 1);
+    // mat1.property_map["lambda"] =
+    //     new mfem::ConstantCoefficient(1.0);
 
-    mat1.property_map["shear_mod"] =
-        new mfem::ConstantCoefficient(1.0);
+    // mat1.property_map["shear_mod"] =
+    //     new mfem::ConstantCoefficient(1.0);
 
-    hephaestus::Subdomain mat2("mat2", 2);
-    mat2.property_map["lambda"] =
-        new mfem::ConstantCoefficient(50.0);
+    // hephaestus::Subdomain mat2("mat2", 2);
+    // mat2.property_map["lambda"] =
+    //     new mfem::ConstantCoefficient(50.0);
 
-    mat2.property_map["shear_mod"] =
-        new mfem::ConstantCoefficient(50.0);
+    // mat2.property_map["shear_mod"] =
+    //     new mfem::ConstantCoefficient(50.0);
 
-    hephaestus::DomainProperties domain_properties(
-        std::vector<hephaestus::Subdomain>({mat1, mat2}));
+    hephaestus::DomainProperties domain_properties;
+        // std::vector<hephaestus::Subdomain>({mat1, mat2}));
 
     hephaestus::BCMap bc_map;
  
     mfem::Mesh mesh(
-        (std::string(DATA_DIR) + std::string("./myBeam_2.g")).c_str(),
+        (std::string(DATA_DIR) + std::string("./myBeam_3.g")).c_str(),
         1, 1);
 
     std::map<std::string, mfem::DataCollection *> data_collections;
@@ -68,7 +68,7 @@ protected:
 
 TEST_F(TestLEForm, CheckRun) {
   hephaestus::InputParameters params(test_params());
-
+  std::cout << "Test begin" << std::endl;
   hephaestus::SteadyExecutioner *executioner(
       params.GetParam<hephaestus::SteadyExecutioner *>("Executioner"));
   executioner->Init(params);
