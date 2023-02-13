@@ -82,23 +82,25 @@ void HCurlSolver::Init(mfem::Vector &X) {
   X1 = new mfem::Vector;
   B1 = new mfem::Vector;
 
-  mfem::Vector zero_vec(3);
-  zero_vec = 0.0;
-  mfem::VectorConstantCoefficient Zero_vec(zero_vec);
-  mfem::ConstantCoefficient Zero(0.0);
+  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
+    local_test_vars.at(ind)->MakeRef(local_test_vars.at(ind)->ParFESpace(),
+                                     const_cast<mfem::Vector &>(X),
+                                     true_offsets[ind]);
+    *(local_test_vars.at(ind)) = 0.0;
+    *(local_trial_vars.at(ind)) = 0.0;
+  }
 
-  u_->MakeRef(u_->ParFESpace(), const_cast<mfem::Vector &>(X), true_offsets[0]);
-  u_->ProjectCoefficient(Zero_vec);
-  du_->ProjectCoefficient(Zero_vec);
+  u_ = local_test_vars.at(0);
+  du_ = local_trial_vars.at(0);
 
-  _weak_form =
-      new hephaestus::CurlCurlWeakForm(u_name, *du_, *u_, alphaCoef, betaCoef);
+  _weak_form = new hephaestus::CurlCurlWeakForm(state_var_names.at(0), *du_,
+                                                *u_, alphaCoef, betaCoef);
   _weak_form->buildWeakForm(_bc_map, _sources);
 }
 
 /*
 This is the main computational code that computes dX/dt implicitly
-where X is the state vector containing p, u and v.
+where X is the state vector containing u.
 
 Unknowns
 s0_{n+1} ∈ H(div) source field, where s0 = -β∇p
@@ -106,7 +108,6 @@ du/dt_{n+1} ∈ H(curl)
 p_{n+1} ∈ H1
 
 Fully discretised equations
--(s0_{n+1}, ∇ p') + <n.s0_{n+1}, p'> = 0
 (α∇×u_{n}, ∇×u') + (αdt∇×du/dt_{n+1}, ∇×u') + (βdu/dt_{n+1}, u')
 - (s0_{n+1}, u') - <(α∇×u_{n+1}) × n, u'> = 0
 using
@@ -115,8 +116,13 @@ u_{n+1} = u_{n} + dt du/dt_{n+1}
 void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
                                 mfem::Vector &dX_dt) {
   dX_dt = 0.0;
-  u_->MakeRef(u_->ParFESpace(), const_cast<mfem::Vector &>(X), true_offsets[0]);
-  du_->MakeRef(u_->ParFESpace(), dX_dt, true_offsets[0]);
+  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
+    local_test_vars.at(ind)->MakeRef(local_test_vars.at(ind)->ParFESpace(),
+                                     const_cast<mfem::Vector &>(X),
+                                     true_offsets[ind]);
+    local_trial_vars.at(ind)->MakeRef(local_trial_vars.at(ind)->ParFESpace(),
+                                      dX_dt, true_offsets[ind]);
+  }
   _domain_properties.SetTime(this->GetTime());
 
   _weak_form->setTimeStep(dt);
@@ -130,12 +136,10 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   _weak_form->RecoverFEMSolution(*X1, *du_);
 }
 
-void HCurlSolver::RegisterVariables() {
-  u_name = state_var_names.at(0);
-
-  u_ = _variables.Get(u_name);
+void HCurlSolver::RegisterMissingVariables() {
   // Register default ParGridFunctions of state variables if not provided
-  if (u_ == NULL) {
+  u_name = state_var_names.at(0);
+  if (!_variables.Has(u_name)) {
     if (myid_ == 0) {
       std::cout
           << u_name
@@ -149,32 +153,38 @@ void HCurlSolver::RegisterVariables() {
     _variables.Register(
         u_name, new mfem::ParGridFunction(_fespaces.Get("_HCurlFESpace")),
         true);
-    u_ = _variables.Get(u_name);
   }
-  _variables.Register(GetTimeDerivativeName(u_name),
-                      new mfem::ParGridFunction(u_->ParFESpace()), true);
-  du_ = _variables.Get(GetTimeDerivativeName(u_name));
+}
 
-  true_offsets.SetSize(2);
+void HCurlSolver::RegisterVariables() {
+  RegisterMissingVariables();
+  local_test_vars = populateVectorFromNamedFieldsMap<mfem::ParGridFunction>(
+      _variables, state_var_names);
+  local_trial_vars = registerTimeDerivatives(state_var_names, _variables);
+
+  // Set operator size and block structure
+  true_offsets.SetSize(local_test_vars.size() + 1);
   true_offsets[0] = 0;
-  true_offsets[1] = u_->ParFESpace()->GetVSize();
+  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
+    true_offsets[ind + 1] = local_test_vars.at(ind)->ParFESpace()->GetVSize();
+  }
   true_offsets.PartialSum();
 
-  this->height = true_offsets[1];
-  this->width = true_offsets[1];
+  this->height = true_offsets[local_test_vars.size()];
+  this->width = true_offsets[local_test_vars.size()];
 
-  HYPRE_BigInt size_nd = u_->ParFESpace()->GlobalTrueVSize();
+  HYPRE_BigInt state_dofs = true_offsets[local_test_vars.size()];
   if (myid_ == 0) {
-    std::cout << "Total number of         DOFs: " << size_nd << std::endl;
+    std::cout << "Total number of         DOFs: " << state_dofs << std::endl;
     std::cout << "------------------------------------" << std::endl;
-    std::cout << "Total number of H(Curl) DOFs: " << size_nd << std::endl;
+    std::cout << "Total number of H(Curl) DOFs: " << state_dofs << std::endl;
     std::cout << "------------------------------------" << std::endl;
   }
 
   // Populate vector of active auxiliary variables
   active_aux_var_names.resize(0);
   for (auto &aux_var_name : aux_var_names) {
-    if (_variables.Get(aux_var_name) != NULL) {
+    if (_variables.Has(aux_var_name)) {
       active_aux_var_names.push_back(aux_var_name);
     }
   }
