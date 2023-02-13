@@ -7,6 +7,18 @@
 #include "sources.hpp"
 
 namespace hephaestus {
+
+template <typename T>
+std::vector<T *>
+populateVectorFromNamedFieldsMap(mfem::NamedFieldsMap<T> nfmap,
+                                 std::vector<std::string> keys) {
+  std::vector<T *> result;
+  for (auto &key : keys) {
+    result.push_back(nfmap.Get(key));
+  }
+  return result;
+};
+
 // Specifies output interfaces of a time-domain EM formulation.
 class TransientFormulation : public mfem::TimeDependentOperator {
 
@@ -22,6 +34,22 @@ public:
   std::string GetTimeDerivativeName(std::string name) {
     return std::string("d") + name + std::string("_dt");
   }
+  std::vector<mfem::ParGridFunction *> registerTimeDerivatives(
+      std::vector<std::string> gridfunction_names,
+      mfem::NamedFieldsMap<mfem::ParGridFunction> gridfunctions) {
+    std::vector<mfem::ParGridFunction *> time_derivatives;
+
+    for (auto &gridfunction_name : gridfunction_names) {
+      gridfunctions.Register(
+          GetTimeDerivativeName(gridfunction_name),
+          new mfem::ParGridFunction(
+              gridfunctions.Get(gridfunction_name)->ParFESpace()),
+          true);
+      time_derivatives.push_back(
+          gridfunctions.Get(GetTimeDerivativeName(gridfunction_name)));
+    }
+    return time_derivatives;
+  }
   mfem::Array<int> true_offsets;
   // Vector of names of state variables used in formulation, ordered by
   // appearance in block vector during solve.
@@ -32,5 +60,7 @@ public:
   // Vector of names of active auxiliary variables that are being calculated
   // in formulation,
   std::vector<std::string> active_aux_var_names;
+
+  std::vector<mfem::ParGridFunction *> local_trial_vars, local_test_vars;
 };
 } // namespace hephaestus

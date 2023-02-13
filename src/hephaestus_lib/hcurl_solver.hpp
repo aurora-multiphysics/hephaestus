@@ -23,7 +23,7 @@ public:
 
   void Init(mfem::Vector &X) override;
   virtual void RegisterVariables();
-
+  virtual void RegisterMissingVariables();
   void ImplicitSolve(const double dt, const mfem::Vector &X,
                      mfem::Vector &dX_dt) override;
 
