@@ -31,6 +31,8 @@ public:
   mfem::ParGridFunction *u_, *du_; // HCurl vector field
   std::map<std::string, mfem::socketstream *> socks_;
 
+  std::string alpha_coef_name, beta_coef_name;
+
 protected:
   int myid_;
   int num_procs_;
