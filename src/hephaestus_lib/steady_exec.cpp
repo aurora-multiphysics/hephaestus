@@ -102,27 +102,25 @@ void SteadyExecutioner::Init(const hephaestus::InputParameters &params) {
 void SteadyExecutioner::Solve() const {
   // Call mult method from formulation
   std::cout << "Starting mult" << std::endl;
-  formulation->Mult(*F, *y);
+  formulation->NotMult(*F, *y);
 
-    // Make sure all ranks have sent their 'v' solution before initiating
-    // another set of GLVis connections (one from each rank):
+  // Make sure all ranks have sent their 'v' solution before initiating
+  // another set of GLVis connections (one from each rank):
   // MPI_Barrier(pmesh->GetComm());
   // // auxkernels->Solve(t);
 
   // // Send output fields to GLVis for visualisation
-  // if (visualization) {
-  //   formulation->DisplayToGLVis();
-  // }
+  if (visualization) {
+    formulation->DisplayToGLVis();
+  }
 
   // // Set it to 1 so the output fiels can be written
-  // int it = 1;
+  int it = 1;
   // // Save output fields at timestep to DataCollections
-  // for (auto const &[name, dc_] : *data_collections) {
-  //   formulation->WriteOutputFields(dc_, it);
-  // }
+  for (auto const &[name, dc_] : *data_collections) {
+    formulation->WriteOutputFields(dc_, it);
+  }
   // postprocessors->Update(t);
-
-  
 }
 
 } // namespace hephaestus
