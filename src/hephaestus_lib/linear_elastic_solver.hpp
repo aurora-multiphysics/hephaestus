@@ -34,7 +34,7 @@ public:
 
   virtual void WriteConsoleSummary(double t, int it) override;
 
-  void NotMult(const mfem::Vector& x, mfem::Vector& y);
+  virtual void NotMult(const mfem::Vector& x, mfem::Vector& y);
 
   virtual void Mult(const mfem::Vector& x, mfem::Vector& y) const override {};
 
@@ -49,7 +49,7 @@ public:
 
   std::string u_name, p_name;
   std::string u_display_name, p_display_name;
-  mfem::ParGridFunction u_, du_; // HCurl vector field
+  mfem::ParGridFunction u_, u_sol_; // HCurl vector field
   mfem::ParGridFunction p_, dp_; // H1 scalar potential
   mfem::ParGridFunction curl_u_; // HDiv Magnetic Flux Density
   std::map<std::string, mfem::socketstream *> socks_;
@@ -78,8 +78,8 @@ protected:
   mfem::ParLinearForm *b0, *b1;
 
   double dt_A1;
-  mfem::PWConstCoefficient mu_func; // Lame oefficient
-  mfem::PWConstCoefficient lambda_func; // Lame coefficient
+  mfem::PWCoefficient lambda_func; // Lame coefficient
+  mfem::PWCoefficient shear_modulus_func; // Lame oefficient
   mfem::ConstantCoefficient dtCoef;  // Coefficient for timestep scaling
   mfem::ConstantCoefficient oneCoef; // Auxiliary coefficient
 

@@ -16,10 +16,10 @@ LinearElasticSolver::LinearElasticSolver(
       _variables(variables), _bc_map(bc_map), _sources(sources),
       _domain_properties(domain_properties), _solver_options(solver_options),
       H1FESpace_(
-          new mfem::common::H1_ParFESpace(&pmesh, order, pmesh.Dimension())),
+          new mfem::common::H1_ParFESpace(&pmesh, order, pmesh.Dimension(), mfem::BasisType::GaussLobatto, 3 /*mfem::Ordering::byVDIM*/)),
       a1(NULL), a1_solver(NULL),
       u_(mfem::ParGridFunction(H1FESpace_)),
-      du_(mfem::ParGridFunction(H1FESpace_)) {
+      u_sol_(mfem::ParGridFunction(H1FESpace_)) {
   // Initialize MPI variables
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh.GetComm(), &myid_);
@@ -48,7 +48,8 @@ void LinearElasticSolver::Init(mfem::Vector &X) {
 
   // Initialise coefficients and store in DomainProperties
   SetMaterialCoefficients(_domain_properties);
-
+  // const char *device_config = "omp";
+  // mfem::Device device(device_config);
   //Allocate meory of bilinear forms, linear forms and matrices  
   b1 = new mfem::ParLinearForm(H1FESpace_);
   A1 = new mfem::HypreParMatrix;
@@ -60,10 +61,6 @@ void LinearElasticSolver::Init(mfem::Vector &X) {
   u_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
 
   //Initial state
-  // mfem::Vector zero_vec;   
-  // zero_vec = 0.0;
-  // mfem::VectorConstantCoefficient Zero_vec(zero_vec);
-  // u_.ProjectCoefficient(Zero_vec);
   u_ = 0.0;
 }
 
@@ -72,45 +69,45 @@ This is the main computational code that computes dX/dt implicitly
 where X is the state vector containing p, u and v.
 */
 
-
 // Mult method is called instead of implicitSolve for steady state solves
 void LinearElasticSolver::NotMult(const mfem::Vector& x, mfem::Vector& y)
 {
   y = 0.0;
   //Update gridfunctions to ref solution vector X and time derivative time dX/dt 
   u_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(x), true_offsets[0]);
-  du_.MakeRef(H1FESpace_, y, true_offsets[0]); 
-
+  u_sol_.MakeRef(H1FESpace_, y, true_offsets[0]); 
 
   // Set up pull force for linear elastic problem
-  mfem::VectorArrayCoefficient f(pmesh_->Dimension());
+  std::cout << pmesh_->Dimension() << std::endl;
+
+  mfem::Array<int> ess_tdof_list, ess_bdr(pmesh_->bdr_attributes.Max());
+  ess_bdr = 0;
+  ess_bdr[0] = 1;
+  H1FESpace_->GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
+
+
+  int dim = pmesh_->Dimension();
+  mfem::VectorArrayCoefficient f(dim);
   // Set all components to 0
-  for (int i = 0; i < pmesh_->Dimension()-1; i++)
+  for (int i = 0; i < dim-1; i++)
   {
     f.Set(i, new mfem::ConstantCoefficient(0.0));
   }
-  // Set Z component
-  mfem::Vector pull_force(pmesh_->bdr_attributes.Max());
-  pull_force = 0.0;
-  pull_force(1) = -1.0e-2;
-  f.Set(pmesh_->Dimension()-1, new mfem::PWConstCoefficient(pull_force));
+  std::cout << pmesh_->bdr_attributes.Max() << std::endl;
+  {
+    mfem::Vector pull_force(pmesh_->bdr_attributes.Max());
+    pull_force = 0.0;
+    pull_force(1) = -1.0e-2;
+    f.Set(dim-1, new mfem::PWConstCoefficient(pull_force));
+  }
 
   // Update linear form - can be given from bcmap 
   *b1 = 0.0;
   // Set up linear form for linear elastic problem
   b1->AddBoundaryIntegrator(new mfem::VectorBoundaryLFIntegrator(f));
   b1->Assemble();
-
-  mfem::ParGridFunction x_gf(H1FESpace_);
-  mfem::Array<int> ess_tdof_list, ess_bdr(pmesh_->bdr_attributes.Max());
-  ess_bdr = 0;
-  ess_bdr[0] = 1;
-  H1FESpace_->GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
-
-  x_gf = 0.0;
-
-   //Form linear system from blf and lf
-  a1->FormLinearSystem(ess_tdof_list, x_gf, *b1, *A1, *X1, *B1);
+  //Form linear system from blf and lf
+  a1->FormLinearSystem(ess_tdof_list, u_, *b1, *A1, *X1, *B1);
 
   // We only need to create the solver and preconditioner once
   mfem::HypreBoomerAMG *amg = new mfem::HypreBoomerAMG(*A1);
@@ -119,13 +116,19 @@ void LinearElasticSolver::NotMult(const mfem::Vector& x, mfem::Vector& y)
   mfem::HyprePCG *pcg = new mfem::HyprePCG(*A1);
   pcg->SetTol(1e-8);
   pcg->SetMaxIter(500);
-  pcg->SetPrintLevel(2);
+  pcg->SetPrintLevel(-1);
   pcg->SetPreconditioner(*amg);
   pcg->Mult(*B1, *X1);
 
-  a1->RecoverFEMSolution(*X1, *b1, du_);
+  a1->RecoverFEMSolution(*X1, *b1, u_);
 
   pmesh_->SetNodalFESpace(H1FESpace_);
+
+  mfem::GridFunction *nodes = pmesh_->GetNodes();
+  *nodes += u_;
+
+  std::ostringstream mesh_name, sol_name;
+  // u_sol_*=-1;
 }
 
 
@@ -192,7 +195,7 @@ void LinearElasticSolver::buildA1() {
   // isn't moving, the materials are time independent, and dt is constant. So
   // we only need to do this once.
   a1 = new mfem::ParBilinearForm(H1FESpace_);
-  a1->AddDomainIntegrator(new mfem::ElasticityIntegrator(lambda_func, mu_func));
+  a1->AddDomainIntegrator(new mfem::ElasticityIntegrator(lambda_func, shear_modulus_func));
   a1->Assemble();
 
   // Don't finalize or parallel assemble this is done in FormLinearSystem.
@@ -207,18 +210,28 @@ void LinearElasticSolver::RegisterVariables() {
 
 void LinearElasticSolver::SetMaterialCoefficients(
     hephaestus::DomainProperties &domain_properties) {
+  
+  for(auto& subdomain: domain_properties.subdomains)
+  {
+    if (subdomain.property_map.count("lambda") ==
+    0) {
+      std::cout << "Property lambda not set for subdomain " << subdomain.name << 
+        ", using default value of 1" << std::endl;
+      subdomain.property_map["lambda"] = new mfem::ConstantCoefficient(1);
+    }
 
+    if (subdomain.property_map.count("shear_modulus") ==
+    0) {
+      std::cout << "Property shear_modulus not set for subdomain " << subdomain.name << 
+        ", using default value of 1" << std::endl;
+      subdomain.property_map["shear_modulus"] = new mfem::ConstantCoefficient(1);
+    }
+  }
+  
   // Set up lame coefficients
-  mfem::Vector lambda(pmesh_->attributes.Max());
-  std::cout << "Number of attrs: " << pmesh_->attributes.Max() << std::endl;
-  lambda = 1.0;
-  lambda(0) = lambda(1)*50;
-  lambda_func = mfem::PWConstCoefficient(lambda);
-
-  mfem::Vector mu(pmesh_->attributes.Max());
-  mu = 1.0;
-  mu(0) = mu(1)*50;
-  mu_func = mfem::PWConstCoefficient(mu);
+  lambda_func = domain_properties.getGlobalScalarProperty("lambda");
+ 
+  shear_modulus_func = domain_properties.getGlobalScalarProperty("shear_modulus");
 }
 
 // Put our strain data into datacollection object dc_
@@ -241,7 +254,7 @@ void LinearElasticSolver::WriteConsoleSummary(double t, int it) {
 void LinearElasticSolver::WriteOutputFields(mfem::DataCollection *dc_, int it) {
   if (dc_) {
     dc_->SetCycle(it);
-    dc_->SetTime(t);
+    dc_->SetTime(it);
     dc_->Save();
   }
 }
