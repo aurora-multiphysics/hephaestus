@@ -2,11 +2,12 @@
 #include "../common/pfem_extras.hpp"
 #include "hephaestus_solvers.hpp"
 #include "inputs.hpp"
+#include "kernels.hpp"
 #include "materials.hpp"
 
 namespace hephaestus {
 
-class Source {
+class Source : public hephaestus::Kernel<mfem::ParLinearForm> {
 public:
   Source() {}
   virtual void
@@ -14,8 +15,8 @@ public:
        const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
        hephaestus::BCMap &bc_map,
        hephaestus::DomainProperties &domain_properties){};
-  virtual void ApplyKernel(mfem::ParLinearForm *lf){};
-  virtual void SubtractSource(mfem::ParGridFunction *gf){};
+  virtual void Apply(mfem::ParLinearForm *lf) override = 0;
+  virtual void SubtractSource(mfem::ParGridFunction *gf) = 0;
 };
 
 class Sources : public mfem::NamedFieldsMap<hephaestus::Source> {
@@ -24,7 +25,7 @@ public:
             const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
             hephaestus::BCMap &bc_map,
             hephaestus::DomainProperties &domain_properties);
-  void ApplyKernels(mfem::ParLinearForm *lf);
+  void Apply(mfem::ParLinearForm *lf);
   void SubtractSources(mfem::ParGridFunction *gf);
 };
 
@@ -35,7 +36,7 @@ public:
             const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
             hephaestus::BCMap &bc_map,
             hephaestus::DomainProperties &domain_properties) override;
-  void ApplyKernel(mfem::ParLinearForm *lf) override;
+  void Apply(mfem::ParLinearForm *lf) override;
   void SubtractSource(mfem::ParGridFunction *gf) override;
   void buildM1(mfem::Coefficient *Sigma);
   void buildGrad();
@@ -79,7 +80,7 @@ public:
             const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
             hephaestus::BCMap &bc_map,
             hephaestus::DomainProperties &domain_properties) override;
-  void ApplyKernel(mfem::ParLinearForm *lf) override;
+  void Apply(mfem::ParLinearForm *lf) override;
   void SubtractSource(mfem::ParGridFunction *gf) override;
 
   std::string src_gf_name;

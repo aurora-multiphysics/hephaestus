@@ -12,9 +12,9 @@ void Sources::Init(
   }
 }
 
-void Sources::ApplyKernels(mfem::ParLinearForm *lf) {
+void Sources::Apply(mfem::ParLinearForm *lf) {
   for (const auto &[name, source] : GetMap()) {
-    source->ApplyKernel(lf);
+    source->Apply(lf);
   }
 }
 
@@ -107,7 +107,7 @@ void ScalarPotentialSource::buildGrad() {
   // no ParallelAssemble since this will be applied to GridFunctions
 }
 
-void ScalarPotentialSource::ApplyKernel(mfem::ParLinearForm *lf) {
+void ScalarPotentialSource::Apply(mfem::ParLinearForm *lf) {
   // -(s0_{n+1}, ∇ p') + <n.s0_{n+1}, p'> = 0
   // a0(p_{n+1}, p') = b0(p')
   // a0(p, p') = (β ∇ p, ∇ p')
@@ -196,7 +196,7 @@ void DivFreeVolumetricSource::Init(
   h_curl_mass->Finalize();
 }
 
-void DivFreeVolumetricSource::ApplyKernel(mfem::ParLinearForm *lf) {
+void DivFreeVolumetricSource::Apply(mfem::ParLinearForm *lf) {
   mfem::ParLinearForm J(HCurlFESpace_);
   J.AddDomainIntegrator(new mfem::VectorFEDomainLFIntegrator(*sourceVecCoef));
   J.Assemble();

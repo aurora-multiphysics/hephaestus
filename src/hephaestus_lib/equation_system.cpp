@@ -67,7 +67,7 @@ void CurlCurlWeakForm::buildLinearForm(hephaestus::BCMap &bc_map,
   lf->Assemble();
 
   curlCurl->AddMultTranspose(u_, *lf, -1.0);
-  sources.ApplyKernels(lf);
+  sources.Apply(lf);
 }
 
 void CurlCurlWeakForm::buildBilinearForm() {
