@@ -12,8 +12,7 @@ mixed and nonlinear forms) and build methods
 */
 class WeakForm {
 public:
-  WeakForm(const std::string test_var_name,
-           mfem::ParGridFunction &test_variable);
+  WeakForm(const hephaestus::InputParameters &params);
 
   ~WeakForm(){};
 
@@ -36,12 +35,24 @@ public:
                  hephaestus::Kernel<mfem::ParMixedBilinearForm> *mblf_kernel);
   virtual void applyBoundaryConditions(hephaestus::BCMap &bc_map);
 
+  // override to add kernels
+  virtual void
+  addKernels(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+             const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+             hephaestus::BCMap &bc_map,
+             hephaestus::DomainProperties &domain_properties){};
+
   // Build forms
+  virtual void
+  Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+       const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+       hephaestus::BCMap &bc_map,
+       hephaestus::DomainProperties &domain_properties);
   virtual void buildLinearForm(hephaestus::BCMap &bc_map,
-                               hephaestus::Sources &sources) = 0;
-  virtual void buildBilinearForm() = 0;
+                               hephaestus::Sources &sources);
+  virtual void buildBilinearForm();
   virtual void buildWeakForm(hephaestus::BCMap &bc_map,
-                             hephaestus::Sources &sources) = 0;
+                             hephaestus::Sources &sources);
 
   // Form linear system, with essential boundary conditions accounted for
   virtual void FormLinearSystem(mfem::HypreParMatrix &A, mfem::Vector &X,
@@ -54,7 +65,7 @@ public:
 protected:
   // Variables for setting Dirichlet BCs
   mfem::Array<int> ess_tdof_list;
-  mfem::ParGridFunction x;
+  mfem::ParGridFunction *x;
 
   // Arrays to store kernels to act on each component of weak form.
   mfem::Array<hephaestus::Kernel<mfem::ParBilinearForm> *> blf_kernels;
@@ -62,7 +73,7 @@ protected:
   mfem::Array<hephaestus::Kernel<mfem::ParNonlinearForm> *> nlf_kernels;
   mfem::NamedFieldsMap<
       mfem::Array<hephaestus::Kernel<mfem::ParMixedBilinearForm> *>>
-      mblf_kernels;
+      mblf_kernels_map;
 };
 
 /*
@@ -70,8 +81,7 @@ Class to store weak form components for time dependent PDEs
 */
 class TimeDependentWeakForm : public WeakForm {
 public:
-  TimeDependentWeakForm(const std::string test_var_name,
-                        mfem::ParGridFunction &test_variable);
+  TimeDependentWeakForm(const hephaestus::InputParameters &params);
   ~TimeDependentWeakForm(){};
   virtual void setTimeStep(double dt);
   virtual void updateWeakForm(hephaestus::BCMap &bc_map,
@@ -96,103 +106,18 @@ u_{n+1} = u_{n} + dt du/dt_{n+1}
 */
 class CurlCurlWeakForm : public TimeDependentWeakForm {
 public:
-  CurlCurlWeakForm(const std::string test_var_name,
-                   mfem::ParGridFunction &test_variable,
-                   mfem::ParGridFunction &coupled_variable,
-                   mfem::Coefficient *alphaCoef_, mfem::Coefficient *betaCoef_);
+  CurlCurlWeakForm(const hephaestus::InputParameters &params);
   ~CurlCurlWeakForm(){};
-  virtual void buildLinearForm(hephaestus::BCMap &bc_map,
-                               hephaestus::Sources &sources) override;
-  virtual void buildBilinearForm() override;
-  virtual void buildWeakForm(hephaestus::BCMap &bc_map,
-                             hephaestus::Sources &sources) override;
+  virtual void
+  addKernels(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+             const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+             hephaestus::BCMap &bc_map,
+             hephaestus::DomainProperties &domain_properties) override;
   virtual void setTimeStep(double dt) override;
   virtual void updateWeakForm(hephaestus::BCMap &bc_map,
                               hephaestus::Sources &sources) override;
 
-  mfem::ParGridFunction &u_;
-  mfem::Coefficient *alphaCoef;
-  mfem::Coefficient *betaCoef;
-  mfem::ParBilinearForm *curlCurl;
-  mfem::Coefficient *dtAlphaCoef;
+  std::string coupled_variable_name, alpha_coef_name, beta_coef_name,
+      dtalpha_coef_name;
 };
-
-// class EquationSystem {
-//   virtual void
-//   SetMaterialCoefficients(hephaestus::DomainProperties &domain_properties);
-//   virtual void RegisterVariables();
-
-// public:
-//   EquationSystem(mfem::ParMesh &pmesh, int order,
-//                  mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-//                  mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-//                  hephaestus::BCMap &bc_map,
-//                  hephaestus::DomainProperties &domain_properties,
-//                  hephaestus::Sources &sources,
-//                  hephaestus::InputParameters &solver_options);
-
-//   ~EquationSystem(){};
-
-//   mfem::NamedFieldsMap<hephaestus::WeakForm> eqns; // Named by test variable
-
-//   mfem::HypreParMatrix *A1;
-//   mfem::Vector *X1, *B1;
-
-//   void Init(mfem::Vector &X) override;
-// };
-
-// class EquationSystem {
-//   virtual void
-//   SetMaterialCoefficients(hephaestus::DomainProperties &domain_properties);
-//   virtual void RegisterVariables();
-
-// public:
-//   EquationSystem(mfem::ParMesh &pmesh, int order,
-//                  mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-//                  mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-//                  hephaestus::BCMap &bc_map,
-//                  hephaestus::DomainProperties &domain_properties,
-//                  hephaestus::Sources &sources,
-//                  hephaestus::InputParameters &solver_options);
-
-//   ~EquationSystem(){};
-
-//   mfem::NamedFieldsMap<hephaestus::WeakForm> eqns; // Named by test variable
-
-//   mfem::HypreParMatrix *A1;
-//   mfem::Vector *X1, *B1;
-
-//   void Init(mfem::Vector &X) override;
-
-// protected:
-//   int myid_;
-//   int num_procs_;
-//   mfem::ParMesh *pmesh_;
-//   mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &_fespaces;
-//   mfem::NamedFieldsMap<mfem::ParGridFunction> &_variables;
-//   hephaestus::Sources &_sources;
-//   hephaestus::BCMap _bc_map;
-//   hephaestus::DomainProperties _domain_properties;
-//   hephaestus::InputParameters _solver_options;
-
-//   mfem::ParBilinearForm *a1;
-//   mfem::HypreParMatrix *A1;
-//   mfem::Vector *X1, *B1;
-
-//   mfem::ParDiscreteLinearOperator *curl;
-//   mfem::ParBilinearForm *curlCurl;
-//   mutable hephaestus::DefaultHCurlPCGSolver *a1_solver;
-
-//   // temporary work vectors
-//   mfem::ParLinearForm *b1;
-
-//   double dt_A1;
-//   mfem::ConstantCoefficient dtCoef;  // Coefficient for timestep scaling
-//   mfem::ConstantCoefficient oneCoef; // Auxiliary coefficient
-//   mfem::Coefficient *alphaCoef;
-//   mfem::Coefficient *dtAlphaCoef;
-//   mfem::Coefficient *betaCoef;
-
-//   // Sockets used to communicate with GLVis
-// };
 } // namespace hephaestus

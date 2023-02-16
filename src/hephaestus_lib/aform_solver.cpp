@@ -50,10 +50,17 @@ void AFormSolver::SetMaterialCoefficients(
         new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
             std::string("electrical_conductivity")));
   }
-  alphaCoef = new mfem::TransformedCoefficient(
-      &oneCoef, domain_properties.scalar_property_map["magnetic_permeability"],
-      fracFunc);
-  betaCoef = domain_properties.scalar_property_map["electrical_conductivity"];
+  alpha_coef_name = std::string("magnetic_reluctivity");
+  beta_coef_name = std::string("electrical_conductivity");
+
+  domain_properties.scalar_property_map[alpha_coef_name] =
+      new mfem::TransformedCoefficient(
+          &oneCoef,
+          domain_properties.scalar_property_map["magnetic_permeability"],
+          fracFunc);
+
+  alphaCoef = domain_properties.scalar_property_map[alpha_coef_name];
+  betaCoef = domain_properties.scalar_property_map[beta_coef_name];
 }
 
 } // namespace hephaestus

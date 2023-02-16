@@ -93,8 +93,13 @@ void HCurlSolver::Init(mfem::Vector &X) {
   u_ = local_test_vars.at(0);
   du_ = local_trial_vars.at(0);
 
-  _weak_form = new hephaestus::CurlCurlWeakForm(state_var_names.at(0), *du_,
-                                                *u_, alphaCoef, betaCoef);
+  hephaestus::InputParameters weak_form_params;
+  weak_form_params.SetParam("TestVariableName", state_var_names.at(0));
+  weak_form_params.SetParam("AlphaCoefName", alpha_coef_name);
+  weak_form_params.SetParam("BetaCoefName", beta_coef_name);
+
+  _weak_form = new hephaestus::CurlCurlWeakForm(weak_form_params);
+  _weak_form->Init(_variables, _fespaces, _bc_map, _domain_properties);
   _weak_form->buildWeakForm(_bc_map, _sources);
 }
 
@@ -200,8 +205,10 @@ void HCurlSolver::SetMaterialCoefficients(
     domain_properties.scalar_property_map["beta"] = new mfem::PWCoefficient(
         domain_properties.getGlobalScalarProperty(std::string("beta")));
   }
-  alphaCoef = domain_properties.scalar_property_map["alpha"];
-  betaCoef = domain_properties.scalar_property_map["beta"];
+  alpha_coef_name = std::string("alpha");
+  beta_coef_name = std::string("beta");
+  alphaCoef = domain_properties.scalar_property_map[alpha_coef_name];
+  betaCoef = domain_properties.scalar_property_map[beta_coef_name];
 }
 
 } // namespace hephaestus
