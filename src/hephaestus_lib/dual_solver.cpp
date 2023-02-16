@@ -166,7 +166,7 @@ void DualSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   // v_ is a grid function but weakCurl is not parallel assembled so is OK
   weakCurl->MultTranspose(v_, *b1);
 
-  _sources.ApplyKernels(b1);
+  _sources.Apply(b1);
 
   mfem::ParGridFunction J_gf(HCurlFESpace_);
   mfem::Array<int> ess_tdof_list;

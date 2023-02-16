@@ -187,7 +187,7 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   _bc_map.applyIntegratedBCs(u_name, *b0, pmesh_);
   b0->Assemble();
 
-  _sources.ApplyKernels(b0);
+  _sources.Apply(b0);
 
   mfem::ParGridFunction Phi_gf(H1FESpace_);
   mfem::Array<int> poisson_ess_tdof_list;
