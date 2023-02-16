@@ -11,6 +11,32 @@ WeakForm::WeakForm(const std::string test_var_name,
   *lf = 0.0;
 }
 
+void WeakForm::addKernel(
+    hephaestus::Kernel<mfem::ParBilinearForm> *blf_kernel) {
+  blf_kernels.Append(blf_kernel);
+}
+
+void WeakForm::addKernel(hephaestus::Kernel<mfem::ParLinearForm> *lf_kernel) {
+  lf_kernels.Append(lf_kernel);
+}
+
+void WeakForm::addKernel(
+    hephaestus::Kernel<mfem::ParNonlinearForm> *nlf_kernel) {
+  nlf_kernels.Append(nlf_kernel);
+}
+
+void WeakForm::addKernel(
+    std::string trial_var_name,
+    hephaestus::Kernel<mfem::ParMixedBilinearForm> *mblf_kernel) {
+  if (!mblf_kernels.Has(trial_var_name)) {
+    mblf_kernels.Register(
+        trial_var_name,
+        new mfem::Array<hephaestus::Kernel<mfem::ParMixedBilinearForm> *>,
+        true);
+  }
+  mblf_kernels.Get(trial_var_name)->Append(mblf_kernel);
+}
+
 void WeakForm::applyBoundaryConditions(hephaestus::BCMap &bc_map) {
   x = 0.0;
   bc_map.applyEssentialBCs(_test_var_name, ess_tdof_list, x,
