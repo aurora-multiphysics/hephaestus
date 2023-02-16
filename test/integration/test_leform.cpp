@@ -8,34 +8,49 @@ protected:
   
   hephaestus::InputParameters test_params() {
 
-    // hephaestus::Subdomain mat1("mat1", 1);
-    // mat1.property_map["lambda"] =
-    //     new mfem::ConstantCoefficient(1.0);
+    hephaestus::Subdomain mat1("mat1", 1);
+    mat1.property_map["lambda"] =
+        new mfem::ConstantCoefficient(50.0);
 
-    // mat1.property_map["shear_mod"] =
-    //     new mfem::ConstantCoefficient(1.0);
+    mat1.property_map["shear_modulus"] =
+        new mfem::ConstantCoefficient(50.0);
 
-    // hephaestus::Subdomain mat2("mat2", 2);
-    // mat2.property_map["lambda"] =
-    //     new mfem::ConstantCoefficient(50.0);
+    hephaestus::Subdomain mat2("mat2", 2);
+    mat2.property_map["lambda"] =
+        new mfem::ConstantCoefficient(1.0);
 
-    // mat2.property_map["shear_mod"] =
-    //     new mfem::ConstantCoefficient(50.0);
+    mat2.property_map["shear_modulus"] =
+        new mfem::ConstantCoefficient(1.0);
 
-    hephaestus::DomainProperties domain_properties;
-        // std::vector<hephaestus::Subdomain>({mat1, mat2}));
+    hephaestus::DomainProperties domain_properties(
+        std::vector<hephaestus::Subdomain>({mat1, mat2}));
 
     hephaestus::BCMap bc_map;
+
+    // mfem::VectorArrayCoefficient f(3);
+    // // Set all components to 0
+    // for (int i = 0; i < pmesh_->Dimension()-1; i++)
+    // {
+    //     f.Set(i, new mfem::ConstantCoefficient(0.0));
+    // }
+    // // Set Z component
+    // mfem::Vector pull_force(pmesh_->bdr_attributes.Max());
+    // pull_force = 0.0;
+    // pull_force(1) = -1.0e-2;
+    // f.Set(pmesh_->Dimension()-1, new mfem::PWConstCoefficient(pull_force));
+
+    // bc_map["forceBC"] = new hephaestus::IntegratedBC(
+    //     std::string("linear_elastic_force_bc"), f);
  
     mfem::Mesh mesh(
-        (std::string(DATA_DIR) + std::string("./myBeam_3.g")).c_str(),
+        (std::string(DATA_DIR) + std::string("./myBeam_4.g")).c_str(),
         1, 1);
 
     std::map<std::string, mfem::DataCollection *> data_collections;
-    data_collections["VisItDataCollection"] =
-        new mfem::VisItDataCollection("AVFormVisIt");
+    // data_collections["VisItDataCollection"] =
+    //     new mfem::VisItDataCollection("LEFormVisIt");
     data_collections["ParaViewDataCollection"] =
-        new mfem::ParaViewDataCollection("AVFormParaView");
+        new mfem::ParaViewDataCollection("LEFormParaView");
 
     hephaestus::Outputs outputs(data_collections);
     hephaestus::Variables variables;
@@ -45,7 +60,7 @@ protected:
 
     hephaestus::InputParameters exec_params;
     exec_params.SetParam("VisualisationSteps", int(1));
-    exec_params.SetParam("UseGLVis", false);
+    exec_params.SetParam("UseGLVis", true);
     hephaestus::SteadyExecutioner *executioner =
         new hephaestus::SteadyExecutioner(exec_params);
 
