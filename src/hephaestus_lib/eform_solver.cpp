@@ -41,9 +41,6 @@ void EFormSolver::SetMaterialCoefficients(
           &oneCoef,
           domain_properties.scalar_property_map["magnetic_permeability"],
           fracFunc);
-
-  alphaCoef = domain_properties.scalar_property_map[alpha_coef_name];
-  betaCoef = domain_properties.scalar_property_map[beta_coef_name];
 }
 
 } // namespace hephaestus

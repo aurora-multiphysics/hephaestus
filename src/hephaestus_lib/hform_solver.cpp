@@ -12,10 +12,10 @@ HFormSolver::HFormSolver(
                   sources, solver_options) {
 
   state_var_names.resize(1);
-  state_var_names[0] = "magnetic_field";
+  state_var_names.at(0) = "magnetic_field";
 
   aux_var_names.resize(1);
-  aux_var_names[0] = "current_density";
+  aux_var_names.at(0) = "current_density";
 }
 
 void HFormSolver::RegisterAuxKernels(hephaestus::AuxKernels &auxkernels) {
@@ -27,7 +27,8 @@ void HFormSolver::RegisterAuxKernels(hephaestus::AuxKernels &auxkernels) {
                   << " found in variables: building auxvar " << std::endl;
       }
       hephaestus::InputParameters current_density_aux_params;
-      current_density_aux_params.SetParam("VariableName", u_name);
+      current_density_aux_params.SetParam("VariableName",
+                                          state_var_names.at(0));
       current_density_aux_params.SetParam("CurlVariableName",
                                           active_aux_var_name);
       auxkernels.Register(
@@ -58,9 +59,6 @@ void HFormSolver::SetMaterialCoefficients(
           &oneCoef,
           domain_properties.scalar_property_map["electrical_conductivity"],
           fracFunc);
-
-  alphaCoef = domain_properties.scalar_property_map[alpha_coef_name];
-  betaCoef = domain_properties.scalar_property_map[beta_coef_name];
 }
 
 } // namespace hephaestus

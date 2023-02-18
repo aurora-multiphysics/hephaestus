@@ -62,5 +62,8 @@ public:
   std::vector<std::string> active_aux_var_names;
 
   std::vector<mfem::ParGridFunction *> local_trial_vars, local_test_vars;
+
+  mfem::ConstantCoefficient oneCoef =
+      mfem::ConstantCoefficient(1.0); // Auxiliary coefficient
 };
 } // namespace hephaestus
