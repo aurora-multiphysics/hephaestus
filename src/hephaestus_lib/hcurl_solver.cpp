@@ -58,7 +58,7 @@ HCurlSolver::HCurlSolver(
     : myid_(0), num_procs_(1), pmesh_(&pmesh), _order(order),
       _fespaces(fespaces), _variables(variables), _bc_map(bc_map),
       _sources(sources), _domain_properties(domain_properties),
-      _solver_options(solver_options), a1_solver(NULL), u_(NULL), du_(NULL) {
+      _solver_options(solver_options), a1_solver(NULL) {
   // Initialize MPI variables
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh.GetComm(), &myid_);
@@ -72,15 +72,9 @@ HCurlSolver::HCurlSolver(
 
 void HCurlSolver::Init(mfem::Vector &X) {
   // Define material property coefficients
-  dtCoef = mfem::ConstantCoefficient(1.0);
-  oneCoef = mfem::ConstantCoefficient(1.0);
   SetMaterialCoefficients(_domain_properties);
 
   _sources.Init(_variables, _fespaces, _bc_map, _domain_properties);
-
-  A1 = new mfem::HypreParMatrix;
-  X1 = new mfem::Vector;
-  B1 = new mfem::Vector;
 
   for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
     local_test_vars.at(ind)->MakeRef(local_test_vars.at(ind)->ParFESpace(),
@@ -89,9 +83,6 @@ void HCurlSolver::Init(mfem::Vector &X) {
     *(local_test_vars.at(ind)) = 0.0;
     *(local_trial_vars.at(ind)) = 0.0;
   }
-
-  u_ = local_test_vars.at(0);
-  du_ = local_trial_vars.at(0);
 
   hephaestus::InputParameters weak_form_params;
   weak_form_params.SetParam("TestVariableName", state_var_names.at(0));
@@ -132,18 +123,18 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
 
   _weak_form->setTimeStep(dt);
   _weak_form->updateWeakForm(_bc_map, _sources);
-  _weak_form->FormLinearSystem(*A1, *X1, *B1);
+  _weak_form->FormLinearSystem(A1, X1, B1);
   if (a1_solver == NULL) {
-    a1_solver = new hephaestus::DefaultHCurlPCGSolver(_solver_options, *A1,
+    a1_solver = new hephaestus::DefaultHCurlPCGSolver(_solver_options, A1,
                                                       _weak_form->test_pfes);
   }
-  a1_solver->Mult(*B1, *X1);
-  _weak_form->RecoverFEMSolution(*X1, *du_);
+  a1_solver->Mult(B1, X1);
+  _weak_form->RecoverFEMSolution(X1, *local_trial_vars.at(0));
 }
 
 void HCurlSolver::RegisterMissingVariables() {
   // Register default ParGridFunctions of state variables if not provided
-  u_name = state_var_names.at(0);
+  std::string u_name = state_var_names.at(0);
   if (!_variables.Has(u_name)) {
     if (myid_ == 0) {
       std::cout
@@ -207,8 +198,6 @@ void HCurlSolver::SetMaterialCoefficients(
   }
   alpha_coef_name = std::string("alpha");
   beta_coef_name = std::string("beta");
-  alphaCoef = domain_properties.scalar_property_map[alpha_coef_name];
-  betaCoef = domain_properties.scalar_property_map[beta_coef_name];
 }
 
 } // namespace hephaestus

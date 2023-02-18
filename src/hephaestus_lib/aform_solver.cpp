@@ -27,7 +27,7 @@ void AFormSolver::RegisterAuxKernels(hephaestus::AuxKernels &auxkernels) {
                   << " found in variables: building auxvar " << std::endl;
       }
       hephaestus::InputParameters b_field_aux_params;
-      b_field_aux_params.SetParam("VariableName", u_name);
+      b_field_aux_params.SetParam("VariableName", state_var_names.at(0));
       b_field_aux_params.SetParam("CurlVariableName", active_aux_var_name);
       auxkernels.Register("_magnetic_flux_density_aux",
                           new hephaestus::CurlAuxKernel(b_field_aux_params),
@@ -58,9 +58,6 @@ void AFormSolver::SetMaterialCoefficients(
           &oneCoef,
           domain_properties.scalar_property_map["magnetic_permeability"],
           fracFunc);
-
-  alphaCoef = domain_properties.scalar_property_map[alpha_coef_name];
-  betaCoef = domain_properties.scalar_property_map[beta_coef_name];
 }
 
 } // namespace hephaestus

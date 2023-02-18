@@ -5,7 +5,6 @@
 #include "sources.hpp"
 
 namespace hephaestus {
-
 /*
 Class to store weak form components (bilinear and linear forms, and optionally
 mixed and nonlinear forms) and build methods
@@ -17,7 +16,7 @@ public:
   ~WeakForm(){};
 
   // Name of test variable and pointer to its ParFiniteElementSpace.
-  std::string _test_var_name; // TODO: should remove by updating bcmap
+  std::string _test_var_name;
   mfem::ParFiniteElementSpace *test_pfes;
 
   // Components of weak form. All should share the test variable FESpace.

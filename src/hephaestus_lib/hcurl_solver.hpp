@@ -27,10 +27,6 @@ public:
   void ImplicitSolve(const double dt, const mfem::Vector &X,
                      mfem::Vector &dX_dt) override;
 
-  std::string u_name;
-  mfem::ParGridFunction *u_, *du_; // HCurl vector field
-  std::map<std::string, mfem::socketstream *> socks_;
-
   std::string alpha_coef_name, beta_coef_name;
 
 protected:
@@ -46,19 +42,9 @@ protected:
   hephaestus::InputParameters _solver_options;
 
   hephaestus::CurlCurlWeakForm *_weak_form;
-  mfem::HypreParMatrix *A1;
-  mfem::Vector *X1, *B1;
+  mfem::HypreParMatrix A1;
+  mfem::Vector X1, B1;
 
   mutable hephaestus::DefaultHCurlPCGSolver *a1_solver;
-
-  // temporary work vectors
-  mfem::ParLinearForm *b1;
-
-  double dt_A1;
-  mfem::ConstantCoefficient dtCoef;  // Coefficient for timestep scaling
-  mfem::ConstantCoefficient oneCoef; // Auxiliary coefficient
-  mfem::Coefficient *alphaCoef;
-  mfem::Coefficient *dtAlphaCoef;
-  mfem::Coefficient *betaCoef;
 };
 } // namespace hephaestus
