@@ -48,7 +48,7 @@ void LinearElasticSolver::Init(mfem::Vector &X) {
 
   // Initialise coefficients and store in DomainProperties
   SetMaterialCoefficients(_domain_properties);
-  // const char *device_config = "omp";
+  // const char *device_config = "cpu";
   // mfem::Device device(device_config);
   //Allocate meory of bilinear forms, linear forms and matrices  
   b1 = new mfem::ParLinearForm(H1FESpace_);
@@ -78,45 +78,29 @@ void LinearElasticSolver::NotMult(const mfem::Vector& x, mfem::Vector& y)
   u_sol_.MakeRef(H1FESpace_, y, true_offsets[0]); 
 
   // Set up pull force for linear elastic problem
-  std::cout << pmesh_->Dimension() << std::endl;
-
   mfem::Array<int> ess_tdof_list, ess_bdr(pmesh_->bdr_attributes.Max());
   ess_bdr = 0;
   ess_bdr[0] = 1;
   H1FESpace_->GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
 
-
-  int dim = pmesh_->Dimension();
-  mfem::VectorArrayCoefficient f(dim);
-  // Set all components to 0
-  for (int i = 0; i < dim-1; i++)
-  {
-    f.Set(i, new mfem::ConstantCoefficient(0.0));
-  }
-  std::cout << pmesh_->bdr_attributes.Max() << std::endl;
-  {
-    mfem::Vector pull_force(pmesh_->bdr_attributes.Max());
-    pull_force = 0.0;
-    pull_force(1) = -1.0e-2;
-    f.Set(dim-1, new mfem::PWConstCoefficient(pull_force));
-  }
-
   // Update linear form - can be given from bcmap 
   *b1 = 0.0;
   // Set up linear form for linear elastic problem
-  b1->AddBoundaryIntegrator(new mfem::VectorBoundaryLFIntegrator(f));
+  _bc_map.applyIntegratedBCs(u_name, *b1, pmesh_);
+  // Assemble linear form
   b1->Assemble();
   //Form linear system from blf and lf
   a1->FormLinearSystem(ess_tdof_list, u_, *b1, *A1, *X1, *B1);
 
   // We only need to create the solver and preconditioner once
   mfem::HypreBoomerAMG *amg = new mfem::HypreBoomerAMG(*A1);
-  
+
   amg->SetSystemsOptions(pmesh_->Dimension(), false);
-  mfem::HyprePCG *pcg = new mfem::HyprePCG(*A1);
+  // mfem::HyprePCG *pcg = new mfem::HyprePCG(*A1);
+  mfem::HypreGMRES *pcg = new mfem::HypreGMRES(*A1);
   pcg->SetTol(1e-8);
-  pcg->SetMaxIter(500);
-  pcg->SetPrintLevel(-1);
+  pcg->SetMaxIter(1000);
+  pcg->SetPrintLevel(1);
   pcg->SetPreconditioner(*amg);
   pcg->Mult(*B1, *X1);
 
@@ -204,9 +188,11 @@ void LinearElasticSolver::buildA1() {
 
 // Register strain variable "u_" in _variables
 void LinearElasticSolver::RegisterVariables() {
-  u_name = "strain";
+  u_name = "displacement";
   _variables.Register(u_name, &u_, false);
 }
+
+
 
 void LinearElasticSolver::SetMaterialCoefficients(
     hephaestus::DomainProperties &domain_properties) {
