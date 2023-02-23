@@ -98,8 +98,10 @@ void LinearElasticSolver::NotMult(const mfem::Vector& x, mfem::Vector& y)
   amg->SetSystemsOptions(pmesh_->Dimension(), false);
   // mfem::HyprePCG *pcg = new mfem::HyprePCG(*A1);
   mfem::HypreGMRES *pcg = new mfem::HypreGMRES(*A1);
+  // mfem::GMRESSolver *pcg = new mfem::HypreGMRES(*A1);
   pcg->SetTol(1e-8);
-  pcg->SetMaxIter(1000);
+  pcg->SetAbsTol(1e-8);
+  pcg->SetMaxIter(5000);
   pcg->SetPrintLevel(1);
   pcg->SetPreconditioner(*amg);
   pcg->Mult(*B1, *X1);
