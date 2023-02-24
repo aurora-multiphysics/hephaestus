@@ -41,9 +41,12 @@ protected:
   hephaestus::DomainProperties _domain_properties;
   hephaestus::InputParameters _solver_options;
 
-  hephaestus::CurlCurlWeakForm *_weak_form;
+  hephaestus::CurlCurlEquationSystem *_equation_system;
+  mfem::OperatorHandle blockA;
+  mfem::BlockVector trueX, trueRhs;
   mfem::HypreParMatrix A1;
   mfem::Vector X1, B1;
+  mfem::Array<int> block_trueOffsets;
 
   mutable hephaestus::DefaultHCurlPCGSolver *a1_solver;
 };

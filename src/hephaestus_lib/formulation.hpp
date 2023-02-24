@@ -34,9 +34,17 @@ public:
   std::string GetTimeDerivativeName(std::string name) {
     return std::string("d") + name + std::string("_dt");
   }
+  std::vector<std::string>
+  GetTimeDerivativeNames(std::vector<std::string> gridfunction_names) {
+    std::vector<std::string> time_derivative_names;
+    for (auto &gridfunction_name : gridfunction_names) {
+      time_derivative_names.push_back(GetTimeDerivativeName(gridfunction_name));
+    }
+    return time_derivative_names;
+  }
   std::vector<mfem::ParGridFunction *> registerTimeDerivatives(
       std::vector<std::string> gridfunction_names,
-      mfem::NamedFieldsMap<mfem::ParGridFunction> gridfunctions) {
+      mfem::NamedFieldsMap<mfem::ParGridFunction> &gridfunctions) {
     std::vector<mfem::ParGridFunction *> time_derivatives;
 
     for (auto &gridfunction_name : gridfunction_names) {

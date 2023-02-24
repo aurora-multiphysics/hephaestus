@@ -70,6 +70,7 @@ HCurlSolver::HCurlSolver(
   aux_var_names.at(0) = "curl h_curl_var";
 }
 
+// Should be identical to AVSolver
 void HCurlSolver::Init(mfem::Vector &X) {
   // Define material property coefficients
   SetMaterialCoefficients(_domain_properties);
@@ -85,13 +86,15 @@ void HCurlSolver::Init(mfem::Vector &X) {
   }
 
   hephaestus::InputParameters weak_form_params;
-  weak_form_params.SetParam("TestVariableName", state_var_names.at(0));
+  weak_form_params.SetParam("VariableNames", state_var_names);
+  weak_form_params.SetParam("TimeDerivativeNames",
+                            GetTimeDerivativeNames(state_var_names));
   weak_form_params.SetParam("AlphaCoefName", alpha_coef_name);
   weak_form_params.SetParam("BetaCoefName", beta_coef_name);
 
-  _weak_form = new hephaestus::CurlCurlWeakForm(weak_form_params);
-  _weak_form->Init(_variables, _fespaces, _bc_map, _domain_properties);
-  _weak_form->buildWeakForm(_bc_map, _sources);
+  _equation_system = new hephaestus::CurlCurlEquationSystem(weak_form_params);
+  _equation_system->Init(_variables, _fespaces, _bc_map, _domain_properties);
+  _equation_system->buildEquationSystem(_bc_map, _sources);
 }
 
 /*
@@ -109,6 +112,7 @@ Fully discretised equations
 using
 u_{n+1} = u_{n} + dt du/dt_{n+1}
 */
+// Should become identical to AVSolver
 void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
                                 mfem::Vector &dX_dt) {
   dX_dt = 0.0;
@@ -120,16 +124,17 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
                                       dX_dt, true_offsets[ind]);
   }
   _domain_properties.SetTime(this->GetTime());
-
-  _weak_form->setTimeStep(dt);
-  _weak_form->updateWeakForm(_bc_map, _sources);
-  _weak_form->FormLinearSystem(A1, X1, B1);
-  if (a1_solver == NULL) {
-    a1_solver = new hephaestus::DefaultHCurlPCGSolver(_solver_options, A1,
-                                                      _weak_form->test_pfes);
+  _equation_system->setTimeStep(dt);
+  _equation_system->updateEquationSystem(_bc_map, _sources);
+  _equation_system->FormLinearSystem(blockA, trueX, trueRhs);
+  if (a1_solver != NULL) {
+    delete a1_solver;
   }
-  a1_solver->Mult(B1, X1);
-  _weak_form->RecoverFEMSolution(X1, *local_trial_vars.at(0));
+  a1_solver = new hephaestus::DefaultHCurlPCGSolver(
+      _solver_options, *blockA.As<mfem::HypreParMatrix>(),
+      _equation_system->test_pfespaces.at(0));
+  a1_solver->Mult(trueRhs, trueX);
+  _equation_system->RecoverFEMSolution(trueX, *local_trial_vars.at(0));
 }
 
 void HCurlSolver::RegisterMissingVariables() {
@@ -152,6 +157,7 @@ void HCurlSolver::RegisterMissingVariables() {
   }
 }
 
+// Should be identical to AVSolver
 void HCurlSolver::RegisterVariables() {
   RegisterMissingVariables();
   local_test_vars = populateVectorFromNamedFieldsMap<mfem::ParGridFunction>(
@@ -159,6 +165,16 @@ void HCurlSolver::RegisterVariables() {
   local_trial_vars = registerTimeDerivatives(state_var_names, _variables);
 
   // Set operator size and block structure
+  block_trueOffsets.SetSize(local_test_vars.size() + 1);
+  block_trueOffsets[0] = 0;
+  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
+    block_trueOffsets[ind + 1] =
+        local_test_vars.at(ind)->ParFESpace()->TrueVSize();
+  }
+  block_trueOffsets.PartialSum();
+  trueX.Update(block_trueOffsets);
+  trueRhs.Update(block_trueOffsets);
+
   true_offsets.SetSize(local_test_vars.size() + 1);
   true_offsets[0] = 0;
   for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
