@@ -152,41 +152,42 @@ void EquationSystem::Init(
     // Create auxiliary gridfunctions for applying Dirichlet conditions
     xs.push_back(
         new mfem::ParGridFunction(variables.Get(test_var_name)->ParFESpace()));
-    // Add optional kernels to the EquationSystem
-    addKernels(variables, fespaces, bc_map, domain_properties);
+  }
+  // Add optional kernels to the EquationSystem
+  addKernels(variables, fespaces, bc_map, domain_properties);
 
-    // Initialise bilinear forms
-    for (const auto &[test_var_name, blf_kernels] : blf_kernels_map.GetMap()) {
-      for (int i = 0; i < blf_kernels->size(); i++) {
-        blf_kernels->at(i)->Init(variables, fespaces, bc_map,
-                                 domain_properties);
-      }
+  // for (auto &test_var_name : test_var_names) {
+
+  // Initialise bilinear forms
+  for (const auto &[test_var_name, blf_kernels] : blf_kernels_map.GetMap()) {
+    for (int i = 0; i < blf_kernels->size(); i++) {
+      blf_kernels->at(i)->Init(variables, fespaces, bc_map, domain_properties);
     }
-    // Initialise linear forms
-    for (const auto &[test_var_name, lf_kernels] : lf_kernels_map.GetMap()) {
-      for (int i = 0; i < lf_kernels->size(); i++) {
-        lf_kernels->at(i)->Init(variables, fespaces, bc_map, domain_properties);
-      }
+  }
+  // Initialise linear forms
+  for (const auto &[test_var_name, lf_kernels] : lf_kernels_map.GetMap()) {
+    for (int i = 0; i < lf_kernels->size(); i++) {
+      lf_kernels->at(i)->Init(variables, fespaces, bc_map, domain_properties);
     }
-    // Initialise nonlinear forms
-    for (const auto &[test_var_name, nlf_kernels] : nlf_kernels_map.GetMap()) {
-      for (int i = 0; i < nlf_kernels->size(); i++) {
-        nlf_kernels->at(i)->Init(variables, fespaces, bc_map,
-                                 domain_properties);
-      }
+  }
+  // Initialise nonlinear forms
+  for (const auto &[test_var_name, nlf_kernels] : nlf_kernels_map.GetMap()) {
+    for (int i = 0; i < nlf_kernels->size(); i++) {
+      nlf_kernels->at(i)->Init(variables, fespaces, bc_map, domain_properties);
     }
-    // Initialise mixed bilinear forms
-    for (const auto &[test_var_name, mblf_kernels_map] :
-         mblf_kernels_map_map.GetMap()) {
-      for (const auto &[trial_var_name, mblf_kernels] :
-           mblf_kernels_map->GetMap()) {
-        for (int i = 0; i < mblf_kernels->size(); i++) {
-          mblf_kernels->at(i)->Init(variables, fespaces, bc_map,
-                                    domain_properties);
-        }
+  }
+  // Initialise mixed bilinear forms
+  for (const auto &[test_var_name, mblf_kernels_map] :
+       mblf_kernels_map_map.GetMap()) {
+    for (const auto &[trial_var_name, mblf_kernels] :
+         mblf_kernels_map->GetMap()) {
+      for (int i = 0; i < mblf_kernels->size(); i++) {
+        mblf_kernels->at(i)->Init(variables, fespaces, bc_map,
+                                  domain_properties);
       }
     }
   }
+  // }
 }
 
 void EquationSystem::buildLinearForms(hephaestus::BCMap &bc_map,
@@ -205,9 +206,8 @@ void EquationSystem::buildLinearForms(hephaestus::BCMap &bc_map,
   applyBoundaryConditions(bc_map);
 
   for (auto &test_var_name : test_var_names) {
-    auto lf = lfs.Get(test_var_name);
-
     // Apply kernels
+    auto lf = lfs.Get(test_var_name);
     auto lf_kernels = lf_kernels_map.Get(test_var_name);
     if (lf_kernels != NULL) {
       for (auto &lf_kernel : *lf_kernels) {
@@ -232,9 +232,8 @@ void EquationSystem::buildBilinearForms() {
     blfs.Register(test_var_name,
                   new mfem::ParBilinearForm(test_pfespaces.at(i)), true);
 
-    auto blf = blfs.Get(test_var_name);
-
     // Apply kernels
+    auto blf = blfs.Get(test_var_name);
     auto blf_kernels = blf_kernels_map.Get(test_var_name);
     if (blf_kernels != NULL) {
       for (auto &blf_kernel : *blf_kernels) {
@@ -390,7 +389,8 @@ void AVEquationSystem::addKernels(
       new mfem::TransformedCoefficient(
           &negCoef, domain_properties.scalar_property_map[beta_coef_name],
           prodFunc);
-
+  std::cout << beta_coef_name << std::endl;
+  std::cout << neg_beta_coef_name << std::endl;
   // (α∇×A_{n}, ∇×A') - careful about trial var name!
   hephaestus::InputParameters weakCurlCurlParams;
   weakCurlCurlParams.SetParam("VariableName", var_names.at(0));
@@ -430,7 +430,7 @@ void AVEquationSystem::addKernels(
   // a1->Assemble();
   hephaestus::InputParameters diffusionParams;
   diffusionParams.SetParam("VariableName", test_var_names.at(1));
-  diffusionParams.SetParam("CoefficientName", neg_beta_coef_name);
+  diffusionParams.SetParam("CoefficientName", beta_coef_name);
   addKernel(test_var_names.at(1),
             new hephaestus::DiffusionKernel(diffusionParams));
 
@@ -441,7 +441,7 @@ void AVEquationSystem::addKernels(
   // a01->Assemble();
   hephaestus::InputParameters vectorFEWeakDivergenceParams;
   vectorFEWeakDivergenceParams.SetParam("VariableName", test_var_names.at(1));
-  vectorFEWeakDivergenceParams.SetParam("CoefficientName", neg_beta_coef_name);
+  vectorFEWeakDivergenceParams.SetParam("CoefficientName", beta_coef_name);
   addKernel(test_var_names.at(0), test_var_names.at(1),
             new hephaestus::VectorFEWeakDivergenceKernel(
                 vectorFEWeakDivergenceParams));

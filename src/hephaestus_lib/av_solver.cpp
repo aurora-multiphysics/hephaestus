@@ -48,86 +48,206 @@ AVSolver::AVSolver(mfem::ParMesh &pmesh, int order,
                    hephaestus::DomainProperties &domain_properties,
                    hephaestus::Sources &sources,
                    hephaestus::InputParameters &solver_options)
-    : myid_(0), num_procs_(1), order_(order), pmesh_(&pmesh),
+    : myid_(0), num_procs_(1), _order(order), pmesh_(&pmesh),
       _fespaces(fespaces), _variables(variables), _bc_map(bc_map),
       _sources(sources), _domain_properties(domain_properties),
-      H1FESpace_(
-          new mfem::common::H1_ParFESpace(&pmesh, order, pmesh.Dimension())),
-      HCurlFESpace_(
-          new mfem::common::ND_ParFESpace(&pmesh, order, pmesh.Dimension())),
-      HDivFESpace_(
-          new mfem::common::RT_ParFESpace(&pmesh, order, pmesh.Dimension())),
-      a0(NULL), a1(NULL), a01(NULL), a10(NULL), amg_a0(NULL), pcg_a0(NULL),
-      ams_a0(NULL), pcg_a1(NULL), m1(NULL), negBetaCoef(NULL), grad(NULL),
-      curl(NULL), curlCurl(NULL), p_(mfem::ParGridFunction(H1FESpace_)),
-      u_(mfem::ParGridFunction(HCurlFESpace_)),
-      dp_(mfem::ParGridFunction(H1FESpace_)),
-      du_(mfem::ParGridFunction(HCurlFESpace_)),
-      e_(mfem::ParGridFunction(HCurlFESpace_)),
-      b_(mfem::ParGridFunction(HDivFESpace_)) {
+      _solver_options(solver_options), solver(NULL) {
+
+  // H1FESpace_(
+  //     new mfem::common::H1_ParFESpace(&pmesh, order, pmesh.Dimension())),
+  // HCurlFESpace_(
+  //     new mfem::common::ND_ParFESpace(&pmesh, order, pmesh.Dimension())),
+  // HDivFESpace_(
+  //     new mfem::common::RT_ParFESpace(&pmesh, order, pmesh.Dimension())),
+  // a0(NULL), a1(NULL), a01(NULL), a10(NULL), amg_a0(NULL), pcg_a0(NULL),
+  // ams_a0(NULL), pcg_a1(NULL), m1(NULL), negBetaCoef(NULL), grad(NULL),
+  // curl(NULL), curlCurl(NULL), p_(mfem::ParGridFunction(H1FESpace_)),
+  // u_(mfem::ParGridFunction(HCurlFESpace_)),
+  // dp_(mfem::ParGridFunction(H1FESpace_)),
+  // du_(mfem::ParGridFunction(HCurlFESpace_)),
+  // e_(mfem::ParGridFunction(HCurlFESpace_)),
+  // b_(mfem::ParGridFunction(HDivFESpace_))
   // Initialize MPI variables
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh.GetComm(), &myid_);
 
-  true_offsets.SetSize(3);
-  true_offsets[0] = 0;
-  true_offsets[1] = HCurlFESpace_->GetVSize();
-  true_offsets[2] = H1FESpace_->GetVSize();
-  true_offsets.PartialSum();
+  state_var_names.resize(2);
+  state_var_names.at(0) = "magnetic_vector_potential";
+  state_var_names.at(1) = "electric_potential";
 
-  block_trueOffsets.SetSize(3);
+  aux_var_names.resize(2);
+  aux_var_names.at(0) = "electric_field";
+  aux_var_names.at(1) = "magnetic_flux_density";
+}
+
+void AVSolver::RegisterMissingVariables() {
+  // Register default ParGridFunctions of state variables if not provided
+  std::string u_name = state_var_names.at(0);
+  if (!_variables.Has(u_name)) {
+    if (myid_ == 0) {
+      std::cout
+          << u_name
+          << " not found in variables: building gridfunction from defaults"
+          << std::endl;
+    }
+    _fespaces.Register(
+        "_HCurlFESpace",
+        new mfem::common::ND_ParFESpace(pmesh_, _order, pmesh_->Dimension()),
+        true);
+    _variables.Register(
+        u_name, new mfem::ParGridFunction(_fespaces.Get("_HCurlFESpace")),
+        true);
+  }
+
+  std::string p_name = state_var_names.at(1);
+  if (!_variables.Has(p_name)) {
+    if (myid_ == 0) {
+      std::cout
+          << p_name
+          << " not found in variables: building gridfunction from defaults"
+          << std::endl;
+    }
+    _fespaces.Register(
+        "_H1FESpace",
+        new mfem::common::H1_ParFESpace(pmesh_, _order, pmesh_->Dimension()),
+        true);
+    _variables.Register(
+        p_name, new mfem::ParGridFunction(_fespaces.Get("_H1FESpace")), true);
+  }
+}
+
+void AVSolver::RegisterVariables() {
+  RegisterMissingVariables();
+  local_test_vars = populateVectorFromNamedFieldsMap<mfem::ParGridFunction>(
+      _variables, state_var_names);
+  local_trial_vars = registerTimeDerivatives(state_var_names, _variables);
+
+  // Set operator size and block structure
+  block_trueOffsets.SetSize(local_test_vars.size() + 1);
   block_trueOffsets[0] = 0;
-  block_trueOffsets[1] = HCurlFESpace_->TrueVSize();
-  block_trueOffsets[2] = H1FESpace_->TrueVSize();
+  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
+    block_trueOffsets[ind + 1] =
+        local_test_vars.at(ind)->ParFESpace()->TrueVSize();
+  }
   block_trueOffsets.PartialSum();
 
-  this->height = true_offsets[2];
-  this->width = true_offsets[2];
+  true_offsets.SetSize(local_test_vars.size() + 1);
+  true_offsets[0] = 0;
+  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
+    true_offsets[ind + 1] = local_test_vars.at(ind)->ParFESpace()->GetVSize();
+  }
+  true_offsets.PartialSum();
+
+  this->height = true_offsets[local_test_vars.size()];
+  this->width = true_offsets[local_test_vars.size()];
+
+  // Populate vector of active auxiliary variables
+  active_aux_var_names.resize(0);
+  for (auto &aux_var_name : aux_var_names) {
+    if (_variables.Has(aux_var_name)) {
+      active_aux_var_names.push_back(aux_var_name);
+    }
+  }
+  // p_name = "electric_potential";
+  // p_display_name = "Electric Scalar Potential";
+
+  // u_name = "magnetic_vector_potential";
+  // u_display_name = "Magnetic Vector Potential";
+
+  // e_name = "electric_field";
+  // e_display_name = "Electric Field";
+
+  // b_name = "magnetic_flux_density";
+  // b_display_name = "Magnetic Flux Density";
+
+  // _variables.Register(u_name, &u_, false);
+  // _variables.Register(p_name, &p_, false);
+  // _variables.Register(e_name, &e_, false);
+  // _variables.Register(b_name, &b_, false);
+
+  // true_offsets.SetSize(3);
+  // true_offsets[0] = 0;
+  // true_offsets[1] = HCurlFESpace_->GetVSize();
+  // true_offsets[2] = H1FESpace_->GetVSize();
+  // true_offsets.PartialSum();
+
+  // block_trueOffsets.SetSize(3);
+  // block_trueOffsets[0] = 0;
+  // block_trueOffsets[1] = HCurlFESpace_->TrueVSize();
+  // block_trueOffsets[2] = H1FESpace_->TrueVSize();
+  // block_trueOffsets.PartialSum();
+
+  // this->height = true_offsets[2];
+  // this->width = true_offsets[2];
+}
+
+void AVSolver::SetMaterialCoefficients(
+    hephaestus::DomainProperties &domain_properties) {
+  if (domain_properties.scalar_property_map.count("magnetic_permeability") ==
+      0) {
+    domain_properties.scalar_property_map["magnetic_permeability"] =
+        new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
+            std::string("magnetic_permeability")));
+  }
+  if (domain_properties.scalar_property_map.count("electrical_conductivity") ==
+      0) {
+    domain_properties.scalar_property_map["electrical_conductivity"] =
+        new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
+            std::string("electrical_conductivity")));
+  }
+
+  alpha_coef_name = std::string("magnetic_reluctivity");
+  beta_coef_name = std::string("electrical_conductivity");
+
+  domain_properties.scalar_property_map[alpha_coef_name] =
+      new mfem::TransformedCoefficient(
+          &oneCoef,
+          domain_properties.scalar_property_map["magnetic_permeability"],
+          fracFunc);
 }
 
 void AVSolver::Init(mfem::Vector &X) {
-  RegisterVariables();
-
-  _fespaces.Register("_H1FESpace", H1FESpace_, false);
-  _fespaces.Register("_HCurlFESpace", HCurlFESpace_, false);
-  _fespaces.Register("_HDivFESpace", HDivFESpace_, false);
-
   // Define material property coefficients
-  dtCoef = mfem::ConstantCoefficient(1.0);
-  oneCoef = mfem::ConstantCoefficient(1.0);
   SetMaterialCoefficients(_domain_properties);
-  dtAlphaCoef = new mfem::TransformedCoefficient(&dtCoef, alphaCoef, prodFunc);
 
   _sources.Init(_variables, _fespaces, _bc_map, _domain_properties);
 
-  this->buildCurl(alphaCoef); // (α∇×u_{n}, ∇×u')
-  this->buildGrad();          // (s0_{n+1}, u')
-  b0 = new mfem::ParLinearForm(HCurlFESpace_);
-  b1 = new mfem::ParLinearForm(H1FESpace_);
-  b01 = new mfem::ParLinearForm(HCurlFESpace_);
-  b10 = new mfem::ParLinearForm(H1FESpace_);
+  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
+    local_test_vars.at(ind)->MakeRef(local_test_vars.at(ind)->ParFESpace(),
+                                     const_cast<mfem::Vector &>(X),
+                                     true_offsets[ind]);
+    *(local_test_vars.at(ind)) = 0.0;
+    *(local_trial_vars.at(ind)) = 0.0;
+  }
 
-  A0 = new mfem::HypreParMatrix;
-  A1 = new mfem::HypreParMatrix;
-  A01 = new mfem::HypreParMatrix;
-  A10 = new mfem::HypreParMatrix;
-  blockA = new mfem::HypreParMatrix;
+  hephaestus::InputParameters av_system_params;
+  av_system_params.SetParam("VariableNames", state_var_names);
+  av_system_params.SetParam("TimeDerivativeNames",
+                            GetTimeDerivativeNames(state_var_names));
+  av_system_params.SetParam("AlphaCoefName", alpha_coef_name);
+  av_system_params.SetParam("BetaCoefName", beta_coef_name);
 
-  X0 = new mfem::Vector;
-  X1 = new mfem::Vector;
-  B0 = new mfem::Vector;
-  B1 = new mfem::Vector;
+  _equation_system = new hephaestus::AVEquationSystem(av_system_params);
+  _equation_system->Init(_variables, _fespaces, _bc_map, _domain_properties);
+  _equation_system->buildEquationSystem(_bc_map, _sources);
 
-  mfem::Vector zero_vec(3);
-  zero_vec = 0.0;
-  mfem::VectorConstantCoefficient Zero_vec(zero_vec);
-  mfem::ConstantCoefficient Zero(0.0);
+  // this->buildCurl(alphaCoef); // (α∇×u_{n}, ∇×u')
+  // this->buildGrad();          // (s0_{n+1}, u')
+  // b0 = new mfem::ParLinearForm(HCurlFESpace_);
+  // b1 = new mfem::ParLinearForm(H1FESpace_);
+  // b01 = new mfem::ParLinearForm(HCurlFESpace_);
+  // b10 = new mfem::ParLinearForm(H1FESpace_);
 
-  u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
-  p_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
+  // A0 = new mfem::HypreParMatrix;
+  // A1 = new mfem::HypreParMatrix;
+  // A01 = new mfem::HypreParMatrix;
+  // A10 = new mfem::HypreParMatrix;
+  // blockA = new mfem::HypreParMatrix;
 
-  u_.ProjectCoefficient(Zero_vec);
-  p_.ProjectCoefficient(Zero);
+  // X0 = new mfem::Vector;
+  // X1 = new mfem::Vector;
+  // B0 = new mfem::Vector;
+  // B1 = new mfem::Vector;
 }
 
 /*
@@ -149,21 +269,59 @@ u_{n+1} = u_{n} + dt du/dt_{n+1}
 void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
                              mfem::Vector &dX_dt) {
   dX_dt = 0.0;
-  dtCoef.constant = dt;
-
-  u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
-  p_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
-
-  du_.MakeRef(HCurlFESpace_, dX_dt, true_offsets[0]);
-  dp_.MakeRef(H1FESpace_, dX_dt, true_offsets[1]);
-
+  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
+    local_test_vars.at(ind)->MakeRef(local_test_vars.at(ind)->ParFESpace(),
+                                     const_cast<mfem::Vector &>(X),
+                                     true_offsets[ind]);
+    local_trial_vars.at(ind)->MakeRef(local_trial_vars.at(ind)->ParFESpace(),
+                                      dX_dt, true_offsets[ind]);
+  }
   _domain_properties.SetTime(this->GetTime());
+  _equation_system->setTimeStep(dt);
+  _equation_system->updateEquationSystem(_bc_map, _sources);
+
+  mfem::OperatorHandle blockA;
+  mfem::BlockVector trueX(block_trueOffsets), trueRhs(block_trueOffsets);
+  _equation_system->FormLinearSystem(blockA, trueX, trueRhs);
+  if (solver != NULL) {
+    delete solver;
+  }
+  solver = new hephaestus::DefaultGMRESSolver(
+      _solver_options, *blockA.As<mfem::HypreParMatrix>());
+  // solver = new hephaestus::DefaultGMRESSolver(_solver_options, *blockA,
+  //                                             pmesh_->GetComm());
+
+  solver->Mult(trueRhs, trueX);
+  // _equation_system->RecoverFEMSolution(trueX, *local_trial_vars.at(0));
+
+  trueX.GetBlock(0).SyncAliasMemory(trueX);
+  trueX.GetBlock(1).SyncAliasMemory(trueX);
+
+  local_trial_vars.at(0)->Distribute(&(trueX.GetBlock(0)));
+  local_test_vars.at(1)->Distribute(&(trueX.GetBlock(1)));
+
+  // trueX.GetBlock(0).SyncAliasMemory(trueX);
+  // trueX.GetBlock(1).SyncAliasMemory(trueX);
+
+  // du_.Distribute(&(trueX.GetBlock(0)));
+  // p_.Distribute(&(trueX.GetBlock(1)));
+  // dX_dt = 0.0;
+  // dtCoef.constant = dt;
+
+  // u_.MakeRef(HCurlFESpace_, const_cast<mfem::Vector &>(X), true_offsets[0]);
+  // p_.MakeRef(H1FESpace_, const_cast<mfem::Vector &>(X), true_offsets[1]);
+
+  // du_.MakeRef(HCurlFESpace_, dX_dt, true_offsets[0]);
+  // dp_.MakeRef(H1FESpace_, dX_dt, true_offsets[1]);
+
+  // _domain_properties.SetTime(this->GetTime());
 
   //////////////////////////////////////////////////////////////////////////////
-  mfem::BlockVector x(true_offsets), rhs(true_offsets);
-  mfem::BlockVector trueX(block_trueOffsets), trueRhs(block_trueOffsets);
-  trueX = 0.0;
-  *b0 = 0.0;
+  // mfem::BlockVector trueX(block_trueOffsets), trueRhs(block_trueOffsets);
+  // trueX = 0.0;
+  // *b0 = 0.0;
+  // *b01 = 0.0;
+  // *b10 = 0.0;
 
   // // -(s0_{n+1}, ∇ p') + <n.s0_{n+1}, p'> = 0
   // // a0(p_{n+1}, p') = b0(p')
@@ -177,208 +335,180 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   // b1(u') = (s0_{n+1}, u') - (α∇×u_{n}, ∇×u') + <(α∇×u_{n+1}) × n, u'>
 
   // (α∇×u_{n}, ∇×u')
-  curlCurl->MultTranspose(u_, *b0);
-  *b0 *= -1.0;
+  // curlCurl->MultTranspose(u_, *b0);
+  // *b0 *= -1.0;
 
-  mfem::ParGridFunction J_gf(HCurlFESpace_);
-  mfem::Array<int> ess_tdof_list;
-  J_gf = 0.0;
-  _bc_map.applyEssentialBCs(u_name, ess_tdof_list, J_gf, pmesh_);
-  _bc_map.applyIntegratedBCs(u_name, *b0, pmesh_);
-  b0->Assemble();
+  // mfem::ParGridFunction J_gf(HCurlFESpace_);
+  // mfem::Array<int> ess_tdof_list;
+  // J_gf = 0.0;
+  // _bc_map.applyEssentialBCs(u_name, ess_tdof_list, J_gf, pmesh_);
+  // _bc_map.applyIntegratedBCs(u_name, *b0, pmesh_);
+  // b0->Assemble();
 
-  _sources.Apply(b0);
+  // _sources.Apply(b0);
 
-  mfem::ParGridFunction Phi_gf(H1FESpace_);
-  mfem::Array<int> poisson_ess_tdof_list;
-  Phi_gf = 0.0;
-  *b1 = 0.0;
-  _bc_map.applyEssentialBCs(p_name, poisson_ess_tdof_list, Phi_gf, pmesh_);
-  _bc_map.applyIntegratedBCs(p_name, *b1, pmesh_);
-  b1->Assemble();
+  // mfem::ParGridFunction Phi_gf(H1FESpace_);
+  // mfem::Array<int> poisson_ess_tdof_list;
+  // Phi_gf = 0.0;
+  // *b1 = 0.0;
+  // _bc_map.applyEssentialBCs(p_name, poisson_ess_tdof_list, Phi_gf, pmesh_);
+  // _bc_map.applyIntegratedBCs(p_name, *b1, pmesh_);
+  // b1->Assemble();
 
-  if (a0 == NULL || a10 == NULL || fabs(dt - dt_A0) > 1.0e-12 * dt) {
-    this->buildA0(betaCoef, dtAlphaCoef);
-  }
+  // if (a0 == NULL || a10 == NULL || fabs(dt - dt_A0) > 1.0e-12 * dt) {
+  //   this->buildA0(betaCoef, dtAlphaCoef);
+  // }
 
-  if (a1 == NULL || a01 == NULL || fabs(dt - dt_A1) > 1.0e-12 * dt) {
-    this->buildA1(betaCoef);
-  }
+  // if (a1 == NULL || a01 == NULL || fabs(dt - dt_A1) > 1.0e-12 * dt) {
+  //   this->buildA1(betaCoef);
+  // }
 
-  *b01 = 0.0;
-  *b10 = 0.0;
+  // a0->FormLinearSystem(ess_tdof_list, J_gf, *b0, *A0, *X0, *B0);
+  // trueX.GetBlock(0) = *X0;
+  // trueRhs.GetBlock(0) = *B0;
+  // a1->FormLinearSystem(poisson_ess_tdof_list, Phi_gf, *b1, *A1, *X1, *B1);
+  // trueX.GetBlock(1) = *X1;
+  // trueRhs.GetBlock(1) = *B1;
+  // // b01 = new mfem::ParLinearForm(HCurlFESpace_);
+  // // b10 = new mfem::ParLinearForm(H1FESpace_);
 
-  a0->FormLinearSystem(ess_tdof_list, J_gf, *b0, *A0, *X0, *B0);
-  trueX.GetBlock(0) = *X0;
-  trueRhs.GetBlock(0) = *B0;
-  a1->FormLinearSystem(poisson_ess_tdof_list, Phi_gf, *b1, *A1, *X1, *B1);
-  trueX.GetBlock(1) = *X1;
-  trueRhs.GetBlock(1) = *B1;
+  // a01->FormRectangularLinearSystem(ess_tdof_list, poisson_ess_tdof_list,
+  // J_gf,
+  //                                  *b10, *A01, *X0, *B1);
+  // a10->FormRectangularLinearSystem(poisson_ess_tdof_list, ess_tdof_list,
+  // Phi_gf,
+  //                                  *b01, *A10, *X1, *B0);
+  // trueRhs.GetBlock(1) += *B1;
+  // trueRhs.GetBlock(0) += *B0;
 
-  a01->FormRectangularLinearSystem(ess_tdof_list, poisson_ess_tdof_list, J_gf,
-                                   *b10, *A01, *X0, *B1);
-  a10->FormRectangularLinearSystem(poisson_ess_tdof_list, ess_tdof_list, Phi_gf,
-                                   *b01, *A10, *X1, *B0);
-  trueRhs.GetBlock(1) += *B1;
-  trueRhs.GetBlock(0) += *B0;
+  // trueX.GetBlock(0).SyncAliasMemory(trueX);
+  // trueX.GetBlock(1).SyncAliasMemory(trueX);
 
-  trueX.GetBlock(0).SyncAliasMemory(trueX);
-  trueX.GetBlock(1).SyncAliasMemory(trueX);
+  // trueRhs.GetBlock(0).SyncAliasMemory(trueRhs);
+  // trueRhs.GetBlock(1).SyncAliasMemory(trueRhs);
 
-  trueRhs.GetBlock(0).SyncAliasMemory(trueRhs);
-  trueRhs.GetBlock(1).SyncAliasMemory(trueRhs);
+  // mfem::Array2D<mfem::HypreParMatrix *> hBlocks(2, 2);
+  // hBlocks = NULL;
+  // hBlocks(0, 0) = A0;
+  // hBlocks(0, 1) = A10;
+  // hBlocks(1, 0) = A01;
+  // hBlocks(1, 1) = A1;
+  // blockA = mfem::HypreParMatrixFromBlocks(hBlocks);
 
-  mfem::Array2D<mfem::HypreParMatrix *> hBlocks(2, 2);
-  hBlocks = NULL;
-  hBlocks(0, 0) = A0;
-  hBlocks(0, 1) = A10;
-  hBlocks(1, 0) = A01;
-  hBlocks(1, 1) = A1;
-  blockA = mfem::HypreParMatrixFromBlocks(hBlocks);
+  // if (solver == NULL) {
+  //   solver = new hephaestus::DefaultGMRESSolver(_solver_options, *blockA,
+  //                                               pmesh_->GetComm());
+  // }
+  // solver->Mult(trueRhs, trueX);
 
-#ifdef MFEM_USE_MUMPS
-  mfem::MUMPSSolver mumps;
-  mumps.SetPrintLevel(0);
-  mumps.SetMatrixSymType(mfem::MUMPSSolver::MatType::UNSYMMETRIC);
-  mumps.SetOperator(*blockA);
-  mumps.Mult(trueRhs, trueX);
-#else
-  mfem::GMRESSolver gmres(HCurlFESpace_->GetComm());
-  gmres.SetOperator(*blockA);
-  gmres.SetAbsTol(1e-16);
-  gmres.SetMaxIter(10000);
-  gmres.Mult(trueRhs, trueX);
-#endif
+  // #ifdef MFEM_USE_MUMPS
+  //   mfem::MUMPSSolver mumps;
+  //   mumps.SetPrintLevel(0);
+  //   mumps.SetMatrixSymType(mfem::MUMPSSolver::MatType::UNSYMMETRIC);
+  //   mumps.SetOperator(*blockA);
+  //   mumps.Mult(trueRhs, trueX);
+  // #else
+  //   mfem::GMRESSolver gmres(HCurlFESpace_->GetComm());
+  //   gmres.SetOperator(*blockA);
+  //   gmres.SetAbsTol(1e-16);
+  //   gmres.SetMaxIter(10000);
+  //   gmres.Mult(trueRhs, trueX);
+  // #endif
 
-  trueX.GetBlock(0).SyncAliasMemory(trueX);
-  trueX.GetBlock(1).SyncAliasMemory(trueX);
+  // trueX.GetBlock(0).SyncAliasMemory(trueX);
+  // trueX.GetBlock(1).SyncAliasMemory(trueX);
 
-  du_.Distribute(&(trueX.GetBlock(0)));
-  p_.Distribute(&(trueX.GetBlock(1)));
+  // local_trial_vars.at(0)->Distribute(&(trueX.GetBlock(0)));
+  // local_test_vars.at(1)->Distribute(&(trueX.GetBlock(1)));
 
-  grad->Mult(p_, e_);
-  e_ += du_;
-  e_ *= -1.0;
+  // du_.Distribute(&(trueX.GetBlock(0)));
+  // p_.Distribute(&(trueX.GetBlock(1)));
 
-  curl->Mult(u_, b_);
-  curl->AddMult(du_, b_, dt);
+  // grad->Mult(p_, e_);
+  // e_ += du_;
+  // e_ *= -1.0;
+
+  // curl->Mult(u_, b_);
+  // curl->AddMult(du_, b_, dt);
 }
 
-void AVSolver::buildA0(mfem::Coefficient *betaCoef,
-                       mfem::Coefficient *dtAlphaCoef) {
-  if (a0 != NULL) {
-    delete a0;
-  }
-  if (a10 != NULL) {
-    delete a10;
-  }
+// void AVSolver::buildA0(mfem::Coefficient *betaCoef,
+//                        mfem::Coefficient *dtAlphaCoef) {
+//   if (a0 != NULL) {
+//     delete a0;
+//   }
+//   if (a10 != NULL) {
+//     delete a10;
+//   }
 
-  // a0(dA/dt, dA'/dt) = (βdA/dt_{n+1}, dA'/dt) + (αdt∇×dA/dt_{n+1}, ∇×dA'/dt)
-  a0 = new mfem::ParBilinearForm(HCurlFESpace_);
-  a0->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*betaCoef));
-  a0->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*dtAlphaCoef));
-  a0->Assemble();
+//   // a0(dA/dt, dA'/dt) = (βdA/dt_{n+1}, dA'/dt) + (αdt∇×dA/dt_{n+1},
+//   ∇×dA'/dt) a0 = new mfem::ParBilinearForm(HCurlFESpace_);
+//   a0->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*betaCoef));
+//   a0->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*dtAlphaCoef));
+//   a0->Assemble();
 
-  // a10(V, dA'/dt) = (σ ∇ V, dA'/dt)
-  a10 = new mfem::ParMixedBilinearForm(H1FESpace_, HCurlFESpace_);
-  a10->AddDomainIntegrator(new mfem::MixedVectorGradientIntegrator(*betaCoef));
-  a10->Assemble();
+//   // a10(V, dA'/dt) = (σ ∇ V, dA'/dt)
+//   a10 = new mfem::ParMixedBilinearForm(H1FESpace_, HCurlFESpace_);
+//   a10->AddDomainIntegrator(new
+//   mfem::MixedVectorGradientIntegrator(*betaCoef)); a10->Assemble();
 
-  dt_A0 = dtCoef.constant;
-}
+//   dt_A0 = dtCoef.constant;
+// }
 
-void AVSolver::buildA1(mfem::Coefficient *betaCoef) {
-  if (a1 != NULL) {
-    delete a1;
-  }
-  if (a01 != NULL) {
-    delete a01;
-  }
-  if (negBetaCoef != NULL) {
-    delete negBetaCoef;
-  }
+// void AVSolver::buildA1(mfem::Coefficient *betaCoef) {
+//   if (a1 != NULL) {
+//     delete a1;
+//   }
+//   if (a01 != NULL) {
+//     delete a01;
+//   }
+//   if (negBetaCoef != NULL) {
+//     delete negBetaCoef;
+//   }
 
-  negCoef = mfem::ConstantCoefficient(-1.0);
-  negBetaCoef = new mfem::TransformedCoefficient(&negCoef, betaCoef, prodFunc);
+//   negCoef = mfem::ConstantCoefficient(-1.0);
+//   negBetaCoef = new mfem::TransformedCoefficient(&negCoef, betaCoef,
+//   prodFunc);
 
-  // a1(V, V') = (σ ∇ V, ∇ V')
-  a1 = new mfem::ParBilinearForm(H1FESpace_);
-  a1->AddDomainIntegrator(new mfem::DiffusionIntegrator(*negBetaCoef));
-  a1->Assemble();
+//   // a1(V, V') = (σ ∇ V, ∇ V')
+//   a1 = new mfem::ParBilinearForm(H1FESpace_);
+//   a1->AddDomainIntegrator(new mfem::DiffusionIntegrator(*negBetaCoef));
+//   a1->Assemble();
 
-  // (σdA/dt, ∇ V')
-  a01 = new mfem::ParMixedBilinearForm(HCurlFESpace_, H1FESpace_);
-  a01->AddDomainIntegrator(
-      new mfem::VectorFEWeakDivergenceIntegrator(*negBetaCoef));
-  a01->Assemble();
+//   // (σdA/dt, ∇ V')
+//   a01 = new mfem::ParMixedBilinearForm(HCurlFESpace_, H1FESpace_);
+//   a01->AddDomainIntegrator(
+//       new mfem::VectorFEWeakDivergenceIntegrator(*negBetaCoef));
+//   a01->Assemble();
 
-  dt_A1 = dtCoef.constant;
-}
+//   dt_A1 = dtCoef.constant;
+// }
 
-void AVSolver::buildGrad() {
-  // Discrete Grad operator
-  if (grad != NULL) {
-    delete grad;
-  }
-  grad = new mfem::ParDiscreteLinearOperator(H1FESpace_, HCurlFESpace_);
-  grad->AddDomainInterpolator(new mfem::GradientInterpolator());
-  grad->Assemble();
-}
+// void AVSolver::buildGrad() {
+//   // Discrete Grad operator
+//   if (grad != NULL) {
+//     delete grad;
+//   }
+//   grad = new mfem::ParDiscreteLinearOperator(H1FESpace_, HCurlFESpace_);
+//   grad->AddDomainInterpolator(new mfem::GradientInterpolator());
+//   grad->Assemble();
+// }
 
-void AVSolver::buildCurl(mfem::Coefficient *MuInv) {
-  if (curlCurl != NULL) {
-    delete curlCurl;
-  }
-  curlCurl = new mfem::ParBilinearForm(HCurlFESpace_);
-  curlCurl->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*MuInv));
-  curlCurl->Assemble();
+// void AVSolver::buildCurl(mfem::Coefficient *MuInv) {
+//   if (curlCurl != NULL) {
+//     delete curlCurl;
+//   }
+//   curlCurl = new mfem::ParBilinearForm(HCurlFESpace_);
+//   curlCurl->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*MuInv));
+//   curlCurl->Assemble();
 
-  // Discrete Curl operator
-  if (curl != NULL) {
-    delete curl;
-  }
-  curl = new mfem::ParDiscreteLinearOperator(HCurlFESpace_, HDivFESpace_);
-  curl->AddDomainInterpolator(new mfem::CurlInterpolator());
-  curl->Assemble();
-}
-
-void AVSolver::RegisterVariables() {
-  p_name = "electric_potential";
-  p_display_name = "Electric Scalar Potential";
-
-  u_name = "magnetic_vector_potential";
-  u_display_name = "Magnetic Vector Potential";
-
-  e_name = "electric_field";
-  e_display_name = "Electric Field";
-
-  b_name = "magnetic_flux_density";
-  b_display_name = "Magnetic Flux Density";
-
-  _variables.Register(u_name, &u_, false);
-  _variables.Register(p_name, &p_, false);
-  _variables.Register(e_name, &e_, false);
-  _variables.Register(b_name, &b_, false);
-}
-
-void AVSolver::SetMaterialCoefficients(
-    hephaestus::DomainProperties &domain_properties) {
-  if (domain_properties.scalar_property_map.count("magnetic_permeability") ==
-      0) {
-    domain_properties.scalar_property_map["magnetic_permeability"] =
-        new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
-            std::string("magnetic_permeability")));
-  }
-  if (domain_properties.scalar_property_map.count("electrical_conductivity") ==
-      0) {
-    domain_properties.scalar_property_map["electrical_conductivity"] =
-        new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
-            std::string("electrical_conductivity")));
-  }
-  alphaCoef = new mfem::TransformedCoefficient(
-      &oneCoef, domain_properties.scalar_property_map["magnetic_permeability"],
-      fracFunc);
-  betaCoef = domain_properties.scalar_property_map["electrical_conductivity"];
-}
+//   // Discrete Curl operator
+//   if (curl != NULL) {
+//     delete curl;
+//   }
+//   curl = new mfem::ParDiscreteLinearOperator(HCurlFESpace_, HDivFESpace_);
+//   curl->AddDomainInterpolator(new mfem::CurlInterpolator());
+//   curl->Assemble();
+// }
 
 } // namespace hephaestus
