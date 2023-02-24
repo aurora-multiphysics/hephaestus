@@ -9,7 +9,6 @@ namespace hephaestus {
 class AVSolver : public TransientFormulation {
   virtual void
   SetMaterialCoefficients(hephaestus::DomainProperties &domain_properties);
-  virtual void RegisterVariables() override;
 
 public:
   AVSolver(mfem::ParMesh &pmesh, int order,
@@ -23,37 +22,32 @@ public:
   ~AVSolver(){};
 
   void Init(mfem::Vector &X) override;
-
-  void buildA0(mfem::Coefficient *betaCoef, mfem::Coefficient *dtAlphaCoef);
-  void buildA1(mfem::Coefficient *betaCoef);
-  void buildCurl(mfem::Coefficient *muInv);
-  void buildGrad();
-
+  virtual void RegisterVariables();
+  virtual void RegisterMissingVariables();
   void ImplicitSolve(const double dt, const mfem::Vector &X,
                      mfem::Vector &dX_dt) override;
 
-  mfem::common::H1_ParFESpace *H1FESpace_;
-  mfem::common::ND_ParFESpace *HCurlFESpace_;
-  mfem::common::RT_ParFESpace *HDivFESpace_;
+  std::string alpha_coef_name, beta_coef_name;
 
-  std::string u_name, p_name, e_name, b_name;
-  std::string u_display_name, p_display_name, e_display_name, b_display_name;
   mfem::ParGridFunction u_, du_; // HCurl vector field
   mfem::ParGridFunction p_, dp_; // H1 scalar potential
   mfem::ParGridFunction e_;      // HCurl Electric Field
   mfem::ParGridFunction b_;      // HDiv Magnetic Flux Density
-  std::map<std::string, mfem::socketstream *> socks_;
 
 protected:
   int myid_;
   int num_procs_;
-  const int order_;
+  const int _order;
   mfem::ParMesh *pmesh_;
   mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &_fespaces;
   mfem::NamedFieldsMap<mfem::ParGridFunction> &_variables;
   hephaestus::Sources &_sources;
   hephaestus::BCMap _bc_map;
   hephaestus::DomainProperties _domain_properties;
+  hephaestus::InputParameters _solver_options;
+
+  hephaestus::AVEquationSystem *_equation_system;
+  mutable hephaestus::DefaultGMRESSolver *solver;
 
   mfem::ParBilinearForm *a0, *a1, *m1;
   mfem::ParMixedBilinearForm *a01, *a10;

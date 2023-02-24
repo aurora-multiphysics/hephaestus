@@ -46,8 +46,8 @@ protected:
     mfem::VectorFunctionCoefficient *adotVecCoef =
         new mfem::VectorFunctionCoefficient(3, adot_bc);
     bc_map["tangential_dAdt"] = new hephaestus::VectorFunctionDirichletBC(
-        std::string("magnetic_vector_potential"), mfem::Array<int>({1, 2, 3}),
-        adotVecCoef);
+        std::string("dmagnetic_vector_potential_dt"),
+        mfem::Array<int>({1, 2, 3}), adotVecCoef);
     domain_properties.vector_property_map["surface_tangential_dAdt"] =
         adotVecCoef;
 
@@ -88,7 +88,7 @@ protected:
     exec_params.SetParam("StartTime", float(0.00));
     exec_params.SetParam("EndTime", float(2.5));
     exec_params.SetParam("VisualisationSteps", int(1));
-    exec_params.SetParam("UseGLVis", false);
+    exec_params.SetParam("UseGLVis", true);
     hephaestus::TransientExecutioner *executioner =
         new hephaestus::TransientExecutioner(exec_params);
 
