@@ -7,8 +7,9 @@
 namespace hephaestus {
 
 class HCurlSolver : public TransientFormulation {
-  virtual void
-  SetMaterialCoefficients(hephaestus::DomainProperties &domain_properties);
+  virtual void SetMaterialCoefficients(
+      hephaestus::DomainProperties &domain_properties) override;
+  virtual void SetEquationSystem() override;
 
 public:
   HCurlSolver(mfem::ParMesh &pmesh, int order,
@@ -21,33 +22,12 @@ public:
 
   ~HCurlSolver(){};
 
-  void Init(mfem::Vector &X) override;
-  virtual void RegisterVariables();
-  virtual void RegisterMissingVariables();
+  virtual void RegisterMissingVariables() override;
   void ImplicitSolve(const double dt, const mfem::Vector &X,
                      mfem::Vector &dX_dt) override;
 
   std::string alpha_coef_name, beta_coef_name;
 
 protected:
-  int myid_;
-  int num_procs_;
-  mfem::ParMesh *pmesh_;
-  int _order;
-  mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &_fespaces;
-  mfem::NamedFieldsMap<mfem::ParGridFunction> &_variables;
-  hephaestus::Sources &_sources;
-  hephaestus::BCMap _bc_map;
-  hephaestus::DomainProperties _domain_properties;
-  hephaestus::InputParameters _solver_options;
-
-  hephaestus::CurlCurlEquationSystem *_equation_system;
-  mfem::OperatorHandle blockA;
-  mfem::BlockVector trueX, trueRhs;
-  mfem::HypreParMatrix A1;
-  mfem::Vector X1, B1;
-  mfem::Array<int> block_trueOffsets;
-
-  mutable hephaestus::DefaultHCurlPCGSolver *a1_solver;
 };
 } // namespace hephaestus

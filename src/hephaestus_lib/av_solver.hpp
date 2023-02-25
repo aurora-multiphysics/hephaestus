@@ -7,8 +7,9 @@
 namespace hephaestus {
 
 class AVSolver : public TransientFormulation {
-  virtual void
-  SetMaterialCoefficients(hephaestus::DomainProperties &domain_properties);
+  virtual void SetMaterialCoefficients(
+      hephaestus::DomainProperties &domain_properties) override;
+  virtual void SetEquationSystem() override;
 
 public:
   AVSolver(mfem::ParMesh &pmesh, int order,
@@ -21,9 +22,7 @@ public:
 
   ~AVSolver(){};
 
-  void Init(mfem::Vector &X) override;
-  virtual void RegisterVariables();
-  virtual void RegisterMissingVariables();
+  virtual void RegisterMissingVariables() override;
   void ImplicitSolve(const double dt, const mfem::Vector &X,
                      mfem::Vector &dX_dt) override;
 
@@ -35,25 +34,22 @@ public:
   mfem::ParGridFunction b_;      // HDiv Magnetic Flux Density
 
 protected:
-  int myid_;
-  int num_procs_;
-  const int _order;
-  mfem::ParMesh *pmesh_;
-  mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &_fespaces;
-  mfem::NamedFieldsMap<mfem::ParGridFunction> &_variables;
-  hephaestus::Sources &_sources;
-  hephaestus::BCMap _bc_map;
-  hephaestus::DomainProperties _domain_properties;
-  hephaestus::InputParameters _solver_options;
-
-  hephaestus::AVEquationSystem *_equation_system;
-  mutable hephaestus::DefaultGMRESSolver *solver;
+  // int myid_;
+  // int num_procs_;
+  // const int _order;
+  // mfem::ParMesh *pmesh_;
+  // mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &_fespaces;
+  // mfem::NamedFieldsMap<mfem::ParGridFunction> &_variables;
+  // hephaestus::Sources &_sources;
+  // hephaestus::BCMap _bc_map;
+  // hephaestus::DomainProperties _domain_properties;
+  // hephaestus::InputParameters _solver_options;
+  // mutable hephaestus::DefaultGMRESSolver *solver;
 
   mfem::ParBilinearForm *a0, *a1, *m1;
   mfem::ParMixedBilinearForm *a01, *a10;
-  mfem::HypreParMatrix *A0, *A1, *A10, *A01, *blockA;
+  mfem::HypreParMatrix *A0, *A1, *A10, *A01;
   mfem::Vector *X0, *X1, *B0, *B1;
-  mfem::Array<int> block_trueOffsets;
 
   mfem::ParDiscreteLinearOperator *grad;
   mfem::ParDiscreteLinearOperator *curl;

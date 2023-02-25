@@ -389,8 +389,7 @@ void AVEquationSystem::addKernels(
       new mfem::TransformedCoefficient(
           &negCoef, domain_properties.scalar_property_map[beta_coef_name],
           prodFunc);
-  std::cout << beta_coef_name << std::endl;
-  std::cout << neg_beta_coef_name << std::endl;
+
   // (α∇×A_{n}, ∇×A') - careful about trial var name!
   hephaestus::InputParameters weakCurlCurlParams;
   weakCurlCurlParams.SetParam("VariableName", var_names.at(0));
@@ -412,11 +411,7 @@ void AVEquationSystem::addKernels(
   addKernel(test_var_names.at(0),
             new hephaestus::VectorFEMassKernel(vectorFEMassParams));
 
-  // a10(V, dA'/dt) = (σ ∇ V, dA'/dt)
-  // a10 = new mfem::ParMixedBilinearForm(H1FESpace_, HCurlFESpace_);
-  // a10->AddDomainIntegrator(new
-  // mfem::MixedVectorGradientIntegrator(*betaCoef));
-  // a10->Assemble();
+  // (σ ∇ V, dA'/dt)
   hephaestus::InputParameters mixedVectorGradientParams;
   mixedVectorGradientParams.SetParam("VariableName", test_var_names.at(0));
   mixedVectorGradientParams.SetParam("CoefficientName", beta_coef_name);
@@ -425,20 +420,13 @@ void AVEquationSystem::addKernels(
       new hephaestus::MixedVectorGradientKernel(mixedVectorGradientParams));
 
   // (σ ∇ V, ∇ V')
-  // a1 = new mfem::ParBilinearForm(H1FESpace_);
-  // a1->AddDomainIntegrator(new mfem::DiffusionIntegrator(*negBetaCoef));
-  // a1->Assemble();
   hephaestus::InputParameters diffusionParams;
   diffusionParams.SetParam("VariableName", test_var_names.at(1));
   diffusionParams.SetParam("CoefficientName", beta_coef_name);
   addKernel(test_var_names.at(1),
             new hephaestus::DiffusionKernel(diffusionParams));
 
-  // // (σdA/dt, ∇ V')
-  // a01 = new mfem::ParMixedBilinearForm(HCurlFESpace_, H1FESpace_);
-  // a01->AddDomainIntegrator(
-  //     new mfem::VectorFEWeakDivergenceIntegrator(*negBetaCoef));
-  // a01->Assemble();
+  // (σdA/dt, ∇ V')
   hephaestus::InputParameters vectorFEWeakDivergenceParams;
   vectorFEWeakDivergenceParams.SetParam("VariableName", test_var_names.at(1));
   vectorFEWeakDivergenceParams.SetParam("CoefficientName", beta_coef_name);

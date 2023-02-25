@@ -8,7 +8,9 @@ namespace hephaestus {
 class DualSolver : public TransientFormulation {
   virtual void
   SetMaterialCoefficients(hephaestus::DomainProperties &domain_properties);
+  virtual void SetEquationSystem() override{};
   virtual void RegisterVariables();
+  virtual void RegisterMissingVariables() override{};
 
 public:
   DualSolver(mfem::ParMesh &pmesh, int order,
@@ -45,23 +47,12 @@ public:
   std::map<std::string, mfem::socketstream *> socks_;
 
 protected:
-  int myid_;
-  int num_procs_;
-  mfem::ParMesh *pmesh_;
-  mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &_fespaces;
-  mfem::NamedFieldsMap<mfem::ParGridFunction> &_variables;
-  hephaestus::Sources &_sources;
-  hephaestus::BCMap _bc_map;
-  hephaestus::DomainProperties _domain_properties;
-  hephaestus::InputParameters _solver_options;
-
   mfem::ParBilinearForm *a1;
   mfem::HypreParMatrix *A1;
   mfem::Vector *X1, *B1;
 
   mfem::ParDiscreteLinearOperator *curl;
   mfem::ParMixedBilinearForm *weakCurl;
-  mutable hephaestus::DefaultHCurlPCGSolver *a1_solver;
 
   // temporary work vectors
   mfem::ParLinearForm *b1;
