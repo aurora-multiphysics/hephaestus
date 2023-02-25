@@ -1,6 +1,5 @@
 #pragma once
 #include "../common/pfem_extras.hpp"
-#include "formulation.hpp"
 #include "inputs.hpp"
 #include "sources.hpp"
 

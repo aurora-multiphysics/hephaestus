@@ -48,25 +48,8 @@ AVSolver::AVSolver(mfem::ParMesh &pmesh, int order,
                    hephaestus::DomainProperties &domain_properties,
                    hephaestus::Sources &sources,
                    hephaestus::InputParameters &solver_options)
-    : myid_(0), num_procs_(1), _order(order), pmesh_(&pmesh),
-      _fespaces(fespaces), _variables(variables), _bc_map(bc_map),
-      _sources(sources), _domain_properties(domain_properties),
-      _solver_options(solver_options), solver(NULL) {
-
-  // H1FESpace_(
-  //     new mfem::common::H1_ParFESpace(&pmesh, order, pmesh.Dimension())),
-  // HCurlFESpace_(
-  //     new mfem::common::ND_ParFESpace(&pmesh, order, pmesh.Dimension())),
-  // HDivFESpace_(
-  //     new mfem::common::RT_ParFESpace(&pmesh, order, pmesh.Dimension())),
-  // a0(NULL), a1(NULL), a01(NULL), a10(NULL), amg_a0(NULL), pcg_a0(NULL),
-  // ams_a0(NULL), pcg_a1(NULL), m1(NULL), negBetaCoef(NULL), grad(NULL),
-  // curl(NULL), curlCurl(NULL), p_(mfem::ParGridFunction(H1FESpace_)),
-  // u_(mfem::ParGridFunction(HCurlFESpace_)),
-  // dp_(mfem::ParGridFunction(H1FESpace_)),
-  // du_(mfem::ParGridFunction(HCurlFESpace_)),
-  // e_(mfem::ParGridFunction(HCurlFESpace_)),
-  // b_(mfem::ParGridFunction(HDivFESpace_))
+    : TransientFormulation(pmesh, order, fespaces, variables, bc_map,
+                           domain_properties, sources, solver_options) {
   // Initialize MPI variables
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh.GetComm(), &myid_);
@@ -116,71 +99,6 @@ void AVSolver::RegisterMissingVariables() {
   }
 }
 
-void AVSolver::RegisterVariables() {
-  RegisterMissingVariables();
-  local_test_vars = populateVectorFromNamedFieldsMap<mfem::ParGridFunction>(
-      _variables, state_var_names);
-  local_trial_vars = registerTimeDerivatives(state_var_names, _variables);
-
-  // Set operator size and block structure
-  block_trueOffsets.SetSize(local_test_vars.size() + 1);
-  block_trueOffsets[0] = 0;
-  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
-    block_trueOffsets[ind + 1] =
-        local_test_vars.at(ind)->ParFESpace()->TrueVSize();
-  }
-  block_trueOffsets.PartialSum();
-
-  true_offsets.SetSize(local_test_vars.size() + 1);
-  true_offsets[0] = 0;
-  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
-    true_offsets[ind + 1] = local_test_vars.at(ind)->ParFESpace()->GetVSize();
-  }
-  true_offsets.PartialSum();
-
-  this->height = true_offsets[local_test_vars.size()];
-  this->width = true_offsets[local_test_vars.size()];
-
-  // Populate vector of active auxiliary variables
-  active_aux_var_names.resize(0);
-  for (auto &aux_var_name : aux_var_names) {
-    if (_variables.Has(aux_var_name)) {
-      active_aux_var_names.push_back(aux_var_name);
-    }
-  }
-  // p_name = "electric_potential";
-  // p_display_name = "Electric Scalar Potential";
-
-  // u_name = "magnetic_vector_potential";
-  // u_display_name = "Magnetic Vector Potential";
-
-  // e_name = "electric_field";
-  // e_display_name = "Electric Field";
-
-  // b_name = "magnetic_flux_density";
-  // b_display_name = "Magnetic Flux Density";
-
-  // _variables.Register(u_name, &u_, false);
-  // _variables.Register(p_name, &p_, false);
-  // _variables.Register(e_name, &e_, false);
-  // _variables.Register(b_name, &b_, false);
-
-  // true_offsets.SetSize(3);
-  // true_offsets[0] = 0;
-  // true_offsets[1] = HCurlFESpace_->GetVSize();
-  // true_offsets[2] = H1FESpace_->GetVSize();
-  // true_offsets.PartialSum();
-
-  // block_trueOffsets.SetSize(3);
-  // block_trueOffsets[0] = 0;
-  // block_trueOffsets[1] = HCurlFESpace_->TrueVSize();
-  // block_trueOffsets[2] = H1FESpace_->TrueVSize();
-  // block_trueOffsets.PartialSum();
-
-  // this->height = true_offsets[2];
-  // this->width = true_offsets[2];
-}
-
 void AVSolver::SetMaterialCoefficients(
     hephaestus::DomainProperties &domain_properties) {
   if (domain_properties.scalar_property_map.count("magnetic_permeability") ==
@@ -206,20 +124,7 @@ void AVSolver::SetMaterialCoefficients(
           fracFunc);
 }
 
-void AVSolver::Init(mfem::Vector &X) {
-  // Define material property coefficients
-  SetMaterialCoefficients(_domain_properties);
-
-  _sources.Init(_variables, _fespaces, _bc_map, _domain_properties);
-
-  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
-    local_test_vars.at(ind)->MakeRef(local_test_vars.at(ind)->ParFESpace(),
-                                     const_cast<mfem::Vector &>(X),
-                                     true_offsets[ind]);
-    *(local_test_vars.at(ind)) = 0.0;
-    *(local_trial_vars.at(ind)) = 0.0;
-  }
-
+void AVSolver::SetEquationSystem() {
   hephaestus::InputParameters av_system_params;
   av_system_params.SetParam("VariableNames", state_var_names);
   av_system_params.SetParam("TimeDerivativeNames",
@@ -228,26 +133,6 @@ void AVSolver::Init(mfem::Vector &X) {
   av_system_params.SetParam("BetaCoefName", beta_coef_name);
 
   _equation_system = new hephaestus::AVEquationSystem(av_system_params);
-  _equation_system->Init(_variables, _fespaces, _bc_map, _domain_properties);
-  _equation_system->buildEquationSystem(_bc_map, _sources);
-
-  // this->buildCurl(alphaCoef); // (α∇×u_{n}, ∇×u')
-  // this->buildGrad();          // (s0_{n+1}, u')
-  // b0 = new mfem::ParLinearForm(HCurlFESpace_);
-  // b1 = new mfem::ParLinearForm(H1FESpace_);
-  // b01 = new mfem::ParLinearForm(HCurlFESpace_);
-  // b10 = new mfem::ParLinearForm(H1FESpace_);
-
-  // A0 = new mfem::HypreParMatrix;
-  // A1 = new mfem::HypreParMatrix;
-  // A01 = new mfem::HypreParMatrix;
-  // A10 = new mfem::HypreParMatrix;
-  // blockA = new mfem::HypreParMatrix;
-
-  // X0 = new mfem::Vector;
-  // X1 = new mfem::Vector;
-  // B0 = new mfem::Vector;
-  // B1 = new mfem::Vector;
 }
 
 /*
@@ -280,8 +165,6 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   _equation_system->setTimeStep(dt);
   _equation_system->updateEquationSystem(_bc_map, _sources);
 
-  mfem::OperatorHandle blockA;
-  mfem::BlockVector trueX(block_trueOffsets), trueRhs(block_trueOffsets);
   _equation_system->FormLinearSystem(blockA, trueX, trueRhs);
   if (solver != NULL) {
     delete solver;

@@ -21,44 +21,43 @@ populateVectorFromNamedFieldsMap(mfem::NamedFieldsMap<T> nfmap,
 
 // Specifies output interfaces of a time-domain EM formulation.
 class TransientFormulation : public mfem::TimeDependentOperator {
+  virtual void
+  SetMaterialCoefficients(hephaestus::DomainProperties &domain_properties){};
+  virtual void SetEquationSystem() = 0;
 
 public:
-  TransientFormulation(){};
+  TransientFormulation(
+      mfem::ParMesh &pmesh, int order,
+      mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+      mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+      hephaestus::BCMap &bc_map,
+      hephaestus::DomainProperties &domain_properties,
+      hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
+      : myid_(0), num_procs_(1), _order(order), pmesh_(&pmesh),
+        _fespaces(fespaces), _variables(variables), _bc_map(bc_map),
+        _sources(sources), _domain_properties(domain_properties),
+        _solver_options(solver_options){};
 
   ~TransientFormulation(){};
 
-  virtual void Init(mfem::Vector &X){};
+  virtual void Init(mfem::Vector &X);
 
-  virtual void RegisterVariables() = 0;
+  virtual void RegisterMissingVariables() = 0;
+
+  virtual void RegisterVariables();
+
   virtual void RegisterAuxKernels(hephaestus::AuxKernels &auxkernels){};
-  std::string GetTimeDerivativeName(std::string name) {
-    return std::string("d") + name + std::string("_dt");
-  }
+
+  std::string GetTimeDerivativeName(std::string name);
+
   std::vector<std::string>
-  GetTimeDerivativeNames(std::vector<std::string> gridfunction_names) {
-    std::vector<std::string> time_derivative_names;
-    for (auto &gridfunction_name : gridfunction_names) {
-      time_derivative_names.push_back(GetTimeDerivativeName(gridfunction_name));
-    }
-    return time_derivative_names;
-  }
+  GetTimeDerivativeNames(std::vector<std::string> gridfunction_names);
+
   std::vector<mfem::ParGridFunction *> registerTimeDerivatives(
       std::vector<std::string> gridfunction_names,
-      mfem::NamedFieldsMap<mfem::ParGridFunction> &gridfunctions) {
-    std::vector<mfem::ParGridFunction *> time_derivatives;
+      mfem::NamedFieldsMap<mfem::ParGridFunction> &gridfunctions);
 
-    for (auto &gridfunction_name : gridfunction_names) {
-      gridfunctions.Register(
-          GetTimeDerivativeName(gridfunction_name),
-          new mfem::ParGridFunction(
-              gridfunctions.Get(gridfunction_name)->ParFESpace()),
-          true);
-      time_derivatives.push_back(
-          gridfunctions.Get(GetTimeDerivativeName(gridfunction_name)));
-    }
-    return time_derivatives;
-  }
-  mfem::Array<int> true_offsets;
+  mfem::Array<int> true_offsets, block_trueOffsets;
   // Vector of names of state variables used in formulation, ordered by
   // appearance in block vector during solve.
   std::vector<std::string> state_var_names;
@@ -71,7 +70,26 @@ public:
 
   std::vector<mfem::ParGridFunction *> local_trial_vars, local_test_vars;
 
+  hephaestus::TimeDependentEquationSystem *_equation_system;
+
   mfem::ConstantCoefficient oneCoef =
       mfem::ConstantCoefficient(1.0); // Auxiliary coefficient
+
+  int myid_;
+  int num_procs_;
+  const int _order;
+  mfem::ParMesh *pmesh_;
+  mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &_fespaces;
+  mfem::NamedFieldsMap<mfem::ParGridFunction> &_variables;
+  hephaestus::Sources &_sources;
+  hephaestus::BCMap _bc_map;
+  hephaestus::DomainProperties _domain_properties;
+  hephaestus::InputParameters _solver_options;
+
+  mutable hephaestus::DefaultGMRESSolver *solver = NULL;
+  mutable hephaestus::DefaultHCurlPCGSolver *a1_solver = NULL;
+
+  mfem::OperatorHandle blockA;
+  mfem::BlockVector trueX, trueRhs;
 };
 } // namespace hephaestus

@@ -50,16 +50,15 @@ DualSolver::DualSolver(
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
     hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
-    : myid_(0), num_procs_(1), pmesh_(&pmesh), _fespaces(fespaces),
-      _variables(variables), _bc_map(bc_map), _sources(sources),
-      _domain_properties(domain_properties), _solver_options(solver_options),
+    : TransientFormulation(pmesh, order, fespaces, variables, bc_map,
+                           domain_properties, sources, solver_options),
       H1FESpace_(
           new mfem::common::H1_ParFESpace(&pmesh, order, pmesh.Dimension())),
       HCurlFESpace_(
           new mfem::common::ND_ParFESpace(&pmesh, order, pmesh.Dimension())),
       HDivFESpace_(
           new mfem::common::RT_ParFESpace(&pmesh, order, pmesh.Dimension())),
-      a1(NULL), a1_solver(NULL), curl(NULL), weakCurl(NULL),
+      a1(NULL), curl(NULL), weakCurl(NULL),
       u_(mfem::ParGridFunction(HCurlFESpace_)),
       v_(mfem::ParGridFunction(HDivFESpace_)),
       du_(mfem::ParGridFunction(HCurlFESpace_)),

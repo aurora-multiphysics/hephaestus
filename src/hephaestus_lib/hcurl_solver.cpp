@@ -55,10 +55,8 @@ HCurlSolver::HCurlSolver(
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
     hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
-    : myid_(0), num_procs_(1), pmesh_(&pmesh), _order(order),
-      _fespaces(fespaces), _variables(variables), _bc_map(bc_map),
-      _sources(sources), _domain_properties(domain_properties),
-      _solver_options(solver_options), a1_solver(NULL) {
+    : TransientFormulation(pmesh, order, fespaces, variables, bc_map,
+                           domain_properties, sources, solver_options) {
   // Initialize MPI variables
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh.GetComm(), &myid_);
@@ -68,33 +66,6 @@ HCurlSolver::HCurlSolver(
 
   aux_var_names.resize(1);
   aux_var_names.at(0) = "curl h_curl_var";
-}
-
-// Should be identical to AVSolver
-void HCurlSolver::Init(mfem::Vector &X) {
-  // Define material property coefficients
-  SetMaterialCoefficients(_domain_properties);
-
-  _sources.Init(_variables, _fespaces, _bc_map, _domain_properties);
-
-  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
-    local_test_vars.at(ind)->MakeRef(local_test_vars.at(ind)->ParFESpace(),
-                                     const_cast<mfem::Vector &>(X),
-                                     true_offsets[ind]);
-    *(local_test_vars.at(ind)) = 0.0;
-    *(local_trial_vars.at(ind)) = 0.0;
-  }
-
-  hephaestus::InputParameters weak_form_params;
-  weak_form_params.SetParam("VariableNames", state_var_names);
-  weak_form_params.SetParam("TimeDerivativeNames",
-                            GetTimeDerivativeNames(state_var_names));
-  weak_form_params.SetParam("AlphaCoefName", alpha_coef_name);
-  weak_form_params.SetParam("BetaCoefName", beta_coef_name);
-
-  _equation_system = new hephaestus::CurlCurlEquationSystem(weak_form_params);
-  _equation_system->Init(_variables, _fespaces, _bc_map, _domain_properties);
-  _equation_system->buildEquationSystem(_bc_map, _sources);
 }
 
 /*
@@ -157,51 +128,6 @@ void HCurlSolver::RegisterMissingVariables() {
   }
 }
 
-// Should be identical to AVSolver
-void HCurlSolver::RegisterVariables() {
-  RegisterMissingVariables();
-  local_test_vars = populateVectorFromNamedFieldsMap<mfem::ParGridFunction>(
-      _variables, state_var_names);
-  local_trial_vars = registerTimeDerivatives(state_var_names, _variables);
-
-  // Set operator size and block structure
-  block_trueOffsets.SetSize(local_test_vars.size() + 1);
-  block_trueOffsets[0] = 0;
-  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
-    block_trueOffsets[ind + 1] =
-        local_test_vars.at(ind)->ParFESpace()->TrueVSize();
-  }
-  block_trueOffsets.PartialSum();
-  trueX.Update(block_trueOffsets);
-  trueRhs.Update(block_trueOffsets);
-
-  true_offsets.SetSize(local_test_vars.size() + 1);
-  true_offsets[0] = 0;
-  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
-    true_offsets[ind + 1] = local_test_vars.at(ind)->ParFESpace()->GetVSize();
-  }
-  true_offsets.PartialSum();
-
-  this->height = true_offsets[local_test_vars.size()];
-  this->width = true_offsets[local_test_vars.size()];
-
-  HYPRE_BigInt state_dofs = true_offsets[local_test_vars.size()];
-  if (myid_ == 0) {
-    std::cout << "Total number of         DOFs: " << state_dofs << std::endl;
-    std::cout << "------------------------------------" << std::endl;
-    std::cout << "Total number of H(Curl) DOFs: " << state_dofs << std::endl;
-    std::cout << "------------------------------------" << std::endl;
-  }
-
-  // Populate vector of active auxiliary variables
-  active_aux_var_names.resize(0);
-  for (auto &aux_var_name : aux_var_names) {
-    if (_variables.Has(aux_var_name)) {
-      active_aux_var_names.push_back(aux_var_name);
-    }
-  }
-}
-
 void HCurlSolver::SetMaterialCoefficients(
     hephaestus::DomainProperties &domain_properties) {
   if (domain_properties.scalar_property_map.count("alpha") == 0) {
@@ -214,6 +140,17 @@ void HCurlSolver::SetMaterialCoefficients(
   }
   alpha_coef_name = std::string("alpha");
   beta_coef_name = std::string("beta");
+}
+
+void HCurlSolver::SetEquationSystem() {
+  hephaestus::InputParameters weak_form_params;
+  weak_form_params.SetParam("VariableNames", state_var_names);
+  weak_form_params.SetParam("TimeDerivativeNames",
+                            GetTimeDerivativeNames(state_var_names));
+  weak_form_params.SetParam("AlphaCoefName", alpha_coef_name);
+  weak_form_params.SetParam("BetaCoefName", beta_coef_name);
+
+  _equation_system = new hephaestus::CurlCurlEquationSystem(weak_form_params);
 }
 
 } // namespace hephaestus
