@@ -124,6 +124,7 @@ void AVSolver::SetMaterialCoefficients(
           fracFunc);
 }
 
+// TODO: Pass AVEquationSystem as input into AVSolver
 void AVSolver::SetEquationSystem() {
   hephaestus::InputParameters av_system_params;
   av_system_params.SetParam("VariableNames", state_var_names);

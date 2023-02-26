@@ -1,4 +1,3 @@
-#pragma once
 #include "formulation.hpp"
 
 namespace hephaestus {

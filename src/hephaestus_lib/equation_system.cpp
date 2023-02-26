@@ -154,7 +154,7 @@ void EquationSystem::Init(
         new mfem::ParGridFunction(variables.Get(test_var_name)->ParFESpace()));
   }
   // Add optional kernels to the EquationSystem
-  addKernels(variables, fespaces, bc_map, domain_properties);
+  addKernels();
 
   // for (auto &test_var_name : test_var_names) {
 
@@ -300,7 +300,15 @@ TimeDependentEquationSystem::TimeDependentEquationSystem(
       dtCoef(1.0) {}
 
 void TimeDependentEquationSystem::setTimeStep(double dt) {
-  dtCoef.constant = dt;
+  if (fabs(dt - dtCoef.constant) > 1.0e-12 * dt) {
+    dtCoef.constant = dt;
+    for (int i = 0; i < test_var_names.size(); i++) {
+      auto test_var_name = test_var_names.at(i);
+      auto blf = blfs.Get(test_var_name);
+      blf->Update();
+      blf->Assemble();
+    }
+  }
 }
 
 void TimeDependentEquationSystem::updateEquationSystem(
@@ -318,17 +326,20 @@ CurlCurlEquationSystem::CurlCurlEquationSystem(
   test_var_names.at(0) = var_time_derivative_names.at(0);
 }
 
-void CurlCurlEquationSystem::addKernels(
+void CurlCurlEquationSystem::Init(
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     hephaestus::BCMap &bc_map,
     hephaestus::DomainProperties &domain_properties) {
-
   domain_properties.scalar_property_map[dtalpha_coef_name] =
       new mfem::TransformedCoefficient(
           &dtCoef, domain_properties.scalar_property_map[alpha_coef_name],
           prodFunc);
+  TimeDependentEquationSystem::Init(variables, fespaces, bc_map,
+                                    domain_properties);
+}
 
+void CurlCurlEquationSystem::addKernels() {
   // (α∇×u_{n}, ∇×u')
   hephaestus::InputParameters weakCurlCurlParams;
   weakCurlCurlParams.SetParam("VariableName", var_names.at(0));
@@ -351,18 +362,6 @@ void CurlCurlEquationSystem::addKernels(
             new hephaestus::VectorFEMassKernel(vectorFEMassParams));
 }
 
-void CurlCurlEquationSystem::setTimeStep(double dt) {
-  if (fabs(dt - dtCoef.constant) > 1.0e-12 * dt) {
-    TimeDependentEquationSystem::setTimeStep(dt);
-    for (int i = 0; i < test_var_names.size(); i++) {
-      auto test_var_name = test_var_names.at(i);
-      auto blf = blfs.Get(test_var_name);
-      blf->Update();
-      blf->Assemble();
-    }
-  }
-}
-
 AVEquationSystem::AVEquationSystem(const hephaestus::InputParameters &params)
     : TimeDependentEquationSystem(params),
       alpha_coef_name(params.GetParam<std::string>("AlphaCoefName")),
@@ -374,22 +373,24 @@ AVEquationSystem::AVEquationSystem(const hephaestus::InputParameters &params)
   test_var_names.at(1) = var_names.at(1);
 }
 
-void AVEquationSystem::addKernels(
+void AVEquationSystem::Init(
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     hephaestus::BCMap &bc_map,
     hephaestus::DomainProperties &domain_properties) {
-
   domain_properties.scalar_property_map[dtalpha_coef_name] =
       new mfem::TransformedCoefficient(
           &dtCoef, domain_properties.scalar_property_map[alpha_coef_name],
           prodFunc);
-
   domain_properties.scalar_property_map[neg_beta_coef_name] =
       new mfem::TransformedCoefficient(
           &negCoef, domain_properties.scalar_property_map[beta_coef_name],
           prodFunc);
+  TimeDependentEquationSystem::Init(variables, fespaces, bc_map,
+                                    domain_properties);
+}
 
+void AVEquationSystem::addKernels() {
   // (α∇×A_{n}, ∇×A') - careful about trial var name!
   hephaestus::InputParameters weakCurlCurlParams;
   weakCurlCurlParams.SetParam("VariableName", var_names.at(0));
@@ -433,18 +434,6 @@ void AVEquationSystem::addKernels(
   addKernel(test_var_names.at(0), test_var_names.at(1),
             new hephaestus::VectorFEWeakDivergenceKernel(
                 vectorFEWeakDivergenceParams));
-}
-
-void AVEquationSystem::setTimeStep(double dt) {
-  if (fabs(dt - dtCoef.constant) > 1.0e-12 * dt) {
-    TimeDependentEquationSystem::setTimeStep(dt);
-    for (int i = 0; i < test_var_names.size(); i++) {
-      auto test_var_name = test_var_names.at(i);
-      auto blf = blfs.Get(test_var_name);
-      blf->Update();
-      blf->Assemble();
-    }
-  }
 }
 
 } // namespace hephaestus

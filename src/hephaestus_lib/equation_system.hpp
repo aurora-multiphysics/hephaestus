@@ -37,11 +37,7 @@ public:
   virtual void applyBoundaryConditions(hephaestus::BCMap &bc_map);
 
   // override to add kernels
-  virtual void
-  addKernels(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-             const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-             hephaestus::BCMap &bc_map,
-             hephaestus::DomainProperties &domain_properties){};
+  virtual void addKernels(){};
 
   // Build forms
   virtual void
@@ -104,13 +100,11 @@ public:
   CurlCurlEquationSystem(const hephaestus::InputParameters &params);
   ~CurlCurlEquationSystem(){};
   virtual void
-  addKernels(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-             const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-             hephaestus::BCMap &bc_map,
-             hephaestus::DomainProperties &domain_properties) override;
-  virtual void setTimeStep(double dt) override;
-  // virtual void updateEquationSystem(hephaestus::BCMap &bc_map,
-  //                             hephaestus::Sources &sources) override;
+  Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+       const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+       hephaestus::BCMap &bc_map,
+       hephaestus::DomainProperties &domain_properties) override;
+  virtual void addKernels() override;
 
   std::string coupled_variable_name, alpha_coef_name, beta_coef_name,
       dtalpha_coef_name;
@@ -121,11 +115,11 @@ public:
   AVEquationSystem(const hephaestus::InputParameters &params);
   ~AVEquationSystem(){};
   virtual void
-  addKernels(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-             const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-             hephaestus::BCMap &bc_map,
-             hephaestus::DomainProperties &domain_properties) override;
-  virtual void setTimeStep(double dt) override;
+  Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+       const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+       hephaestus::BCMap &bc_map,
+       hephaestus::DomainProperties &domain_properties);
+  virtual void addKernels() override;
 
   std::string coupled_variable_name, alpha_coef_name, beta_coef_name,
       dtalpha_coef_name, neg_beta_coef_name;
