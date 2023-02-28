@@ -105,7 +105,7 @@ void HCurlSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
       _solver_options, *blockA.As<mfem::HypreParMatrix>(),
       _equation_system->test_pfespaces.at(0));
   a1_solver->Mult(trueRhs, trueX);
-  _equation_system->RecoverFEMSolution(trueX, *local_trial_vars.at(0));
+  _equation_system->RecoverFEMSolution(trueX, _variables);
 }
 
 void HCurlSolver::RegisterMissingVariables() {

@@ -58,8 +58,9 @@ public:
                                 mfem::BlockVector &trueRHS);
 
   // Update variable from solution vector after solve
-  virtual void RecoverFEMSolution(mfem::Vector &X,
-                                  mfem::ParGridFunction &test_variable);
+  virtual void
+  RecoverFEMSolution(mfem::BlockVector &trueX,
+                     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables);
 
 protected:
   // Variables for setting Dirichlet BCs
