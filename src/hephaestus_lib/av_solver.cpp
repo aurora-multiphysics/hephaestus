@@ -40,6 +40,10 @@
 #include "av_solver.hpp"
 
 namespace hephaestus {
+// AVFormulation ->FormulationFactory (handles variable names being passed to
+// constructors) AVSolver -> AVTimeDomainOperator TransientExecutioner inputs:
+// adds EquationSystem and TimeDomainOperator, removes Sources
+//
 
 AVSolver::AVSolver(mfem::ParMesh &pmesh, int order,
                    mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
@@ -176,13 +180,7 @@ void AVSolver::ImplicitSolve(const double dt, const mfem::Vector &X,
   //                                             pmesh_->GetComm());
 
   solver->Mult(trueRhs, trueX);
-  // _equation_system->RecoverFEMSolution(trueX, *local_trial_vars.at(0));
-
-  trueX.GetBlock(0).SyncAliasMemory(trueX);
-  trueX.GetBlock(1).SyncAliasMemory(trueX);
-
-  local_trial_vars.at(0)->Distribute(&(trueX.GetBlock(0)));
-  local_test_vars.at(1)->Distribute(&(trueX.GetBlock(1)));
+  _equation_system->RecoverFEMSolution(trueX, _variables);
 
   // trueX.GetBlock(0).SyncAliasMemory(trueX);
   // trueX.GetBlock(1).SyncAliasMemory(trueX);

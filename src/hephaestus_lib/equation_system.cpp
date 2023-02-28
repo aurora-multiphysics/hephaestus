@@ -130,13 +130,13 @@ void EquationSystem::FormLinearSystem(mfem::OperatorHandle &op,
   op.Reset(mfem::HypreParMatrixFromBlocks(hBlocks));
 }
 
-void EquationSystem::RecoverFEMSolution(mfem::Vector &X,
-                                        mfem::ParGridFunction &test_variable) {
+void EquationSystem::RecoverFEMSolution(
+    mfem::BlockVector &trueX,
+    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables) {
   for (int i = 0; i < test_var_names.size(); i++) {
     auto &test_var_name = test_var_names.at(i);
-    auto blf = blfs.Get(test_var_name);
-    auto lf = lfs.Get(test_var_name);
-    blf->RecoverFEMSolution(X, *lf, test_variable);
+    trueX.GetBlock(i).SyncAliasMemory(trueX);
+    variables.Get(test_var_name)->Distribute(&(trueX.GetBlock(i)));
   }
 }
 
