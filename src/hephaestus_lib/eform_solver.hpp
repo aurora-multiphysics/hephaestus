@@ -5,19 +5,17 @@
 
 namespace hephaestus {
 
-class EFormSolver : public hephaestus::HCurlSolver {
-  virtual void SetMaterialCoefficients(
-      hephaestus::DomainProperties &domain_properties) override;
-
+class EFormulation : public hephaestus::HCurlFormulation {
 public:
-  EFormSolver(mfem::ParMesh &pmesh, int order,
-              mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-              mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-              hephaestus::BCMap &bc_map,
-              hephaestus::DomainProperties &domain_properties,
-              hephaestus::Sources &sources,
-              hephaestus::InputParameters &solver_options);
+  EFormulation();
 
-  ~EFormSolver(){};
+  ~EFormulation(){};
+
+  virtual hephaestus::TimeDependentEquationSystem *
+  CreateEquationSystem() override;
+
+  virtual void RegisterCoefficients(
+      hephaestus::DomainProperties &domain_properties) override;
 };
+
 } // namespace hephaestus

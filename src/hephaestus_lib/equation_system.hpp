@@ -10,6 +10,7 @@ mixed and nonlinear forms) and build methods
 */
 class EquationSystem {
 public:
+  EquationSystem(){};
   EquationSystem(const hephaestus::InputParameters &params);
 
   ~EquationSystem(){};
@@ -87,6 +88,7 @@ Class to store weak form components for time dependent PDEs
 */
 class TimeDependentEquationSystem : public EquationSystem {
 public:
+  TimeDependentEquationSystem(){};
   TimeDependentEquationSystem(const hephaestus::InputParameters &params);
   ~TimeDependentEquationSystem(){};
   virtual void setTimeStep(double dt);

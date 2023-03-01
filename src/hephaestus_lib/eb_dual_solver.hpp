@@ -5,20 +5,17 @@
 
 namespace hephaestus {
 
-class EBDualSolver : public hephaestus::DualSolver {
-  virtual void SetMaterialCoefficients(
-      hephaestus::DomainProperties &domain_properties) override;
-  virtual void RegisterVariables() override;
-
+class EBDualFormulation : public hephaestus::DualFormulation {
 public:
-  EBDualSolver(mfem::ParMesh &pmesh, int order,
-               mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-               mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-               hephaestus::BCMap &bc_map,
-               hephaestus::DomainProperties &domain_properties,
-               hephaestus::Sources &sources,
-               hephaestus::InputParameters &solver_options);
+  EBDualFormulation();
 
-  ~EBDualSolver(){};
+  ~EBDualFormulation(){};
+
+  virtual hephaestus::TimeDependentEquationSystem *
+  CreateEquationSystem() override;
+
+  virtual void RegisterCoefficients(
+      hephaestus::DomainProperties &domain_properties) override;
 };
+
 } // namespace hephaestus
