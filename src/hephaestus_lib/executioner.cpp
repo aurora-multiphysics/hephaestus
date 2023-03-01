@@ -42,23 +42,30 @@ void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
 
   std::string formulation_name(params.GetParam<std::string>("FormulationName"));
 
-  formulation = hephaestus::Factory::createTransientFormulation(
-      formulation_name, *pmesh, order, *fespaces, *gridfunctions, *bc_map,
-      *domain_properties, *sources, *solver_options);
+  formulation =
+      hephaestus::Factory::createTransientFormulation(formulation_name);
 
-  formulation->RegisterVariables();
-  formulation->RegisterAuxKernels(*auxkernels);
+  // needs true_offsets set here:
+  formulation->RegisterMissingVariables(*pmesh, *fespaces, *gridfunctions);
+  formulation->RegisterAuxKernels(*gridfunctions, *auxkernels);
+  formulation->RegisterCoefficients(*domain_properties);
 
   fespaces->Init(*pmesh);
   gridfunctions->Init(*pmesh, *fespaces);
   auxkernels->Init(*gridfunctions, *domain_properties);
 
-  F = new mfem::BlockVector(formulation->true_offsets); // Vector of dofs
-  formulation->Init(*F); // Set up initial conditions
+  formulation->CreateTimeDomainOperator(
+      *pmesh, order, *fespaces, *gridfunctions, *bc_map, *domain_properties,
+      *sources, *solver_options);
 
-  formulation->SetTime(t);
+  formulation->td_operator->SetVariables();
+  F = new mfem::BlockVector(
+      formulation->td_operator->true_offsets); // Vector of dofs
+  formulation->td_operator->Init(*F);          // Set up initial conditions
+
+  formulation->td_operator->SetTime(t);
   ode_solver = new mfem::BackwardEulerSolver;
-  ode_solver->Init(*formulation);
+  ode_solver->Init(*formulation->td_operator);
 
   postprocessors->Init(*gridfunctions, *domain_properties);
   auxkernels->Solve(t);

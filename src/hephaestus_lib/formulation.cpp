@@ -2,10 +2,12 @@
 
 namespace hephaestus {
 
-void TransientFormulation::Init(mfem::Vector &X) {
+void TimeDomainEquationSystemOperator::Init(mfem::Vector &X) {
   // Define material property coefficients
-  SetMaterialCoefficients(_domain_properties);
-  SetEquationSystem();
+  // SetMaterialCoefficients(_domain_properties);
+
+  // SetEquationSystem();
+
   _sources.Init(_variables, _fespaces, _bc_map, _domain_properties);
 
   for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
@@ -20,11 +22,12 @@ void TransientFormulation::Init(mfem::Vector &X) {
   _equation_system->buildEquationSystem(_bc_map, _sources);
 };
 
-void TransientFormulation::RegisterVariables() {
-  RegisterMissingVariables();
+void TimeDomainEquationSystemOperator::SetVariables() {
+  state_var_names = _equation_system->var_names;
   local_test_vars = populateVectorFromNamedFieldsMap<mfem::ParGridFunction>(
-      _variables, state_var_names);
-  local_trial_vars = registerTimeDerivatives(state_var_names, _variables);
+      _variables, _equation_system->var_names);
+  local_trial_vars = populateVectorFromNamedFieldsMap<mfem::ParGridFunction>(
+      _variables, _equation_system->var_time_derivative_names);
 
   // Set operator size and block structure
   block_trueOffsets.SetSize(local_test_vars.size() + 1);
@@ -70,7 +73,7 @@ std::vector<std::string> TransientFormulation::GetTimeDerivativeNames(
 }
 
 std::vector<mfem::ParGridFunction *>
-TransientFormulation::registerTimeDerivatives(
+TransientFormulation::RegisterTimeDerivatives(
     std::vector<std::string> gridfunction_names,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &gridfunctions) {
   std::vector<mfem::ParGridFunction *> time_derivatives;
