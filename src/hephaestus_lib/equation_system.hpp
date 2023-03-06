@@ -98,7 +98,7 @@ public:
                                     hephaestus::Sources &sources);
   mfem::ConstantCoefficient dtCoef; // Coefficient for timestep scaling
   std::vector<std::string> var_time_derivative_names;
-};
+}; // namespace hephaestus
 
 class CurlCurlEquationSystem : public TimeDependentEquationSystem {
 public:
