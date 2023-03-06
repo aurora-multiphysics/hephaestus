@@ -37,7 +37,8 @@ public:
   ~TimeDomainEquationSystemOperator(){};
 
   virtual void Init(mfem::Vector &X);
-
+  virtual void ImplicitSolve(const double dt, const mfem::Vector &X,
+                             mfem::Vector &dX_dt) override;
   void
   SetEquationSystem(hephaestus::TimeDependentEquationSystem *equation_system) {
     _equation_system = equation_system;
@@ -66,10 +67,10 @@ public:
   mfem::ParMesh *pmesh_;
   mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &_fespaces;
   mfem::NamedFieldsMap<mfem::ParGridFunction> &_variables;
+  hephaestus::BCMap &_bc_map;
   hephaestus::Sources &_sources;
-  hephaestus::BCMap _bc_map;
-  hephaestus::DomainProperties _domain_properties;
-  hephaestus::InputParameters _solver_options;
+  hephaestus::DomainProperties &_domain_properties;
+  hephaestus::InputParameters &_solver_options;
 
   mutable hephaestus::DefaultGMRESSolver *solver = NULL;
   mutable hephaestus::DefaultHCurlPCGSolver *a1_solver = NULL;
@@ -98,7 +99,8 @@ public:
   GetTimeDerivativeNames(std::vector<std::string> gridfunction_names);
 
   virtual hephaestus::TimeDependentEquationSystem *CreateEquationSystem() {
-    equation_system = new TimeDependentEquationSystem();
+    hephaestus::InputParameters params;
+    equation_system = new TimeDependentEquationSystem(params);
     return equation_system;
   };
 
@@ -111,13 +113,17 @@ public:
       hephaestus::DomainProperties &domain_properties,
       hephaestus::Sources &sources,
       hephaestus::InputParameters &solver_options) {
-    return NULL;
+    td_operator = new hephaestus::TimeDomainEquationSystemOperator(
+        pmesh, order, fespaces, variables, bc_map, domain_properties, sources,
+        solver_options);
+    td_operator->SetEquationSystem(equation_system);
+    return td_operator;
   };
 
   virtual void RegisterMissingVariables(
       mfem::ParMesh &pmesh,
       mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-      mfem::NamedFieldsMap<mfem::ParGridFunction> &variables) = 0;
+      mfem::NamedFieldsMap<mfem::ParGridFunction> &variables){};
 
   std::vector<mfem::ParGridFunction *> RegisterTimeDerivatives(
       std::vector<std::string> gridfunction_names,

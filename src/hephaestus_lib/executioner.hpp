@@ -32,7 +32,6 @@ private:
   std::map<std::string, mfem::DataCollection *> *data_collections;
   hephaestus::InputParameters *solver_options;
 
-  hephaestus::TransientFormulation *formulation;
   mfem::ODESolver *ode_solver;
   mfem::BlockVector *F;
 
@@ -50,6 +49,7 @@ public:
   void EnableVisualisation() { visualization = true; };
   hephaestus::FESpaces *fespaces;
   hephaestus::GridFunctions *gridfunctions;
+  hephaestus::TransientFormulation *formulation;
 };
 
 } // namespace hephaestus
