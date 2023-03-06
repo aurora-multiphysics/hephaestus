@@ -2,6 +2,19 @@
 
 namespace hephaestus {
 
+std::string GetTimeDerivativeName(std::string name) {
+  return std::string("d") + name + std::string("_dt");
+}
+
+std::vector<std::string>
+GetTimeDerivativeNames(std::vector<std::string> gridfunction_names) {
+  std::vector<std::string> time_derivative_names;
+  for (auto &gridfunction_name : gridfunction_names) {
+    time_derivative_names.push_back(GetTimeDerivativeName(gridfunction_name));
+  }
+  return time_derivative_names;
+}
+
 void TimeDomainEquationSystemOperator::Init(mfem::Vector &X) {
   // Define material property coefficients
   // SetMaterialCoefficients(_domain_properties);
@@ -21,6 +34,36 @@ void TimeDomainEquationSystemOperator::Init(mfem::Vector &X) {
   _equation_system->Init(_variables, _fespaces, _bc_map, _domain_properties);
   _equation_system->buildEquationSystem(_bc_map, _sources);
 };
+
+void TimeDomainEquationSystemOperator::ImplicitSolve(const double dt,
+                                                     const mfem::Vector &X,
+                                                     mfem::Vector &dX_dt) {
+  dX_dt = 0.0;
+  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
+    local_test_vars.at(ind)->MakeRef(local_test_vars.at(ind)->ParFESpace(),
+                                     const_cast<mfem::Vector &>(X),
+                                     true_offsets[ind]);
+    local_trial_vars.at(ind)->MakeRef(local_trial_vars.at(ind)->ParFESpace(),
+                                      dX_dt, true_offsets[ind]);
+  }
+  _domain_properties.SetTime(this->GetTime());
+  _equation_system->setTimeStep(dt);
+  _equation_system->updateEquationSystem(_bc_map, _sources);
+
+  _equation_system->FormLinearSystem(blockA, trueX, trueRhs);
+  if (solver != NULL) {
+    delete solver;
+  }
+  solver = new hephaestus::DefaultGMRESSolver(
+      _solver_options, *blockA.As<mfem::HypreParMatrix>());
+  solver->Mult(trueRhs, trueX);
+  _equation_system->RecoverFEMSolution(trueX, _variables);
+}
+
+void TimeDomainEquationSystemOperator::SetEquationSystem(
+    hephaestus::TimeDependentEquationSystem *equation_system) {
+  _equation_system = equation_system;
+}
 
 void TimeDomainEquationSystemOperator::SetVariables() {
   state_var_names = _equation_system->var_names;
@@ -59,43 +102,30 @@ void TimeDomainEquationSystemOperator::SetVariables() {
   }
 };
 
-void TimeDomainEquationSystemOperator::ImplicitSolve(const double dt,
-                                                     const mfem::Vector &X,
-                                                     mfem::Vector &dX_dt) {
-  dX_dt = 0.0;
-  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
-    local_test_vars.at(ind)->MakeRef(local_test_vars.at(ind)->ParFESpace(),
-                                     const_cast<mfem::Vector &>(X),
-                                     true_offsets[ind]);
-    local_trial_vars.at(ind)->MakeRef(local_trial_vars.at(ind)->ParFESpace(),
-                                      dX_dt, true_offsets[ind]);
-  }
-  _domain_properties.SetTime(this->GetTime());
-  _equation_system->setTimeStep(dt);
-  _equation_system->updateEquationSystem(_bc_map, _sources);
+TransientFormulation::TransientFormulation() : oneCoef(1.0) {
+  equation_system = CreateEquationSystem();
+};
 
-  _equation_system->FormLinearSystem(blockA, trueX, trueRhs);
-  if (solver != NULL) {
-    delete solver;
-  }
-  solver = new hephaestus::DefaultGMRESSolver(
-      _solver_options, *blockA.As<mfem::HypreParMatrix>());
-  solver->Mult(trueRhs, trueX);
-  _equation_system->RecoverFEMSolution(trueX, _variables);
-}
+hephaestus::TimeDependentEquationSystem *
+TransientFormulation::CreateEquationSystem() {
+  hephaestus::InputParameters params;
+  equation_system = new TimeDependentEquationSystem(params);
+  return equation_system;
+};
 
-std::string TransientFormulation::GetTimeDerivativeName(std::string name) {
-  return std::string("d") + name + std::string("_dt");
-}
-
-std::vector<std::string> TransientFormulation::GetTimeDerivativeNames(
-    std::vector<std::string> gridfunction_names) {
-  std::vector<std::string> time_derivative_names;
-  for (auto &gridfunction_name : gridfunction_names) {
-    time_derivative_names.push_back(GetTimeDerivativeName(gridfunction_name));
-  }
-  return time_derivative_names;
-}
+hephaestus::TimeDomainEquationSystemOperator *
+TransientFormulation::CreateTimeDomainOperator(
+    mfem::ParMesh &pmesh, int order,
+    mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+    hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
+    hephaestus::Sources &sources, hephaestus::InputParameters &solver_options) {
+  td_operator = new hephaestus::TimeDomainEquationSystemOperator(
+      pmesh, order, fespaces, variables, bc_map, domain_properties, sources,
+      solver_options);
+  td_operator->SetEquationSystem(equation_system);
+  return td_operator;
+};
 
 std::vector<mfem::ParGridFunction *>
 TransientFormulation::RegisterTimeDerivatives(
