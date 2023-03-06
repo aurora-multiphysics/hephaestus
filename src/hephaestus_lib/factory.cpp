@@ -16,6 +16,8 @@ Factory::createTransientFormulation(std::string &formulation) {
     return new hephaestus::EFormulation();
   } else if (formulation == "AVForm") {
     return new hephaestus::AVFormulation();
+  } else if (formulation == "Custom") {
+    return new hephaestus::TransientFormulation();
   } else {
     std::cout << "Formulation name " << formulation << " not recognised. \n";
   }

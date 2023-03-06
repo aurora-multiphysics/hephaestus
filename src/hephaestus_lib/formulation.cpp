@@ -59,6 +59,31 @@ void TimeDomainEquationSystemOperator::SetVariables() {
   }
 };
 
+void TimeDomainEquationSystemOperator::ImplicitSolve(const double dt,
+                                                     const mfem::Vector &X,
+                                                     mfem::Vector &dX_dt) {
+  dX_dt = 0.0;
+  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
+    local_test_vars.at(ind)->MakeRef(local_test_vars.at(ind)->ParFESpace(),
+                                     const_cast<mfem::Vector &>(X),
+                                     true_offsets[ind]);
+    local_trial_vars.at(ind)->MakeRef(local_trial_vars.at(ind)->ParFESpace(),
+                                      dX_dt, true_offsets[ind]);
+  }
+  _domain_properties.SetTime(this->GetTime());
+  _equation_system->setTimeStep(dt);
+  _equation_system->updateEquationSystem(_bc_map, _sources);
+
+  _equation_system->FormLinearSystem(blockA, trueX, trueRhs);
+  if (solver != NULL) {
+    delete solver;
+  }
+  solver = new hephaestus::DefaultGMRESSolver(
+      _solver_options, *blockA.As<mfem::HypreParMatrix>());
+  solver->Mult(trueRhs, trueX);
+  _equation_system->RecoverFEMSolution(trueX, _variables);
+}
+
 std::string TransientFormulation::GetTimeDerivativeName(std::string name) {
   return std::string("d") + name + std::string("_dt");
 }

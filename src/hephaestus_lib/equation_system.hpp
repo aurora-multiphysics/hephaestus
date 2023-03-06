@@ -26,6 +26,9 @@ public:
   mfem::NamedFieldsMap<mfem::NamedFieldsMap<mfem::ParMixedBilinearForm>>
       mblfs; // named according to trial variable
 
+  // add test variable to EquationSystem;
+  virtual void addVariableIfMissing(std::string test_var_name);
+
   // Add kernels. EquationSystem takes ownership.
   void addKernel(std::string test_var_name,
                  hephaestus::Kernel<mfem::ParBilinearForm> *blf_kernel);
@@ -88,7 +91,6 @@ Class to store weak form components for time dependent PDEs
 */
 class TimeDependentEquationSystem : public EquationSystem {
 public:
-  TimeDependentEquationSystem(){};
   TimeDependentEquationSystem(const hephaestus::InputParameters &params);
   ~TimeDependentEquationSystem(){};
   virtual void setTimeStep(double dt);

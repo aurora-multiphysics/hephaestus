@@ -5,11 +5,19 @@ namespace hephaestus {
 EquationSystem::EquationSystem(const hephaestus::InputParameters &params)
     : var_names(params.GetParam<std::vector<std::string>>("VariableNames")),
       test_var_names(var_names), test_pfespaces(), blfs(), lfs(), nlfs(),
-      mblfs(), ess_tdof_lists(test_var_names.size()), xs() {}
+      mblfs(), ess_tdof_lists(), xs() {}
+
+void EquationSystem::addVariableIfMissing(std::string test_var_name) {
+  if (std::find(test_var_names.begin(), test_var_names.end(), test_var_name) ==
+      test_var_names.end()) {
+    test_var_names.push_back(test_var_name);
+  }
+}
 
 void EquationSystem::addKernel(
     std::string test_var_name,
     hephaestus::Kernel<mfem::ParBilinearForm> *blf_kernel) {
+  addVariableIfMissing(test_var_name);
   if (!blf_kernels_map.Has(test_var_name)) {
     blf_kernels_map.Register(
         test_var_name,
@@ -21,6 +29,7 @@ void EquationSystem::addKernel(
 void EquationSystem::addKernel(
     std::string test_var_name,
     hephaestus::Kernel<mfem::ParLinearForm> *lf_kernel) {
+  addVariableIfMissing(test_var_name);
   if (!lf_kernels_map.Has(test_var_name)) {
     lf_kernels_map.Register(
         test_var_name,
@@ -33,6 +42,7 @@ void EquationSystem::addKernel(
 void EquationSystem::addKernel(
     std::string test_var_name,
     hephaestus::Kernel<mfem::ParNonlinearForm> *nlf_kernel) {
+  addVariableIfMissing(test_var_name);
   if (!nlf_kernels_map.Has(test_var_name)) {
     nlf_kernels_map.Register(
         test_var_name,
@@ -45,6 +55,7 @@ void EquationSystem::addKernel(
 void EquationSystem::addKernel(
     std::string trial_var_name, std::string test_var_name,
     hephaestus::Kernel<mfem::ParMixedBilinearForm> *mblf_kernel) {
+  addVariableIfMissing(test_var_name);
   // Register new mblf kernels map if not present for this test variable
   if (!mblf_kernels_map_map.Has(test_var_name)) {
     mblf_kernels_map_map.Register(
@@ -69,6 +80,7 @@ void EquationSystem::addKernel(
 }
 
 void EquationSystem::applyBoundaryConditions(hephaestus::BCMap &bc_map) {
+  ess_tdof_lists.resize(test_var_names.size());
   for (int i = 0; i < test_var_names.size(); i++) {
     auto test_var_name = test_var_names.at(i);
     // Set default value of gridfunction used in essential BC. Values
@@ -297,7 +309,12 @@ TimeDependentEquationSystem::TimeDependentEquationSystem(
     : EquationSystem(params),
       var_time_derivative_names(
           params.GetParam<std::vector<std::string>>("TimeDerivativeNames")),
-      dtCoef(1.0) {}
+      dtCoef(1.0) {
+  std::cout << "STARTING TEST VAR PRINT" << std::endl;
+  for (auto &test_var_name : test_var_names) {
+    std::cout << test_var_name << std::endl;
+  }
+}
 
 void TimeDependentEquationSystem::setTimeStep(double dt) {
   if (fabs(dt - dtCoef.constant) > 1.0e-12 * dt) {
