@@ -150,6 +150,9 @@ protected:
     solver_options.SetParam("MaxIter", (unsigned int)1000);
     solver_options.SetParam("PrintLevel", 0);
 
+    hephaestus::TransientFormulation *formulation =
+        new hephaestus::AFormulation();
+
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("Executioner", executioner);
@@ -162,7 +165,7 @@ protected:
     params.SetParam("Postprocessors", postprocessors);
     params.SetParam("Outputs", outputs);
     params.SetParam("Sources", sources);
-    params.SetParam("FormulationName", std::string("AForm"));
+    params.SetParam("Formulation", formulation);
     params.SetParam("SolverOptions", solver_options);
     std::cout << "Created params ";
     return params;

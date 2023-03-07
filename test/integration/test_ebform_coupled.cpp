@@ -209,6 +209,9 @@ protected:
     solver_options.SetParam("MaxIter", (unsigned int)1000);
     solver_options.SetParam("PrintLevel", 0);
 
+    hephaestus::TransientFormulation *formulation =
+        new hephaestus::EBDualFormulation();
+
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("Executioner", executioner);
@@ -221,7 +224,7 @@ protected:
     params.SetParam("Postprocessors", postprocessors);
     params.SetParam("Sources", sources);
     params.SetParam("Outputs", outputs);
-    params.SetParam("FormulationName", std::string("EBForm"));
+    params.SetParam("Formulation", formulation);
     params.SetParam("SolverOptions", solver_options);
 
     return params;

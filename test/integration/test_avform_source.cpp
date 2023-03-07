@@ -158,7 +158,6 @@ protected:
     params.SetParam("Postprocessors", postprocessors);
     params.SetParam("Outputs", outputs);
     params.SetParam("Sources", sources);
-    params.SetParam("FormulationName", std::string("AVForm"));
 
     return params;
   }
@@ -178,7 +177,9 @@ TEST_F(TestAVFormSource, CheckRun) {
       pmesh.UniformRefinement();
     }
     params.SetParam("Mesh", pmesh);
-
+    hephaestus::TransientFormulation *formulation =
+        new hephaestus::AVFormulation();
+    params.SetParam("Formulation", formulation);
     hephaestus::TransientExecutioner *executioner(
         params.GetParam<hephaestus::TransientExecutioner *>("Executioner"));
     executioner->Init(params);
