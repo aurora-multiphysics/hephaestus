@@ -92,6 +92,9 @@ protected:
     hephaestus::TransientExecutioner *executioner =
         new hephaestus::TransientExecutioner(exec_params);
 
+    hephaestus::TransientFormulation *formulation =
+        new hephaestus::AVFormulation();
+
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("Executioner", executioner);
@@ -104,7 +107,7 @@ protected:
     params.SetParam("Postprocessors", postprocessors);
     params.SetParam("Outputs", outputs);
     params.SetParam("Sources", sources);
-    params.SetParam("FormulationName", std::string("AVForm"));
+    params.SetParam("Formulation", formulation);
 
     return params;
   }
@@ -112,7 +115,6 @@ protected:
 
 TEST_F(TestAVFormRod, CheckRun) {
   hephaestus::InputParameters params(test_params());
-
   hephaestus::TransientExecutioner *executioner(
       params.GetParam<hephaestus::TransientExecutioner *>("Executioner"));
   executioner->Init(params);

@@ -39,11 +39,8 @@ void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
 
   MPI_Comm_size(pmesh->GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh->GetComm(), &myid_);
-
-  std::string formulation_name(params.GetParam<std::string>("FormulationName"));
-
   formulation =
-      hephaestus::Factory::createTransientFormulation(formulation_name);
+      params.GetParam<hephaestus::TransientFormulation *>("Formulation");
 
   // needs true_offsets set here:
   formulation->RegisterMissingVariables(*pmesh, *fespaces, *gridfunctions);

@@ -308,12 +308,7 @@ TimeDependentEquationSystem::TimeDependentEquationSystem(
     : EquationSystem(params),
       var_time_derivative_names(
           params.GetParam<std::vector<std::string>>("TimeDerivativeNames")),
-      dtCoef(1.0) {
-  std::cout << "STARTING TEST VAR PRINT" << std::endl;
-  for (auto &test_var_name : test_var_names) {
-    std::cout << test_var_name << std::endl;
-  }
-}
+      dtCoef(1.0) {}
 
 void TimeDependentEquationSystem::setTimeStep(double dt) {
   if (fabs(dt - dtCoef.constant) > 1.0e-12 * dt) {

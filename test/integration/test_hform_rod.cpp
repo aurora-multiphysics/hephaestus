@@ -123,6 +123,9 @@ protected:
         new hephaestus::ScalarPotentialSource(scalar_potential_source_params),
         true);
 
+    hephaestus::TransientFormulation *formulation =
+        new hephaestus::HFormulation();
+
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("Executioner", executioner);
@@ -135,7 +138,7 @@ protected:
     params.SetParam("Postprocessors", postprocessors);
     params.SetParam("Outputs", outputs);
     params.SetParam("Sources", sources);
-    params.SetParam("FormulationName", std::string("HForm"));
+    params.SetParam("Formulation", formulation);
     params.SetParam("SolverOptions", solver_options);
 
     return params;

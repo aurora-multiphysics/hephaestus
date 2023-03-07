@@ -173,7 +173,6 @@ protected:
     params.SetParam("Postprocessors", postprocessors);
     params.SetParam("Sources", sources);
     params.SetParam("Outputs", outputs);
-    params.SetParam("FormulationName", std::string("HForm"));
     params.SetParam("SolverOptions", solver_options);
 
     return params;
@@ -194,11 +193,14 @@ TEST_F(TestHFormSource, CheckRun) {
       pmesh.UniformRefinement();
     }
     params.SetParam("Mesh", pmesh);
-
+    hephaestus::TransientFormulation *formulation =
+        new hephaestus::HFormulation();
+    params.SetParam("Formulation", formulation);
     hephaestus::TransientExecutioner *executioner(
         params.GetParam<hephaestus::TransientExecutioner *>("Executioner"));
     executioner->Init(params);
     executioner->Solve();
+    delete formulation;
   }
 
   hephaestus::L2ErrorVectorPostprocessor l2errpostprocessor =
