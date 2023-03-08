@@ -35,7 +35,7 @@ public:
       hephaestus::DomainProperties &domain_properties) override;
 
 protected:
-  std::string alpha_coef_name, beta_coef_name;
+  std::string h_curl_var_name, h_div_var_name, alpha_coef_name, beta_coef_name;
 };
 
 // class DualOperator : public TimeDomainEquationSystemOperator {
@@ -80,11 +80,11 @@ public:
   void ImplicitSolve(const double dt, const mfem::Vector &X,
                      mfem::Vector &dX_dt) override;
 
-  mfem::common::H1_ParFESpace *H1FESpace_;
-  mfem::common::ND_ParFESpace *HCurlFESpace_;
-  mfem::common::RT_ParFESpace *HDivFESpace_;
+  mfem::ParFiniteElementSpace *H1FESpace_;
+  mfem::ParFiniteElementSpace *HCurlFESpace_;
+  mfem::ParFiniteElementSpace *HDivFESpace_;
 
-  std::string u_name, v_name;
+  std::string h_curl_var_name, h_div_var_name;
   std::string u_display_name, v_display_name;
 
   mfem::ParGridFunction u_, du_; // HCurl vector field

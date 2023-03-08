@@ -36,7 +36,7 @@ public:
       hephaestus::DomainProperties &domain_properties) override;
 
 protected:
-  std::string alpha_coef_name, beta_coef_name;
+  std::string h_curl_var_name, alpha_coef_name, beta_coef_name;
 };
 
 class HCurlOperator : public TimeDomainEquationSystemOperator {

@@ -9,14 +9,13 @@ namespace hephaestus {
 template <typename T> class Kernel {
 public:
   Kernel() {}
-  Kernel(const hephaestus::InputParameters &params);
+  Kernel(const hephaestus::InputParameters &params){};
   virtual void
   Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
        const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
        hephaestus::BCMap &bc_map,
        hephaestus::DomainProperties &domain_properties){};
 
-  std::string variable_name;
   virtual void Apply(T *form) = 0;
 };
 
@@ -33,7 +32,8 @@ public:
        hephaestus::DomainProperties &domain_properties) override;
   virtual void Apply(mfem::ParLinearForm *lf) override;
 
-  std::string gf_name, coef_name;
+  std::string coupled_gf_name;
+  std::string coef_name;
   mfem::ParGridFunction *u_; //
   mfem::ParFiniteElementSpace *H1FESpace_;
   mfem::Coefficient *coef;

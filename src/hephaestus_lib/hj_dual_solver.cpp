@@ -5,24 +5,8 @@ namespace hephaestus {
 HJDualFormulation::HJDualFormulation() : DualFormulation() {
   alpha_coef_name = std::string("electrical_resistivity");
   beta_coef_name = std::string("magnetic_permeability");
-  CreateEquationSystem();
-}
-
-hephaestus::TimeDependentEquationSystem *
-HJDualFormulation::CreateEquationSystem() {
-  std::vector<std::string> state_var_names;
-  state_var_names.resize(2);
-  state_var_names.at(0) = "magnetic_field";
-  state_var_names.at(1) = "current_density";
-
-  hephaestus::InputParameters weak_form_params;
-  weak_form_params.SetParam("VariableNames", state_var_names);
-  weak_form_params.SetParam("TimeDerivativeNames",
-                            GetTimeDerivativeNames(state_var_names));
-  weak_form_params.SetParam("AlphaCoefName", alpha_coef_name);
-  weak_form_params.SetParam("BetaCoefName", beta_coef_name);
-  equation_system = new hephaestus::CurlCurlEquationSystem(weak_form_params);
-  return equation_system;
+  h_curl_var_name = std::string("magnetic_field");
+  h_div_var_name = std::string("current_density");
 }
 
 hephaestus::TimeDomainEquationSystemOperator *
@@ -71,14 +55,14 @@ HJDualOperator::HJDualOperator(
                    sources, solver_options) {}
 
 void HJDualOperator::RegisterVariables() {
-  u_name = "magnetic_field";
+  h_curl_var_name = "magnetic_field";
   u_display_name = "Magnetic Field (H)";
 
-  v_name = "current_density";
+  h_div_var_name = "current_density";
   v_display_name = "Current Density (J)";
 
-  _variables.Register(u_name, &u_, false);
-  _variables.Register(v_name, &v_, false);
+  _variables.Register(h_curl_var_name, &u_, false);
+  _variables.Register(h_div_var_name, &v_, false);
 }
 
 void HJDualOperator::SetMaterialCoefficients(

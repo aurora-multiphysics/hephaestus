@@ -47,24 +47,20 @@ namespace hephaestus {
 DualFormulation::DualFormulation() : TransientFormulation() {
   alpha_coef_name = std::string("alpha");
   beta_coef_name = std::string("beta");
-  CreateEquationSystem();
+  h_curl_var_name = std::string("h_curl_var");
+  h_div_var_name = std::string("h_div_var");
 }
 
 hephaestus::TimeDependentEquationSystem *
 DualFormulation::CreateEquationSystem() {
-  std::vector<std::string> state_var_names;
-  state_var_names.resize(2);
-  state_var_names.at(0) = "h_curl_var";
-  state_var_names.at(1) = "h_div_var";
-
   hephaestus::InputParameters weak_form_params;
-  weak_form_params.SetParam("VariableNames", state_var_names);
-  weak_form_params.SetParam("TimeDerivativeNames",
-                            GetTimeDerivativeNames(state_var_names));
+  weak_form_params.SetParam("HCurlVarName", h_curl_var_name);
   weak_form_params.SetParam("AlphaCoefName", alpha_coef_name);
   weak_form_params.SetParam("BetaCoefName", beta_coef_name);
   // need weak curl kernel
-  equation_system = new hephaestus::CurlCurlEquationSystem(weak_form_params);
+  equation_system =
+      new hephaestus::TimeDependentEquationSystem(weak_form_params);
+  equation_system->addVariableNameIfMissing(h_div_var_name);
   return equation_system;
 }
 
@@ -91,38 +87,44 @@ void DualFormulation::RegisterMissingVariables(
   MPI_Comm_rank(pmesh.GetComm(), &myid);
 
   // Register default ParGridFunctions of state variables if not provided
-  std::string u_name = equation_system->var_names.at(0);
-  if (!variables.Has(u_name)) {
+  if (!variables.Has(h_curl_var_name)) {
     if (myid == 0) {
       std::cout
-          << u_name
+          << h_curl_var_name
           << " not found in variables: building gridfunction from defaults"
           << std::endl;
     }
     fespaces.Register(
         "_HCurlFESpace",
         new mfem::common::ND_ParFESpace(&pmesh, 2, pmesh.Dimension()), true);
-    variables.Register(
-        u_name, new mfem::ParGridFunction(fespaces.Get("_HCurlFESpace")), true);
+    variables.Register(h_curl_var_name,
+                       new mfem::ParGridFunction(fespaces.Get("_HCurlFESpace")),
+                       true);
   };
+  variables.Register(
+      hephaestus::TimeDependentEquationSystem::GetTimeDerivativeName(
+          h_curl_var_name),
+      new mfem::ParGridFunction(fespaces.Get("_HCurlFESpace")), true);
 
   // Register default ParGridFunctions of state variables if not provided
-  std::string v_name = equation_system->var_names.at(1);
-  if (!variables.Has(v_name)) {
+  if (!variables.Has(h_div_var_name)) {
     if (myid == 0) {
       std::cout
-          << v_name
+          << h_div_var_name
           << " not found in variables: building gridfunction from defaults"
           << std::endl;
     }
     fespaces.Register(
         "_HDivFESpace",
         new mfem::common::RT_ParFESpace(&pmesh, 2, pmesh.Dimension()), true);
-    variables.Register(
-        v_name, new mfem::ParGridFunction(fespaces.Get("_HDivFESpace")), true);
+    variables.Register(h_div_var_name,
+                       new mfem::ParGridFunction(fespaces.Get("_HDivFESpace")),
+                       true);
   };
-
-  RegisterTimeDerivatives(equation_system->var_names, variables);
+  variables.Register(
+      hephaestus::TimeDependentEquationSystem::GetTimeDerivativeName(
+          h_div_var_name),
+      new mfem::ParGridFunction(fespaces.Get("_HDivFESpace")), true);
 };
 
 void DualFormulation::RegisterCoefficients(
@@ -265,8 +267,8 @@ void DualOperator::ImplicitSolve(const double dt, const mfem::Vector &X,
   mfem::ParGridFunction J_gf(HCurlFESpace_);
   mfem::Array<int> ess_tdof_list;
   J_gf = 0.0;
-  _bc_map.applyEssentialBCs(u_name, ess_tdof_list, J_gf, pmesh_);
-  _bc_map.applyIntegratedBCs(u_name, *b1, pmesh_);
+  _bc_map.applyEssentialBCs(h_curl_var_name, ess_tdof_list, J_gf, pmesh_);
+  _bc_map.applyIntegratedBCs(h_curl_var_name, *b1, pmesh_);
   if (a1 == NULL || fabs(dt - dt_A1) > 1.0e-12 * dt) {
     delete dtAlphaCoef;
     dtAlphaCoef =
@@ -335,14 +337,14 @@ void DualOperator::buildCurl(mfem::Coefficient *MuInv) {
 }
 
 void DualOperator::RegisterVariables() {
-  u_name = "h_curl_var";
+  h_curl_var_name = "h_curl_var";
   u_display_name = "H(Curl) variable";
 
-  v_name = "h_div_var";
+  h_div_var_name = "h_div_var";
   v_display_name = "H(Div) variable";
 
-  _variables.Register(u_name, &u_, false);
-  _variables.Register(v_name, &v_, false);
+  _variables.Register(h_curl_var_name, &u_, false);
+  _variables.Register(h_div_var_name, &v_, false);
 }
 
 void DualOperator::SetMaterialCoefficients(

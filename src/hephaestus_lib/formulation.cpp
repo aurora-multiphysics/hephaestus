@@ -17,12 +17,6 @@ GetTimeDerivativeNames(std::vector<std::string> gridfunction_names) {
 
 void TimeDomainEquationSystemOperator::Init(mfem::Vector &X) {
   // Define material property coefficients
-  // SetMaterialCoefficients(_domain_properties);
-
-  // SetEquationSystem();
-
-  _sources.Init(_variables, _fespaces, _bc_map, _domain_properties);
-
   for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
     local_test_vars.at(ind)->MakeRef(local_test_vars.at(ind)->ParFESpace(),
                                      const_cast<mfem::Vector &>(X),
@@ -31,7 +25,6 @@ void TimeDomainEquationSystemOperator::Init(mfem::Vector &X) {
     *(local_trial_vars.at(ind)) = 0.0;
   }
 
-  _equation_system->Init(_variables, _fespaces, _bc_map, _domain_properties);
   _equation_system->buildEquationSystem(_bc_map, _sources);
 };
 

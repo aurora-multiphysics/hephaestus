@@ -44,19 +44,14 @@ namespace hephaestus {
 AVFormulation::AVFormulation() : TransientFormulation() {
   alpha_coef_name = std::string("magnetic_reluctivity");
   beta_coef_name = std::string("electrical_conductivity");
-  CreateEquationSystem();
+  vector_potential_name = std::string("magnetic_vector_potential");
+  scalar_potential_name = std::string("electric_potential");
 }
 
 hephaestus::TimeDependentEquationSystem *AVFormulation::CreateEquationSystem() {
-  std::vector<std::string> state_var_names;
-  state_var_names.resize(2);
-  state_var_names.at(0) = "magnetic_vector_potential";
-  state_var_names.at(1) = "electric_potential";
-
   hephaestus::InputParameters av_system_params;
-  av_system_params.SetParam("VariableNames", state_var_names);
-  av_system_params.SetParam("TimeDerivativeNames",
-                            GetTimeDerivativeNames(state_var_names));
+  av_system_params.SetParam("VectorPotentialName", vector_potential_name);
+  av_system_params.SetParam("ScalarPotentialName", scalar_potential_name);
   av_system_params.SetParam("AlphaCoefName", alpha_coef_name);
   av_system_params.SetParam("BetaCoefName", beta_coef_name);
   equation_system = new hephaestus::AVEquationSystem(av_system_params);
@@ -86,36 +81,42 @@ void AVFormulation::RegisterMissingVariables(
   MPI_Comm_rank(pmesh.GetComm(), &myid);
 
   // Register default ParGridFunctions of state variables if not provided
-  std::string u_name = equation_system->var_names.at(0);
-  if (!variables.Has(u_name)) {
+  if (!variables.Has(vector_potential_name)) {
     if (myid == 0) {
       std::cout
-          << u_name
+          << vector_potential_name
           << " not found in variables: building gridfunction from defaults"
           << std::endl;
     }
     fespaces.Register(
         "_HCurlFESpace",
         new mfem::common::ND_ParFESpace(&pmesh, 2, pmesh.Dimension()), true);
-    variables.Register(
-        u_name, new mfem::ParGridFunction(fespaces.Get("_HCurlFESpace")), true);
+    variables.Register(vector_potential_name,
+                       new mfem::ParGridFunction(fespaces.Get("_HCurlFESpace")),
+                       true);
   };
-  std::string p_name = equation_system->var_names.at(1);
-  if (!variables.Has(p_name)) {
+  variables.Register(
+      hephaestus::TimeDependentEquationSystem::GetTimeDerivativeName(
+          vector_potential_name),
+      new mfem::ParGridFunction(fespaces.Get("_HCurlFESpace")), true);
+  if (!variables.Has(scalar_potential_name)) {
     if (myid == 0) {
       std::cout
-          << p_name
+          << scalar_potential_name
           << " not found in variables: building gridfunction from defaults"
           << std::endl;
     }
     fespaces.Register(
         "_H1FESpace",
         new mfem::common::H1_ParFESpace(&pmesh, 2, pmesh.Dimension()), true);
-    variables.Register(
-        p_name, new mfem::ParGridFunction(fespaces.Get("_H1FESpace")), true);
+    variables.Register(scalar_potential_name,
+                       new mfem::ParGridFunction(fespaces.Get("_H1FESpace")),
+                       true);
   };
-
-  RegisterTimeDerivatives(equation_system->var_names, variables);
+  variables.Register(
+      hephaestus::TimeDependentEquationSystem::GetTimeDerivativeName(
+          scalar_potential_name),
+      new mfem::ParGridFunction(fespaces.Get("_H1FESpace")), true);
 };
 
 void AVFormulation::RegisterCoefficients(

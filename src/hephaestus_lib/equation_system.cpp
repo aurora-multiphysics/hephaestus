@@ -3,11 +3,17 @@
 namespace hephaestus {
 
 EquationSystem::EquationSystem(const hephaestus::InputParameters &params)
-    : var_names(params.GetParam<std::vector<std::string>>("VariableNames")),
-      test_var_names(), test_pfespaces(), blfs(), lfs(), nlfs(), mblfs(),
-      ess_tdof_lists(), xs() {}
+    : var_names(), test_var_names(), test_pfespaces(), blfs(), lfs(), nlfs(),
+      mblfs(), ess_tdof_lists(), xs() {}
 
-void EquationSystem::addVariableIfMissing(std::string test_var_name) {
+void EquationSystem::addVariableNameIfMissing(std::string var_name) {
+  if (std::find(var_names.begin(), var_names.end(), var_name) ==
+      var_names.end()) {
+    var_names.push_back(var_name);
+  }
+}
+
+void EquationSystem::addTestVariableNameIfMissing(std::string test_var_name) {
   if (std::find(test_var_names.begin(), test_var_names.end(), test_var_name) ==
       test_var_names.end()) {
     test_var_names.push_back(test_var_name);
@@ -17,7 +23,7 @@ void EquationSystem::addVariableIfMissing(std::string test_var_name) {
 void EquationSystem::addKernel(
     std::string test_var_name,
     hephaestus::Kernel<mfem::ParBilinearForm> *blf_kernel) {
-  addVariableIfMissing(test_var_name);
+  addTestVariableNameIfMissing(test_var_name);
   if (!blf_kernels_map.Has(test_var_name)) {
     blf_kernels_map.Register(
         test_var_name,
@@ -29,7 +35,7 @@ void EquationSystem::addKernel(
 void EquationSystem::addKernel(
     std::string test_var_name,
     hephaestus::Kernel<mfem::ParLinearForm> *lf_kernel) {
-  addVariableIfMissing(test_var_name);
+  addTestVariableNameIfMissing(test_var_name);
   if (!lf_kernels_map.Has(test_var_name)) {
     lf_kernels_map.Register(
         test_var_name,
@@ -42,7 +48,7 @@ void EquationSystem::addKernel(
 void EquationSystem::addKernel(
     std::string test_var_name,
     hephaestus::Kernel<mfem::ParNonlinearForm> *nlf_kernel) {
-  addVariableIfMissing(test_var_name);
+  addTestVariableNameIfMissing(test_var_name);
   if (!nlf_kernels_map.Has(test_var_name)) {
     nlf_kernels_map.Register(
         test_var_name,
@@ -55,7 +61,7 @@ void EquationSystem::addKernel(
 void EquationSystem::addKernel(
     std::string trial_var_name, std::string test_var_name,
     hephaestus::Kernel<mfem::ParMixedBilinearForm> *mblf_kernel) {
-  addVariableIfMissing(test_var_name);
+  addTestVariableNameIfMissing(test_var_name);
   // Register new mblf kernels map if not present for this test variable
   if (!mblf_kernels_map_map.Has(test_var_name)) {
     mblf_kernels_map_map.Register(
@@ -162,6 +168,12 @@ void EquationSystem::Init(
   addKernels();
 
   for (auto &test_var_name : test_var_names) {
+    if (!variables.Has(test_var_name)) {
+      MFEM_ABORT("Test variable "
+                 << test_var_name
+                 << " requested by equation system during initialisation was "
+                    "not found in variables");
+    }
     // Store pointers to variable FESpaces
     test_pfespaces.push_back(variables.Get(test_var_name)->ParFESpace());
     // Create auxiliary gridfunctions for applying Dirichlet conditions
@@ -198,7 +210,6 @@ void EquationSystem::Init(
       }
     }
   }
-  // }
 }
 
 void EquationSystem::buildLinearForms(hephaestus::BCMap &bc_map,
@@ -305,10 +316,18 @@ void EquationSystem::buildEquationSystem(hephaestus::BCMap &bc_map,
 
 TimeDependentEquationSystem::TimeDependentEquationSystem(
     const hephaestus::InputParameters &params)
-    : EquationSystem(params),
-      var_time_derivative_names(
-          params.GetParam<std::vector<std::string>>("TimeDerivativeNames")),
-      dtCoef(1.0) {}
+    : EquationSystem(params), var_time_derivative_names(), dtCoef(1.0) {}
+
+void TimeDependentEquationSystem::addVariableNameIfMissing(
+    std::string var_name) {
+  EquationSystem::addVariableNameIfMissing(var_name);
+  std::string var_time_derivative_name = GetTimeDerivativeName(var_name);
+  if (std::find(var_time_derivative_names.begin(),
+                var_time_derivative_names.end(),
+                var_time_derivative_name) == var_time_derivative_names.end()) {
+    var_time_derivative_names.push_back(var_time_derivative_name);
+  }
+}
 
 void TimeDependentEquationSystem::setTimeStep(double dt) {
   if (fabs(dt - dtCoef.constant) > 1.0e-12 * dt) {
@@ -330,6 +349,7 @@ void TimeDependentEquationSystem::updateEquationSystem(
 CurlCurlEquationSystem::CurlCurlEquationSystem(
     const hephaestus::InputParameters &params)
     : TimeDependentEquationSystem(params),
+      h_curl_var_name(params.GetParam<std::string>("HCurlVarName")),
       alpha_coef_name(params.GetParam<std::string>("AlphaCoefName")),
       beta_coef_name(params.GetParam<std::string>("BetaCoefName")),
       dtalpha_coef_name(std::string("dt_") + alpha_coef_name) {}
@@ -348,30 +368,32 @@ void CurlCurlEquationSystem::Init(
 }
 
 void CurlCurlEquationSystem::addKernels() {
+  addVariableNameIfMissing(h_curl_var_name);
+  std::string dh_curl_var_dt = GetTimeDerivativeName(h_curl_var_name);
+
   // (α∇×u_{n}, ∇×u')
   hephaestus::InputParameters weakCurlCurlParams;
-  weakCurlCurlParams.SetParam("VariableName", var_names.at(0));
+  weakCurlCurlParams.SetParam("CoupledVariableName", h_curl_var_name);
   weakCurlCurlParams.SetParam("CoefficientName", alpha_coef_name);
-  addKernel(var_time_derivative_names.at(0),
+  addKernel(dh_curl_var_dt,
             new hephaestus::WeakCurlCurlKernel(weakCurlCurlParams));
 
   // (αdt∇×du/dt_{n+1}, ∇×u')
   hephaestus::InputParameters curlCurlParams;
-  curlCurlParams.SetParam("VariableName", var_time_derivative_names.at(0));
   curlCurlParams.SetParam("CoefficientName", dtalpha_coef_name);
-  addKernel(var_time_derivative_names.at(0),
-            new hephaestus::CurlCurlKernel(curlCurlParams));
+  addKernel(dh_curl_var_dt, new hephaestus::CurlCurlKernel(curlCurlParams));
 
   // (βdu/dt_{n+1}, u')
   hephaestus::InputParameters vectorFEMassParams;
-  vectorFEMassParams.SetParam("VariableName", var_time_derivative_names.at(0));
   vectorFEMassParams.SetParam("CoefficientName", beta_coef_name);
-  addKernel(var_time_derivative_names.at(0),
+  addKernel(dh_curl_var_dt,
             new hephaestus::VectorFEMassKernel(vectorFEMassParams));
 }
 
 AVEquationSystem::AVEquationSystem(const hephaestus::InputParameters &params)
     : TimeDependentEquationSystem(params),
+      a_name(params.GetParam<std::string>("VectorPotentialName")),
+      v_name(params.GetParam<std::string>("ScalarPotentialName")),
       alpha_coef_name(params.GetParam<std::string>("AlphaCoefName")),
       beta_coef_name(params.GetParam<std::string>("BetaCoefName")),
       dtalpha_coef_name(std::string("dt_") + alpha_coef_name),
@@ -396,47 +418,43 @@ void AVEquationSystem::Init(
 }
 
 void AVEquationSystem::addKernels() {
+  addVariableNameIfMissing(a_name);
+  std::string da_dt_name = GetTimeDerivativeName(a_name);
+  addVariableNameIfMissing(v_name);
+  std::string dv_dt_name = GetTimeDerivativeName(v_name);
+
   // (α∇×A_{n}, ∇×A')
   hephaestus::InputParameters weakCurlCurlParams;
-  weakCurlCurlParams.SetParam("VariableName", var_names.at(0));
+  weakCurlCurlParams.SetParam("CoupledVariableName", a_name);
   weakCurlCurlParams.SetParam("CoefficientName", alpha_coef_name);
-  addKernel(var_time_derivative_names.at(0),
-            new hephaestus::WeakCurlCurlKernel(weakCurlCurlParams));
+  addKernel(da_dt_name, new hephaestus::WeakCurlCurlKernel(weakCurlCurlParams));
 
   // (αdt∇×dA/dt_{n+1}, ∇×A')
   hephaestus::InputParameters curlCurlParams;
-  curlCurlParams.SetParam("VariableName", var_time_derivative_names.at(0));
   curlCurlParams.SetParam("CoefficientName", dtalpha_coef_name);
-  addKernel(var_time_derivative_names.at(0),
-            new hephaestus::CurlCurlKernel(curlCurlParams));
+  addKernel(da_dt_name, new hephaestus::CurlCurlKernel(curlCurlParams));
 
   // (βdA/dt_{n+1}, A')
   hephaestus::InputParameters vectorFEMassParams;
-  vectorFEMassParams.SetParam("VariableName", var_time_derivative_names.at(0));
   vectorFEMassParams.SetParam("CoefficientName", beta_coef_name);
-  addKernel(var_time_derivative_names.at(0),
-            new hephaestus::VectorFEMassKernel(vectorFEMassParams));
+  addKernel(da_dt_name, new hephaestus::VectorFEMassKernel(vectorFEMassParams));
 
   // (σ ∇ V, dA'/dt)
   hephaestus::InputParameters mixedVectorGradientParams;
-  mixedVectorGradientParams.SetParam("VariableName",
-                                     var_time_derivative_names.at(0));
   mixedVectorGradientParams.SetParam("CoefficientName", beta_coef_name);
   addKernel(
-      var_names.at(1), var_time_derivative_names.at(0),
+      v_name, da_dt_name,
       new hephaestus::MixedVectorGradientKernel(mixedVectorGradientParams));
 
   // (σ ∇ V, ∇ V')
   hephaestus::InputParameters diffusionParams;
-  diffusionParams.SetParam("VariableName", var_names.at(1));
   diffusionParams.SetParam("CoefficientName", beta_coef_name);
-  addKernel(var_names.at(1), new hephaestus::DiffusionKernel(diffusionParams));
+  addKernel(v_name, new hephaestus::DiffusionKernel(diffusionParams));
 
   // (σdA/dt, ∇ V')
   hephaestus::InputParameters vectorFEWeakDivergenceParams;
-  vectorFEWeakDivergenceParams.SetParam("VariableName", var_names.at(1));
   vectorFEWeakDivergenceParams.SetParam("CoefficientName", beta_coef_name);
-  addKernel(var_time_derivative_names.at(0), var_names.at(1),
+  addKernel(da_dt_name, v_name,
             new hephaestus::VectorFEWeakDivergenceKernel(
                 vectorFEWeakDivergenceParams));
 }
