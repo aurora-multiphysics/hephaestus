@@ -65,8 +65,8 @@ protected:
     mfem::VectorFunctionCoefficient *adotVecCoef =
         new mfem::VectorFunctionCoefficient(3, hdot_bc);
     bc_map["tangential_dAdt"] = new hephaestus::VectorFunctionDirichletBC(
-        std::string("magnetic_vector_potential"), mfem::Array<int>({1, 2, 3}),
-        adotVecCoef);
+        std::string("dmagnetic_vector_potential_dt"),
+        mfem::Array<int>({1, 2, 3}), adotVecCoef);
     domain_properties.vector_property_map["surface_tangential_dAdt"] =
         adotVecCoef;
     domain_properties.scalar_property_map["electrical_conductivity"] =
