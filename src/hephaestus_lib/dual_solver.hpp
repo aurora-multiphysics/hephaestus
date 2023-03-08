@@ -38,7 +38,27 @@ protected:
   std::string alpha_coef_name, beta_coef_name;
 };
 
+// class DualOperator : public TimeDomainEquationSystemOperator {
+// public:
+//   DualOperator(mfem::ParMesh &pmesh, int order,
+//                mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+//                mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+//                hephaestus::BCMap &bc_map,
+//                hephaestus::DomainProperties &domain_properties,
+//                hephaestus::Sources &sources,
+//                hephaestus::InputParameters &solver_options);
+
+//   ~DualOperator(){};
+
+//   void ImplicitSolve(const double dt, const mfem::Vector &X,
+//                      mfem::Vector &dX_dt) override;
+// };
+
 class DualOperator : public TimeDomainEquationSystemOperator {
+  virtual void
+  SetMaterialCoefficients(hephaestus::DomainProperties &domain_properties);
+  virtual void RegisterVariables();
+
 public:
   DualOperator(mfem::ParMesh &pmesh, int order,
                mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
@@ -50,67 +70,45 @@ public:
 
   ~DualOperator(){};
 
+  void Init(mfem::Vector &X) override;
+
+  void buildA1(mfem::Coefficient *sigma, mfem::Coefficient *dtMuInv);
+  void buildM1(mfem::Coefficient *sigma);
+  void buildCurl(mfem::Coefficient *muInv);
+  void buildGrad();
+
   void ImplicitSolve(const double dt, const mfem::Vector &X,
                      mfem::Vector &dX_dt) override;
+
+  mfem::common::H1_ParFESpace *H1FESpace_;
+  mfem::common::ND_ParFESpace *HCurlFESpace_;
+  mfem::common::RT_ParFESpace *HDivFESpace_;
+
+  std::string u_name, v_name;
+  std::string u_display_name, v_display_name;
+
+  mfem::ParGridFunction u_, du_; // HCurl vector field
+  mfem::ParGridFunction v_, dv_; // HDiv vector field
+
+  // Sockets used to communicate with GLVis
+  std::map<std::string, mfem::socketstream *> socks_;
+
+protected:
+  mfem::ParBilinearForm *a1;
+  mfem::HypreParMatrix *A1;
+  mfem::Vector *X1, *B1;
+
+  mfem::ParDiscreteLinearOperator *curl;
+  mfem::ParMixedBilinearForm *weakCurl;
+
+  // temporary work vectors
+  mfem::ParLinearForm *b1;
+
+  double dt_A1;
+  mfem::ConstantCoefficient dtCoef;  // Coefficient for timestep scaling
+  mfem::ConstantCoefficient oneCoef; // Auxiliary coefficient
+  mfem::Coefficient *alphaCoef;      // Reluctivity Coefficient
+  mfem::Coefficient *dtAlphaCoef;
+  mfem::Coefficient *betaCoef; // Electric Conductivity Coefficient
 };
-
-// class DualSolver : public TransientFormulation {
-//   virtual void
-//   SetMaterialCoefficients(hephaestus::DomainProperties &domain_properties);
-//   virtual void SetEquationSystem() override{};
-//   virtual void RegisterVariables();
-//   virtual void RegisterMissingVariables() override{};
-
-// public:
-//   DualSolver(mfem::ParMesh &pmesh, int order,
-//              mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-//              mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-//              hephaestus::BCMap &bc_map,
-//              hephaestus::DomainProperties &domain_properties,
-//              hephaestus::Sources &sources,
-//              hephaestus::InputParameters &solver_options);
-
-//   ~DualSolver(){};
-
-//   void Init(mfem::Vector &X) override;
-
-//   void buildA1(mfem::Coefficient *sigma, mfem::Coefficient *dtMuInv);
-//   void buildM1(mfem::Coefficient *sigma);
-//   void buildCurl(mfem::Coefficient *muInv);
-//   void buildGrad();
-
-//   void ImplicitSolve(const double dt, const mfem::Vector &X,
-//                      mfem::Vector &dX_dt) override;
-
-//   mfem::common::H1_ParFESpace *H1FESpace_;
-//   mfem::common::ND_ParFESpace *HCurlFESpace_;
-//   mfem::common::RT_ParFESpace *HDivFESpace_;
-
-//   std::string u_name, v_name;
-//   std::string u_display_name, v_display_name;
-
-//   mfem::ParGridFunction u_, du_; // HCurl vector field
-//   mfem::ParGridFunction v_, dv_; // HDiv vector field
-
-//   // Sockets used to communicate with GLVis
-//   std::map<std::string, mfem::socketstream *> socks_;
-
-// protected:
-//   mfem::ParBilinearForm *a1;
-//   mfem::HypreParMatrix *A1;
-//   mfem::Vector *X1, *B1;
-
-//   mfem::ParDiscreteLinearOperator *curl;
-//   mfem::ParMixedBilinearForm *weakCurl;
-
-//   // temporary work vectors
-//   mfem::ParLinearForm *b1;
-
-//   double dt_A1;
-//   mfem::ConstantCoefficient dtCoef;  // Coefficient for timestep scaling
-//   mfem::ConstantCoefficient oneCoef; // Auxiliary coefficient
-//   mfem::Coefficient *alphaCoef;      // Reluctivity Coefficient
-//   mfem::Coefficient *dtAlphaCoef;
-//   mfem::Coefficient *betaCoef; // Electric Conductivity Coefficient
-// };
 } // namespace hephaestus
