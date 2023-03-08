@@ -42,6 +42,7 @@ void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
   formulation =
       params.GetParam<hephaestus::TransientFormulation *>("Formulation");
 
+  formulation->CreateEquationSystem();
   // needs true_offsets set here:
   formulation->RegisterMissingVariables(*pmesh, *fespaces, *gridfunctions);
   formulation->RegisterAuxKernels(*gridfunctions, *auxkernels);
@@ -50,6 +51,9 @@ void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
   fespaces->Init(*pmesh);
   gridfunctions->Init(*pmesh, *fespaces);
   auxkernels->Init(*gridfunctions, *domain_properties);
+  sources->Init(*gridfunctions, *fespaces, *bc_map, *domain_properties);
+  formulation->equation_system->Init(*gridfunctions, *fespaces, *bc_map,
+                                     *domain_properties);
 
   formulation->CreateTimeDomainOperator(
       *pmesh, order, *fespaces, *gridfunctions, *bc_map, *domain_properties,

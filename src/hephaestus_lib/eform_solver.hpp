@@ -11,9 +11,6 @@ public:
 
   ~EFormulation(){};
 
-  virtual hephaestus::TimeDependentEquationSystem *
-  CreateEquationSystem() override;
-
   virtual void RegisterCoefficients(
       hephaestus::DomainProperties &domain_properties) override;
 };

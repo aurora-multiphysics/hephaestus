@@ -5,22 +5,7 @@ namespace hephaestus {
 HFormulation::HFormulation() : HCurlFormulation() {
   alpha_coef_name = std::string("electrical_resistivity");
   beta_coef_name = std::string("magnetic_permeability");
-  CreateEquationSystem();
-}
-
-hephaestus::TimeDependentEquationSystem *HFormulation::CreateEquationSystem() {
-  std::vector<std::string> state_var_names;
-  state_var_names.resize(1);
-  state_var_names.at(0) = "magnetic_field";
-
-  hephaestus::InputParameters weak_form_params;
-  weak_form_params.SetParam("VariableNames", state_var_names);
-  weak_form_params.SetParam("TimeDerivativeNames",
-                            GetTimeDerivativeNames(state_var_names));
-  weak_form_params.SetParam("AlphaCoefName", alpha_coef_name);
-  weak_form_params.SetParam("BetaCoefName", beta_coef_name);
-  equation_system = new hephaestus::CurlCurlEquationSystem(weak_form_params);
-  return equation_system;
+  h_curl_var_name = std::string("magnetic_field");
 }
 
 void HFormulation::RegisterAuxKernels(

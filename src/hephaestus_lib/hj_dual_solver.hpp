@@ -11,9 +11,6 @@ public:
 
   ~HJDualFormulation(){};
 
-  virtual hephaestus::TimeDependentEquationSystem *
-  CreateEquationSystem() override;
-
   virtual hephaestus::TimeDomainEquationSystemOperator *
   CreateTimeDomainOperator(
       mfem::ParMesh &pmesh, int order,

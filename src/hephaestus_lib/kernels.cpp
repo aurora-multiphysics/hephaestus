@@ -2,13 +2,10 @@
 
 namespace hephaestus {
 
-template <typename T>
-Kernel<T>::Kernel(const hephaestus::InputParameters &params)
-    : variable_name(params.GetParam<std::string>("VariableName")) {}
-
 WeakCurlCurlKernel::WeakCurlCurlKernel(
     const hephaestus::InputParameters &params)
     : Kernel(params),
+      coupled_gf_name(params.GetParam<std::string>("CoupledVariableName")),
       coef_name(params.GetParam<std::string>("CoefficientName")) {}
 
 void WeakCurlCurlKernel::Init(
@@ -17,7 +14,7 @@ void WeakCurlCurlKernel::Init(
     hephaestus::BCMap &bc_map,
     hephaestus::DomainProperties &domain_properties) {
 
-  u_ = variables.Get(variable_name);
+  u_ = variables.Get(coupled_gf_name);
   coef = domain_properties.scalar_property_map[coef_name];
 
   curlCurl = new mfem::ParBilinearForm(u_->ParFESpace());

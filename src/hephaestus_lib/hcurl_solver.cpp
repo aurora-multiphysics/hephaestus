@@ -43,19 +43,13 @@ namespace hephaestus {
 HCurlFormulation::HCurlFormulation() : TransientFormulation() {
   alpha_coef_name = std::string("alpha");
   beta_coef_name = std::string("beta");
-  CreateEquationSystem();
+  h_curl_var_name = std::string("h_curl_var");
 }
 
 hephaestus::TimeDependentEquationSystem *
 HCurlFormulation::CreateEquationSystem() {
-  std::vector<std::string> state_var_names;
-  state_var_names.resize(1);
-  state_var_names.at(0) = "h_curl_var";
-
   hephaestus::InputParameters weak_form_params;
-  weak_form_params.SetParam("VariableNames", state_var_names);
-  weak_form_params.SetParam("TimeDerivativeNames",
-                            GetTimeDerivativeNames(state_var_names));
+  weak_form_params.SetParam("HCurlVarName", h_curl_var_name);
   weak_form_params.SetParam("AlphaCoefName", alpha_coef_name);
   weak_form_params.SetParam("BetaCoefName", beta_coef_name);
   equation_system = new hephaestus::CurlCurlEquationSystem(weak_form_params);
@@ -85,21 +79,24 @@ void HCurlFormulation::RegisterMissingVariables(
   MPI_Comm_rank(pmesh.GetComm(), &myid);
 
   // Register default ParGridFunctions of state variables if not provided
-  std::string u_name = equation_system->var_names.at(0);
-  if (!variables.Has(u_name)) {
+  if (!variables.Has(h_curl_var_name)) {
     if (myid == 0) {
       std::cout
-          << u_name
+          << h_curl_var_name
           << " not found in variables: building gridfunction from defaults"
           << std::endl;
     }
     fespaces.Register(
         "_HCurlFESpace",
         new mfem::common::ND_ParFESpace(&pmesh, 2, pmesh.Dimension()), true);
-    variables.Register(
-        u_name, new mfem::ParGridFunction(fespaces.Get("_HCurlFESpace")), true);
+    variables.Register(h_curl_var_name,
+                       new mfem::ParGridFunction(fespaces.Get("_HCurlFESpace")),
+                       true);
   };
-  RegisterTimeDerivatives(equation_system->var_names, variables);
+  variables.Register(
+      hephaestus::TimeDependentEquationSystem::GetTimeDerivativeName(
+          h_curl_var_name),
+      new mfem::ParGridFunction(fespaces.Get("_HCurlFESpace")), true);
 };
 
 void HCurlFormulation::RegisterCoefficients(

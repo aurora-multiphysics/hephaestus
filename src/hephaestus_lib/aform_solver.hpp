@@ -11,9 +11,6 @@ public:
 
   ~AFormulation(){};
 
-  virtual hephaestus::TimeDependentEquationSystem *
-  CreateEquationSystem() override;
-
   virtual void
   RegisterAuxKernels(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
                      hephaestus::AuxKernels &auxkernels) override;

@@ -15,8 +15,11 @@ public:
 
   ~EquationSystem(){};
 
-  // Name of test variable and pointer to its ParFiniteElementSpace.
-  std::vector<std::string> var_names, test_var_names;
+  // Names of all variables corresponding to variables. This may differ from
+  // test_var_names when test variables include time derivatives.
+  std::vector<std::string> var_names;
+  // Names of all test variables with kernels in this equation system.
+  std::vector<std::string> test_var_names;
   std::vector<mfem::ParFiniteElementSpace *> test_pfespaces;
 
   // Components of weak form. // Named according to test variable
@@ -27,7 +30,8 @@ public:
       mblfs; // named according to trial variable
 
   // add test variable to EquationSystem;
-  virtual void addVariableIfMissing(std::string test_var_name);
+  virtual void addTestVariableNameIfMissing(std::string test_var_name);
+  virtual void addVariableNameIfMissing(std::string var_name);
 
   // Add kernels. EquationSystem takes ownership.
   void addKernel(std::string test_var_name,
@@ -93,6 +97,12 @@ class TimeDependentEquationSystem : public EquationSystem {
 public:
   TimeDependentEquationSystem(const hephaestus::InputParameters &params);
   ~TimeDependentEquationSystem(){};
+
+  static std::string GetTimeDerivativeName(std::string name) {
+    return std::string("d") + name + std::string("_dt");
+  }
+  virtual void addVariableNameIfMissing(std::string var_name) override;
+
   virtual void setTimeStep(double dt);
   virtual void updateEquationSystem(hephaestus::BCMap &bc_map,
                                     hephaestus::Sources &sources);
@@ -111,7 +121,7 @@ public:
        hephaestus::DomainProperties &domain_properties) override;
   virtual void addKernels() override;
 
-  std::string coupled_variable_name, alpha_coef_name, beta_coef_name,
+  std::string h_curl_var_name, alpha_coef_name, beta_coef_name,
       dtalpha_coef_name;
 };
 
@@ -126,8 +136,8 @@ public:
        hephaestus::DomainProperties &domain_properties);
   virtual void addKernels() override;
 
-  std::string coupled_variable_name, alpha_coef_name, beta_coef_name,
-      dtalpha_coef_name, neg_beta_coef_name;
+  std::string a_name, v_name, coupled_variable_name, alpha_coef_name,
+      beta_coef_name, dtalpha_coef_name, neg_beta_coef_name;
   mfem::ConstantCoefficient negCoef;
 };
 } // namespace hephaestus
