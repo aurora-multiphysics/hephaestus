@@ -491,17 +491,17 @@ void WeakCurlEquationSystem::addKernels() {
   weakCurlParams.SetParam("HCurlVarName", h_curl_var_name);
   weakCurlParams.SetParam("HDivVarName", h_div_var_name);
   weakCurlParams.SetParam("CoefficientName", alpha_coef_name);
-  addKernel(dh_curl_var_dt, new hephaestus::WeakCurlKernel(weakCurlParams));
+  addKernel(h_curl_var_name, new hephaestus::WeakCurlKernel(weakCurlParams));
 
-  // (αdt∇×du/dt_{n+1}, ∇×u')
+  // (αdt∇×u_{n+1}, ∇×u')
   hephaestus::InputParameters curlCurlParams;
   curlCurlParams.SetParam("CoefficientName", dtalpha_coef_name);
-  addKernel(dh_curl_var_dt, new hephaestus::CurlCurlKernel(curlCurlParams));
+  addKernel(h_curl_var_name, new hephaestus::CurlCurlKernel(curlCurlParams));
 
   // (βdu/dt_{n+1}, u')
   hephaestus::InputParameters vectorFEMassParams;
   vectorFEMassParams.SetParam("CoefficientName", beta_coef_name);
-  addKernel(dh_curl_var_dt,
+  addKernel(h_curl_var_name,
             new hephaestus::VectorFEMassKernel(vectorFEMassParams));
 }
 
