@@ -46,7 +46,7 @@ protected:
     mfem::VectorFunctionCoefficient *edotVecCoef =
         new mfem::VectorFunctionCoefficient(3, edot_bc);
     bc_map["tangential_dEdt"] = new hephaestus::VectorFunctionDirichletBC(
-        std::string("delectric_field_dt"), mfem::Array<int>({1, 2, 3}),
+        std::string("electric_field"), mfem::Array<int>({1, 2, 3}),
         edotVecCoef);
     domain_properties.scalar_property_map["magnetic_permeability"] =
         new mfem::ConstantCoefficient(1.0);

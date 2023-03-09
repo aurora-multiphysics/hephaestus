@@ -87,7 +87,20 @@ protected:
         new mfem::ParaViewDataCollection("HJFormParaView");
     hephaestus::Outputs outputs(data_collections);
 
+    hephaestus::InputParameters hcurlfespaceparams;
+    hcurlfespaceparams.SetParam("FESpaceName", std::string("HCurl"));
+    hcurlfespaceparams.SetParam("FESpaceType", std::string("ND"));
+    hcurlfespaceparams.SetParam("order", 2);
+    hcurlfespaceparams.SetParam("components", 3);
+    hephaestus::InputParameters h1fespaceparams;
+    h1fespaceparams.SetParam("FESpaceName", std::string("H1"));
+    h1fespaceparams.SetParam("FESpaceType", std::string("H1"));
+    h1fespaceparams.SetParam("order", 2);
+    h1fespaceparams.SetParam("components", 3);
     hephaestus::FESpaces fespaces;
+    fespaces.StoreInput(hcurlfespaceparams);
+    fespaces.StoreInput(h1fespaceparams);
+
     hephaestus::GridFunctions gridfunctions;
     hephaestus::AuxKernels auxkernels;
     hephaestus::Postprocessors postprocessors;
@@ -98,9 +111,8 @@ protected:
     scalar_potential_source_params.SetParam("PotentialName",
                                             std::string("magnetic_potential"));
     scalar_potential_source_params.SetParam("HCurlFESpaceName",
-                                            std::string("_HCurlFESpace"));
-    scalar_potential_source_params.SetParam("H1FESpaceName",
-                                            std::string("_H1FESpace"));
+                                            std::string("HCurl"));
+    scalar_potential_source_params.SetParam("H1FESpaceName", std::string("H1"));
     scalar_potential_source_params.SetParam(
         "ConductivityCoefName", std::string("magnetic_permeability"));
     hephaestus::InputParameters current_solver_options;

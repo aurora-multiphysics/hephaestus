@@ -86,6 +86,20 @@ protected:
     h1fespaceparams.SetParam("components", 3);
     fespaces.StoreInput(h1fespaceparams);
 
+    hephaestus::InputParameters hcurlsourcefespaceparams;
+    hcurlsourcefespaceparams.SetParam("FESpaceName",
+                                      std::string("HCurlSource"));
+    hcurlsourcefespaceparams.SetParam("FESpaceType", std::string("ND"));
+    hcurlsourcefespaceparams.SetParam("order", 2);
+    hcurlsourcefespaceparams.SetParam("components", 3);
+    hephaestus::InputParameters h1sourcefespaceparams;
+    h1sourcefespaceparams.SetParam("FESpaceName", std::string("H1Source"));
+    h1sourcefespaceparams.SetParam("FESpaceType", std::string("H1"));
+    h1sourcefespaceparams.SetParam("order", 2);
+    h1sourcefespaceparams.SetParam("components", 3);
+    fespaces.StoreInput(hcurlsourcefespaceparams);
+    fespaces.StoreInput(h1sourcefespaceparams);
+
     hephaestus::InputParameters temperaturegfparams;
     temperaturegfparams.SetParam("VariableName", std::string("temperature"));
     temperaturegfparams.SetParam("FESpaceName", std::string("H1"));
@@ -188,9 +202,9 @@ protected:
     scalar_potential_source_params.SetParam("PotentialName",
                                             std::string("electric_potential"));
     scalar_potential_source_params.SetParam("HCurlFESpaceName",
-                                            std::string("_HCurlFESpace"));
+                                            std::string("HCurlSource"));
     scalar_potential_source_params.SetParam("H1FESpaceName",
-                                            std::string("_H1FESpace"));
+                                            std::string("H1Source"));
     scalar_potential_source_params.SetParam(
         "ConductivityCoefName", std::string("electrical_conductivity"));
     hephaestus::InputParameters current_solver_options;
