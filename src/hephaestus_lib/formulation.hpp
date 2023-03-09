@@ -47,7 +47,7 @@ public:
   void
   SetEquationSystem(hephaestus::TimeDependentEquationSystem *equation_system);
 
-  void SetVariables();
+  virtual void SetVariables();
 
   mfem::Array<int> true_offsets, block_trueOffsets;
   // Vector of names of state variables used in formulation, ordered by
