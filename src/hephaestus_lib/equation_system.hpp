@@ -140,4 +140,20 @@ public:
       beta_coef_name, dtalpha_coef_name, neg_beta_coef_name;
   mfem::ConstantCoefficient negCoef;
 };
+
+class WeakCurlEquationSystem : public TimeDependentEquationSystem {
+public:
+  WeakCurlEquationSystem(const hephaestus::InputParameters &params);
+  ~WeakCurlEquationSystem(){};
+  virtual void
+  Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+       const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+       hephaestus::BCMap &bc_map,
+       hephaestus::DomainProperties &domain_properties) override;
+  virtual void addKernels() override;
+
+  std::string h_curl_var_name, h_div_var_name, alpha_coef_name, beta_coef_name,
+      dtalpha_coef_name;
+};
+
 } // namespace hephaestus

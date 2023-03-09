@@ -46,7 +46,7 @@ protected:
     mfem::VectorFunctionCoefficient *edotVecCoef =
         new mfem::VectorFunctionCoefficient(3, edot_bc);
     bc_map["tangential_dEdt"] = new hephaestus::VectorFunctionDirichletBC(
-        std::string("electric_field"), mfem::Array<int>({1, 2, 3}),
+        std::string("delectric_field_dt"), mfem::Array<int>({1, 2, 3}),
         edotVecCoef);
     domain_properties.scalar_property_map["magnetic_permeability"] =
         new mfem::ConstantCoefficient(1.0);
@@ -87,7 +87,20 @@ protected:
         new mfem::ParaViewDataCollection("EBFormParaView");
     hephaestus::Outputs outputs(data_collections);
 
+    hephaestus::InputParameters hcurlfespaceparams;
+    hcurlfespaceparams.SetParam("FESpaceName", std::string("HCurl"));
+    hcurlfespaceparams.SetParam("FESpaceType", std::string("ND"));
+    hcurlfespaceparams.SetParam("order", 2);
+    hcurlfespaceparams.SetParam("components", 3);
+    hephaestus::InputParameters h1fespaceparams;
+    h1fespaceparams.SetParam("FESpaceName", std::string("H1"));
+    h1fespaceparams.SetParam("FESpaceType", std::string("H1"));
+    h1fespaceparams.SetParam("order", 2);
+    h1fespaceparams.SetParam("components", 3);
     hephaestus::FESpaces fespaces;
+    fespaces.StoreInput(hcurlfespaceparams);
+    fespaces.StoreInput(h1fespaceparams);
+
     hephaestus::GridFunctions gridfunctions;
     hephaestus::AuxKernels auxkernels;
     hephaestus::Postprocessors postprocessors;
@@ -98,9 +111,8 @@ protected:
     scalar_potential_source_params.SetParam("PotentialName",
                                             std::string("electric_potential"));
     scalar_potential_source_params.SetParam("HCurlFESpaceName",
-                                            std::string("_HCurlFESpace"));
-    scalar_potential_source_params.SetParam("H1FESpaceName",
-                                            std::string("_H1FESpace"));
+                                            std::string("HCurl"));
+    scalar_potential_source_params.SetParam("H1FESpaceName", std::string("H1"));
     scalar_potential_source_params.SetParam(
         "ConductivityCoefName", std::string("electrical_conductivity"));
     hephaestus::InputParameters current_solver_options;
