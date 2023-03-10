@@ -67,15 +67,6 @@ protected:
         std::string("electric_potential"), ground_terminal,
         new mfem::FunctionCoefficient(potential_ground));
 
-    hephaestus::InputParameters exec_params;
-    exec_params.SetParam("TimeStep", float(0.5));
-    exec_params.SetParam("StartTime", float(0.0));
-    exec_params.SetParam("EndTime", float(2.5));
-    exec_params.SetParam("VisualisationSteps", int(1));
-    exec_params.SetParam("UseGLVis", true);
-    hephaestus::TransientExecutioner *executioner =
-        new hephaestus::TransientExecutioner(exec_params);
-
     mfem::Mesh mesh(
         (std::string(DATA_DIR) + std::string("./cylinder-hex-q2.gen")).c_str(),
         1, 1);
@@ -135,8 +126,13 @@ protected:
         new hephaestus::EBDualFormulation();
 
     hephaestus::InputParameters params;
+    params.SetParam("TimeStep", float(0.5));
+    params.SetParam("StartTime", float(0.0));
+    params.SetParam("EndTime", float(2.5));
+    params.SetParam("VisualisationSteps", int(1));
+    params.SetParam("UseGLVis", true);
+
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
-    params.SetParam("Executioner", executioner);
     params.SetParam("Order", 2);
     params.SetParam("BoundaryConditions", bc_map);
     params.SetParam("DomainProperties", domain_properties);
@@ -155,8 +151,8 @@ protected:
 
 TEST_F(TestEBFormRod, CheckRun) {
   hephaestus::InputParameters params(test_params());
-  hephaestus::TransientExecutioner *executioner(
-      params.GetParam<hephaestus::TransientExecutioner *>("Executioner"));
-  executioner->Init(params);
+  hephaestus::TransientExecutioner *executioner =
+      new hephaestus::TransientExecutioner(params);
+  executioner->Init();
   executioner->Solve();
 }

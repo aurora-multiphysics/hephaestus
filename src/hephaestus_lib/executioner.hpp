@@ -23,6 +23,7 @@ private:
   int num_procs_;
 
   mfem::ParMesh *pmesh;
+  int order;
   hephaestus::BCMap *bc_map;
   hephaestus::DomainProperties *domain_properties;
   hephaestus::AuxKernels *auxkernels;
@@ -39,7 +40,7 @@ public:
   TransientExecutioner() = default;
   explicit TransientExecutioner(const hephaestus::InputParameters &params);
 
-  void Init(const hephaestus::InputParameters &params);
+  void Init();
 
   void Step(double dt, int it) const;
 

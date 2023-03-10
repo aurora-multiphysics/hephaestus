@@ -95,9 +95,8 @@ void TimeDomainEquationSystemOperator::SetVariables() {
   }
 };
 
-TransientFormulation::TransientFormulation() : oneCoef(1.0) {
-  equation_system = CreateEquationSystem();
-};
+TransientFormulation::TransientFormulation()
+    : equation_system(NULL), td_operator(NULL), oneCoef(1.0){};
 
 hephaestus::TimeDependentEquationSystem *
 TransientFormulation::CreateEquationSystem() {

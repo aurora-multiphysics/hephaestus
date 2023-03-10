@@ -9,12 +9,10 @@ TransientExecutioner::TransientExecutioner(
       t_final(params.GetParam<float>("EndTime")), t(t_initial),
       vis_steps(params.GetOptionalParam<int>("VisualisationSteps", 1)),
       visualization(params.GetOptionalParam<bool>("UseGLVis", false)),
-      last_step(false) {}
-
-void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
-  // Read in inputs, and initialise solver
+      last_step(false) {
+  // Read in key objects for solve
   pmesh = new mfem::ParMesh(params.GetParam<mfem::ParMesh>("Mesh"));
-  int order(params.GetParam<int>("Order"));
+  order = params.GetParam<int>("Order");
   bc_map = new hephaestus::BCMap(
       params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
   domain_properties = new hephaestus::DomainProperties(
@@ -41,9 +39,12 @@ void TransientExecutioner::Init(const hephaestus::InputParameters &params) {
   MPI_Comm_rank(pmesh->GetComm(), &myid_);
   formulation =
       params.GetParam<hephaestus::TransientFormulation *>("Formulation");
+  if (formulation->equation_system == NULL) {
+    formulation->CreateEquationSystem();
+  }
+}
 
-  formulation->CreateEquationSystem();
-  // needs true_offsets set here:
+void TransientExecutioner::Init() {
   formulation->RegisterMissingVariables(*pmesh, *fespaces, *gridfunctions);
   formulation->RegisterAuxKernels(*gridfunctions, *auxkernels);
   formulation->RegisterCoefficients(*domain_properties);
