@@ -83,21 +83,17 @@ protected:
     hephaestus::AuxKernels auxkernels;
     hephaestus::Sources sources;
 
-    hephaestus::InputParameters exec_params;
-    exec_params.SetParam("TimeStep", float(0.5));
-    exec_params.SetParam("StartTime", float(0.00));
-    exec_params.SetParam("EndTime", float(2.5));
-    exec_params.SetParam("VisualisationSteps", int(1));
-    exec_params.SetParam("UseGLVis", true);
-    hephaestus::TransientExecutioner *executioner =
-        new hephaestus::TransientExecutioner(exec_params);
-
     hephaestus::TransientFormulation *formulation =
         new hephaestus::AVFormulation();
 
     hephaestus::InputParameters params;
+    params.SetParam("TimeStep", float(0.5));
+    params.SetParam("StartTime", float(0.00));
+    params.SetParam("EndTime", float(2.5));
+    params.SetParam("VisualisationSteps", int(1));
+    params.SetParam("UseGLVis", true);
+
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
-    params.SetParam("Executioner", executioner);
     params.SetParam("Order", 2);
     params.SetParam("BoundaryConditions", bc_map);
     params.SetParam("DomainProperties", domain_properties);
@@ -115,8 +111,8 @@ protected:
 
 TEST_F(TestAVFormRod, CheckRun) {
   hephaestus::InputParameters params(test_params());
-  hephaestus::TransientExecutioner *executioner(
-      params.GetParam<hephaestus::TransientExecutioner *>("Executioner"));
-  executioner->Init(params);
+  hephaestus::TransientExecutioner *executioner =
+      new hephaestus::TransientExecutioner(params);
+  executioner->Init();
   executioner->Solve();
 }

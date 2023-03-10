@@ -130,15 +130,6 @@ protected:
         "VectorCoefficientAuxKernel",
         new hephaestus::VectorCoefficientAuxKernel(vectorcoeffauxparams), true);
 
-    hephaestus::InputParameters exec_params;
-    exec_params.SetParam("TimeStep", float(0.05));
-    exec_params.SetParam("StartTime", float(0.00));
-    exec_params.SetParam("EndTime", float(0.05));
-    exec_params.SetParam("VisualisationSteps", int(1));
-    exec_params.SetParam("UseGLVis", false);
-    hephaestus::TransientExecutioner *executioner =
-        new hephaestus::TransientExecutioner(exec_params);
-
     hephaestus::Sources sources;
     mfem::VectorFunctionCoefficient *JSrcCoef =
         new mfem::VectorFunctionCoefficient(3, source_field);
@@ -163,8 +154,13 @@ protected:
     solver_options.SetParam("PrintLevel", 0);
 
     hephaestus::InputParameters params;
+    params.SetParam("TimeStep", float(0.05));
+    params.SetParam("StartTime", float(0.00));
+    params.SetParam("EndTime", float(0.05));
+    params.SetParam("VisualisationSteps", int(1));
+    params.SetParam("UseGLVis", false);
+
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
-    params.SetParam("Executioner", executioner);
     params.SetParam("Order", 2);
     params.SetParam("BoundaryConditions", bc_map);
     params.SetParam("DomainProperties", domain_properties);
@@ -197,10 +193,12 @@ TEST_F(TestAFormSource, CheckRun) {
     hephaestus::TransientFormulation *formulation =
         new hephaestus::AFormulation();
     params.SetParam("Formulation", formulation);
-    hephaestus::TransientExecutioner *executioner(
-        params.GetParam<hephaestus::TransientExecutioner *>("Executioner"));
-    executioner->Init(params);
+    hephaestus::TransientExecutioner *executioner =
+        new hephaestus::TransientExecutioner(params);
+    executioner->Init();
     executioner->Solve();
+    delete formulation;
+    delete executioner;
   }
 
   hephaestus::L2ErrorVectorPostprocessor l2errpostprocessor =
