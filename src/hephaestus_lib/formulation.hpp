@@ -14,7 +14,11 @@ populateVectorFromNamedFieldsMap(mfem::NamedFieldsMap<T> nfmap,
                                  std::vector<std::string> keys) {
   std::vector<T *> result;
   for (auto &key : keys) {
-    result.push_back(nfmap.Get(key));
+    if (nfmap.Has(key)) {
+      result.push_back(nfmap.Get(key));
+    } else {
+      MFEM_ABORT("Key " << key << " not found in NamedFieldsMap");
+    }
   }
   return result;
 };
@@ -109,9 +113,14 @@ public:
   virtual void RegisterMissingVariables(
       mfem::ParMesh &pmesh,
       mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-      mfem::NamedFieldsMap<mfem::ParGridFunction> &variables){};
+      mfem::NamedFieldsMap<mfem::ParGridFunction> &variables) {
+    if (equation_system != NULL) {
+      TransientFormulation::RegisterTimeDerivatives(equation_system->var_names,
+                                                    variables);
+    }
+  };
 
-  std::vector<mfem::ParGridFunction *> RegisterTimeDerivatives(
+  static std::vector<mfem::ParGridFunction *> RegisterTimeDerivatives(
       std::vector<std::string> gridfunction_names,
       mfem::NamedFieldsMap<mfem::ParGridFunction> &gridfunctions);
 

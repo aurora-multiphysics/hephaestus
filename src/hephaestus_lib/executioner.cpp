@@ -45,15 +45,14 @@ TransientExecutioner::TransientExecutioner(
 }
 
 void TransientExecutioner::Init() {
+  fespaces->Init(*pmesh);
+  gridfunctions->Init(*pmesh, *fespaces);
   formulation->RegisterMissingVariables(*pmesh, *fespaces, *gridfunctions);
   formulation->RegisterAuxKernels(*gridfunctions, *auxkernels);
   formulation->RegisterCoefficients(*domain_properties);
-
-  fespaces->Init(*pmesh);
-  gridfunctions->Init(*pmesh, *fespaces);
-  auxkernels->Init(*gridfunctions, *domain_properties);
   formulation->equation_system->Init(*gridfunctions, *fespaces, *bc_map,
                                      *domain_properties);
+  auxkernels->Init(*gridfunctions, *domain_properties);
   sources->Init(*gridfunctions, *fespaces, *bc_map, *domain_properties);
   formulation->CreateTimeDomainOperator(
       *pmesh, order, *fespaces, *gridfunctions, *bc_map, *domain_properties,
