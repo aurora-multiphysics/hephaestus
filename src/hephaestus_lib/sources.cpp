@@ -122,6 +122,8 @@ void ScalarPotentialSource::Apply(mfem::ParLinearForm *lf) {
                               (H1FESpace_->GetParMesh()));
   b0->Assemble();
 
+  a0->Update();
+  a0->Assemble();
   a0->FormLinearSystem(poisson_ess_tdof_list, Phi_gf, *b0, *A0, *X0, *B0);
 
   if (a0_solver == NULL) {
@@ -134,6 +136,9 @@ void ScalarPotentialSource::Apply(mfem::ParLinearForm *lf) {
   a0->RecoverFEMSolution(*X0, *b0, *p_);
 
   grad->Mult(*p_, *grad_p_);
+
+  m1->Update();
+  m1->Assemble();
   m1->AddMult(*grad_p_, *lf, 1.0);
 }
 

@@ -25,6 +25,7 @@ public:
 class WeakCurlKernel : public Kernel<mfem::ParLinearForm> {
 public:
   WeakCurlKernel(const hephaestus::InputParameters &params);
+  ~WeakCurlKernel();
   virtual void
   Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
        const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
@@ -45,6 +46,7 @@ public:
 class WeakCurlCurlKernel : public Kernel<mfem::ParLinearForm> {
 public:
   WeakCurlCurlKernel(const hephaestus::InputParameters &params);
+  ~WeakCurlCurlKernel();
   virtual void
   Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
        const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,

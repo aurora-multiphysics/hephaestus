@@ -93,6 +93,7 @@ void TransientExecutioner::Step(double dt, int it) const {
 
   // Advance time step.
   ode_solver->Step(*F, t, dt);
+  auxkernels->Solve(t);
 
   // Output data
   if (last_step || (it % vis_steps) == 0) {
@@ -103,7 +104,6 @@ void TransientExecutioner::Step(double dt, int it) const {
     // Make sure all ranks have sent their 'v' solution before initiating
     // another set of GLVis connections (one from each rank):
     MPI_Barrier(pmesh->GetComm());
-    auxkernels->Solve(t);
 
     // Send output fields to GLVis for visualisation
     if (visualization) {

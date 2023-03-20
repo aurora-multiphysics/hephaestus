@@ -13,7 +13,7 @@ public:
   EquationSystem(){};
   EquationSystem(const hephaestus::InputParameters &params);
 
-  ~EquationSystem(){};
+  virtual ~EquationSystem();
 
   // Names of all variables corresponding to variables. This may differ from
   // test_var_names when test variables include time derivatives.
@@ -96,7 +96,6 @@ Class to store weak form components for time dependent PDEs
 class TimeDependentEquationSystem : public EquationSystem {
 public:
   TimeDependentEquationSystem(const hephaestus::InputParameters &params);
-  ~TimeDependentEquationSystem(){};
 
   static std::string GetTimeDerivativeName(std::string name) {
     return std::string("d") + name + std::string("_dt");
@@ -113,7 +112,7 @@ public:
 class CurlCurlEquationSystem : public TimeDependentEquationSystem {
 public:
   CurlCurlEquationSystem(const hephaestus::InputParameters &params);
-  ~CurlCurlEquationSystem(){};
+
   virtual void
   Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
        const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
@@ -128,7 +127,7 @@ public:
 class AVEquationSystem : public TimeDependentEquationSystem {
 public:
   AVEquationSystem(const hephaestus::InputParameters &params);
-  ~AVEquationSystem(){};
+
   virtual void
   Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
        const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
@@ -144,7 +143,7 @@ public:
 class WeakCurlEquationSystem : public TimeDependentEquationSystem {
 public:
   WeakCurlEquationSystem(const hephaestus::InputParameters &params);
-  ~WeakCurlEquationSystem(){};
+
   virtual void
   Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
        const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
