@@ -8,6 +8,12 @@ WeakCurlKernel::WeakCurlKernel(const hephaestus::InputParameters &params)
       hdiv_gf_name(params.GetParam<std::string>("HDivVarName")),
       coef_name(params.GetParam<std::string>("CoefficientName")) {}
 
+WeakCurlKernel::~WeakCurlKernel() {
+  if (weakCurl != NULL) {
+    delete weakCurl;
+  }
+}
+
 void WeakCurlKernel::Init(
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
@@ -21,10 +27,11 @@ void WeakCurlKernel::Init(
 
   weakCurl = new mfem::ParMixedBilinearForm(u_->ParFESpace(), v_->ParFESpace());
   weakCurl->AddDomainIntegrator(new mfem::VectorFECurlIntegrator(*coef));
-  weakCurl->Assemble();
 }
 
 void WeakCurlKernel ::Apply(mfem::ParLinearForm *lf) {
+  weakCurl->Update();
+  weakCurl->Assemble();
   weakCurl->AddMultTranspose(*v_, *lf);
 };
 
@@ -33,6 +40,12 @@ WeakCurlCurlKernel::WeakCurlCurlKernel(
     : Kernel(params),
       coupled_gf_name(params.GetParam<std::string>("CoupledVariableName")),
       coef_name(params.GetParam<std::string>("CoefficientName")) {}
+
+WeakCurlCurlKernel::~WeakCurlCurlKernel() {
+  if (curlCurl != NULL) {
+    delete curlCurl;
+  }
+}
 
 void WeakCurlCurlKernel::Init(
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,

@@ -6,6 +6,25 @@ EquationSystem::EquationSystem(const hephaestus::InputParameters &params)
     : var_names(), test_var_names(), test_pfespaces(), blfs(), lfs(), nlfs(),
       mblfs(), ess_tdof_lists(), xs() {}
 
+EquationSystem::~EquationSystem() {
+  blfs.DeleteData(true);
+  lfs.DeleteData(true);
+
+  for (const auto &[test_var_name, blf_kernels] : blf_kernels_map.GetMap()) {
+    for (int i = 0; i < blf_kernels->size(); i++) {
+      delete blf_kernels->at(i);
+    }
+  }
+  blf_kernels_map.DeleteData(true);
+
+  for (const auto &[test_var_name, lf_kernels] : lf_kernels_map.GetMap()) {
+    for (int i = 0; i < lf_kernels->size(); i++) {
+      delete lf_kernels->at(i);
+    }
+  }
+  lf_kernels_map.DeleteData(true);
+}
+
 void EquationSystem::addVariableNameIfMissing(std::string var_name) {
   if (std::find(var_names.begin(), var_names.end(), var_name) ==
       var_names.end()) {
@@ -498,7 +517,7 @@ void WeakCurlEquationSystem::addKernels() {
   curlCurlParams.SetParam("CoefficientName", dtalpha_coef_name);
   addKernel(h_curl_var_name, new hephaestus::CurlCurlKernel(curlCurlParams));
 
-  // (βdu/dt_{n+1}, u')
+  // (βu_{n+1}, u')
   hephaestus::InputParameters vectorFEMassParams;
   vectorFEMassParams.SetParam("CoefficientName", beta_coef_name);
   addKernel(h_curl_var_name,
