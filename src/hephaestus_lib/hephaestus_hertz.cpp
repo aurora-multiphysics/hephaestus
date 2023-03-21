@@ -100,7 +100,7 @@ int hertz_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
   int maxit = 1;
   int serial_ref_levels = 0;
   int parallel_ref_levels = 0;
-  int sol = 6;
+  int sol = 4;
   int prec = 4;
   bool herm_conv = true;
   bool visualization = true;
