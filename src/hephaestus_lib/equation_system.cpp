@@ -7,20 +7,17 @@ EquationSystem::EquationSystem(const hephaestus::InputParameters &params)
       mblfs(), ess_tdof_lists(), xs() {}
 
 EquationSystem::~EquationSystem() {
+  hBlocks.DeleteAll();
   blfs.DeleteData(true);
   lfs.DeleteData(true);
 
   for (const auto &[test_var_name, blf_kernels] : blf_kernels_map.GetMap()) {
-    for (int i = 0; i < blf_kernels->size(); i++) {
-      delete blf_kernels->at(i);
-    }
+    blf_kernels->DeleteAll();
   }
   blf_kernels_map.DeleteData(true);
 
   for (const auto &[test_var_name, lf_kernels] : lf_kernels_map.GetMap()) {
-    for (int i = 0; i < lf_kernels->size(); i++) {
-      delete lf_kernels->at(i);
-    }
+    lf_kernels->DeleteAll();
   }
   lf_kernels_map.DeleteData(true);
 }
@@ -46,9 +43,9 @@ void EquationSystem::addKernel(
   if (!blf_kernels_map.Has(test_var_name)) {
     blf_kernels_map.Register(
         test_var_name,
-        new std::vector<hephaestus::Kernel<mfem::ParBilinearForm> *>, true);
+        new mfem::Array<hephaestus::Kernel<mfem::ParBilinearForm> *>, true);
   }
-  blf_kernels_map.Get(test_var_name)->push_back(blf_kernel);
+  blf_kernels_map.Get(test_var_name)->Append(blf_kernel);
 }
 
 void EquationSystem::addKernel(
@@ -58,10 +55,10 @@ void EquationSystem::addKernel(
   if (!lf_kernels_map.Has(test_var_name)) {
     lf_kernels_map.Register(
         test_var_name,
-        new std::vector<hephaestus::Kernel<mfem::ParLinearForm> *>, true);
+        new mfem::Array<hephaestus::Kernel<mfem::ParLinearForm> *>, true);
   }
 
-  lf_kernels_map.Get(test_var_name)->push_back(lf_kernel);
+  lf_kernels_map.Get(test_var_name)->Append(lf_kernel);
 }
 
 void EquationSystem::addKernel(
@@ -71,10 +68,10 @@ void EquationSystem::addKernel(
   if (!nlf_kernels_map.Has(test_var_name)) {
     nlf_kernels_map.Register(
         test_var_name,
-        new std::vector<hephaestus::Kernel<mfem::ParNonlinearForm> *>, true);
+        new mfem::Array<hephaestus::Kernel<mfem::ParNonlinearForm> *>, true);
   }
 
-  nlf_kernels_map.Get(test_var_name)->push_back(nlf_kernel);
+  nlf_kernels_map.Get(test_var_name)->Append(nlf_kernel);
 }
 
 void EquationSystem::addKernel(
@@ -86,7 +83,7 @@ void EquationSystem::addKernel(
     mblf_kernels_map_map.Register(
         test_var_name,
         new mfem::NamedFieldsMap<
-            std::vector<hephaestus::Kernel<mfem::ParMixedBilinearForm> *>>,
+            mfem::Array<hephaestus::Kernel<mfem::ParMixedBilinearForm> *>>,
         true);
   }
   // Register new mblf kernels map if not present for the test/trial variable
@@ -95,13 +92,13 @@ void EquationSystem::addKernel(
     mblf_kernels_map_map.Get(test_var_name)
         ->Register(
             trial_var_name,
-            new std::vector<hephaestus::Kernel<mfem::ParMixedBilinearForm> *>,
+            new mfem::Array<hephaestus::Kernel<mfem::ParMixedBilinearForm> *>,
             true);
   }
 
   mblf_kernels_map_map.Get(test_var_name)
       ->Get(trial_var_name)
-      ->push_back(mblf_kernel);
+      ->Append(mblf_kernel);
 }
 
 void EquationSystem::applyBoundaryConditions(hephaestus::BCMap &bc_map) {
@@ -122,8 +119,8 @@ void EquationSystem::FormLinearSystem(mfem::OperatorHandle &op,
                                       mfem::BlockVector &trueRHS) {
 
   // Allocate block operator
+  hBlocks.DeleteAll();
   hBlocks.SetSize(test_var_names.size(), test_var_names.size());
-  hBlocks = NULL;
   // Form diagonal blocks.
   for (int i = 0; i < test_var_names.size(); i++) {
     auto &test_var_name = test_var_names.at(i);
@@ -201,32 +198,37 @@ void EquationSystem::Init(
   }
 
   // Initialise bilinear forms
+
   for (const auto &[test_var_name, blf_kernels] : blf_kernels_map.GetMap()) {
-    for (int i = 0; i < blf_kernels->size(); i++) {
-      blf_kernels->at(i)->Init(variables, fespaces, bc_map, domain_properties);
+    for (int i = 0; i < blf_kernels->Size(); i++) {
+      (*blf_kernels)[i]->Init(variables, fespaces, bc_map, domain_properties);
     }
+    blf_kernels->MakeDataOwner();
   }
   // Initialise linear form kernels
   for (const auto &[test_var_name, lf_kernels] : lf_kernels_map.GetMap()) {
-    for (int i = 0; i < lf_kernels->size(); i++) {
-      lf_kernels->at(i)->Init(variables, fespaces, bc_map, domain_properties);
+    for (int i = 0; i < lf_kernels->Size(); i++) {
+      (*lf_kernels)[i]->Init(variables, fespaces, bc_map, domain_properties);
     }
+    lf_kernels->MakeDataOwner();
   }
   // Initialise nonlinear form kernels
   for (const auto &[test_var_name, nlf_kernels] : nlf_kernels_map.GetMap()) {
-    for (int i = 0; i < nlf_kernels->size(); i++) {
-      nlf_kernels->at(i)->Init(variables, fespaces, bc_map, domain_properties);
+    for (int i = 0; i < nlf_kernels->Size(); i++) {
+      (*nlf_kernels)[i]->Init(variables, fespaces, bc_map, domain_properties);
     }
+    nlf_kernels->MakeDataOwner();
   }
   // Initialise mixed bilinear form kernels
   for (const auto &[test_var_name, mblf_kernels_map] :
        mblf_kernels_map_map.GetMap()) {
     for (const auto &[trial_var_name, mblf_kernels] :
          mblf_kernels_map->GetMap()) {
-      for (int i = 0; i < mblf_kernels->size(); i++) {
-        mblf_kernels->at(i)->Init(variables, fespaces, bc_map,
-                                  domain_properties);
+      for (int i = 0; i < mblf_kernels->Size(); i++) {
+        (*mblf_kernels)[i]->Init(variables, fespaces, bc_map,
+                                 domain_properties);
       }
+      mblf_kernels->MakeDataOwner();
     }
   }
 }
