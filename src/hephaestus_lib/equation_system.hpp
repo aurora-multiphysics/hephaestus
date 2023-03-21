@@ -78,15 +78,15 @@ protected:
   mfem::Array2D<mfem::HypreParMatrix *> hBlocks;
   // Arrays to store kernels to act on each component of weak form. Named
   // according to test variable
-  mfem::NamedFieldsMap<std::vector<hephaestus::Kernel<mfem::ParBilinearForm> *>>
+  mfem::NamedFieldsMap<mfem::Array<hephaestus::Kernel<mfem::ParBilinearForm> *>>
       blf_kernels_map;
-  mfem::NamedFieldsMap<std::vector<hephaestus::Kernel<mfem::ParLinearForm> *>>
+  mfem::NamedFieldsMap<mfem::Array<hephaestus::Kernel<mfem::ParLinearForm> *>>
       lf_kernels_map;
   mfem::NamedFieldsMap<
-      std::vector<hephaestus::Kernel<mfem::ParNonlinearForm> *>>
+      mfem::Array<hephaestus::Kernel<mfem::ParNonlinearForm> *>>
       nlf_kernels_map;
   mfem::NamedFieldsMap<mfem::NamedFieldsMap<
-      std::vector<hephaestus::Kernel<mfem::ParMixedBilinearForm> *>>>
+      mfem::Array<hephaestus::Kernel<mfem::ParMixedBilinearForm> *>>>
       mblf_kernels_map_map;
 };
 
