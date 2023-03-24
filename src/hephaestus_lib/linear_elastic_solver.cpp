@@ -3,6 +3,7 @@
 // *formulation*
 
 #include "linear_elastic_solver.hpp"
+#include "chrono"
 
 namespace hephaestus {
 
@@ -48,11 +49,23 @@ void LinearElasticSolver::Init(mfem::Vector &X) {
 
   // Initialise coefficients and store in DomainProperties
   SetMaterialCoefficients(_domain_properties);
+
+  // Initialise PETSC
+  const char* petscrc_file = "./rcpetsc_LE";
+  int argcPet = 3;
+  if(petsc)
+  {
+    mfem::MFEMInitializePetsc(NULL,NULL,petscrc_file,NULL); 	
+  }
+  
+
+
   // const char *device_config = "cpu";
   // mfem::Device device(device_config);
   //Allocate meory of bilinear forms, linear forms and matrices  
   b1 = new mfem::ParLinearForm(H1FESpace_);
   A1 = new mfem::HypreParMatrix;
+  APet = new mfem::PetscParMatrix;
   X1 = new mfem::Vector;
   B1 = new mfem::Vector;
   
@@ -89,22 +102,54 @@ void LinearElasticSolver::NotMult(const mfem::Vector& x, mfem::Vector& y)
   _bc_map.applyIntegratedBCs(u_name, *b1, pmesh_);
   // Assemble linear form
   b1->Assemble();
-  //Form linear system from blf and lf
-  a1->FormLinearSystem(ess_tdof_list, u_, *b1, *A1, *X1, *B1);
 
+  //If PETSC
+  if(petsc)
+  {
+    std::cout << "Using PETSC" << std::endl;
+    a1->SetOperatorType(mfem::Operator::PETSC_MATAIJ);
+    std::cout << "Operator set" << std::endl;
+    a1->FormLinearSystem(ess_tdof_list, u_, *b1, *APet, *X1, *B1);
+    std::cout << "done." << std::endl;
+    // Set matrix block size?
+    APet->SetBlockSize(1);
+    mfem::PetscPCGSolver *pcg = new mfem::PetscPCGSolver(*APet);
+    // mfem::PetscPreconditioner *amg = new mfem::PetscPreconditioner(*APet);
+    std::cout << "Precon set" << std::endl;
+    // mfem::PetscPreconditioner *amg = NULL;
+    pcg->SetAbsTol(1e-11);
+    pcg->SetTol(1e-30);
+    pcg->SetMaxIter(8000);
+    pcg->SetPrintLevel(1);
+    // Don't need this bit for PETSC
+    auto t1 = std::chrono::high_resolution_clock::now();
+    pcg->Mult(*B1, *X1);
+    auto t2 = std::chrono::high_resolution_clock::now();
+    auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
+    std::cout << "Run Time: " << ms_int.count() << " ms" << std::endl;
+  }
+  // If Hypre
+  else{
+    a1->FormLinearSystem(ess_tdof_list, u_, *b1, *A1, *X1, *B1);
+    mfem::HypreBoomerAMG *amg = new mfem::HypreBoomerAMG(*A1);
+    amg->SetSystemsOptions(pmesh_->Dimension(), false);
+    amg->SetMaxLevels(25);
+    amg->SetStrengthThresh(0.7);
+    amg->SetMaxIter(1);
+    mfem::HyprePCG *pcg = new mfem::HyprePCG(*A1);
+    pcg->SetAbsTol(1e-11);
+    pcg->SetTol(1e-30);
+    pcg->SetMaxIter(5000);
+    pcg->SetPrintLevel(1);
+    // Don't need this bit for PETSC
+    pcg->SetPreconditioner(*amg);
+    auto t1 = std::chrono::high_resolution_clock::now();
+    pcg->Mult(*B1, *X1);
+    auto t2 = std::chrono::high_resolution_clock::now();
+    auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
+    std::cout << "Run Time: " << ms_int.count() << " ms" << std::endl;
+  }
   // We only need to create the solver and preconditioner once
-  mfem::HypreBoomerAMG *amg = new mfem::HypreBoomerAMG(*A1);
-
-  amg->SetSystemsOptions(pmesh_->Dimension(), false);
-  // mfem::HyprePCG *pcg = new mfem::HyprePCG(*A1);
-  mfem::HypreGMRES *pcg = new mfem::HypreGMRES(*A1);
-  // mfem::GMRESSolver *pcg = new mfem::HypreGMRES(*A1);
-  pcg->SetTol(1e-8);
-  pcg->SetAbsTol(1e-8);
-  pcg->SetMaxIter(5000);
-  pcg->SetPrintLevel(1);
-  pcg->SetPreconditioner(*amg);
-  pcg->Mult(*B1, *X1);
 
   a1->RecoverFEMSolution(*X1, *b1, u_);
 
@@ -182,7 +227,14 @@ void LinearElasticSolver::buildA1() {
   // we only need to do this once.
   a1 = new mfem::ParBilinearForm(H1FESpace_);
   a1->AddDomainIntegrator(new mfem::ElasticityIntegrator(lambda_func, shear_modulus_func));
-  a1->Assemble();
+  if(petsc)
+  {
+    a1->Assemble();
+  }
+  else{
+    a1->Assemble();
+  }
+  
 
   // Don't finalize or parallel assemble this is done in FormLinearSystem.
   dt_A1 = dtCoef.constant;

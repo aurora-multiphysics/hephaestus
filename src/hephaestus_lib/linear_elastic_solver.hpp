@@ -55,6 +55,10 @@ public:
   std::map<std::string, mfem::socketstream *> socks_;
 
 protected:
+
+  // bool to determine whether solve is done with PETSC or Hypre
+  bool petsc = false;
+
   int myid_;
   int num_procs_;
   mfem::ParMesh *pmesh_;
@@ -66,7 +70,8 @@ protected:
   hephaestus::InputParameters _solver_options;
 
   mfem::ParBilinearForm *a0, *a1, *m1;
-  mfem::HypreParMatrix *A0, *A1;
+  mfem::HypreParMatrix *A1;
+  mfem::PetscParMatrix *APet;
   mfem::Vector *X0, *X1, *B0, *B1;
 
   mutable mfem::HypreSolver *amg_a0;
