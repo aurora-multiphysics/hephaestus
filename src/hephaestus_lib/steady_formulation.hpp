@@ -27,6 +27,8 @@ public:
 
   virtual void DisplayToGLVis(){};
 
+  virtual void NotMult(const mfem::Vector& x, mfem::Vector& y){};
+
   mfem::Array<int> true_offsets;
 };
 } // namespace hephaestus

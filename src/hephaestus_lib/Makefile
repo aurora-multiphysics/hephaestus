@@ -644,6 +644,30 @@ sources.cpp.s:
 	cd /opt/apollo/contrib/hephaestus && $(MAKE) $(MAKESILENT) -f src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/build.make src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/sources.cpp.s
 .PHONY : sources.cpp.s
 
+steady_exec.o: steady_exec.cpp.o
+.PHONY : steady_exec.o
+
+# target to build an object file
+steady_exec.cpp.o:
+	cd /opt/apollo/contrib/hephaestus && $(MAKE) $(MAKESILENT) -f src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/build.make src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/steady_exec.cpp.o
+.PHONY : steady_exec.cpp.o
+
+steady_exec.i: steady_exec.cpp.i
+.PHONY : steady_exec.i
+
+# target to preprocess a source file
+steady_exec.cpp.i:
+	cd /opt/apollo/contrib/hephaestus && $(MAKE) $(MAKESILENT) -f src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/build.make src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/steady_exec.cpp.i
+.PHONY : steady_exec.cpp.i
+
+steady_exec.s: steady_exec.cpp.s
+.PHONY : steady_exec.s
+
+# target to generate assembly for a file
+steady_exec.cpp.s:
+	cd /opt/apollo/contrib/hephaestus && $(MAKE) $(MAKESILENT) -f src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/build.make src/hephaestus_lib/CMakeFiles/hephaestus-lib.dir/steady_exec.cpp.s
+.PHONY : steady_exec.cpp.s
+
 variables.o: variables.cpp.o
 .PHONY : variables.o
 
@@ -741,6 +765,9 @@ help:
 	@echo "... sources.o"
 	@echo "... sources.i"
 	@echo "... sources.s"
+	@echo "... steady_exec.o"
+	@echo "... steady_exec.i"
+	@echo "... steady_exec.s"
 	@echo "... variables.o"
 	@echo "... variables.i"
 	@echo "... variables.s"

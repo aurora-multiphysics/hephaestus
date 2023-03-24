@@ -1,5 +1,6 @@
 #include "steady_exec.hpp"
 
+
 namespace hephaestus {
 
 SteadyExecutioner::SteadyExecutioner(
@@ -102,7 +103,9 @@ void SteadyExecutioner::Init(const hephaestus::InputParameters &params) {
 void SteadyExecutioner::Solve() const {
   // Call mult method from formulation
   std::cout << "Starting mult" << std::endl;
+  
   formulation->NotMult(*F, *y);
+  
 
   // Make sure all ranks have sent their 'v' solution before initiating
   // another set of GLVis connections (one from each rank):
