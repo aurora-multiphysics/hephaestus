@@ -8,21 +8,6 @@
 
 namespace hephaestus {
 
-template <typename T>
-std::vector<T *>
-populateVectorFromNamedFieldsMap(mfem::NamedFieldsMap<T> nfmap,
-                                 std::vector<std::string> keys) {
-  std::vector<T *> result;
-  for (auto &key : keys) {
-    if (nfmap.Has(key)) {
-      result.push_back(nfmap.Get(key));
-    } else {
-      MFEM_ABORT("Key " << key << " not found in NamedFieldsMap");
-    }
-  }
-  return result;
-};
-
 std::string GetTimeDerivativeName(std::string name);
 
 std::vector<std::string>
