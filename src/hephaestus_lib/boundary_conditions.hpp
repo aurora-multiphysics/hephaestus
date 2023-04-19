@@ -9,7 +9,6 @@ namespace hephaestus {
 
 class BoundaryCondition {
 public:
-  BoundaryCondition();
   BoundaryCondition(const std::string &name_, mfem::Array<int> bdr_attributes_);
   mfem::Array<int> getMarkers(mfem::Mesh &mesh);
 
@@ -24,7 +23,6 @@ public:
 
 class EssentialBC : virtual public BoundaryCondition {
 public:
-  EssentialBC();
   EssentialBC(const std::string &name_, mfem::Array<int> bdr_attributes_);
 
   virtual void applyBC(mfem::GridFunction &gridfunc, mfem::Mesh *mesh_){};
@@ -34,7 +32,6 @@ public:
 
 class FunctionDirichletBC : public EssentialBC {
 public:
-  FunctionDirichletBC();
   FunctionDirichletBC(const std::string &name_,
                       mfem::Array<int> bdr_attributes_);
   FunctionDirichletBC(const std::string &name_,
@@ -51,7 +48,6 @@ public:
 
 class VectorFunctionDirichletBC : virtual public EssentialBC {
 public:
-  VectorFunctionDirichletBC();
   VectorFunctionDirichletBC(const std::string &name_,
                             mfem::Array<int> bdr_attributes_);
   VectorFunctionDirichletBC(
@@ -71,7 +67,6 @@ public:
 
 class IntegratedBC : virtual public BoundaryCondition {
 public:
-  IntegratedBC();
   IntegratedBC(const std::string &name_, mfem::Array<int> bdr_attributes_);
   IntegratedBC(const std::string &name_, mfem::Array<int> bdr_attributes_,
                mfem::LinearFormIntegrator *lfi_re_,

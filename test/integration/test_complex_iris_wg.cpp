@@ -31,6 +31,8 @@ protected:
   double port_length_vector[3] = {0.0, 22.86e-3, 0.0};
   double port_width_vector[3] = {0.0, 0.0, 10.16e-3};
 
+  mfem::Array<int> dirichlet_attr;
+
   static void RWTE10(const mfem::Vector &x,
                      std::vector<std::complex<double>> &E) {
     std::complex<double> zi = std::complex<double>(0., 1.);
@@ -161,12 +163,12 @@ protected:
         new mfem::VectorFunctionCoefficient(3, zero_func);
 
     hephaestus::BCMap bc_map;
-    hephaestus::VectorFunctionDirichletBC e_bc(
-        std::string("boundary_1"), mfem::Array<int>({1, 2}),
+    // mfem::Array<int> dirichlet_attr(1);
+    dirichlet_attr.Append(1);
+    bc_map["tangential_E"] = new hephaestus::VectorFunctionDirichletBC(
+        std::string("electric_field"), dirichlet_attr,
         new mfem::VectorFunctionCoefficient(3, e_bc_r),
         new mfem::VectorFunctionCoefficient(3, e_bc_i));
-
-    bc_map["tangential_E"] = new hephaestus::VectorFunctionDirichletBC(e_bc);
 
     mfem::Vector a1Vec(port_length_vector, 3);
     double kc = M_PI / a1Vec.Norml2();

@@ -2,8 +2,6 @@
 
 namespace hephaestus {
 
-BoundaryCondition::BoundaryCondition() {}
-
 BoundaryCondition::BoundaryCondition(const std::string &name_,
                                      mfem::Array<int> bdr_attributes_)
     : name(name_), bdr_attributes(bdr_attributes_) {}
@@ -14,23 +12,21 @@ mfem::Array<int> BoundaryCondition::getMarkers(mfem::Mesh &mesh) {
   return markers;
 }
 
-EssentialBC::EssentialBC() {}
-
 EssentialBC::EssentialBC(const std::string &name_,
                          mfem::Array<int> bdr_attributes_)
     : BoundaryCondition(name_, bdr_attributes_) {}
 
-FunctionDirichletBC::FunctionDirichletBC() {}
-
 FunctionDirichletBC::FunctionDirichletBC(const std::string &name_,
                                          mfem::Array<int> bdr_attributes_)
-    : EssentialBC(name_, bdr_attributes_) {}
+    : BoundaryCondition(name_, bdr_attributes_),
+      EssentialBC(name_, bdr_attributes_) {}
 
 FunctionDirichletBC::FunctionDirichletBC(const std::string &name_,
                                          mfem::Array<int> bdr_attributes_,
                                          mfem::FunctionCoefficient *coeff_,
                                          mfem::FunctionCoefficient *coeff_im_)
-    : EssentialBC(name_, bdr_attributes_), coeff(coeff_), coeff_im(coeff_im_) {}
+    : BoundaryCondition(name_, bdr_attributes_),
+      EssentialBC(name_, bdr_attributes_), coeff(coeff_), coeff_im(coeff_im_) {}
 
 void FunctionDirichletBC::applyBC(mfem::GridFunction &gridfunc,
                                   mfem::Mesh *mesh_) {
@@ -39,17 +35,17 @@ void FunctionDirichletBC::applyBC(mfem::GridFunction &gridfunc,
   gridfunc.ProjectBdrCoefficient(*(this->coeff), ess_bdrs);
 }
 
-VectorFunctionDirichletBC::VectorFunctionDirichletBC() {}
-
 VectorFunctionDirichletBC::VectorFunctionDirichletBC(
     const std::string &name_, mfem::Array<int> bdr_attributes_)
-    : EssentialBC(name_, bdr_attributes_) {}
+    : BoundaryCondition(name_, bdr_attributes_),
+      EssentialBC(name_, bdr_attributes_) {}
 
 VectorFunctionDirichletBC::VectorFunctionDirichletBC(
     const std::string &name_, mfem::Array<int> bdr_attributes_,
     mfem::VectorFunctionCoefficient *vec_coeff_,
     mfem::VectorFunctionCoefficient *vec_coeff_im_)
-    : EssentialBC(name_, bdr_attributes_), vec_coeff(vec_coeff_),
+    : BoundaryCondition(name_, bdr_attributes_),
+      EssentialBC(name_, bdr_attributes_), vec_coeff(vec_coeff_),
       vec_coeff_im(vec_coeff_im_) {}
 
 void VectorFunctionDirichletBC::applyBC(mfem::GridFunction &gridfunc,
@@ -66,8 +62,6 @@ void VectorFunctionDirichletBC::applyBC(mfem::ParComplexGridFunction &gridfunc,
   gridfunc.ProjectBdrCoefficientTangent(*(this->vec_coeff),
                                         *(this->vec_coeff_im), ess_bdrs);
 }
-
-IntegratedBC::IntegratedBC() {}
 
 IntegratedBC::IntegratedBC(const std::string &name_,
                            mfem::Array<int> bdr_attributes_)
@@ -114,20 +108,19 @@ mfem::Array<int> BCMap::getEssentialBdrMarkers(const std::string &name_,
   return global_ess_markers;
 }
 
-RobinBC::RobinBC() {}
-
 RobinBC::RobinBC(const std::string &name_, mfem::Array<int> bdr_attributes_)
-    : EssentialBC(name_, bdr_attributes_), IntegratedBC(name_, bdr_attributes_),
-      BoundaryCondition(name_, bdr_attributes_) {}
+    : BoundaryCondition(name_, bdr_attributes_),
+      EssentialBC(name_, bdr_attributes_),
+      IntegratedBC(name_, bdr_attributes_) {}
 
 RobinBC::RobinBC(const std::string &name_, mfem::Array<int> bdr_attributes_,
                  mfem::Coefficient *robin_coeff_re_,
                  mfem::LinearFormIntegrator *lfi_re_,
                  mfem::Coefficient *robin_coeff_im_,
                  mfem::LinearFormIntegrator *lfi_im_)
-    : EssentialBC(name_, bdr_attributes_),
+    : BoundaryCondition(name_, bdr_attributes_),
+      EssentialBC(name_, bdr_attributes_),
       IntegratedBC(name_, bdr_attributes_, lfi_re_, lfi_im_),
-      BoundaryCondition(name_, bdr_attributes_),
       robin_coeff_re(robin_coeff_re_), robin_coeff_im(robin_coeff_im_) {}
 
 VectorRobinBC::VectorRobinBC(const std::string &name_,
@@ -138,10 +131,11 @@ VectorRobinBC::VectorRobinBC(const std::string &name_,
                              mfem::BilinearFormIntegrator *blfi_im_,
                              mfem::VectorFunctionCoefficient *vec_coeff_im_,
                              mfem::LinearFormIntegrator *lfi_im_)
-    : VectorFunctionDirichletBC(name_, bdr_attributes_, vec_coeff_re_,
+    : BoundaryCondition(name_, bdr_attributes_),
+      EssentialBC(name_, bdr_attributes_),
+      VectorFunctionDirichletBC(name_, bdr_attributes_, vec_coeff_re_,
                                 vec_coeff_im_),
-      IntegratedBC(name_, bdr_attributes_, lfi_re_, lfi_im_),
-      BoundaryCondition(name_, bdr_attributes_), blfi_re(blfi_re_),
+      IntegratedBC(name_, bdr_attributes_, lfi_re_, lfi_im_), blfi_re(blfi_re_),
       blfi_im(blfi_im_) {}
 
 void VectorRobinBC::applyBC(mfem::ParSesquilinearForm &a) {

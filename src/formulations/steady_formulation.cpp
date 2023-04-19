@@ -49,56 +49,11 @@ void HertzOperator::Init(mfem::Vector &X) {
                                      true_offsets[ind]);
   }
 
-  mfem::Vector a1Vec(port_length_vector, 3);
-
-  kc = M_PI / a1Vec.Norml2();
-  double omega_ = 2.0 * M_PI * freq_;
-  k0 = omega_ * sqrt(epsilon0_ * mu0_);
-  k_ = std::complex<double>(0., sqrt(k0 * k0 - kc * kc));
-
   omegaCoef_ = new mfem::ConstantCoefficient(2.0 * M_PI * freq_);
   negOmegaCoef_ = new mfem::ConstantCoefficient(-2.0 * M_PI * freq_);
   omega2Coef_ = new mfem::ConstantCoefficient(pow(2.0 * M_PI * freq_, 2));
   negOmega2Coef_ = new mfem::ConstantCoefficient(-pow(2.0 * M_PI * freq_, 2));
 
-  // Robin coefficient, but already handled here.
-  etaInvCoef_ = new mfem::ConstantCoefficient(-k_.imag() / (mu0_ * omega_));
-
-  // hephaestus::BoundaryCondition waveguide_ports(std::string("robin_1"),
-  //                                               mfem::Array<int>({1, 2}));
-
-  // _equation_system->buildEquationSystem(_bc_map, _sources);
-  dbcs.SetSize(1);
-  dbcs = 0;
-  dbcs[0] = 1;
-
-  // abcs.SetSize(1);
-  // abcs[0] = 3;
-  // abcs = mfem::Array<int>({2, 3});
-
-  ess_bdr_.SetSize(pmesh_->bdr_attributes.Max());
-  if (dbcs.Size() == 1 && dbcs[0] == -1) {
-    ess_bdr_ = 1;
-  } else {
-    ess_bdr_ = 0;
-    for (int i = 0; i < dbcs.Size(); i++) {
-      ess_bdr_[dbcs[i] - 1] = 1;
-    }
-  }
-  e_->ParFESpace()->GetEssentialTrueDofs(ess_bdr_, ess_bdr_tdofs_);
-
-  hephaestus::VectorFunctionDirichletBC *tangential_E_bc =
-      dynamic_cast<hephaestus::VectorFunctionDirichletBC *>(
-          _bc_map["tangential_E"]);
-
-  erCoef_ = tangential_E_bc->vec_coeff;
-  eiCoef_ = tangential_E_bc->vec_coeff_im;
-
-  // e_->ProjectCoefficient(*erCoef_, *eiCoef_);
-  e_->ProjectBdrCoefficientTangent(*erCoef_, *eiCoef_, ess_bdr_);
-
-  // Setup various coefficients
-  // Create a coefficient describing the dielectric permittivity
   epsCoef_ = new mfem::ConstantCoefficient(epsilon0_);
   muInvCoef_ = new mfem::ConstantCoefficient(1.0 / mu0_);
   sigmaCoef_ = new mfem::ConstantCoefficient(0.0);
@@ -140,6 +95,13 @@ void HertzOperator::Solve(mfem::Vector &X) {
   jd_->AddDomainIntegrator(new mfem::VectorFEDomainLFIntegrator(*jrCoef_),
                            new mfem::VectorFEDomainLFIntegrator(*jiCoef_));
 
+  hephaestus::VectorFunctionDirichletBC *tangential_E_bc =
+      dynamic_cast<hephaestus::VectorFunctionDirichletBC *>(
+          _bc_map["tangential_E"]);
+
+  mfem::Array<int> ess_bdr = tangential_E_bc->getMarkers(*pmesh_);
+  e_->ParFESpace()->GetEssentialTrueDofs(ess_bdr, ess_bdr_tdofs_);
+  tangential_E_bc->applyBC(*e_, pmesh_);
   // _bc_map.applyEssentialBCs(std::string("electric_field"), ess_bdr_tdofs_,
   // *e_,
   //                           pmesh_);
