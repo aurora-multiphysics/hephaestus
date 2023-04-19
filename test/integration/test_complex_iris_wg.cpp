@@ -8,6 +8,11 @@ extern const char *DATA_DIR;
 
 class TestComplexIrisWaveguide : public testing::Test {
 protected:
+  static void zero_func(const mfem::Vector &x, mfem::Vector &v) {
+    v.SetSize(3);
+    v = 0.0;
+  }
+
   static void e_bc_r(const mfem::Vector &x, mfem::Vector &E) {
     E.SetSize(3);
     E = 0.0;
@@ -23,6 +28,8 @@ protected:
   // Permeability of Free Space (units H/m)
   inline static const double mu0_ = 4.0e-7 * M_PI;
   inline static const double freq_ = 9.3e9; // 10/2pi
+  double port_length_vector[3] = {0.0, 22.86e-3, 0.0};
+  double port_width_vector[3] = {0.0, 0.0, 10.16e-3};
 
   static void RWTE10(const mfem::Vector &x,
                      std::vector<std::complex<double>> &E) {
@@ -150,6 +157,8 @@ protected:
         new mfem::VectorFunctionCoefficient(3, RWTE10_real);
     domain_properties.vector_property_map["UImag"] =
         new mfem::VectorFunctionCoefficient(3, RWTE10_imag);
+    domain_properties.vector_property_map["Zero"] =
+        new mfem::VectorFunctionCoefficient(3, zero_func);
 
     hephaestus::BCMap bc_map;
     hephaestus::VectorFunctionDirichletBC e_bc(
@@ -158,6 +167,43 @@ protected:
         new mfem::VectorFunctionCoefficient(3, e_bc_i));
 
     bc_map["tangential_E"] = new hephaestus::VectorFunctionDirichletBC(e_bc);
+
+    mfem::Vector a1Vec(port_length_vector, 3);
+    double kc = M_PI / a1Vec.Norml2();
+    double omega_ = 2.0 * M_PI * freq_;
+    double k0 = omega_ * sqrt(epsilon0_ * mu0_);
+    std::complex<double> k_ = std::complex<double>(0., sqrt(k0 * k0 - kc * kc));
+    // Robin coefficient, but already handled here.
+    // domain_properties.scalar_property_map["etaInv"] =
+    //     new mfem::ConstantCoefficient(-k_.imag() / (mu0_ * omega_));
+    domain_properties.scalar_property_map["abc"] =
+        new mfem::ConstantCoefficient(k_.imag() / mu0_);
+
+    mfem::Array<int> wgi_in_attr(1);
+    wgi_in_attr[0] = 2;
+    bc_map["WaveguidePortIn"] = new hephaestus::VectorRobinBC(
+        std::string("electric_field"), wgi_in_attr, NULL,
+        new mfem::VectorFunctionCoefficient(3, e_bc_r),
+        new mfem::VectorFEBoundaryTangentLFIntegrator(
+            *(domain_properties.vector_property_map["UReal"])),
+        new mfem::VectorFEMassIntegrator(
+            *domain_properties.scalar_property_map["abc"]),
+        new mfem::VectorFunctionCoefficient(3, e_bc_i),
+        new mfem::VectorFEBoundaryTangentLFIntegrator(
+            *(domain_properties.vector_property_map["UImag"])));
+
+    mfem::Array<int> wgi_out_attr(1);
+    wgi_out_attr[0] = 3;
+    bc_map["WaveguidePortOut"] = new hephaestus::VectorRobinBC(
+        std::string("electric_field"), wgi_out_attr, NULL,
+        new mfem::VectorFunctionCoefficient(3, e_bc_r),
+        new mfem::VectorFEBoundaryTangentLFIntegrator(
+            *(domain_properties.vector_property_map["Zero"])),
+        new mfem::VectorFEMassIntegrator(
+            *domain_properties.scalar_property_map["abc"]),
+        new mfem::VectorFunctionCoefficient(3, e_bc_i),
+        new mfem::VectorFEBoundaryTangentLFIntegrator(
+            *(domain_properties.vector_property_map["Zero"])));
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./irises.g")).c_str(),
                     1, 1);

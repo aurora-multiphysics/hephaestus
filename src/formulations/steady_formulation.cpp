@@ -10,19 +10,6 @@ void HertzOperator::SetVariables() {
       _variables, state_var_names);
   e_ = new mfem::ParComplexGridFunction(local_test_vars.at(0)->ParFESpace());
   *e_ = std::complex(0.0, 0.0);
-  // _variables.Get(state_var_names.at(0))
-  //     ->MakeRef(local_test_vars.at(0)->ParFESpace(), *e_, 0);
-  // _variables.Get(state_var_names.at(1))
-  //     ->MakeRef(local_test_vars.at(0)->ParFESpace(), *e_,
-  //               local_test_vars.at(0)->ParFESpace()->GetVSize());
-  // *_variables.Get(state_var_names.at(0)) = e_->real();
-  // *_variables.Get(state_var_names.at(1)) = e_->imag();
-  // e_->real()->MakeRef(local_test_vars.at(0)->ParFESpace(),
-  //                     _variables.Get(state_var_names.at(0)), 0);
-  // e_->imag()->MakeRef(local_test_vars.at(0)->ParFESpace(),
-  //                     _variables.Get(state_var_names.at(1)));
-  // e_->real() = *_variables.Get(state_var_names.at(0));
-  // e_->imag() = *_variables.Get(state_var_names.at(1));
 
   // Set operator size and block structure
   block_trueOffsets.SetSize(local_test_vars.size() + 1);
@@ -60,7 +47,6 @@ void HertzOperator::Init(mfem::Vector &X) {
     local_test_vars.at(ind)->MakeRef(local_test_vars.at(ind)->ParFESpace(),
                                      const_cast<mfem::Vector &>(X),
                                      true_offsets[ind]);
-    // *(local_test_vars.at(ind)) = 0.0;
   }
 
   mfem::Vector a1Vec(port_length_vector, 3);
@@ -78,15 +64,17 @@ void HertzOperator::Init(mfem::Vector &X) {
   // Robin coefficient, but already handled here.
   etaInvCoef_ = new mfem::ConstantCoefficient(-k_.imag() / (mu0_ * omega_));
 
-  hephaestus::BoundaryCondition waveguide_ports(std::string("robin_1"),
-                                                mfem::Array<int>({1, 2}));
+  // hephaestus::BoundaryCondition waveguide_ports(std::string("robin_1"),
+  //                                               mfem::Array<int>({1, 2}));
 
   // _equation_system->buildEquationSystem(_bc_map, _sources);
   dbcs.SetSize(1);
   dbcs = 0;
   dbcs[0] = 1;
 
-  abcs = mfem::Array<int>({2, 3});
+  // abcs.SetSize(1);
+  // abcs[0] = 3;
+  // abcs = mfem::Array<int>({2, 3});
 
   ess_bdr_.SetSize(pmesh_->bdr_attributes.Max());
   if (dbcs.Size() == 1 && dbcs[0] == -1) {
@@ -106,7 +94,9 @@ void HertzOperator::Init(mfem::Vector &X) {
   erCoef_ = tangential_E_bc->vec_coeff;
   eiCoef_ = tangential_E_bc->vec_coeff_im;
 
-  e_->ProjectCoefficient(*erCoef_, *eiCoef_);
+  // e_->ProjectCoefficient(*erCoef_, *eiCoef_);
+  e_->ProjectBdrCoefficientTangent(*erCoef_, *eiCoef_, ess_bdr_);
+
   // Setup various coefficients
   // Create a coefficient describing the dielectric permittivity
   epsCoef_ = new mfem::ConstantCoefficient(epsilon0_);
@@ -120,26 +110,6 @@ void HertzOperator::Init(mfem::Vector &X) {
   if (sigmaCoef_) {
     lossCoef_ =
         new mfem::TransformedCoefficient(omegaCoef_, sigmaCoef_, prodFunc);
-  }
-
-  // Impedance of free space for the Absorbing boundary condition
-  if (abcs.Size() > 0) {
-    abc_marker_.SetSize(pmesh_->bdr_attributes.Max());
-    if (abcs.Size() == 1 && abcs[0] < 0) {
-      // Mark all boundaries as absorbing
-      abc_marker_ = 1;
-    } else {
-      // Mark select boundaries as absorbing
-      abc_marker_ = 0;
-      for (int i = 0; i < abcs.Size(); i++) {
-        abc_marker_[abcs[i] - 1] = 1;
-      }
-    }
-
-    abcCoef_ =
-        new mfem::TransformedCoefficient(negOmegaCoef_, etaInvCoef_, prodFunc);
-    posAbcCoef_ =
-        new mfem::TransformedCoefficient(omegaCoef_, etaInvCoef_, prodFunc);
   }
 }
 
@@ -159,10 +129,6 @@ void HertzOperator::Solve(mfem::Vector &X) {
     a1_->AddDomainIntegrator(NULL,
                              new mfem::VectorFEMassIntegrator(*lossCoef_));
   }
-  if (abcCoef_) {
-    a1_->AddBoundaryIntegrator(
-        NULL, new mfem::VectorFEMassIntegrator(*abcCoef_), abc_marker_);
-  }
 
   // Volume Current Density
   mfem::Vector j(3);
@@ -174,20 +140,17 @@ void HertzOperator::Solve(mfem::Vector &X) {
   jd_->AddDomainIntegrator(new mfem::VectorFEDomainLFIntegrator(*jrCoef_),
                            new mfem::VectorFEDomainLFIntegrator(*jiCoef_));
 
-  // applyIntegratedBCs does not appear to be correctly working...
-  mfem::Array<int> wgi_in_attr(1);
-  wgi_in_attr[0] = 2;
-  hephaestus::IntegratedBC waveguide_in(std::string("electric_field"),
-                                        wgi_in_attr);
-
-  waveguide_in.lfi_re = new mfem::VectorFEBoundaryTangentLFIntegrator(
-      *(_domain_properties.vector_property_map["UReal"]));
-  waveguide_in.lfi_im = new mfem::VectorFEBoundaryTangentLFIntegrator(
-      *(_domain_properties.vector_property_map["UImag"]));
-
-  _bc_map["Neumann"] = new hephaestus::IntegratedBC(waveguide_in);
-
+  // _bc_map.applyEssentialBCs(std::string("electric_field"), ess_bdr_tdofs_,
+  // *e_,
+  //                           pmesh_);
   _bc_map.applyIntegratedBCs(std::string("electric_field"), *jd_, pmesh_);
+  hephaestus::VectorRobinBC *robin_bc;
+  robin_bc =
+      dynamic_cast<hephaestus::VectorRobinBC *>(_bc_map["WaveguidePortIn"]);
+  robin_bc->applyBC(*a1_);
+  robin_bc =
+      dynamic_cast<hephaestus::VectorRobinBC *>(_bc_map["WaveguidePortOut"]);
+  robin_bc->applyBC(*a1_);
 
   a1_->Assemble();
   a1_->Finalize();

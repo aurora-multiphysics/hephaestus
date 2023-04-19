@@ -59,6 +59,14 @@ void VectorFunctionDirichletBC::applyBC(mfem::GridFunction &gridfunc,
   gridfunc.ProjectBdrCoefficientTangent(*(this->vec_coeff), ess_bdrs);
 }
 
+void VectorFunctionDirichletBC::applyBC(mfem::ParComplexGridFunction &gridfunc,
+                                        mfem::Mesh *mesh_) {
+  mfem::Array<int> ess_bdrs(mesh_->bdr_attributes.Max());
+  ess_bdrs = this->getMarkers(*mesh_);
+  gridfunc.ProjectBdrCoefficientTangent(*(this->vec_coeff),
+                                        *(this->vec_coeff_im), ess_bdrs);
+}
+
 IntegratedBC::IntegratedBC() {}
 
 IntegratedBC::IntegratedBC(const std::string &name_,
@@ -106,9 +114,61 @@ mfem::Array<int> BCMap::getEssentialBdrMarkers(const std::string &name_,
   return global_ess_markers;
 }
 
+RobinBC::RobinBC() {}
+
+RobinBC::RobinBC(const std::string &name_, mfem::Array<int> bdr_attributes_)
+    : EssentialBC(name_, bdr_attributes_), IntegratedBC(name_, bdr_attributes_),
+      BoundaryCondition(name_, bdr_attributes_) {}
+
+RobinBC::RobinBC(const std::string &name_, mfem::Array<int> bdr_attributes_,
+                 mfem::Coefficient *robin_coeff_re_,
+                 mfem::LinearFormIntegrator *lfi_re_,
+                 mfem::Coefficient *robin_coeff_im_,
+                 mfem::LinearFormIntegrator *lfi_im_)
+    : EssentialBC(name_, bdr_attributes_),
+      IntegratedBC(name_, bdr_attributes_, lfi_re_, lfi_im_),
+      BoundaryCondition(name_, bdr_attributes_),
+      robin_coeff_re(robin_coeff_re_), robin_coeff_im(robin_coeff_im_) {}
+
+VectorRobinBC::VectorRobinBC(const std::string &name_,
+                             mfem::Array<int> bdr_attributes_,
+                             mfem::BilinearFormIntegrator *blfi_re_,
+                             mfem::VectorFunctionCoefficient *vec_coeff_re_,
+                             mfem::LinearFormIntegrator *lfi_re_,
+                             mfem::BilinearFormIntegrator *blfi_im_,
+                             mfem::VectorFunctionCoefficient *vec_coeff_im_,
+                             mfem::LinearFormIntegrator *lfi_im_)
+    : VectorFunctionDirichletBC(name_, bdr_attributes_, vec_coeff_re_,
+                                vec_coeff_im_),
+      IntegratedBC(name_, bdr_attributes_, lfi_re_, lfi_im_),
+      BoundaryCondition(name_, bdr_attributes_), blfi_re(blfi_re_),
+      blfi_im(blfi_im_) {}
+
+void VectorRobinBC::applyBC(mfem::ParSesquilinearForm &a) {
+  a.AddBoundaryIntegrator(blfi_re, blfi_im, markers);
+}
+
 void BCMap::applyEssentialBCs(const std::string &name_,
                               mfem::Array<int> &ess_tdof_list,
                               mfem::GridFunction &gridfunc, mfem::Mesh *mesh_) {
+
+  for (auto const &[name, bc_] : *this) {
+    if (bc_->name == name_) {
+      hephaestus::EssentialBC *bc =
+          dynamic_cast<hephaestus::EssentialBC *>(bc_);
+      if (bc != NULL) {
+        bc->applyBC(gridfunc, mesh_);
+      }
+    }
+  }
+  mfem::Array<int> ess_bdr = getEssentialBdrMarkers(name_, mesh_);
+  gridfunc.FESpace()->GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
+};
+
+void BCMap::applyEssentialBCs(const std::string &name_,
+                              mfem::Array<int> &ess_tdof_list,
+                              mfem::ParComplexGridFunction &gridfunc,
+                              mfem::Mesh *mesh_) {
 
   for (auto const &[name, bc_] : *this) {
     if (bc_->name == name_) {

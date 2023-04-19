@@ -22,12 +22,14 @@ public:
   virtual void applyBC(mfem::ParComplexLinearForm &b){};
 };
 
-class EssentialBC : public BoundaryCondition {
+class EssentialBC : virtual public BoundaryCondition {
 public:
   EssentialBC();
   EssentialBC(const std::string &name_, mfem::Array<int> bdr_attributes_);
 
   virtual void applyBC(mfem::GridFunction &gridfunc, mfem::Mesh *mesh_){};
+  virtual void applyBC(mfem::ParComplexGridFunction &gridfunc,
+                       mfem::Mesh *mesh_){};
 };
 
 class FunctionDirichletBC : public EssentialBC {
@@ -47,7 +49,7 @@ public:
   mfem::FunctionCoefficient *coeff_im;
 };
 
-class VectorFunctionDirichletBC : public EssentialBC {
+class VectorFunctionDirichletBC : virtual public EssentialBC {
 public:
   VectorFunctionDirichletBC();
   VectorFunctionDirichletBC(const std::string &name_,
@@ -60,11 +62,14 @@ public:
   virtual void applyBC(mfem::GridFunction &gridfunc,
                        mfem::Mesh *mesh_) override;
 
+  virtual void applyBC(mfem::ParComplexGridFunction &gridfunc,
+                       mfem::Mesh *mesh_) override;
+
   mfem::VectorFunctionCoefficient *vec_coeff;
   mfem::VectorFunctionCoefficient *vec_coeff_im;
 };
 
-class IntegratedBC : public BoundaryCondition {
+class IntegratedBC : virtual public BoundaryCondition {
 public:
   IntegratedBC();
   IntegratedBC(const std::string &name_, mfem::Array<int> bdr_attributes_);
@@ -80,6 +85,35 @@ public:
   virtual void applyBC(mfem::ParComplexLinearForm &b) override;
 };
 
+class RobinBC : public EssentialBC, IntegratedBC {
+public:
+  RobinBC();
+  RobinBC(const std::string &name_, mfem::Array<int> bdr_attributes_);
+  RobinBC(const std::string &name_, mfem::Array<int> bdr_attributes_,
+          mfem::Coefficient *robin_coeff_, mfem::LinearFormIntegrator *lfi_re_,
+          mfem::Coefficient *robin_coeff_im = nullptr,
+          mfem::LinearFormIntegrator *lfi_im_ = nullptr);
+
+  mfem::Coefficient *robin_coeff_re;
+  mfem::Coefficient *robin_coeff_im;
+};
+
+class VectorRobinBC : public VectorFunctionDirichletBC, IntegratedBC {
+public:
+  VectorRobinBC(const std::string &name_, mfem::Array<int> bdr_attributes_,
+                mfem::BilinearFormIntegrator *blfi_re_,
+                mfem::VectorFunctionCoefficient *vec_coeff_re_,
+                mfem::LinearFormIntegrator *lfi_re_,
+                mfem::BilinearFormIntegrator *blfi_im_ = nullptr,
+                mfem::VectorFunctionCoefficient *vec_coeff_im_ = nullptr,
+                mfem::LinearFormIntegrator *lfi_im_ = nullptr);
+
+  mfem::BilinearFormIntegrator *blfi_re;
+  mfem::BilinearFormIntegrator *blfi_im;
+
+  virtual void applyBC(mfem::ParSesquilinearForm &a);
+};
+
 class BCMap : public std::map<std::string, hephaestus::BoundaryCondition *> {
 public:
   mfem::Array<int> getEssentialBdrMarkers(const std::string &name_,
@@ -89,8 +123,14 @@ public:
                          mfem::Array<int> &ess_tdof_list,
                          mfem::GridFunction &gridfunc, mfem::Mesh *mesh_);
 
+  void applyEssentialBCs(const std::string &name_,
+                         mfem::Array<int> &ess_tdof_list,
+                         mfem::ParComplexGridFunction &gridfunc,
+                         mfem::Mesh *mesh_);
+
   void applyIntegratedBCs(const std::string &name_, mfem::LinearForm &lf,
                           mfem::Mesh *mesh_);
+
   void applyIntegratedBCs(const std::string &name_,
                           mfem::ParComplexLinearForm &clf, mfem::Mesh *mesh_);
 };

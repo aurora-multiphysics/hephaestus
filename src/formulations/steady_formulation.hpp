@@ -57,6 +57,7 @@ public:
   // in formulation,
   std::vector<std::string> active_aux_var_names;
 
+  hephaestus::VectorRobinBC *robin_E_bc;
   std::vector<mfem::ParGridFunction *> local_trial_vars, local_test_vars;
   mfem::ParComplexGridFunction *e_;
   mfem::ParComplexLinearForm *jd_;
