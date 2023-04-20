@@ -185,4 +185,20 @@ void BCMap::applyIntegratedBCs(const std::string &name_,
     }
   }
 };
+
+void BCMap::applyIntegratedBCs(const std::string &name_,
+                               mfem::ParSesquilinearForm &slf,
+                               mfem::Mesh *mesh_) {
+
+  for (auto const &[name, bc_] : *this) {
+    if (bc_->name == name_) {
+      hephaestus::RobinBC *bc = dynamic_cast<hephaestus::RobinBC *>(bc_);
+      if (bc != NULL) {
+        bc->getMarkers(*mesh_);
+        bc->applyBC(slf);
+      }
+    }
+  }
+};
+
 } // namespace hephaestus

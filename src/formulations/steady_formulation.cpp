@@ -98,11 +98,12 @@ void HertzOperator::Solve(mfem::Vector &X) {
   _bc_map.applyEssentialBCs(std::string("electric_field"), ess_bdr_tdofs_, *e_,
                             pmesh_);
   _bc_map.applyIntegratedBCs(std::string("electric_field"), *jd_, pmesh_);
-  hephaestus::RobinBC *robin_bc;
-  robin_bc = dynamic_cast<hephaestus::RobinBC *>(_bc_map["WaveguidePortIn"]);
-  robin_bc->applyBC(*a1_);
-  robin_bc = dynamic_cast<hephaestus::RobinBC *>(_bc_map["WaveguidePortOut"]);
-  robin_bc->applyBC(*a1_);
+  _bc_map.applyIntegratedBCs(std::string("electric_field"), *a1_, pmesh_);
+  // hephaestus::RobinBC *robin_bc;
+  // robin_bc = dynamic_cast<hephaestus::RobinBC *>(_bc_map["WaveguidePortIn"]);
+  // robin_bc->applyBC(*a1_);
+  // robin_bc = dynamic_cast<hephaestus::RobinBC
+  // *>(_bc_map["WaveguidePortOut"]); robin_bc->applyBC(*a1_);
 
   a1_->Assemble();
   a1_->Finalize();

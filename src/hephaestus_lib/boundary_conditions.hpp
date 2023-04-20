@@ -114,6 +114,9 @@ public:
 
   void applyIntegratedBCs(const std::string &name_,
                           mfem::ParComplexLinearForm &clf, mfem::Mesh *mesh_);
+
+  void applyIntegratedBCs(const std::string &name_,
+                          mfem::ParSesquilinearForm &clf, mfem::Mesh *mesh_);
 };
 
 } // namespace hephaestus
