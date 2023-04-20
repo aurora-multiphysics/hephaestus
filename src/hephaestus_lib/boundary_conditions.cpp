@@ -18,15 +18,13 @@ EssentialBC::EssentialBC(const std::string &name_,
 
 FunctionDirichletBC::FunctionDirichletBC(const std::string &name_,
                                          mfem::Array<int> bdr_attributes_)
-    : BoundaryCondition(name_, bdr_attributes_),
-      EssentialBC(name_, bdr_attributes_) {}
+    : EssentialBC(name_, bdr_attributes_) {}
 
 FunctionDirichletBC::FunctionDirichletBC(const std::string &name_,
                                          mfem::Array<int> bdr_attributes_,
                                          mfem::FunctionCoefficient *coeff_,
                                          mfem::FunctionCoefficient *coeff_im_)
-    : BoundaryCondition(name_, bdr_attributes_),
-      EssentialBC(name_, bdr_attributes_), coeff(coeff_), coeff_im(coeff_im_) {}
+    : EssentialBC(name_, bdr_attributes_), coeff(coeff_), coeff_im(coeff_im_) {}
 
 void FunctionDirichletBC::applyBC(mfem::GridFunction &gridfunc,
                                   mfem::Mesh *mesh_) {
@@ -37,15 +35,13 @@ void FunctionDirichletBC::applyBC(mfem::GridFunction &gridfunc,
 
 VectorFunctionDirichletBC::VectorFunctionDirichletBC(
     const std::string &name_, mfem::Array<int> bdr_attributes_)
-    : BoundaryCondition(name_, bdr_attributes_),
-      EssentialBC(name_, bdr_attributes_) {}
+    : EssentialBC(name_, bdr_attributes_) {}
 
 VectorFunctionDirichletBC::VectorFunctionDirichletBC(
     const std::string &name_, mfem::Array<int> bdr_attributes_,
     mfem::VectorFunctionCoefficient *vec_coeff_,
     mfem::VectorFunctionCoefficient *vec_coeff_im_)
-    : BoundaryCondition(name_, bdr_attributes_),
-      EssentialBC(name_, bdr_attributes_), vec_coeff(vec_coeff_),
+    : EssentialBC(name_, bdr_attributes_), vec_coeff(vec_coeff_),
       vec_coeff_im(vec_coeff_im_) {}
 
 void VectorFunctionDirichletBC::applyBC(mfem::GridFunction &gridfunc,
@@ -108,37 +104,19 @@ mfem::Array<int> BCMap::getEssentialBdrMarkers(const std::string &name_,
   return global_ess_markers;
 }
 
-RobinBC::RobinBC(const std::string &name_, mfem::Array<int> bdr_attributes_)
-    : BoundaryCondition(name_, bdr_attributes_),
-      EssentialBC(name_, bdr_attributes_),
-      IntegratedBC(name_, bdr_attributes_) {}
-
 RobinBC::RobinBC(const std::string &name_, mfem::Array<int> bdr_attributes_,
-                 mfem::Coefficient *robin_coeff_re_,
+                 mfem::BilinearFormIntegrator *blfi_re_,
                  mfem::LinearFormIntegrator *lfi_re_,
-                 mfem::Coefficient *robin_coeff_im_,
+                 mfem::BilinearFormIntegrator *blfi_im_,
                  mfem::LinearFormIntegrator *lfi_im_)
-    : BoundaryCondition(name_, bdr_attributes_),
-      EssentialBC(name_, bdr_attributes_),
-      IntegratedBC(name_, bdr_attributes_, lfi_re_, lfi_im_),
-      robin_coeff_re(robin_coeff_re_), robin_coeff_im(robin_coeff_im_) {}
-
-VectorRobinBC::VectorRobinBC(const std::string &name_,
-                             mfem::Array<int> bdr_attributes_,
-                             mfem::BilinearFormIntegrator *blfi_re_,
-                             mfem::VectorFunctionCoefficient *vec_coeff_re_,
-                             mfem::LinearFormIntegrator *lfi_re_,
-                             mfem::BilinearFormIntegrator *blfi_im_,
-                             mfem::VectorFunctionCoefficient *vec_coeff_im_,
-                             mfem::LinearFormIntegrator *lfi_im_)
-    : BoundaryCondition(name_, bdr_attributes_),
-      EssentialBC(name_, bdr_attributes_),
-      VectorFunctionDirichletBC(name_, bdr_attributes_, vec_coeff_re_,
-                                vec_coeff_im_),
-      IntegratedBC(name_, bdr_attributes_, lfi_re_, lfi_im_), blfi_re(blfi_re_),
+    : IntegratedBC(name_, bdr_attributes_, lfi_re_, lfi_im_), blfi_re(blfi_re_),
       blfi_im(blfi_im_) {}
 
-void VectorRobinBC::applyBC(mfem::ParSesquilinearForm &a) {
+void RobinBC::applyBC(mfem::ParBilinearForm &a) {
+  a.AddBoundaryIntegrator(blfi_re, markers);
+}
+
+void RobinBC::applyBC(mfem::ParSesquilinearForm &a) {
   a.AddBoundaryIntegrator(blfi_re, blfi_im, markers);
 }
 

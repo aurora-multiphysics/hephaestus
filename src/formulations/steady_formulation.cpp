@@ -95,23 +95,13 @@ void HertzOperator::Solve(mfem::Vector &X) {
   jd_->AddDomainIntegrator(new mfem::VectorFEDomainLFIntegrator(*jrCoef_),
                            new mfem::VectorFEDomainLFIntegrator(*jiCoef_));
 
-  hephaestus::VectorFunctionDirichletBC *tangential_E_bc =
-      dynamic_cast<hephaestus::VectorFunctionDirichletBC *>(
-          _bc_map["tangential_E"]);
-
-  mfem::Array<int> ess_bdr = tangential_E_bc->getMarkers(*pmesh_);
-  e_->ParFESpace()->GetEssentialTrueDofs(ess_bdr, ess_bdr_tdofs_);
-  tangential_E_bc->applyBC(*e_, pmesh_);
-  // _bc_map.applyEssentialBCs(std::string("electric_field"), ess_bdr_tdofs_,
-  // *e_,
-  //                           pmesh_);
+  _bc_map.applyEssentialBCs(std::string("electric_field"), ess_bdr_tdofs_, *e_,
+                            pmesh_);
   _bc_map.applyIntegratedBCs(std::string("electric_field"), *jd_, pmesh_);
-  hephaestus::VectorRobinBC *robin_bc;
-  robin_bc =
-      dynamic_cast<hephaestus::VectorRobinBC *>(_bc_map["WaveguidePortIn"]);
+  hephaestus::RobinBC *robin_bc;
+  robin_bc = dynamic_cast<hephaestus::RobinBC *>(_bc_map["WaveguidePortIn"]);
   robin_bc->applyBC(*a1_);
-  robin_bc =
-      dynamic_cast<hephaestus::VectorRobinBC *>(_bc_map["WaveguidePortOut"]);
+  robin_bc = dynamic_cast<hephaestus::RobinBC *>(_bc_map["WaveguidePortOut"]);
   robin_bc->applyBC(*a1_);
 
   a1_->Assemble();

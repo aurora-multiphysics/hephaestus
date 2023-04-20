@@ -21,7 +21,7 @@ public:
   virtual void applyBC(mfem::ParComplexLinearForm &b){};
 };
 
-class EssentialBC : virtual public BoundaryCondition {
+class EssentialBC : public BoundaryCondition {
 public:
   EssentialBC(const std::string &name_, mfem::Array<int> bdr_attributes_);
 
@@ -46,7 +46,7 @@ public:
   mfem::FunctionCoefficient *coeff_im;
 };
 
-class VectorFunctionDirichletBC : virtual public EssentialBC {
+class VectorFunctionDirichletBC : public EssentialBC {
 public:
   VectorFunctionDirichletBC(const std::string &name_,
                             mfem::Array<int> bdr_attributes_);
@@ -65,7 +65,7 @@ public:
   mfem::VectorFunctionCoefficient *vec_coeff_im;
 };
 
-class IntegratedBC : virtual public BoundaryCondition {
+class IntegratedBC : public BoundaryCondition {
 public:
   IntegratedBC(const std::string &name_, mfem::Array<int> bdr_attributes_);
   IntegratedBC(const std::string &name_, mfem::Array<int> bdr_attributes_,
@@ -80,32 +80,18 @@ public:
   virtual void applyBC(mfem::ParComplexLinearForm &b) override;
 };
 
-class RobinBC : public EssentialBC, IntegratedBC {
+class RobinBC : public IntegratedBC {
 public:
-  RobinBC();
-  RobinBC(const std::string &name_, mfem::Array<int> bdr_attributes_);
   RobinBC(const std::string &name_, mfem::Array<int> bdr_attributes_,
-          mfem::Coefficient *robin_coeff_, mfem::LinearFormIntegrator *lfi_re_,
-          mfem::Coefficient *robin_coeff_im = nullptr,
+          mfem::BilinearFormIntegrator *blfi_re_,
+          mfem::LinearFormIntegrator *lfi_re_,
+          mfem::BilinearFormIntegrator *blfi_im_ = nullptr,
           mfem::LinearFormIntegrator *lfi_im_ = nullptr);
-
-  mfem::Coefficient *robin_coeff_re;
-  mfem::Coefficient *robin_coeff_im;
-};
-
-class VectorRobinBC : public VectorFunctionDirichletBC, IntegratedBC {
-public:
-  VectorRobinBC(const std::string &name_, mfem::Array<int> bdr_attributes_,
-                mfem::BilinearFormIntegrator *blfi_re_,
-                mfem::VectorFunctionCoefficient *vec_coeff_re_,
-                mfem::LinearFormIntegrator *lfi_re_,
-                mfem::BilinearFormIntegrator *blfi_im_ = nullptr,
-                mfem::VectorFunctionCoefficient *vec_coeff_im_ = nullptr,
-                mfem::LinearFormIntegrator *lfi_im_ = nullptr);
 
   mfem::BilinearFormIntegrator *blfi_re;
   mfem::BilinearFormIntegrator *blfi_im;
 
+  virtual void applyBC(mfem::ParBilinearForm &a);
   virtual void applyBC(mfem::ParSesquilinearForm &a);
 };
 

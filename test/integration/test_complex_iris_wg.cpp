@@ -183,27 +183,23 @@ protected:
 
     mfem::Array<int> wgi_in_attr(1);
     wgi_in_attr[0] = 2;
-    bc_map["WaveguidePortIn"] = new hephaestus::VectorRobinBC(
+    bc_map["WaveguidePortIn"] = new hephaestus::RobinBC(
         std::string("electric_field"), wgi_in_attr, NULL,
-        new mfem::VectorFunctionCoefficient(3, e_bc_r),
         new mfem::VectorFEBoundaryTangentLFIntegrator(
             *(domain_properties.vector_property_map["UReal"])),
         new mfem::VectorFEMassIntegrator(
             *domain_properties.scalar_property_map["abc"]),
-        new mfem::VectorFunctionCoefficient(3, e_bc_i),
         new mfem::VectorFEBoundaryTangentLFIntegrator(
             *(domain_properties.vector_property_map["UImag"])));
 
     mfem::Array<int> wgi_out_attr(1);
     wgi_out_attr[0] = 3;
-    bc_map["WaveguidePortOut"] = new hephaestus::VectorRobinBC(
+    bc_map["WaveguidePortOut"] = new hephaestus::RobinBC(
         std::string("electric_field"), wgi_out_attr, NULL,
-        new mfem::VectorFunctionCoefficient(3, e_bc_r),
         new mfem::VectorFEBoundaryTangentLFIntegrator(
             *(domain_properties.vector_property_map["Zero"])),
         new mfem::VectorFEMassIntegrator(
             *domain_properties.scalar_property_map["abc"]),
-        new mfem::VectorFunctionCoefficient(3, e_bc_i),
         new mfem::VectorFEBoundaryTangentLFIntegrator(
             *(domain_properties.vector_property_map["Zero"])));
 
