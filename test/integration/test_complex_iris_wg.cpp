@@ -180,6 +180,12 @@ protected:
     //     new mfem::ConstantCoefficient(-k_.imag() / (mu0_ * omega_));
     domain_properties.scalar_property_map["abc"] =
         new mfem::ConstantCoefficient(k_.imag() / mu0_);
+    domain_properties.scalar_property_map["magnetic_permeability"] =
+        new mfem::ConstantCoefficient(mu0_);
+    domain_properties.scalar_property_map["dielectric_permittivity"] =
+        new mfem::ConstantCoefficient(epsilon0_);
+    domain_properties.scalar_property_map["electrical_conductivity"] =
+        new mfem::ConstantCoefficient(0.0);
 
     mfem::Array<int> wgi_in_attr(1);
     wgi_in_attr[0] = 2;
