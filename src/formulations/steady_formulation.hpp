@@ -7,14 +7,8 @@
 #include "sources.hpp"
 
 namespace hephaestus {
-// Physical Constants
-// Permittivity of Free Space (units F/m)
-static const double epsilon0_ = 8.8541878176e-12;
-// Permeability of Free Space (units H/m)
-static const double mu0_ = 4.0e-7 * M_PI;
-static const double freq_ = 9.3e9; // 10/2pi
-
 // Specifies output interfaces of a time-domain EM formulation.
+//   Curl mu^{-1} Curl E - omega^2 epsilon E + i omega sigma E = - i omega J
 class HertzOperator : public mfem::Operator {
 public:
   HertzOperator(mfem::ParMesh &pmesh, int order,
@@ -47,7 +41,6 @@ public:
   // in formulation,
   std::vector<std::string> active_aux_var_names;
 
-  hephaestus::RobinBC *robin_E_bc;
   std::vector<mfem::ParGridFunction *> local_trial_vars, local_test_vars;
   mfem::ParComplexGridFunction *e_;
   mfem::ParComplexLinearForm *jd_;
@@ -73,7 +66,7 @@ public:
 
   mfem::Coefficient *muInvCoef_; // Dia/Paramagnetic Material Coefficient
   mfem::Coefficient *massCoef_;  // -omega^2 epsilon
-  mfem::Coefficient *lossCoef_;  // -omega sigma
+  mfem::Coefficient *lossCoef_;  // omega sigma
 
   mfem::VectorCoefficient *jrCoef_; // Volume Current Density Function
   mfem::VectorCoefficient *jiCoef_; // Volume Current Density Function

@@ -95,6 +95,77 @@ public:
   virtual void applyBC(mfem::ParSesquilinearForm &a);
 };
 
+class RWTE10PortRBC : public RobinBC {
+  inline static const double epsilon0_ = 8.8541878176e-12;
+  // Permeability of Free Space (units H/m)
+  inline static const double mu0_ = 4.0e-7 * M_PI;
+
+  inline static const std::complex<double> zi{std::complex<double>(0., 1.)};
+
+public:
+  RWTE10PortRBC(const std::string &name_, mfem::Array<int> bdr_attributes_,
+                double frequency, double port_length_vector[3],
+                double port_width_vector[3], bool input_port);
+
+  static mfem::Vector cross_product(mfem::Vector &va, mfem::Vector &vb) {
+    mfem::Vector Vec;
+    Vec.SetSize(3);
+    Vec[0] = va[1] * vb[2] - va[2] * vb[1];
+    Vec[1] = va[2] * vb[0] - va[0] * vb[2];
+    Vec[2] = va[0] * vb[1] - va[1] * vb[0];
+    return Vec;
+  }
+  bool input_port;
+  double omega_;
+  mfem::Vector a1Vec;
+  mfem::Vector a2Vec;
+  mfem::Vector a3Vec;
+  mfem::Vector a2xa3;
+  mfem::Vector a3xa1;
+
+  double V;
+  double kc;
+  double k0;
+  std::complex<double> k_;
+
+  mfem::Vector k_a;
+  mfem::Vector k_c;
+
+  mfem::ConstantCoefficient *robin_coef_im;
+  mfem::VectorFunctionCoefficient *u_real;
+  mfem::VectorFunctionCoefficient *u_imag;
+
+  void RWTE10(const mfem::Vector &x, std::vector<std::complex<double>> &E) {
+
+    mfem::Vector E_hat(cross_product(k_c, k_a));
+    E_hat *= 1.0 / E_hat.Norml2();
+
+    double E0(sqrt(2 * omega_ * mu0_ /
+                   (a1Vec.Norml2() * a2Vec.Norml2() * k_.imag())));
+    std::complex<double> E_mag =
+        E0 * sin(InnerProduct(k_a, x)) * exp(-zi * InnerProduct(k_c, x));
+
+    E[0] = E_mag * E_hat(1);
+    E[1] = E_mag * E_hat(2);
+    E[2] = E_mag * E_hat(0);
+  }
+
+  void RWTE10_real(const mfem::Vector &x, mfem::Vector &v) {
+    std::vector<std::complex<double>> Eval(x.Size());
+    RWTE10(x, Eval);
+    for (int i = 0; i < x.Size(); ++i) {
+      v(i) = -2 * k_.imag() * Eval[i].imag() / mu0_;
+    }
+  }
+  void RWTE10_imag(const mfem::Vector &x, mfem::Vector &v) {
+    std::vector<std::complex<double>> Eval(x.Size());
+    RWTE10(x, Eval);
+    for (int i = 0; i < x.Size(); ++i) {
+      v(i) = 2 * k_.imag() * Eval[i].real() / mu0_;
+    }
+  }
+};
+
 class BCMap : public std::map<std::string, hephaestus::BoundaryCondition *> {
 public:
   mfem::Array<int> getEssentialBdrMarkers(const std::string &name_,
