@@ -282,11 +282,11 @@ int hertz_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
 
   abcs = Array<int>({2, 3});
 
-  bc_map["Neumann"] = new hephaestus::IntegratedBC(waveguide_in);
+  bc_map.Register("Neumann", new hephaestus::IntegratedBC(waveguide_in), true);
 
   hephaestus::VectorFunctionDirichletBC *tangential_E_bc =
       dynamic_cast<hephaestus::VectorFunctionDirichletBC *>(
-          bc_map["tangential_E"]);
+          bc_map.Get("tangential_E"));
 
   // Create the Magnetostatic solver
   HertzSolver Hertz(pmesh, order, freq_, (HertzSolver::SolverType)sol, solOpts,

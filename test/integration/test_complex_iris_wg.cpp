@@ -55,22 +55,28 @@ protected:
     hephaestus::BCMap bc_map;
     mfem::Array<int> dirichlet_attr(1);
     dirichlet_attr[0] = 1;
-    bc_map["tangential_E"] = new hephaestus::VectorFunctionDirichletBC(
-        std::string("electric_field"), dirichlet_attr,
-        new mfem::VectorFunctionCoefficient(3, e_bc_r),
-        new mfem::VectorFunctionCoefficient(3, e_bc_i));
+    bc_map.Register("tangential_E",
+                    new hephaestus::VectorFunctionDirichletBC(
+                        std::string("electric_field"), dirichlet_attr,
+                        new mfem::VectorFunctionCoefficient(3, e_bc_r),
+                        new mfem::VectorFunctionCoefficient(3, e_bc_i)),
+                    true);
 
     mfem::Array<int> wgi_in_attr(1);
     wgi_in_attr[0] = 2;
-    bc_map["WaveguidePortIn"] = new hephaestus::RWTE10PortRBC(
-        std::string("electric_field"), wgi_in_attr, freq_, port_length_vector,
-        port_width_vector, true);
+    bc_map.Register("WaveguidePortIn",
+                    new hephaestus::RWTE10PortRBC(
+                        std::string("electric_field"), wgi_in_attr, freq_,
+                        port_length_vector, port_width_vector, true),
+                    true);
 
     mfem::Array<int> wgi_out_attr(1);
     wgi_out_attr[0] = 3;
-    bc_map["WaveguidePortOut"] = new hephaestus::RWTE10PortRBC(
-        std::string("electric_field"), wgi_out_attr, freq_, port_length_vector,
-        port_width_vector, false);
+    bc_map.Register("WaveguidePortOut",
+                    new hephaestus::RWTE10PortRBC(
+                        std::string("electric_field"), wgi_out_attr, freq_,
+                        port_length_vector, port_width_vector, false),
+                    true);
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./irises.g")).c_str(),
                     1, 1);

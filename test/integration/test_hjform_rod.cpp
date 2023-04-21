@@ -45,9 +45,11 @@ protected:
     hephaestus::BCMap bc_map;
     mfem::VectorFunctionCoefficient *edotVecCoef =
         new mfem::VectorFunctionCoefficient(3, hdot_bc);
-    bc_map["tangential_dHdt"] = new hephaestus::VectorFunctionDirichletBC(
-        std::string("magnetic_field"), mfem::Array<int>({1, 2, 3}),
-        edotVecCoef);
+    bc_map.Register("tangential_dHdt",
+                    new hephaestus::VectorFunctionDirichletBC(
+                        std::string("magnetic_field"),
+                        mfem::Array<int>({1, 2, 3}), edotVecCoef),
+                    true);
     domain_properties.vector_property_map["surface_tangential_dHdt"] =
         edotVecCoef;
     domain_properties.scalar_property_map["magnetic_permeability"] =
@@ -57,15 +59,20 @@ protected:
     high_terminal[0] = 1;
     mfem::FunctionCoefficient *potential_src =
         new mfem::FunctionCoefficient(potential_high);
-    bc_map["high_potential"] = new hephaestus::FunctionDirichletBC(
-        std::string("magnetic_potential"), high_terminal, potential_src);
+    bc_map.Register(
+        "high_potential",
+        new hephaestus::FunctionDirichletBC(std::string("magnetic_potential"),
+                                            high_terminal, potential_src),
+        true);
     domain_properties.scalar_property_map["source_potential"] = potential_src;
 
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 2;
-    bc_map["ground_potential"] = new hephaestus::FunctionDirichletBC(
-        std::string("magnetic_potential"), ground_terminal,
-        new mfem::FunctionCoefficient(potential_ground));
+    bc_map.Register("ground_potential",
+                    new hephaestus::FunctionDirichletBC(
+                        std::string("magnetic_potential"), ground_terminal,
+                        new mfem::FunctionCoefficient(potential_ground)),
+                    true);
 
     mfem::Mesh mesh(
         (std::string(DATA_DIR) + std::string("./cylinder-hex-q2.gen")).c_str(),

@@ -20,15 +20,21 @@ protected:
 
   hephaestus::Inputs joule_rod_inputs() {
     hephaestus::BCMap bc_map;
-    bc_map["tangential_dEdt"] = new hephaestus::BoundaryCondition(
-        std::string("boundary_1"), mfem::Array<int>({1, 2, 3}));
+    bc_map.Register("tangential_dEdt",
+                    new hephaestus::BoundaryCondition(
+                        std::string("boundary_1"), mfem::Array<int>({1, 2, 3})),
+                    true);
 
-    bc_map["thermal_flux"] = new hephaestus::BoundaryCondition(
-        std::string("boundary_2"), mfem::Array<int>({1, 2}));
+    bc_map.Register("thermal_flux",
+                    new hephaestus::BoundaryCondition(std::string("boundary_2"),
+                                                      mfem::Array<int>({1, 2})),
+                    true);
 
-    bc_map["electric_potential"] = new hephaestus::FunctionDirichletBC(
-        std::string("boundary_3"), mfem::Array<int>({1, 2}),
-        new mfem::FunctionCoefficient(potential));
+    bc_map.Register("electric_potential",
+                    new hephaestus::FunctionDirichletBC(
+                        std::string("boundary_3"), mfem::Array<int>({1, 2}),
+                        new mfem::FunctionCoefficient(potential)),
+                    true);
 
     double sigma = 2.0 * M_PI * 10;
     double Tcapacity = 1.0;

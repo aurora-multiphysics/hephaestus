@@ -23,7 +23,8 @@ protected:
         new mfem::VectorFunctionCoefficient(3, e_bc_r),
         new mfem::VectorFunctionCoefficient(3, e_bc_i));
 
-    bc_map["tangential_E"] = new hephaestus::VectorFunctionDirichletBC(e_bc);
+    bc_map.Register("tangential_E",
+                    new hephaestus::VectorFunctionDirichletBC(e_bc), true);
 
     hephaestus::Subdomain air("air", 1);
 

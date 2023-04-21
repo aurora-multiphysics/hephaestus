@@ -64,17 +64,22 @@ protected:
     hephaestus::BCMap bc_map;
     mfem::VectorFunctionCoefficient *hdotVecCoef =
         new mfem::VectorFunctionCoefficient(3, hdot_bc);
-    bc_map["tangential_dHdt"] = new hephaestus::VectorFunctionDirichletBC(
-        std::string("dmagnetic_field_dt"), mfem::Array<int>({1, 2, 3}),
-        hdotVecCoef);
+    bc_map.Register("tangential_dHdt",
+                    new hephaestus::VectorFunctionDirichletBC(
+                        std::string("dmagnetic_field_dt"),
+                        mfem::Array<int>({1, 2, 3}), hdotVecCoef),
+                    true);
     domain_properties.vector_property_map["surface_tangential_dHdt"] =
         hdotVecCoef;
     domain_properties.scalar_property_map["magnetic_permeability"] =
         new mfem::ConstantCoefficient(1.0);
 
-    bc_map["ground_potential"] = new hephaestus::FunctionDirichletBC(
-        std::string("magnetic_potential"), mfem::Array<int>({1, 2, 3}),
-        new mfem::FunctionCoefficient(potential_ground));
+    bc_map.Register("ground_potential",
+                    new hephaestus::FunctionDirichletBC(
+                        std::string("magnetic_potential"),
+                        mfem::Array<int>({1, 2, 3}),
+                        new mfem::FunctionCoefficient(potential_ground)),
+                    true);
 
     mfem::VectorFunctionCoefficient *H_exact =
         new mfem::VectorFunctionCoefficient(3, H_exact_expr);

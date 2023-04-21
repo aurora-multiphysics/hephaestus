@@ -77,7 +77,7 @@ HertzSolver::HertzSolver(ParMesh &pmesh, int order, double freq,
 
     hephaestus::VectorFunctionDirichletBC *tangential_E_bc =
         dynamic_cast<hephaestus::VectorFunctionDirichletBC *>(
-            bc_map["tangential_E"]);
+            bc_map.Get("tangential_E"));
 
     erCoef_ = tangential_E_bc->vec_coeff;
     eiCoef_ = tangential_E_bc->vec_coeff_im;

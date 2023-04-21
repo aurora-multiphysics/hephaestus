@@ -45,23 +45,29 @@ protected:
     hephaestus::BCMap bc_map;
     mfem::VectorFunctionCoefficient *adotVecCoef =
         new mfem::VectorFunctionCoefficient(3, adot_bc);
-    bc_map["tangential_dAdt"] = new hephaestus::VectorFunctionDirichletBC(
-        std::string("dmagnetic_vector_potential_dt"),
-        mfem::Array<int>({1, 2, 3}), adotVecCoef);
+    bc_map.Register("tangential_dAdt",
+                    new hephaestus::VectorFunctionDirichletBC(
+                        std::string("dmagnetic_vector_potential_dt"),
+                        mfem::Array<int>({1, 2, 3}), adotVecCoef),
+                    true);
     domain_properties.vector_property_map["surface_tangential_dAdt"] =
         adotVecCoef;
 
     mfem::Array<int> high_terminal(1);
     high_terminal[0] = 1;
-    bc_map["high_potential"] = new hephaestus::FunctionDirichletBC(
-        std::string("electric_potential"), high_terminal,
-        new mfem::FunctionCoefficient(potential_high));
+    bc_map.Register("high_potential",
+                    new hephaestus::FunctionDirichletBC(
+                        std::string("electric_potential"), high_terminal,
+                        new mfem::FunctionCoefficient(potential_high)),
+                    true);
 
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 2;
-    bc_map["ground_potential"] = new hephaestus::FunctionDirichletBC(
-        std::string("electric_potential"), ground_terminal,
-        new mfem::FunctionCoefficient(potential_ground));
+    bc_map.Register("ground_potential",
+                    new hephaestus::FunctionDirichletBC(
+                        std::string("electric_potential"), ground_terminal,
+                        new mfem::FunctionCoefficient(potential_ground)),
+                    true);
 
     mfem::VectorFunctionCoefficient *JSrcCoef =
         new mfem::VectorFunctionCoefficient(3, source_current);

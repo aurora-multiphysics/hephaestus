@@ -154,6 +154,37 @@ RWTE10PortRBC::RWTE10PortRBC(const std::string &name_,
   }
 }
 
+void RWTE10PortRBC::RWTE10(const mfem::Vector &x,
+                           std::vector<std::complex<double>> &E) {
+
+  mfem::Vector E_hat(cross_product(k_c, k_a));
+  E_hat *= 1.0 / E_hat.Norml2();
+
+  double E0(
+      sqrt(2 * omega_ * mu0_ / (a1Vec.Norml2() * a2Vec.Norml2() * k_.imag())));
+  std::complex<double> E_mag =
+      E0 * sin(InnerProduct(k_a, x)) * exp(-zi * InnerProduct(k_c, x));
+
+  E[0] = E_mag * E_hat(1);
+  E[1] = E_mag * E_hat(2);
+  E[2] = E_mag * E_hat(0);
+}
+
+void RWTE10PortRBC::RWTE10_real(const mfem::Vector &x, mfem::Vector &v) {
+  std::vector<std::complex<double>> Eval(x.Size());
+  RWTE10(x, Eval);
+  for (int i = 0; i < x.Size(); ++i) {
+    v(i) = -2 * k_.imag() * Eval[i].imag() / mu0_;
+  }
+}
+void RWTE10PortRBC::RWTE10_imag(const mfem::Vector &x, mfem::Vector &v) {
+  std::vector<std::complex<double>> Eval(x.Size());
+  RWTE10(x, Eval);
+  for (int i = 0; i < x.Size(); ++i) {
+    v(i) = 2 * k_.imag() * Eval[i].real() / mu0_;
+  }
+}
+
 void BCMap::applyEssentialBCs(const std::string &name_,
                               mfem::Array<int> &ess_tdof_list,
                               mfem::GridFunction &gridfunc, mfem::Mesh *mesh_) {

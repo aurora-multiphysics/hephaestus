@@ -189,14 +189,15 @@ int joule_solve(int argc, char *argv[], hephaestus::Inputs inputs) {
 
   // 5. Assign boundary conditions
   hephaestus::BCMap bc_map = inputs.bc_map;
-  mfem::Array<int> ess_bdr = bc_map["tangential_dEdt"]->getMarkers(*mesh);
-  mfem::Array<int> thermal_ess_bdr = bc_map["thermal_flux"]->getMarkers(*mesh);
+  mfem::Array<int> ess_bdr = bc_map.Get("tangential_dEdt")->getMarkers(*mesh);
+  mfem::Array<int> thermal_ess_bdr =
+      bc_map.Get("thermal_flux")->getMarkers(*mesh);
   mfem::Array<int> poisson_ess_bdr =
-      bc_map["electric_potential"]->getMarkers(*mesh);
+      bc_map.Get("electric_potential")->getMarkers(*mesh);
 
   hephaestus::FunctionDirichletBC *potential_bc =
       dynamic_cast<hephaestus::FunctionDirichletBC *>(
-          bc_map["electric_potential"]);
+          bc_map.Get("electric_potential"));
   mfem::FunctionCoefficient voltage = *potential_bc->coeff;
 
   if (myid == 0) {
