@@ -4,6 +4,7 @@
 #include "av_solver.hpp"
 #include "eb_dual_solver.hpp"
 #include "eform_solver.hpp"
+#include "hertz_formulation.hpp"
 #include "hform_solver.hpp"
 #include "hj_dual_solver.hpp"
 #include "inputs.hpp"
@@ -14,6 +15,9 @@ class Factory {
 public:
   static hephaestus::TransientFormulation *
   createTransientFormulation(std::string &formulation);
+
+  static hephaestus::SteadyFormulation *
+  createSteadyFormulation(std::string &formulation);
 
   static mfem::ParFiniteElementSpace *
   createParFESpace(const hephaestus::InputParameters params,

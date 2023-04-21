@@ -92,7 +92,7 @@ protected:
     hephaestus::AuxKernels auxkernels;
     hephaestus::Sources sources;
 
-    hephaestus::HertzFormulation *formulation =
+    hephaestus::SteadyFormulation *formulation =
         new hephaestus::HertzFormulation();
 
     hephaestus::InputParameters solver_options;

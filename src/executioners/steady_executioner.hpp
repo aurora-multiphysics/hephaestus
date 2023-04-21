@@ -13,7 +13,7 @@ public:
 
   void Solve() const override;
 
-  hephaestus::HertzFormulation *formulation;
+  hephaestus::SteadyFormulation *formulation;
 };
 
 } // namespace hephaestus

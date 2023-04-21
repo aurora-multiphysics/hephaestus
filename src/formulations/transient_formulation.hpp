@@ -30,13 +30,12 @@ public:
 
   ~TimeDomainEquationSystemOperator(){};
 
+  virtual void SetVariables();
   virtual void Init(mfem::Vector &X);
   virtual void ImplicitSolve(const double dt, const mfem::Vector &X,
                              mfem::Vector &dX_dt) override;
   void
   SetEquationSystem(hephaestus::TimeDependentEquationSystem *equation_system);
-
-  virtual void SetVariables();
 
   mfem::Array<int> true_offsets, block_trueOffsets;
   // Vector of names of state variables used in formulation, ordered by

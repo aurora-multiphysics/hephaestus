@@ -5,7 +5,7 @@ namespace hephaestus {
 SteadyExecutioner::SteadyExecutioner(const hephaestus::InputParameters &params)
     : ExecutionerBase(params) {
   // Set Formulation
-  formulation = params.GetParam<hephaestus::HertzFormulation *>("Formulation");
+  formulation = params.GetParam<hephaestus::SteadyFormulation *>("Formulation");
   // if (formulation->equation_system == NULL) {
   //   formulation->CreateEquationSystem();
   // }

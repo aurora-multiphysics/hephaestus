@@ -2,6 +2,17 @@
 
 namespace hephaestus {
 
+hephaestus::SteadyFormulation *
+Factory::createSteadyFormulation(std::string &formulation) {
+  if (formulation == "Hertz") {
+    return new hephaestus::HertzFormulation();
+  } else {
+    std::cout << "Steady formulation name " << formulation
+              << " not recognised. \n";
+  }
+  return nullptr;
+}
+
 hephaestus::TransientFormulation *
 Factory::createTransientFormulation(std::string &formulation) {
   if (formulation == "EBForm") {
