@@ -6,6 +6,8 @@ hephaestus::SteadyFormulation *
 Factory::createSteadyFormulation(std::string &formulation) {
   if (formulation == "Hertz") {
     return new hephaestus::HertzFormulation();
+  } else if (formulation == "ComplexAForm") {
+    return new hephaestus::ComplexAFormulation();
   } else {
     std::cout << "Steady formulation name " << formulation
               << " not recognised. \n";

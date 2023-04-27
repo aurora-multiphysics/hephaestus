@@ -2,6 +2,7 @@
 #include "../common/pfem_extras.hpp"
 #include "aform_solver.hpp"
 #include "av_solver.hpp"
+#include "complex_a_form.hpp"
 #include "eb_dual_solver.hpp"
 #include "eform_solver.hpp"
 #include "hertz_formulation.hpp"

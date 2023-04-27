@@ -42,10 +42,6 @@ public:
   std::vector<std::string> active_aux_var_names;
 
   std::vector<mfem::ParGridFunction *> local_trial_vars, local_test_vars;
-  mfem::ParComplexGridFunction *e_;
-  mfem::ParComplexLinearForm *jd_;
-  mfem::ParSesquilinearForm *a1_;
-  mfem::ComplexOperator::Convention conv_ = mfem::ComplexOperator::HERMITIAN;
 
   int myid_;
   int num_procs_;
@@ -58,20 +54,8 @@ public:
   hephaestus::DomainProperties &_domain_properties;
   hephaestus::InputParameters &_solver_options;
 
-  mutable hephaestus::DefaultGMRESSolver *solver = NULL;
-  mutable hephaestus::DefaultHCurlPCGSolver *a1_solver = NULL;
-
   mfem::OperatorHandle blockA;
   mfem::BlockVector trueX, trueRhs;
-
-  mfem::Coefficient *muInvCoef_; // Dia/Paramagnetic Material Coefficient
-  mfem::Coefficient *massCoef_;  // -omega^2 epsilon
-  mfem::Coefficient *lossCoef_;  // omega sigma
-
-  mfem::VectorCoefficient *jrCoef_; // Volume Current Density Function
-  mfem::VectorCoefficient *jiCoef_; // Volume Current Density Function
-
-  mfem::Array<int> ess_bdr_tdofs_;
 };
 
 //

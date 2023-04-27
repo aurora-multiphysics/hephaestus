@@ -3,30 +3,32 @@
 
 namespace hephaestus {
 // Specifies output interfaces of a time-domain EM formulation.
-//   Curl mu^{-1} Curl E - omega^2 epsilon E + i omega sigma E = - i omega J
-class HertzOperator : public FrequencyDomainOperator {
+//   Curl mu^{-1} Curl A  + i omega sigma A = J
+class ComplexAFormOperator : public FrequencyDomainOperator {
 public:
-  HertzOperator(mfem::ParMesh &pmesh, int order,
-                mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-                mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-                hephaestus::BCMap &bc_map,
-                hephaestus::DomainProperties &domain_properties,
-                hephaestus::Sources &sources,
-                hephaestus::InputParameters &solver_options);
+  ComplexAFormOperator(
+      mfem::ParMesh &pmesh, int order,
+      mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+      mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+      hephaestus::BCMap &bc_map,
+      hephaestus::DomainProperties &domain_properties,
+      hephaestus::Sources &sources,
+      hephaestus::InputParameters &solver_options);
 
-  ~HertzOperator(){};
+  ~ComplexAFormOperator(){};
 
   virtual void SetVariables() override;
   virtual void Init(mfem::Vector &X) override;
   virtual void Solve(mfem::Vector &X) override;
 
-  mfem::ParComplexGridFunction *e_;
+  mfem::ParComplexGridFunction *a_;
+  mfem::ParLinearForm *j_real_;
+  mfem::ParLinearForm *j_imag_;
   mfem::ParComplexLinearForm *jd_;
   mfem::ParSesquilinearForm *a1_;
   mfem::ComplexOperator::Convention conv_ = mfem::ComplexOperator::HERMITIAN;
 
   mfem::Coefficient *muInvCoef_; // Dia/Paramagnetic Material Coefficient
-  mfem::Coefficient *massCoef_;  // -omega^2 epsilon
   mfem::Coefficient *lossCoef_;  // omega sigma
 
   mfem::VectorCoefficient *jrCoef_; // Volume Current Density Function
@@ -37,13 +39,13 @@ public:
 
 //
 // Specifies output interfaces of a time-domain EM formulation.
-class HertzFormulation : public SteadyFormulation {
+class ComplexAFormulation : public SteadyFormulation {
   // std::vector<mfem::ParGridFunction *> local_trial_vars, local_test_vars;
   std::string frequency_coef_name, permittivity_coef_name,
       reluctivity_coef_name, conductivity_coef_name, h_curl_var_name;
 
 public:
-  HertzFormulation();
+  ComplexAFormulation();
 
   // virtual hephaestus::TimeDependentEquationSystem *CreateEquationSystem();
 
@@ -63,7 +65,7 @@ public:
 
   virtual void
   RegisterAuxKernels(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-                     hephaestus::AuxKernels &auxkernels) override{};
+                     hephaestus::AuxKernels &auxkernels) override;
 
   virtual void RegisterCoefficients(
       hephaestus::DomainProperties &domain_properties) override;

@@ -76,6 +76,7 @@ RUN cd /$WORKDIR && \
     git clone https://github.com/mfem/mfem.git && \
     cd mfem && \
     git checkout sjg/superlu-solver-dev && \
+    git checkout origin/irrot-bc-dev -- miniapps/common/pfem_extras.cpp && \
     sed -i "s|list|# list|g" /$WORKDIR/mfem/config/cmake/modules/FindNetCDF.cmake && \
     mkdir build && \
     cd build && \
