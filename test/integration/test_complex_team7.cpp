@@ -98,6 +98,11 @@ protected:
     hcurlfespaceparams.SetParam("FESpaceType", std::string("ND"));
     hcurlfespaceparams.SetParam("order", 1);
     hcurlfespaceparams.SetParam("components", 3);
+    hephaestus::InputParameters hdivfespaceparams;
+    hdivfespaceparams.SetParam("FESpaceName", std::string("HDiv"));
+    hdivfespaceparams.SetParam("FESpaceType", std::string("RT"));
+    hdivfespaceparams.SetParam("order", 1);
+    hdivfespaceparams.SetParam("components", 3);
     hephaestus::InputParameters h1fespaceparams;
     h1fespaceparams.SetParam("FESpaceName", std::string("H1"));
     h1fespaceparams.SetParam("FESpaceType", std::string("H1"));
@@ -105,6 +110,7 @@ protected:
     h1fespaceparams.SetParam("components", 3);
     hephaestus::FESpaces fespaces;
     fespaces.StoreInput(hcurlfespaceparams);
+    fespaces.StoreInput(hdivfespaceparams);
     fespaces.StoreInput(h1fespaceparams);
 
     hephaestus::InputParameters afieldparams_re;
@@ -118,11 +124,11 @@ protected:
     hephaestus::InputParameters bfieldparams_re;
     bfieldparams_re.SetParam("VariableName",
                              std::string("magnetic_flux_density_real"));
-    bfieldparams_re.SetParam("FESpaceName", std::string("HCurl"));
+    bfieldparams_re.SetParam("FESpaceName", std::string("HDiv"));
     hephaestus::InputParameters bfieldparams_im;
     bfieldparams_im.SetParam("VariableName",
                              std::string("magnetic_flux_density_imag"));
-    bfieldparams_im.SetParam("FESpaceName", std::string("HCurl"));
+    bfieldparams_im.SetParam("FESpaceName", std::string("HDiv"));
     hephaestus::GridFunctions gridfunctions;
     gridfunctions.StoreInput(afieldparams_re);
     gridfunctions.StoreInput(afieldparams_im);
