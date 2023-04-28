@@ -4,34 +4,33 @@
 namespace hephaestus {
 /*
 Formulation for solving:
-∇×(ν∇×A) + iωσA - ω²εA = J
+∇×(ν∇×E) + iωσE - ω²εE = -iωJ
 
 via the weak form:
-(ν∇×A, ∇×A') + (iωσA, A') - (ω²εA, A') - <(ν∇×A)×n, A'> = (J, A')
+(ν∇×E, ∇×E') + (iωσE, E') - (ω²εE, E') - <(ν∇×E)×n, E'> = -(iωJ, E')
 
 where
-A ∈ H(curl) is the magnetic vector potential
+E ∈ H(curl) is the magnetic vector potential
 J ∈ H(div) is the divergence-free source current density
 ω is the angular frequency
 ν is the reluctivity (reciprocal of magnetic permeability; 1/µ)
 σ is the electric conductivity
 ε is the electric permittivity
 
-Dirichlet boundaries strongly constrain n×n×A
-Integrated boundaries weakly constrain (ν∇×A)×n = H×n
-Robin boundaries weakly constrain (ν∇×A)×n + γ(n×n×A) = F
+Dirichlet boundaries strongly constrain n×n×E
+Integrated boundaries weakly constrain (ν∇×E)×n = n×dB/dt
+Robin boundaries weakly constrain (ν∇×E)×n + γ(n×n×E) = F
 
 Divergence cleaning (such as via Helmholtz projection)
 should be performed on J before use in this operator.
 */
-class ComplexAFormulation : public hephaestus::ComplexMaxwellFormulation {
-
+class ComplexEFormulation : public hephaestus::ComplexMaxwellFormulation {
 public:
-  ComplexAFormulation();
+  ComplexEFormulation();
 
   virtual void
   RegisterAuxKernels(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-                     hephaestus::AuxKernels &auxkernels) override;
+                     hephaestus::AuxKernels &auxkernels) override{};
 
   virtual void RegisterCoefficients(
       hephaestus::DomainProperties &domain_properties) override;

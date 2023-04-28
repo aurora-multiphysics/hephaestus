@@ -2,30 +2,53 @@
 #include "steady_formulation.hpp"
 
 namespace hephaestus {
-// Specifies output interfaces of a time-domain EM formulation.
-//   Curl mu^{-1} Curl E - omega^2 epsilon E + i omega sigma E = - i omega J
-class HertzOperator : public FrequencyDomainOperator {
-public:
-  HertzOperator(mfem::ParMesh &pmesh, int order,
-                mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-                mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-                hephaestus::BCMap &bc_map,
-                hephaestus::DomainProperties &domain_properties,
-                hephaestus::Sources &sources,
-                hephaestus::InputParameters &solver_options);
+/*
+Operator for solving:
+∇×(α∇×u) + iωβu - ω²γu = g
 
-  ~HertzOperator(){};
+via the weak form:
+(α∇×u, ∇×u') + (iωβu, u') - (ω²ζu, u') - <(α∇×u)×n, u'> = (g, u')
+
+where
+u ∈ H(curl)
+g ∈ H(div) is a divergence-free source field
+ω is the angular frequency
+α is the stiffness coefficient
+ωβ is the loss coefficient
+ω²γ is the mass coefficient
+
+Dirichlet boundaries strongly constrain n×n×u
+Integrated boundaries weakly constrain (α∇×u)×n
+Robin boundaries weakly constrain (α∇×u)×n + γ(n×n×u) = F
+
+Divergence cleaning (such as via Helmholtz projection)
+should be performed on g before use in this operator.
+*/
+class ComplexMaxwellOperator : public FrequencyDomainOperator {
+public:
+  ComplexMaxwellOperator(
+      mfem::ParMesh &pmesh, int order,
+      mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+      mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+      hephaestus::BCMap &bc_map,
+      hephaestus::DomainProperties &domain_properties,
+      hephaestus::Sources &sources,
+      hephaestus::InputParameters &solver_options);
+
+  ~ComplexMaxwellOperator(){};
 
   virtual void SetVariables() override;
   virtual void Init(mfem::Vector &X) override;
   virtual void Solve(mfem::Vector &X) override;
 
-  mfem::ParComplexGridFunction *e_;
-  mfem::ParComplexLinearForm *jd_;
+  std::string h_curl_var_name, stiffness_coef_name, mass_coef_name,
+      loss_coef_name;
+  mfem::ParComplexGridFunction *u_;
+  mfem::ParComplexLinearForm *b1_;
   mfem::ParSesquilinearForm *a1_;
   mfem::ComplexOperator::Convention conv_ = mfem::ComplexOperator::HERMITIAN;
 
-  mfem::Coefficient *muInvCoef_; // Dia/Paramagnetic Material Coefficient
+  mfem::Coefficient *stiffCoef_; // Dia/Paramagnetic Material Coefficient
   mfem::Coefficient *massCoef_;  // -omega^2 epsilon
   mfem::Coefficient *lossCoef_;  // omega sigma
 
@@ -37,15 +60,14 @@ public:
 
 //
 // Specifies output interfaces of a time-domain EM formulation.
-class HertzFormulation : public SteadyFormulation {
+class ComplexMaxwellFormulation : public SteadyFormulation {
   // std::vector<mfem::ParGridFunction *> local_trial_vars, local_test_vars;
-  std::string frequency_coef_name, permittivity_coef_name,
-      reluctivity_coef_name, conductivity_coef_name, h_curl_var_name;
+protected:
+  std::string frequency_coef_name, h_curl_var_name, alpha_coef_name,
+      beta_coef_name, zeta_coef_name, mass_coef_name, loss_coef_name;
 
 public:
-  HertzFormulation();
-
-  // virtual hephaestus::TimeDependentEquationSystem *CreateEquationSystem();
+  ComplexMaxwellFormulation();
 
   virtual hephaestus::FrequencyDomainOperator *CreateFrequencyDomainOperator(
       mfem::ParMesh &pmesh, int order,

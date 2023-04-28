@@ -93,7 +93,7 @@ protected:
     hephaestus::Sources sources;
 
     hephaestus::SteadyFormulation *formulation =
-        new hephaestus::HertzFormulation();
+        new hephaestus::ComplexEFormulation();
 
     hephaestus::InputParameters solver_options;
     solver_options.SetParam("Tolerance", float(1.0e-16));

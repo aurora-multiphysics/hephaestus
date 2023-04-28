@@ -4,8 +4,8 @@ namespace hephaestus {
 
 hephaestus::SteadyFormulation *
 Factory::createSteadyFormulation(std::string &formulation) {
-  if (formulation == "Hertz") {
-    return new hephaestus::HertzFormulation();
+  if (formulation == "ComplexEForm") {
+    return new hephaestus::ComplexEFormulation();
   } else if (formulation == "ComplexAForm") {
     return new hephaestus::ComplexAFormulation();
   } else {

@@ -66,13 +66,12 @@ class SteadyFormulation {
       reluctivity_coef_name, conductivity_coef_name, h_curl_var_name;
 
 public:
+  hephaestus::EquationSystem *equation_system;
   hephaestus::FrequencyDomainOperator *fd_operator;
   mfem::ConstantCoefficient oneCoef;
   mfem::ConstantCoefficient *freqCoef;
 
   SteadyFormulation();
-
-  // virtual hephaestus::TimeDependentEquationSystem *CreateEquationSystem();
 
   virtual hephaestus::FrequencyDomainOperator *CreateFrequencyDomainOperator(
       mfem::ParMesh &pmesh, int order,

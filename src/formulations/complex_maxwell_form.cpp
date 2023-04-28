@@ -1,46 +1,54 @@
-#include "hertz_formulation.hpp"
+#include "complex_maxwell_form.hpp"
 
 namespace hephaestus {
 
-HertzOperator::HertzOperator(
+ComplexMaxwellOperator::ComplexMaxwellOperator(
     mfem::ParMesh &pmesh, int order,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
     hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
     : FrequencyDomainOperator(pmesh, order, fespaces, variables, bc_map,
-                              domain_properties, sources, solver_options) {}
+                              domain_properties, sources, solver_options),
+      h_curl_var_name(solver_options.GetParam<std::string>("HCurlVarName")),
+      stiffness_coef_name(
+          solver_options.GetParam<std::string>("StiffnessCoefName")),
+      mass_coef_name(solver_options.GetParam<std::string>("MassCoefName")),
+      loss_coef_name(solver_options.GetParam<std::string>("LossCoefName")) {}
 
-void HertzOperator::SetVariables() {
-  state_var_names.push_back("electric_field_real");
-  state_var_names.push_back("electric_field_imag");
+void ComplexMaxwellOperator::SetVariables() {
+  state_var_names.push_back(h_curl_var_name + "_real");
+  state_var_names.push_back(h_curl_var_name + "_imag");
 
   FrequencyDomainOperator::SetVariables();
 
-  e_ = new mfem::ParComplexGridFunction(local_test_vars.at(0)->ParFESpace());
-  *e_ = std::complex(0.0, 0.0);
+  u_ = new mfem::ParComplexGridFunction(local_test_vars.at(0)->ParFESpace());
+  *u_ = std::complex(0.0, 0.0);
 };
 
-void HertzOperator::Init(mfem::Vector &X) {
+void ComplexMaxwellOperator::Init(mfem::Vector &X) {
   FrequencyDomainOperator::Init(X);
 
-  muInvCoef_ = _domain_properties.scalar_property_map["magnetic_reluctivity"];
-  massCoef_ = _domain_properties.scalar_property_map["hertz_mass"];
-  lossCoef_ = _domain_properties.scalar_property_map["hertz_loss"];
+  stiffCoef_ = _domain_properties.scalar_property_map[stiffness_coef_name];
+  massCoef_ = _domain_properties.scalar_property_map[mass_coef_name];
+  lossCoef_ = _domain_properties.scalar_property_map[loss_coef_name];
 }
 
-void HertzOperator::Solve(mfem::Vector &X) {
+void ComplexMaxwellOperator::Solve(mfem::Vector &X) {
   mfem::OperatorHandle A1;
-  mfem::Vector E, RHS;
+  mfem::Vector U, RHS;
   mfem::OperatorHandle PCOp;
 
   mfem::Vector zeroVec(3);
   zeroVec = 0.0;
   mfem::VectorConstantCoefficient zeroCoef(zeroVec);
 
-  a1_ = new mfem::ParSesquilinearForm(e_->ParFESpace(), conv_);
-  a1_->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*muInvCoef_), NULL);
-  a1_->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*massCoef_), NULL);
+  a1_ = new mfem::ParSesquilinearForm(u_->ParFESpace(), conv_);
+  a1_->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*stiffCoef_), NULL);
+  if (massCoef_) {
+    a1_->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*massCoef_),
+                             NULL);
+  }
   if (lossCoef_) {
     a1_->AddDomainIntegrator(NULL,
                              new mfem::VectorFEMassIntegrator(*lossCoef_));
@@ -52,59 +60,74 @@ void HertzOperator::Solve(mfem::Vector &X) {
   jrCoef_ = new mfem::VectorConstantCoefficient(j);
   jiCoef_ = new mfem::VectorConstantCoefficient(j);
 
-  jd_ = new mfem::ParComplexLinearForm(e_->ParFESpace(), conv_);
-  jd_->AddDomainIntegrator(new mfem::VectorFEDomainLFIntegrator(*jrCoef_),
-                           new mfem::VectorFEDomainLFIntegrator(*jiCoef_));
+  mfem::ParLinearForm *b1_real_ = new mfem::ParLinearForm(u_->ParFESpace());
+  mfem::ParLinearForm *b1_imag_ = new mfem::ParLinearForm(u_->ParFESpace());
+  *b1_real_ = 0.0;
+  *b1_imag_ = 0.0;
 
-  _bc_map.applyEssentialBCs(std::string("electric_field"), ess_bdr_tdofs_, *e_,
+  _sources.Apply(b1_real_);
+
+  b1_ = new mfem::ParComplexLinearForm(u_->ParFESpace(), conv_);
+
+  _bc_map.applyEssentialBCs(std::string(h_curl_var_name), ess_bdr_tdofs_, *u_,
                             pmesh_);
-  _bc_map.applyIntegratedBCs(std::string("electric_field"), *jd_, pmesh_);
-  _bc_map.applyIntegratedBCs(std::string("electric_field"), *a1_, pmesh_);
+  _bc_map.applyIntegratedBCs(std::string(h_curl_var_name), *b1_, pmesh_);
+  _bc_map.applyIntegratedBCs(std::string(h_curl_var_name), *a1_, pmesh_);
 
   a1_->Assemble();
   a1_->Finalize();
 
-  jd_->Assemble();
+  b1_->Assemble();
+  b1_->real() += *b1_real_;
+  b1_->imag() += *b1_imag_;
 
-  a1_->FormLinearSystem(ess_bdr_tdofs_, *e_, *jd_, A1, E, RHS);
+  a1_->FormLinearSystem(ess_bdr_tdofs_, *u_, *b1_, A1, U, RHS);
 
   mfem::ComplexHypreParMatrix *A1Z = A1.As<mfem::ComplexHypreParMatrix>();
   mfem::HypreParMatrix *A1C = A1Z->GetSystemMatrix();
   mfem::SuperLURowLocMatrix A_SuperLU(*A1C);
   mfem::SuperLUSolver solver(MPI_COMM_WORLD);
   solver.SetOperator(A_SuperLU);
-  solver.Mult(RHS, E);
+  solver.Mult(RHS, U);
   delete A1C;
 
-  e_->Distribute(E);
+  a1_->RecoverFEMSolution(U, *b1_, *u_);
 
-  *_variables.Get(state_var_names.at(0)) = e_->real();
-  *_variables.Get(state_var_names.at(1)) = e_->imag();
+  *_variables.Get(state_var_names.at(0)) = u_->real();
+  *_variables.Get(state_var_names.at(1)) = u_->imag();
 }
 
-HertzFormulation::HertzFormulation() : SteadyFormulation() {
+ComplexMaxwellFormulation::ComplexMaxwellFormulation() : SteadyFormulation() {
   frequency_coef_name = std::string("frequency");
-  h_curl_var_name = std::string("electric_field");
+  h_curl_var_name = std::string("h_curl_var");
+  mass_coef_name = std::string("maxwell_mass");
+  loss_coef_name = std::string("maxwell_loss");
 
-  permittivity_coef_name = std::string("dielectric_permittivity");
-  reluctivity_coef_name = std::string("magnetic_reluctivity");
-  conductivity_coef_name = std::string("electrical_conductivity");
+  zeta_coef_name = std::string("zeta");
+  alpha_coef_name = std::string("alpha");
+  beta_coef_name = std::string("beta");
 };
 
 hephaestus::FrequencyDomainOperator *
-HertzFormulation::CreateFrequencyDomainOperator(
+ComplexMaxwellFormulation::CreateFrequencyDomainOperator(
     mfem::ParMesh &pmesh, int order,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
     hephaestus::Sources &sources, hephaestus::InputParameters &solver_options) {
-  fd_operator =
-      new hephaestus::HertzOperator(pmesh, order, fespaces, variables, bc_map,
-                                    domain_properties, sources, solver_options);
+
+  solver_options.SetParam("HCurlVarName", h_curl_var_name);
+  solver_options.SetParam("StiffnessCoefName", alpha_coef_name);
+  solver_options.SetParam("MassCoefName", mass_coef_name);
+  solver_options.SetParam("LossCoefName", loss_coef_name);
+
+  fd_operator = new hephaestus::ComplexMaxwellOperator(
+      pmesh, order, fespaces, variables, bc_map, domain_properties, sources,
+      solver_options);
   return fd_operator;
 };
 
-void HertzFormulation::RegisterMissingVariables(
+void ComplexMaxwellFormulation::RegisterMissingVariables(
     mfem::ParMesh &pmesh,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables) {
@@ -130,7 +153,7 @@ void HertzFormulation::RegisterMissingVariables(
   };
 };
 
-void HertzFormulation::RegisterCoefficients(
+void ComplexMaxwellFormulation::RegisterCoefficients(
     hephaestus::DomainProperties &domain_properties) {
 
   freqCoef = dynamic_cast<mfem::ConstantCoefficient *>(
@@ -155,32 +178,28 @@ void HertzFormulation::RegisterCoefficients(
         new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
             std::string("magnetic_permeability")));
   }
-  if (domain_properties.scalar_property_map.count(conductivity_coef_name) ==
-      0) {
-    domain_properties.scalar_property_map[conductivity_coef_name] =
+  if (domain_properties.scalar_property_map.count(beta_coef_name) == 0) {
+    domain_properties.scalar_property_map[beta_coef_name] =
         new mfem::PWCoefficient(
-            domain_properties.getGlobalScalarProperty(conductivity_coef_name));
+            domain_properties.getGlobalScalarProperty(beta_coef_name));
   }
-  if (domain_properties.scalar_property_map.count(permittivity_coef_name) ==
-      0) {
-    domain_properties.scalar_property_map[permittivity_coef_name] =
+  if (domain_properties.scalar_property_map.count(zeta_coef_name) == 0) {
+    domain_properties.scalar_property_map[zeta_coef_name] =
         new mfem::PWCoefficient(
-            domain_properties.getGlobalScalarProperty(permittivity_coef_name));
+            domain_properties.getGlobalScalarProperty(zeta_coef_name));
   }
 
-  domain_properties.scalar_property_map["hertz_mass"] =
+  domain_properties.scalar_property_map[mass_coef_name] =
       new mfem::TransformedCoefficient(
           domain_properties.scalar_property_map["_neg_angular_frequency_sq"],
-          domain_properties.scalar_property_map[permittivity_coef_name],
-          prodFunc);
+          domain_properties.scalar_property_map[zeta_coef_name], prodFunc);
 
-  domain_properties.scalar_property_map["hertz_loss"] =
+  domain_properties.scalar_property_map[loss_coef_name] =
       new mfem::TransformedCoefficient(
           domain_properties.scalar_property_map["_angular_frequency"],
-          domain_properties.scalar_property_map[conductivity_coef_name],
-          prodFunc);
+          domain_properties.scalar_property_map[beta_coef_name], prodFunc);
 
-  domain_properties.scalar_property_map[reluctivity_coef_name] =
+  domain_properties.scalar_property_map[alpha_coef_name] =
       new mfem::TransformedCoefficient(
           &oneCoef,
           domain_properties.scalar_property_map["magnetic_permeability"],
