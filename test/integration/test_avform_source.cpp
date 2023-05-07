@@ -138,8 +138,7 @@ protected:
                                     std::string("_HCurlFESpace"));
     div_free_source_params.SetParam("H1FESpaceName", std::string("_H1FESpace"));
     sources.Register(
-        "source",
-        new hephaestus::DivFreeVolumetricSource(div_free_source_params), true);
+        "source", new hephaestus::DivFreeSource(div_free_source_params), true);
 
     hephaestus::InputParameters params;
     params.SetParam("TimeStep", float(0.05));

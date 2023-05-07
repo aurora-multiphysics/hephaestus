@@ -150,8 +150,7 @@ protected:
     current_solver_options.SetParam("PrintLevel", 0);
     div_free_source_params.SetParam("SolverOptions", current_solver_options);
     sources.Register(
-        "source",
-        new hephaestus::DivFreeVolumetricSource(div_free_source_params), true);
+        "source", new hephaestus::DivFreeSource(div_free_source_params), true);
 
     hephaestus::InputParameters solver_options;
     solver_options.SetParam("Tolerance", float(1.0e-16));

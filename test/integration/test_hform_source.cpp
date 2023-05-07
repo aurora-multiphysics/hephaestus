@@ -74,12 +74,22 @@ protected:
     domain_properties.scalar_property_map["magnetic_permeability"] =
         new mfem::ConstantCoefficient(1.0);
 
-    bc_map.Register("ground_potential",
-                    new hephaestus::FunctionDirichletBC(
-                        std::string("magnetic_potential"),
-                        mfem::Array<int>({1, 2, 3}),
-                        new mfem::FunctionCoefficient(potential_ground)),
-                    true);
+    mfem::VectorFunctionCoefficient *dBdtSrcCoef =
+        new mfem::VectorFunctionCoefficient(3, source_field);
+    domain_properties.vector_property_map["source"] = dBdtSrcCoef;
+
+    // bc_map.Register("ground_potential",
+    //                 new hephaestus::FunctionDirichletBC(
+    //                     std::string("magnetic_potential"),
+    //                     mfem::Array<int>({1, 2, 3}),
+    //                     new mfem::FunctionCoefficient(potential_ground)),
+    //                 true);
+    // bc_map.Register("ground_potential",
+    //                 new hephaestus::IntegratedBC(
+    //                     std::string("magnetic_potential"),
+    //                     mfem::Array<int>({1, 2, 3}),
+    //                     new mfem::BoundaryNormalLFIntegrator(*dBdtSrcCoef)),
+    //                 true);
 
     mfem::VectorFunctionCoefficient *H_exact =
         new mfem::VectorFunctionCoefficient(3, H_exact_expr);
@@ -135,13 +145,14 @@ protected:
         new hephaestus::VectorCoefficientAuxKernel(vectorcoeffauxparams), true);
 
     hephaestus::Sources sources;
-    mfem::VectorFunctionCoefficient *dBdtSrcCoef =
-        new mfem::VectorFunctionCoefficient(3, source_field);
-    domain_properties.vector_property_map["source"] = dBdtSrcCoef;
     hephaestus::InputParameters div_free_source_params;
     div_free_source_params.SetParam("SourceName", std::string("source"));
+    div_free_source_params.SetParam("PotentialName",
+                                    std::string("magnetic_potential"));
     div_free_source_params.SetParam("HCurlFESpaceName",
                                     std::string("_HCurlFESpace"));
+    div_free_source_params.SetParam("ConductivityCoefName",
+                                    std::string("electrical_conductivity"));
     div_free_source_params.SetParam("H1FESpaceName", std::string("H1"));
     hephaestus::InputParameters current_solver_options;
     current_solver_options.SetParam("Tolerance", float(1.0e-12));
@@ -149,8 +160,7 @@ protected:
     current_solver_options.SetParam("PrintLevel", 0);
     div_free_source_params.SetParam("SolverOptions", current_solver_options);
     sources.Register(
-        "source",
-        new hephaestus::DivFreeVolumetricSource(div_free_source_params), true);
+        "source", new hephaestus::DivFreeSource(div_free_source_params), true);
 
     hephaestus::InputParameters solver_options;
     solver_options.SetParam("Tolerance", float(1.0e-16));
