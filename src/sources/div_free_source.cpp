@@ -134,8 +134,6 @@ void DivFreeSource::Apply(mfem::ParLinearForm *lf) {
   }
 
   // begin div free proj
-  q_ = new mfem::ParGridFunction(H1FESpace_);
-  gDiv_ = new mfem::ParLinearForm(H1FESpace_);
   *q_ = 0.0;
   int myid = H1FESpace_->GetMyRank();
   mfem::Array<int> ess_bdr_;
@@ -172,6 +170,8 @@ void DivFreeSource::Apply(mfem::ParLinearForm *lf) {
   pcg_->SetPrintLevel(0);
   pcg_->SetPreconditioner(*amg_);
   pcg_->Mult(*B0, *X0);
+  delete amg_;
+  delete pcg_;
 
   a0->RecoverFEMSolution(*X0, *gDiv_, *q_);
   // Compute the irrotational component of g
