@@ -134,7 +134,7 @@ void ComplexMaxwellFormulation::RegisterMissingVariables(
   int myid;
   MPI_Comm_rank(pmesh.GetComm(), &myid);
   // Register default ParGridFunctions of state variables if not provided
-  if (!variables.Has(h_curl_var_name)) {
+  if (!variables.Has(h_curl_var_name + "_real")) {
     if (myid == 0) {
       std::cout
           << h_curl_var_name
