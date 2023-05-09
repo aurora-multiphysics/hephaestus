@@ -17,7 +17,6 @@ protected:
   int num_procs_;
 
   mfem::ParMesh *pmesh;
-  int order;
   hephaestus::BCMap *bc_map;
   hephaestus::DomainProperties *domain_properties;
   hephaestus::AuxKernels *auxkernels;

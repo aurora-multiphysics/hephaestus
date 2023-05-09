@@ -12,15 +12,15 @@ namespace hephaestus {
 class FrequencyDomainOperator : public mfem::Operator {
 public:
   FrequencyDomainOperator(
-      mfem::ParMesh &pmesh, int order,
+      mfem::ParMesh &pmesh,
       mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
       mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
       hephaestus::BCMap &bc_map,
       hephaestus::DomainProperties &domain_properties,
       hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
-      : myid_(0), num_procs_(1), _order(order), pmesh_(&pmesh),
-        _fespaces(fespaces), _variables(variables), _bc_map(bc_map),
-        _sources(sources), _domain_properties(domain_properties),
+      : myid_(0), num_procs_(1), pmesh_(&pmesh), _fespaces(fespaces),
+        _variables(variables), _bc_map(bc_map), _sources(sources),
+        _domain_properties(domain_properties),
         _solver_options(solver_options){};
 
   ~FrequencyDomainOperator(){};
@@ -45,7 +45,6 @@ public:
 
   int myid_;
   int num_procs_;
-  const int _order;
   mfem::ParMesh *pmesh_;
   mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &_fespaces;
   mfem::NamedFieldsMap<mfem::ParGridFunction> &_variables;
@@ -74,7 +73,7 @@ public:
   SteadyFormulation();
 
   virtual hephaestus::FrequencyDomainOperator *CreateFrequencyDomainOperator(
-      mfem::ParMesh &pmesh, int order,
+      mfem::ParMesh &pmesh,
       mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
       mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
       hephaestus::BCMap &bc_map,
@@ -82,7 +81,7 @@ public:
       hephaestus::Sources &sources,
       hephaestus::InputParameters &solver_options) {
     fd_operator = new hephaestus::FrequencyDomainOperator(
-        pmesh, order, fespaces, variables, bc_map, domain_properties, sources,
+        pmesh, fespaces, variables, bc_map, domain_properties, sources,
         solver_options);
     return fd_operator;
   };

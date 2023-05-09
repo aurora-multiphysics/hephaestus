@@ -27,9 +27,9 @@ void TransientExecutioner::Init() {
                                      *domain_properties);
   auxkernels->Init(*gridfunctions, *domain_properties);
   sources->Init(*gridfunctions, *fespaces, *bc_map, *domain_properties);
-  formulation->CreateTimeDomainOperator(
-      *pmesh, order, *fespaces, *gridfunctions, *bc_map, *domain_properties,
-      *sources, *solver_options);
+  formulation->CreateTimeDomainOperator(*pmesh, *fespaces, *gridfunctions,
+                                        *bc_map, *domain_properties, *sources,
+                                        *solver_options);
 
   formulation->td_operator->SetVariables();
   F = new mfem::BlockVector(

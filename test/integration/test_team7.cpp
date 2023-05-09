@@ -151,7 +151,6 @@ protected:
     params.SetParam("UseGLVis", false);
 
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
-    params.SetParam("Order", 2);
     params.SetParam("BoundaryConditions", bc_map);
     params.SetParam("DomainProperties", domain_properties);
     params.SetParam("FESpaces", fespaces);

@@ -18,7 +18,7 @@ public:
 
   virtual hephaestus::TimeDomainEquationSystemOperator *
   CreateTimeDomainOperator(
-      mfem::ParMesh &pmesh, int order,
+      mfem::ParMesh &pmesh,
       mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
       mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
       hephaestus::BCMap &bc_map,
@@ -41,7 +41,7 @@ public:
 
 class AVOperator : public TimeDomainEquationSystemOperator {
 public:
-  AVOperator(mfem::ParMesh &pmesh, int order,
+  AVOperator(mfem::ParMesh &pmesh,
              mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
              mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
              hephaestus::BCMap &bc_map,

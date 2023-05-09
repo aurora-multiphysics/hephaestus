@@ -58,13 +58,13 @@ HCurlFormulation::CreateEquationSystem() {
 
 hephaestus::TimeDomainEquationSystemOperator *
 HCurlFormulation::CreateTimeDomainOperator(
-    mfem::ParMesh &pmesh, int order,
+    mfem::ParMesh &pmesh,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
     hephaestus::Sources &sources, hephaestus::InputParameters &solver_options) {
   td_operator =
-      new hephaestus::HCurlOperator(pmesh, order, fespaces, variables, bc_map,
+      new hephaestus::HCurlOperator(pmesh, fespaces, variables, bc_map,
                                     domain_properties, sources, solver_options);
   td_operator->SetEquationSystem(equation_system);
 
@@ -112,13 +112,13 @@ void HCurlFormulation::RegisterCoefficients(
 }
 
 HCurlOperator::HCurlOperator(
-    mfem::ParMesh &pmesh, int order,
+    mfem::ParMesh &pmesh,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
     hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
-    : TimeDomainEquationSystemOperator(pmesh, order, fespaces, variables,
-                                       bc_map, domain_properties, sources,
+    : TimeDomainEquationSystemOperator(pmesh, fespaces, variables, bc_map,
+                                       domain_properties, sources,
                                        solver_options) {}
 
 /*

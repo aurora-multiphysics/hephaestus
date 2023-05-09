@@ -60,13 +60,13 @@ hephaestus::TimeDependentEquationSystem *AVFormulation::CreateEquationSystem() {
 
 hephaestus::TimeDomainEquationSystemOperator *
 AVFormulation::CreateTimeDomainOperator(
-    mfem::ParMesh &pmesh, int order,
+    mfem::ParMesh &pmesh,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
     hephaestus::Sources &sources, hephaestus::InputParameters &solver_options) {
   td_operator =
-      new hephaestus::AVOperator(pmesh, order, fespaces, variables, bc_map,
+      new hephaestus::AVOperator(pmesh, fespaces, variables, bc_map,
                                  domain_properties, sources, solver_options);
   td_operator->SetEquationSystem(equation_system);
 
@@ -142,13 +142,13 @@ void AVFormulation::RegisterCoefficients(
 }
 
 AVOperator::AVOperator(
-    mfem::ParMesh &pmesh, int order,
+    mfem::ParMesh &pmesh,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
     hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
-    : TimeDomainEquationSystemOperator(pmesh, order, fespaces, variables,
-                                       bc_map, domain_properties, sources,
+    : TimeDomainEquationSystemOperator(pmesh, fespaces, variables, bc_map,
+                                       domain_properties, sources,
                                        solver_options) {
   // Initialize MPI variables
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);

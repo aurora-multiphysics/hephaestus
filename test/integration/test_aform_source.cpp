@@ -6,6 +6,7 @@ extern const char *DATA_DIR;
 
 class TestAFormSource : public testing::Test {
 protected:
+  const int var_order{2};
   static double estimate_convergence_rate(HYPRE_BigInt n_i, HYPRE_BigInt n_imo,
                                           double error_i, double error_imo,
                                           int dim) {
@@ -96,12 +97,12 @@ protected:
     hephaestus::InputParameters hcurlfespaceparams;
     hcurlfespaceparams.SetParam("FESpaceName", std::string("HCurl"));
     hcurlfespaceparams.SetParam("FESpaceType", std::string("ND"));
-    hcurlfespaceparams.SetParam("order", 2);
+    hcurlfespaceparams.SetParam("order", var_order);
     hcurlfespaceparams.SetParam("components", 3);
     hephaestus::InputParameters h1fespaceparams;
     h1fespaceparams.SetParam("FESpaceName", std::string("H1"));
     h1fespaceparams.SetParam("FESpaceType", std::string("H1"));
-    h1fespaceparams.SetParam("order", 2);
+    h1fespaceparams.SetParam("order", var_order);
     h1fespaceparams.SetParam("components", 3);
     hephaestus::FESpaces fespaces;
     fespaces.StoreInput(hcurlfespaceparams);
@@ -165,7 +166,6 @@ protected:
     params.SetParam("UseGLVis", false);
 
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
-    params.SetParam("Order", 2);
     params.SetParam("BoundaryConditions", bc_map);
     params.SetParam("DomainProperties", domain_properties);
     params.SetParam("FESpaces", fespaces);
@@ -216,7 +216,7 @@ TEST_F(TestAFormSource, CheckRun) {
         l2errpostprocessor.ndofs[i], l2errpostprocessor.ndofs[i - 1],
         l2errpostprocessor.l2_errs[i], l2errpostprocessor.l2_errs[i - 1], 3);
     std::cout << r << std::endl;
-    ASSERT_TRUE(r > params.GetParam<int>("Order") - 0.15);
-    ASSERT_TRUE(r < params.GetParam<int>("Order") + 1.0);
+    ASSERT_TRUE(r > var_order - 0.15);
+    ASSERT_TRUE(r < var_order + 1.0);
   }
 }

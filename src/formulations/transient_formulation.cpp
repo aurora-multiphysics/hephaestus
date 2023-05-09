@@ -107,13 +107,13 @@ TransientFormulation::CreateEquationSystem() {
 
 hephaestus::TimeDomainEquationSystemOperator *
 TransientFormulation::CreateTimeDomainOperator(
-    mfem::ParMesh &pmesh, int order,
+    mfem::ParMesh &pmesh,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
     hephaestus::Sources &sources, hephaestus::InputParameters &solver_options) {
   td_operator = new hephaestus::TimeDomainEquationSystemOperator(
-      pmesh, order, fespaces, variables, bc_map, domain_properties, sources,
+      pmesh, fespaces, variables, bc_map, domain_properties, sources,
       solver_options);
   td_operator->SetEquationSystem(equation_system);
   return td_operator;

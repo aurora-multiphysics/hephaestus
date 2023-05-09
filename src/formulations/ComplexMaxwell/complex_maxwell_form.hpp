@@ -27,7 +27,7 @@ should be performed on g before use in this operator.
 class ComplexMaxwellOperator : public FrequencyDomainOperator {
 public:
   ComplexMaxwellOperator(
-      mfem::ParMesh &pmesh, int order,
+      mfem::ParMesh &pmesh,
       mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
       mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
       hephaestus::BCMap &bc_map,
@@ -70,7 +70,7 @@ public:
   ComplexMaxwellFormulation();
 
   virtual hephaestus::FrequencyDomainOperator *CreateFrequencyDomainOperator(
-      mfem::ParMesh &pmesh, int order,
+      mfem::ParMesh &pmesh,
       mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
       mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
       hephaestus::BCMap &bc_map,

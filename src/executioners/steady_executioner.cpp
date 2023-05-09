@@ -23,9 +23,9 @@ void SteadyExecutioner::Init() {
   formulation->RegisterCoefficients(*domain_properties);
   auxkernels->Init(*gridfunctions, *domain_properties);
   sources->Init(*gridfunctions, *fespaces, *bc_map, *domain_properties);
-  formulation->CreateFrequencyDomainOperator(
-      *pmesh, order, *fespaces, *gridfunctions, *bc_map, *domain_properties,
-      *sources, *solver_options);
+  formulation->CreateFrequencyDomainOperator(*pmesh, *fespaces, *gridfunctions,
+                                             *bc_map, *domain_properties,
+                                             *sources, *solver_options);
 
   formulation->fd_operator->SetVariables();
   F = new mfem::BlockVector(

@@ -15,7 +15,7 @@ public:
 
   virtual hephaestus::TimeDomainEquationSystemOperator *
   CreateTimeDomainOperator(
-      mfem::ParMesh &pmesh, int order,
+      mfem::ParMesh &pmesh,
       mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
       mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
       hephaestus::BCMap &bc_map,
@@ -41,7 +41,7 @@ protected:
 
 class HCurlOperator : public TimeDomainEquationSystemOperator {
 public:
-  HCurlOperator(mfem::ParMesh &pmesh, int order,
+  HCurlOperator(mfem::ParMesh &pmesh,
                 mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
                 mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
                 hephaestus::BCMap &bc_map,
@@ -61,7 +61,7 @@ public:
 //   virtual void SetEquationSystem() override;
 
 // public:
-//   HCurlSolver(mfem::ParMesh &pmesh, int order,
+//   HCurlSolver(mfem::ParMesh &pmesh,
 //               mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
 //               mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
 //               hephaestus::BCMap &bc_map,

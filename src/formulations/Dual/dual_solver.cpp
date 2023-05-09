@@ -64,13 +64,13 @@ DualFormulation::CreateEquationSystem() {
 
 hephaestus::TimeDomainEquationSystemOperator *
 DualFormulation::CreateTimeDomainOperator(
-    mfem::ParMesh &pmesh, int order,
+    mfem::ParMesh &pmesh,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
     hephaestus::Sources &sources, hephaestus::InputParameters &solver_options) {
   td_operator =
-      new hephaestus::DualOperator(pmesh, order, fespaces, variables, bc_map,
+      new hephaestus::DualOperator(pmesh, fespaces, variables, bc_map,
                                    domain_properties, sources, solver_options);
   td_operator->SetEquationSystem(equation_system);
 
@@ -170,13 +170,13 @@ void DualOperator::Init(mfem::Vector &X) {
 }
 
 DualOperator::DualOperator(
-    mfem::ParMesh &pmesh, int order,
+    mfem::ParMesh &pmesh,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
     hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
-    : TimeDomainEquationSystemOperator(pmesh, order, fespaces, variables,
-                                       bc_map, domain_properties, sources,
+    : TimeDomainEquationSystemOperator(pmesh, fespaces, variables, bc_map,
+                                       domain_properties, sources,
                                        solver_options) {}
 
 void DualOperator::ImplicitSolve(const double dt, const mfem::Vector &X,

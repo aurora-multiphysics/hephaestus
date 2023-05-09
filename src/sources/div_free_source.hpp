@@ -47,7 +47,6 @@ public:
   mfem::ParGridFunction *div_free_src_gf; // Source field
 
   mfem::Solver *solver;
-  int irOrder, geom;
 };
 
 }; // namespace hephaestus

@@ -6,7 +6,6 @@ ExecutionerBase::ExecutionerBase(const hephaestus::InputParameters &params)
     : visualization(params.GetOptionalParam<bool>("UseGLVis", false)) {
   // Read in key objects for solve
   pmesh = new mfem::ParMesh(params.GetParam<mfem::ParMesh>("Mesh"));
-  order = params.GetParam<int>("Order");
   bc_map = new hephaestus::BCMap(
       params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
   domain_properties = new hephaestus::DomainProperties(
