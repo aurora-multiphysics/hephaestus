@@ -10,18 +10,6 @@
 
 namespace hephaestus {
 
-class Executioner {
-public:
-  Executioner() {}
-  Executioner(const std::string &type_, const double dt_,
-              const double t_initial_, const double t_final_);
-
-  std::string type;
-  double dt;
-  double t_initial;
-  double t_final;
-};
-
 class InputParameters {
 
 protected:
@@ -57,23 +45,6 @@ public:
     }
     return param;
   };
-};
-
-class Inputs {
-public:
-  Inputs(){};
-  Inputs(const mfem::Mesh &mesh_, const std::string &formulation_,
-         const int order_, const BCMap &bc_map_,
-         const DomainProperties &domain_properties_,
-         const Executioner &executioner_, Outputs outputs_);
-
-  mfem::Mesh mesh;
-  std::string formulation;
-  int order;
-  BCMap bc_map;
-  DomainProperties domain_properties;
-  Executioner executioner;
-  Outputs outputs;
 };
 
 } // namespace hephaestus
