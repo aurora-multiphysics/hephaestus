@@ -1,7 +1,7 @@
 #include "auxkernels.hpp"
 #include "transient_executioner.hpp"
 
-#include "hephaestus_transient.hpp"
+#include "hephaestus.hpp"
 #include "postprocessors.hpp"
 
 #include <gtest/gtest.h>

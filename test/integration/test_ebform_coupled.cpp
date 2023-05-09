@@ -1,4 +1,4 @@
-#include "hephaestus_transient.hpp"
+#include "hephaestus.hpp"
 #include <gtest/gtest.h>
 
 extern const char *DATA_DIR;

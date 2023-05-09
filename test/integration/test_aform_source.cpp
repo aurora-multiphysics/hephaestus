@@ -1,5 +1,5 @@
 // Based on an H form MMS test provided by Joseph Dean
-#include "hephaestus_transient.hpp"
+#include "hephaestus.hpp"
 #include <gtest/gtest.h>
 
 extern const char *DATA_DIR;
