@@ -2,7 +2,7 @@
 
 namespace hephaestus {
 
-ExecutionerBase::ExecutionerBase(const hephaestus::InputParameters &params)
+Executioner::Executioner(const hephaestus::InputParameters &params)
     : visualization(params.GetOptionalParam<bool>("UseGLVis", false)) {
   // Read in key objects for solve
   pmesh = new mfem::ParMesh(params.GetParam<mfem::ParMesh>("Mesh"));

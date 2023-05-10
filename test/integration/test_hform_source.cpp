@@ -210,7 +210,7 @@ TEST_F(TestHFormSource, CheckRun) {
     hephaestus::TransientExecutioner *executioner =
         new hephaestus::TransientExecutioner(params);
     executioner->Init();
-    executioner->Solve();
+    executioner->Execute();
     delete formulation;
   }
 

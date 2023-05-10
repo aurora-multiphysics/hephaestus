@@ -162,5 +162,5 @@ TEST_F(TestComplexAFormRod, CheckRun) {
   hephaestus::SteadyExecutioner *executioner =
       new hephaestus::SteadyExecutioner(params);
   executioner->Init();
-  executioner->Solve();
+  executioner->Execute();
 }

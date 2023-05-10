@@ -124,7 +124,7 @@ TEST_F(TestComplexIrisWaveguide, CheckRun) {
   hephaestus::SteadyExecutioner *executioner =
       new hephaestus::SteadyExecutioner(params);
   executioner->Init();
-  executioner->Solve();
+  executioner->Execute();
 
   mfem::Vector zeroVec(3);
   zeroVec = 0.0;

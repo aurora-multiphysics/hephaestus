@@ -3,7 +3,7 @@
 namespace hephaestus {
 
 SteadyExecutioner::SteadyExecutioner(const hephaestus::InputParameters &params)
-    : ExecutionerBase(params) {
+    : Executioner(params) {
   // Set Formulation
   formulation = params.GetParam<hephaestus::SteadyFormulation *>("Formulation");
   // if (formulation->equation_system == NULL) {
@@ -76,5 +76,5 @@ void SteadyExecutioner::Solve() const {
   }
   postprocessors->Update();
 }
-
+void SteadyExecutioner::Execute() const { this->Solve(); }
 } // namespace hephaestus

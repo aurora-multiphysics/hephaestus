@@ -3,9 +3,10 @@
 
 namespace hephaestus {
 
-class TransientExecutioner : public ExecutionerBase {
+class TransientExecutioner : public Executioner {
 private:
   mutable double t_step;  // Time step
+  mutable int it;         // Time index
   double t_initial;       // Start time
   double t_final;         // End time
   mutable double t;       // Current time
@@ -21,6 +22,8 @@ public:
   void Step(double dt, int it) const;
 
   void Solve() const override;
+
+  void Execute() const override;
 
   hephaestus::TransientFormulation *formulation;
 };

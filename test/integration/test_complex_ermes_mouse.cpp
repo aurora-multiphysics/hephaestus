@@ -81,7 +81,7 @@ protected:
 
     std::map<std::string, mfem::DataCollection *> data_collections;
     data_collections["VisItDataCollection"] =
-        new mfem::VisItDataCollection("Hertz-AMR-Parallel-VisIt");
+        new mfem::VisItDataCollection("ComplexMaxwellERMESMouse");
     hephaestus::Outputs outputs(data_collections);
 
     hephaestus::FESpaces fespaces;
@@ -122,7 +122,7 @@ TEST_F(TestComplexERMESMouse, CheckRun) {
   hephaestus::SteadyExecutioner *executioner =
       new hephaestus::SteadyExecutioner(params);
   executioner->Init();
-  executioner->Solve();
+  executioner->Execute();
 
   mfem::Vector zeroVec(3);
   zeroVec = 0.0;

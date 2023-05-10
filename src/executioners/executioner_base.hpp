@@ -10,7 +10,7 @@
 
 namespace hephaestus {
 
-class ExecutionerBase {
+class Executioner {
 protected:
   bool visualization; // Flag to control whether GLVis visualisation is required
   int myid_;
@@ -30,12 +30,17 @@ protected:
   mfem::BlockVector *F;
 
 public:
-  ExecutionerBase() = default;
-  explicit ExecutionerBase(const hephaestus::InputParameters &params);
+  Executioner() = default;
+  explicit Executioner(const hephaestus::InputParameters &params);
 
+  // Initialise owned objects
   virtual void Init(){};
 
+  // Solve the current system of equations
   virtual void Solve() const {};
+
+  // Execute solution strategy including any timestepping
+  virtual void Execute() const {};
 
   // Enable output to GLVis
   void EnableVisualisation() { visualization = true; };

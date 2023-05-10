@@ -83,14 +83,14 @@ protected:
         new mfem::ConstantCoefficient(M_PI * 4.0e-7);
     hephaestus::BCMap bc_map;
 
-    mfem::Mesh mesh(
-        (std::string(DATA_DIR) + std::string("./team7_small.g")).c_str(), 1, 1);
+    mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team7.g")).c_str(),
+                    1, 1);
 
     std::map<std::string, mfem::DataCollection *> data_collections;
     data_collections["VisItDataCollection"] =
-        new mfem::VisItDataCollection("Team7VisIt");
+        new mfem::VisItDataCollection("ComplexMaxwellTeam7VisIt");
     data_collections["ParaViewDataCollection"] =
-        new mfem::ParaViewDataCollection("Team7ParaView");
+        new mfem::ParaViewDataCollection("ComplexMaxwellTeam7ParaView");
     hephaestus::Outputs outputs(data_collections);
 
     hephaestus::InputParameters hcurlfespaceparams;
@@ -205,5 +205,5 @@ TEST_F(TestComplexTeam7, CheckRun) {
       new hephaestus::SteadyExecutioner(params);
   std::cout << "Created exec ";
   executioner->Init();
-  executioner->Solve();
+  executioner->Execute();
 }

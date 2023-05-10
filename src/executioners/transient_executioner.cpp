@@ -4,9 +4,9 @@ namespace hephaestus {
 
 TransientExecutioner::TransientExecutioner(
     const hephaestus::InputParameters &params)
-    : ExecutionerBase(params), t_step(params.GetParam<float>("TimeStep")),
+    : Executioner(params), t_step(params.GetParam<float>("TimeStep")),
       t_initial(params.GetParam<float>("StartTime")),
-      t_final(params.GetParam<float>("EndTime")), t(t_initial),
+      t_final(params.GetParam<float>("EndTime")), t(t_initial), it(0),
       vis_steps(params.GetOptionalParam<int>("VisualisationSteps", 1)),
       last_step(false) {
   // Set Formulation
@@ -91,13 +91,15 @@ void TransientExecutioner::Step(double dt, int it) const {
   }
 }
 
-void TransientExecutioner::Solve() const {
+void TransientExecutioner::Solve() const { Step(t_step, it); }
+
+void TransientExecutioner::Execute() const {
   // Initialise time variables
   t = t_initial;
   last_step = false;
 
-  for (int it = 1; !last_step; it++) {
-    Step(t_step, it);
+  for (it = 1; !last_step; it++) {
+    Solve();
   }
 }
 

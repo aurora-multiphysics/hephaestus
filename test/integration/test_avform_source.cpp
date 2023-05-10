@@ -182,7 +182,7 @@ TEST_F(TestAVFormSource, CheckRun) {
     hephaestus::TransientExecutioner *executioner =
         new hephaestus::TransientExecutioner(params);
     executioner->Init();
-    executioner->Solve();
+    executioner->Execute();
   }
 
   hephaestus::L2ErrorVectorPostprocessor l2errpostprocessor =

@@ -200,7 +200,7 @@ TEST_F(TestAFormSource, CheckRun) {
     hephaestus::TransientExecutioner *executioner =
         new hephaestus::TransientExecutioner(params);
     executioner->Init();
-    executioner->Solve();
+    executioner->Execute();
     delete formulation;
     delete executioner;
   }

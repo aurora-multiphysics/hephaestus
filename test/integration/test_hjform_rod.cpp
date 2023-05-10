@@ -160,5 +160,5 @@ TEST_F(TestHJFormRod, CheckRun) {
   hephaestus::TransientExecutioner *executioner =
       new hephaestus::TransientExecutioner(params);
   executioner->Init();
-  executioner->Solve();
+  executioner->Execute();
 }

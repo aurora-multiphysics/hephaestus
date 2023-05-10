@@ -3,7 +3,7 @@
 
 namespace hephaestus {
 
-class SteadyExecutioner : public ExecutionerBase {
+class SteadyExecutioner : public Executioner {
 private:
 public:
   SteadyExecutioner() = default;
@@ -12,6 +12,8 @@ public:
   void Init() override;
 
   void Solve() const override;
+
+  void Execute() const override;
 
   hephaestus::SteadyFormulation *formulation;
 };

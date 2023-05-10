@@ -173,5 +173,5 @@ TEST_F(TestTeam7, CheckRun) {
       new hephaestus::TransientExecutioner(params);
   std::cout << "Created exec ";
   executioner->Init();
-  executioner->Solve();
+  executioner->Execute();
 }
