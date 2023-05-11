@@ -5,15 +5,16 @@ namespace hephaestus {
 
 class TransientExecutioner : public Executioner {
 private:
-  mutable double t_step;  // Time step
-  mutable int it;         // Time index
   double t_initial;       // Start time
   double t_final;         // End time
   mutable double t;       // Current time
+  mutable int it;         // Time index
   int vis_steps;          // Number of cyces between each output update
   mutable bool last_step; // Flag to check if current step is final
 
 public:
+  mutable double t_step; // Time step
+
   TransientExecutioner() = default;
   explicit TransientExecutioner(const hephaestus::InputParameters &params);
 
