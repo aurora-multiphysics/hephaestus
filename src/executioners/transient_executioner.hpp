@@ -11,6 +11,8 @@ private:
   mutable int it;         // Time index
   int vis_steps;          // Number of cyces between each output update
   mutable bool last_step; // Flag to check if current step is final
+  hephaestus::TimeDomainEquationSystemOperator *td_operator;
+  hephaestus::TimeDependentEquationSystem *td_equation_system;
 
 public:
   mutable double t_step; // Time step

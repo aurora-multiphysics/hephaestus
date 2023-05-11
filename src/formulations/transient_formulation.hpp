@@ -1,10 +1,5 @@
 #pragma once
-#include "../common/pfem_extras.hpp"
-#include "auxkernels.hpp"
-#include "equation_system.hpp"
-#include "hephaestus_solvers.hpp"
-#include "inputs.hpp"
-#include "sources.hpp"
+#include "formulation_base.hpp"
 
 namespace hephaestus {
 
@@ -71,47 +66,24 @@ public:
 
 //
 // Specifies output interfaces of a time-domain EM formulation.
-class TransientFormulation {
-  // std::vector<mfem::ParGridFunction *> local_trial_vars, local_test_vars;
+class TransientFormulation : public hephaestus::Formulation {
 
 public:
-  hephaestus::TimeDependentEquationSystem *equation_system;
-  hephaestus::TimeDomainEquationSystemOperator *td_operator;
-  mfem::ConstantCoefficient oneCoef;
-
   TransientFormulation();
 
-  virtual hephaestus::TimeDependentEquationSystem *CreateEquationSystem();
+  virtual hephaestus::EquationSystem *CreateEquationSystem() const override;
 
-  virtual hephaestus::TimeDomainEquationSystemOperator *
-  CreateTimeDomainOperator(
-      mfem::ParMesh &pmesh,
-      mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-      mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-      hephaestus::BCMap &bc_map,
-      hephaestus::DomainProperties &domain_properties,
-      hephaestus::Sources &sources,
-      hephaestus::InputParameters &solver_options);
-
-  virtual void RegisterMissingVariables(
-      mfem::ParMesh &pmesh,
-      mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-      mfem::NamedFieldsMap<mfem::ParGridFunction> &variables) {
-    if (equation_system != NULL) {
-      TransientFormulation::RegisterTimeDerivatives(equation_system->var_names,
-                                                    variables);
-    }
-  };
+  virtual mfem::Operator *
+  CreateOperator(mfem::ParMesh &pmesh,
+                 mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+                 mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+                 hephaestus::BCMap &bc_map,
+                 hephaestus::DomainProperties &domain_properties,
+                 hephaestus::Sources &sources,
+                 hephaestus::InputParameters &solver_options) const override;
 
   static std::vector<mfem::ParGridFunction *> RegisterTimeDerivatives(
       std::vector<std::string> gridfunction_names,
       mfem::NamedFieldsMap<mfem::ParGridFunction> &gridfunctions);
-
-  virtual void
-  RegisterAuxKernels(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-                     hephaestus::AuxKernels &auxkernels){};
-
-  virtual void
-  RegisterCoefficients(hephaestus::DomainProperties &domain_properties){};
 };
 } // namespace hephaestus

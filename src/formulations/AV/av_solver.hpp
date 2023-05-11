@@ -13,18 +13,16 @@ class AVFormulation : public TransientFormulation {
 public:
   AVFormulation();
 
-  virtual hephaestus::TimeDependentEquationSystem *
-  CreateEquationSystem() override;
+  virtual hephaestus::EquationSystem *CreateEquationSystem() const override;
 
-  virtual hephaestus::TimeDomainEquationSystemOperator *
-  CreateTimeDomainOperator(
-      mfem::ParMesh &pmesh,
-      mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-      mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-      hephaestus::BCMap &bc_map,
-      hephaestus::DomainProperties &domain_properties,
-      hephaestus::Sources &sources,
-      hephaestus::InputParameters &solver_options) override;
+  virtual mfem::Operator *
+  CreateOperator(mfem::ParMesh &pmesh,
+                 mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+                 mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+                 hephaestus::BCMap &bc_map,
+                 hephaestus::DomainProperties &domain_properties,
+                 hephaestus::Sources &sources,
+                 hephaestus::InputParameters &solver_options) const override;
 
   virtual void RegisterMissingVariables(
       mfem::ParMesh &pmesh,

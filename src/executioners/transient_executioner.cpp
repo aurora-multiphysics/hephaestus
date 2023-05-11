@@ -12,9 +12,8 @@ TransientExecutioner::TransientExecutioner(
   // Set Formulation
   formulation =
       params.GetParam<hephaestus::TransientFormulation *>("Formulation");
-  if (formulation->equation_system == NULL) {
-    formulation->CreateEquationSystem();
-  }
+  td_equation_system = dynamic_cast<hephaestus::TimeDependentEquationSystem *>(
+      formulation->CreateEquationSystem());
 }
 
 void TransientExecutioner::Init() {
@@ -23,22 +22,23 @@ void TransientExecutioner::Init() {
   formulation->RegisterMissingVariables(*pmesh, *fespaces, *gridfunctions);
   formulation->RegisterAuxKernels(*gridfunctions, *auxkernels);
   formulation->RegisterCoefficients(*domain_properties);
-  formulation->equation_system->Init(*gridfunctions, *fespaces, *bc_map,
-                                     *domain_properties);
+  td_equation_system->Init(*gridfunctions, *fespaces, *bc_map,
+                           *domain_properties);
   auxkernels->Init(*gridfunctions, *domain_properties);
   sources->Init(*gridfunctions, *fespaces, *bc_map, *domain_properties);
-  formulation->CreateTimeDomainOperator(*pmesh, *fespaces, *gridfunctions,
-                                        *bc_map, *domain_properties, *sources,
-                                        *solver_options);
+  td_operator = dynamic_cast<hephaestus::TimeDomainEquationSystemOperator *>(
+      formulation->CreateOperator(*pmesh, *fespaces, *gridfunctions, *bc_map,
+                                  *domain_properties, *sources,
+                                  *solver_options));
+  td_operator->SetEquationSystem(td_equation_system);
 
-  formulation->td_operator->SetVariables();
-  F = new mfem::BlockVector(
-      formulation->td_operator->true_offsets); // Vector of dofs
-  formulation->td_operator->Init(*F);          // Set up initial conditions
+  td_operator->SetVariables();
+  F = new mfem::BlockVector(td_operator->true_offsets); // Vector of dofs
+  td_operator->Init(*F); // Set up initial conditions
 
-  formulation->td_operator->SetTime(t);
+  td_operator->SetTime(t);
   ode_solver = new mfem::BackwardEulerSolver;
-  ode_solver->Init(*formulation->td_operator);
+  ode_solver->Init(*td_operator);
 
   postprocessors->Init(*gridfunctions, *domain_properties);
   auxkernels->Solve(t);

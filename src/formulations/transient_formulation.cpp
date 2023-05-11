@@ -95,28 +95,23 @@ void TimeDomainEquationSystemOperator::SetEquationSystem(
   _equation_system = equation_system;
 }
 
-TransientFormulation::TransientFormulation()
-    : equation_system(NULL), td_operator(NULL), oneCoef(1.0){};
+TransientFormulation::TransientFormulation() : Formulation(){};
 
-hephaestus::TimeDependentEquationSystem *
-TransientFormulation::CreateEquationSystem() {
+hephaestus::EquationSystem *TransientFormulation::CreateEquationSystem() const {
   hephaestus::InputParameters params;
-  equation_system = new TimeDependentEquationSystem(params);
-  return equation_system;
+  return new TimeDependentEquationSystem(params);
 };
 
-hephaestus::TimeDomainEquationSystemOperator *
-TransientFormulation::CreateTimeDomainOperator(
+mfem::Operator *TransientFormulation::CreateOperator(
     mfem::ParMesh &pmesh,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
-    hephaestus::Sources &sources, hephaestus::InputParameters &solver_options) {
-  td_operator = new hephaestus::TimeDomainEquationSystemOperator(
+    hephaestus::Sources &sources,
+    hephaestus::InputParameters &solver_options) const {
+  return new hephaestus::TimeDomainEquationSystemOperator(
       pmesh, fespaces, variables, bc_map, domain_properties, sources,
       solver_options);
-  td_operator->SetEquationSystem(equation_system);
-  return td_operator;
 };
 
 std::vector<mfem::ParGridFunction *>

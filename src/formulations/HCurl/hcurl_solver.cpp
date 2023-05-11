@@ -46,29 +46,24 @@ HCurlFormulation::HCurlFormulation() : TransientFormulation() {
   h_curl_var_name = std::string("h_curl_var");
 }
 
-hephaestus::TimeDependentEquationSystem *
-HCurlFormulation::CreateEquationSystem() {
+hephaestus::EquationSystem *HCurlFormulation::CreateEquationSystem() const {
   hephaestus::InputParameters weak_form_params;
   weak_form_params.SetParam("HCurlVarName", h_curl_var_name);
   weak_form_params.SetParam("AlphaCoefName", alpha_coef_name);
   weak_form_params.SetParam("BetaCoefName", beta_coef_name);
-  equation_system = new hephaestus::CurlCurlEquationSystem(weak_form_params);
-  return equation_system;
+  return new hephaestus::CurlCurlEquationSystem(weak_form_params);
 }
 
-hephaestus::TimeDomainEquationSystemOperator *
-HCurlFormulation::CreateTimeDomainOperator(
+mfem::Operator *HCurlFormulation::CreateOperator(
     mfem::ParMesh &pmesh,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
-    hephaestus::Sources &sources, hephaestus::InputParameters &solver_options) {
-  td_operator =
-      new hephaestus::HCurlOperator(pmesh, fespaces, variables, bc_map,
-                                    domain_properties, sources, solver_options);
-  td_operator->SetEquationSystem(equation_system);
-
-  return td_operator;
+    hephaestus::Sources &sources,
+    hephaestus::InputParameters &solver_options) const {
+  return new hephaestus::HCurlOperator(pmesh, fespaces, variables, bc_map,
+                                       domain_properties, sources,
+                                       solver_options);
 };
 
 void HCurlFormulation::RegisterMissingVariables(
