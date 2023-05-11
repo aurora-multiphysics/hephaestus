@@ -10,16 +10,18 @@ class HCurlFormulation : public TransientFormulation {
 public:
   HCurlFormulation();
 
-  virtual hephaestus::EquationSystem *CreateEquationSystem() const override;
+  virtual std::unique_ptr<hephaestus::TimeDependentEquationSystem>
+  CreateTimeDependentEquationSystem() const override;
 
-  virtual mfem::Operator *
-  CreateOperator(mfem::ParMesh &pmesh,
-                 mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-                 mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-                 hephaestus::BCMap &bc_map,
-                 hephaestus::DomainProperties &domain_properties,
-                 hephaestus::Sources &sources,
-                 hephaestus::InputParameters &solver_options) const override;
+  virtual std::unique_ptr<hephaestus::TimeDomainEquationSystemOperator>
+  CreateTimeDomainEquationSystemOperator(
+      mfem::ParMesh &pmesh,
+      mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+      mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+      hephaestus::BCMap &bc_map,
+      hephaestus::DomainProperties &domain_properties,
+      hephaestus::Sources &sources,
+      hephaestus::InputParameters &solver_options) const override;
 
   virtual void RegisterMissingVariables(
       mfem::ParMesh &pmesh,

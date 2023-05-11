@@ -71,16 +71,18 @@ class TransientFormulation : public hephaestus::Formulation {
 public:
   TransientFormulation();
 
-  virtual hephaestus::EquationSystem *CreateEquationSystem() const override;
+  virtual std::unique_ptr<hephaestus::TimeDependentEquationSystem>
+  CreateTimeDependentEquationSystem() const;
 
-  virtual mfem::Operator *
-  CreateOperator(mfem::ParMesh &pmesh,
-                 mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-                 mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-                 hephaestus::BCMap &bc_map,
-                 hephaestus::DomainProperties &domain_properties,
-                 hephaestus::Sources &sources,
-                 hephaestus::InputParameters &solver_options) const override;
+  virtual std::unique_ptr<hephaestus::TimeDomainEquationSystemOperator>
+  CreateTimeDomainEquationSystemOperator(
+      mfem::ParMesh &pmesh,
+      mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+      mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+      hephaestus::BCMap &bc_map,
+      hephaestus::DomainProperties &domain_properties,
+      hephaestus::Sources &sources,
+      hephaestus::InputParameters &solver_options) const;
 
   static std::vector<mfem::ParGridFunction *> RegisterTimeDerivatives(
       std::vector<std::string> gridfunction_names,

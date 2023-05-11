@@ -97,19 +97,21 @@ void TimeDomainEquationSystemOperator::SetEquationSystem(
 
 TransientFormulation::TransientFormulation() : Formulation(){};
 
-hephaestus::EquationSystem *TransientFormulation::CreateEquationSystem() const {
+std::unique_ptr<hephaestus::TimeDependentEquationSystem>
+TransientFormulation::CreateTimeDependentEquationSystem() const {
   hephaestus::InputParameters params;
-  return new TimeDependentEquationSystem(params);
+  return std::make_unique<hephaestus::TimeDependentEquationSystem>(params);
 };
 
-mfem::Operator *TransientFormulation::CreateOperator(
+std::unique_ptr<hephaestus::TimeDomainEquationSystemOperator>
+TransientFormulation::CreateTimeDomainEquationSystemOperator(
     mfem::ParMesh &pmesh,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
     hephaestus::Sources &sources,
     hephaestus::InputParameters &solver_options) const {
-  return new hephaestus::TimeDomainEquationSystemOperator(
+  return std::make_unique<hephaestus::TimeDomainEquationSystemOperator>(
       pmesh, fespaces, variables, bc_map, domain_properties, sources,
       solver_options);
 };

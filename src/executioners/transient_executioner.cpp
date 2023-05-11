@@ -12,8 +12,7 @@ TransientExecutioner::TransientExecutioner(
   // Set Formulation
   formulation =
       params.GetParam<hephaestus::TransientFormulation *>("Formulation");
-  td_equation_system = dynamic_cast<hephaestus::TimeDependentEquationSystem *>(
-      formulation->CreateEquationSystem());
+  td_equation_system = formulation->CreateTimeDependentEquationSystem();
 }
 
 void TransientExecutioner::Init() {
@@ -26,11 +25,10 @@ void TransientExecutioner::Init() {
                            *domain_properties);
   auxkernels->Init(*gridfunctions, *domain_properties);
   sources->Init(*gridfunctions, *fespaces, *bc_map, *domain_properties);
-  td_operator = dynamic_cast<hephaestus::TimeDomainEquationSystemOperator *>(
-      formulation->CreateOperator(*pmesh, *fespaces, *gridfunctions, *bc_map,
-                                  *domain_properties, *sources,
-                                  *solver_options));
-  td_operator->SetEquationSystem(td_equation_system);
+  td_operator = formulation->CreateTimeDomainEquationSystemOperator(
+      *pmesh, *fespaces, *gridfunctions, *bc_map, *domain_properties, *sources,
+      *solver_options);
+  td_operator->SetEquationSystem(td_equation_system.get());
 
   td_operator->SetVariables();
   F = new mfem::BlockVector(td_operator->true_offsets); // Vector of dofs

@@ -51,25 +51,27 @@ DualFormulation::DualFormulation() : TransientFormulation() {
   h_div_var_name = std::string("h_div_var");
 }
 
-hephaestus::EquationSystem *DualFormulation::CreateEquationSystem() const {
+std::unique_ptr<hephaestus::TimeDependentEquationSystem>
+DualFormulation::CreateTimeDependentEquationSystem() const {
   hephaestus::InputParameters weak_form_params;
   weak_form_params.SetParam("HCurlVarName", h_curl_var_name);
   weak_form_params.SetParam("HDivVarName", h_div_var_name);
   weak_form_params.SetParam("AlphaCoefName", alpha_coef_name);
   weak_form_params.SetParam("BetaCoefName", beta_coef_name);
-  return new hephaestus::WeakCurlEquationSystem(weak_form_params);
+  return std::make_unique<hephaestus::WeakCurlEquationSystem>(weak_form_params);
 }
 
-mfem::Operator *DualFormulation::CreateOperator(
+std::unique_ptr<hephaestus::TimeDomainEquationSystemOperator>
+DualFormulation::CreateTimeDomainEquationSystemOperator(
     mfem::ParMesh &pmesh,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
     hephaestus::Sources &sources,
     hephaestus::InputParameters &solver_options) const {
-  return new hephaestus::DualOperator(pmesh, fespaces, variables, bc_map,
-                                      domain_properties, sources,
-                                      solver_options);
+  return std::make_unique<hephaestus::DualOperator>(pmesh, fespaces, variables,
+                                                    bc_map, domain_properties,
+                                                    sources, solver_options);
 };
 
 void DualFormulation::RegisterMissingVariables(

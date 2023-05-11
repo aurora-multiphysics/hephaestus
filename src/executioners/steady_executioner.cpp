@@ -7,7 +7,7 @@ SteadyExecutioner::SteadyExecutioner(const hephaestus::InputParameters &params)
   // Set Formulation
   formulation = params.GetParam<hephaestus::SteadyFormulation *>("Formulation");
   // if (formulation->equation_system == NULL) {
-  //   formulation->CreateEquationSystem();
+  //   formulation->CreateTimeDependentEquationSystem();
   // }
 }
 

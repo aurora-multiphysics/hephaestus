@@ -48,24 +48,27 @@ AVFormulation::AVFormulation() : TransientFormulation() {
   scalar_potential_name = std::string("electric_potential");
 }
 
-hephaestus::EquationSystem *AVFormulation::CreateEquationSystem() const {
+std::unique_ptr<hephaestus::TimeDependentEquationSystem>
+AVFormulation::CreateTimeDependentEquationSystem() const {
   hephaestus::InputParameters av_system_params;
   av_system_params.SetParam("VectorPotentialName", vector_potential_name);
   av_system_params.SetParam("ScalarPotentialName", scalar_potential_name);
   av_system_params.SetParam("AlphaCoefName", alpha_coef_name);
   av_system_params.SetParam("BetaCoefName", beta_coef_name);
-  return new hephaestus::AVEquationSystem(av_system_params);
+  return std::make_unique<hephaestus::AVEquationSystem>(av_system_params);
 }
 
-mfem::Operator *AVFormulation::CreateOperator(
+std::unique_ptr<hephaestus::TimeDomainEquationSystemOperator>
+AVFormulation::CreateTimeDomainEquationSystemOperator(
     mfem::ParMesh &pmesh,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
     hephaestus::Sources &sources,
     hephaestus::InputParameters &solver_options) const {
-  return new hephaestus::AVOperator(pmesh, fespaces, variables, bc_map,
-                                    domain_properties, sources, solver_options);
+  return std::make_unique<hephaestus::AVOperator>(pmesh, fespaces, variables,
+                                                  bc_map, domain_properties,
+                                                  sources, solver_options);
 };
 
 void AVFormulation::RegisterMissingVariables(
