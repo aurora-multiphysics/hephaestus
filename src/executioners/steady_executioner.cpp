@@ -23,14 +23,13 @@ void SteadyExecutioner::Init() {
   formulation->RegisterCoefficients(*domain_properties);
   auxkernels->Init(*gridfunctions, *domain_properties);
   sources->Init(*gridfunctions, *fespaces, *bc_map, *domain_properties);
-  formulation->CreateFrequencyDomainOperator(*pmesh, *fespaces, *gridfunctions,
-                                             *bc_map, *domain_properties,
-                                             *sources, *solver_options);
+  fd_operator = formulation->CreateFrequencyDomainOperator(
+      *pmesh, *fespaces, *gridfunctions, *bc_map, *domain_properties, *sources,
+      *solver_options);
 
-  formulation->fd_operator->SetVariables();
-  F = new mfem::BlockVector(
-      formulation->fd_operator->true_offsets); // Vector of dofs
-  formulation->fd_operator->Init(*F);          // Set up initial conditions
+  fd_operator->SetVariables();
+  F = new mfem::BlockVector(fd_operator->true_offsets); // Vector of dofs
+  fd_operator->Init(*F); // Set up initial conditions
 
   // ode_solver->Init(*formulation->td_operator);
 
@@ -54,7 +53,7 @@ void SteadyExecutioner::Init() {
 
 void SteadyExecutioner::Solve() const {
   // Advance time step.
-  formulation->fd_operator->Solve(*F);
+  fd_operator->Solve(*F);
   auxkernels->Solve();
 
   // Output data

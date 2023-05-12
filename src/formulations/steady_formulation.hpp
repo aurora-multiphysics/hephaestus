@@ -1,14 +1,7 @@
 #pragma once
-#include "../common/pfem_extras.hpp"
-#include "auxkernels.hpp"
-#include "equation_system.hpp"
-#include "hephaestus_solvers.hpp"
-#include "inputs.hpp"
-#include "sources.hpp"
+#include "formulation_base.hpp"
 
 namespace hephaestus {
-// Specifies output interfaces of a time-domain EM formulation.
-//   Curl mu^{-1} Curl E - omega^2 epsilon E + i omega sigma E = - i omega J
 class FrequencyDomainOperator : public mfem::Operator {
 public:
   FrequencyDomainOperator(
@@ -57,45 +50,30 @@ public:
   mfem::BlockVector trueX, trueRhs;
 };
 
-//
-// Specifies output interfaces of a time-domain EM formulation.
-class SteadyFormulation {
+// Specifies output interfaces of a frequency-domain EM formulation.
+class SteadyFormulation : public hephaestus::Formulation {
   // std::vector<mfem::ParGridFunction *> local_trial_vars, local_test_vars;
   std::string frequency_coef_name, permittivity_coef_name,
       reluctivity_coef_name, conductivity_coef_name, h_curl_var_name;
 
 public:
-  hephaestus::EquationSystem *equation_system;
-  hephaestus::FrequencyDomainOperator *fd_operator;
-  mfem::ConstantCoefficient oneCoef;
+  mfem::ConstantCoefficient oneCoef{1.0};
   mfem::ConstantCoefficient *freqCoef;
 
   SteadyFormulation();
 
-  virtual hephaestus::FrequencyDomainOperator *CreateFrequencyDomainOperator(
+  virtual std::unique_ptr<hephaestus::FrequencyDomainOperator>
+  CreateFrequencyDomainOperator(
       mfem::ParMesh &pmesh,
       mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
       mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
       hephaestus::BCMap &bc_map,
       hephaestus::DomainProperties &domain_properties,
       hephaestus::Sources &sources,
-      hephaestus::InputParameters &solver_options) {
-    fd_operator = new hephaestus::FrequencyDomainOperator(
+      hephaestus::InputParameters &solver_options) const {
+    return std::make_unique<hephaestus::FrequencyDomainOperator>(
         pmesh, fespaces, variables, bc_map, domain_properties, sources,
         solver_options);
-    return fd_operator;
   };
-
-  virtual void RegisterMissingVariables(
-      mfem::ParMesh &pmesh,
-      mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-      mfem::NamedFieldsMap<mfem::ParGridFunction> &variables){};
-
-  virtual void
-  RegisterAuxKernels(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-                     hephaestus::AuxKernels &auxkernels){};
-
-  virtual void
-  RegisterCoefficients(hephaestus::DomainProperties &domain_properties){};
 };
 } // namespace hephaestus

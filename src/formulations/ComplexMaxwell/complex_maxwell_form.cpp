@@ -108,23 +108,23 @@ ComplexMaxwellFormulation::ComplexMaxwellFormulation() : SteadyFormulation() {
   beta_coef_name = std::string("beta");
 };
 
-hephaestus::FrequencyDomainOperator *
+std::unique_ptr<hephaestus::FrequencyDomainOperator>
 ComplexMaxwellFormulation::CreateFrequencyDomainOperator(
     mfem::ParMesh &pmesh,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
-    hephaestus::Sources &sources, hephaestus::InputParameters &solver_options) {
+    hephaestus::Sources &sources,
+    hephaestus::InputParameters &solver_options) const {
 
   solver_options.SetParam("HCurlVarName", h_curl_var_name);
   solver_options.SetParam("StiffnessCoefName", alpha_coef_name);
   solver_options.SetParam("MassCoefName", mass_coef_name);
   solver_options.SetParam("LossCoefName", loss_coef_name);
 
-  fd_operator = new hephaestus::ComplexMaxwellOperator(
+  return std::make_unique<hephaestus::ComplexMaxwellOperator>(
       pmesh, fespaces, variables, bc_map, domain_properties, sources,
       solver_options);
-  return fd_operator;
 };
 
 void ComplexMaxwellFormulation::RegisterMissingVariables(

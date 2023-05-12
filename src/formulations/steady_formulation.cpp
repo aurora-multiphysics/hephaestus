@@ -47,6 +47,6 @@ void FrequencyDomainOperator::Init(mfem::Vector &X) {
 
 void FrequencyDomainOperator::Solve(mfem::Vector &X) {}
 
-SteadyFormulation::SteadyFormulation() : fd_operator(NULL), oneCoef(1.0){};
+SteadyFormulation::SteadyFormulation(){};
 
 } // namespace hephaestus
