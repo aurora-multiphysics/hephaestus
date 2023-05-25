@@ -2,11 +2,19 @@
 
 namespace hephaestus {
 
+FrequencyDomainProblem::FrequencyDomainProblem(
+    const hephaestus::InputParameters &params)
+    : Problem(params),
+      formulation(
+          params.GetParam<hephaestus::SteadyFormulation *>("Formulation")) {}
+
 SteadyExecutioner::SteadyExecutioner(const hephaestus::InputParameters &params)
-    : Executioner(params) {
+    : Executioner(params),
+      problem_builder(
+          std::make_unique<hephaestus::FrequencyDomainProblemBuilder>(params)) {
   // Set Formulation
-  formulation = params.GetParam<hephaestus::SteadyFormulation *>("Formulation");
-  // if (formulation->equation_system == NULL) {
+  // formulation = params.GetParam<hephaestus::SteadyFormulation
+  // *>("Formulation"); if (formulation->equation_system == NULL) {
   //   formulation->CreateTimeDependentEquationSystem();
   // }
 }
@@ -16,64 +24,57 @@ SteadyExecutioner::SteadyExecutioner(const hephaestus::InputParameters &params)
 // Init(*F)
 // Solve(*F)
 void SteadyExecutioner::Init() {
-  fespaces->Init(*pmesh);
-  gridfunctions->Init(*pmesh, *fespaces);
-  formulation->RegisterMissingVariables(*pmesh, *fespaces, *gridfunctions);
-  formulation->RegisterAuxKernels(*gridfunctions, *auxkernels);
-  formulation->RegisterCoefficients(*domain_properties);
-  auxkernels->Init(*gridfunctions, *domain_properties);
-  sources->Init(*gridfunctions, *fespaces, *bc_map, *domain_properties);
-  fd_operator = formulation->CreateFrequencyDomainOperator(
-      *pmesh, *fespaces, *gridfunctions, *bc_map, *domain_properties, *sources,
-      *solver_options);
+  problem_builder->RegisterFESpaces();
+  problem_builder->RegisterGridFunctions();
+  problem_builder->RegisterAuxKernels();
+  problem_builder->RegisterCoefficients();
+  problem_builder->InitializeKernels();
+  problem_builder->ConstructOperator();
+  problem_builder->ConstructState();
+  problem_builder->InitializePostprocessors();
 
-  fd_operator->SetVariables();
-  F = new mfem::BlockVector(fd_operator->true_offsets); // Vector of dofs
-  fd_operator->Init(*F); // Set up initial conditions
-
-  // ode_solver->Init(*formulation->td_operator);
-
-  postprocessors->Init(*gridfunctions, *domain_properties);
-  auxkernels->Solve();
+  problem = problem_builder->GetProblem();
+  problem->auxkernels.Solve();
 
   // Set up DataCollections to track fields of interest.
-  for (auto const &[name, dc_] : *data_collections) {
-    outputs->RegisterOutputFields(dc_, pmesh, *gridfunctions);
+  for (auto const &[name, dc_] : problem->data_collections) {
+    problem->outputs.RegisterOutputFields(dc_, &(problem->pmesh),
+                                          problem->gridfunctions);
     // Write initial fields to disk
-    outputs->WriteOutputFields(dc_, 0.0, 0);
+    problem->outputs.WriteOutputFields(dc_, 0.0, 0);
   }
 
   // Initialize GLVis visualization and send the initial condition
   // by socket to a GLVis server.
   if (visualization) {
-    outputs->InitializeGLVis(myid_, *gridfunctions);
-    outputs->DisplayToGLVis(*gridfunctions);
+    problem->outputs.InitializeGLVis(problem->myid_, problem->gridfunctions);
+    problem->outputs.DisplayToGLVis(problem->gridfunctions);
   }
 }
 
 void SteadyExecutioner::Solve() const {
   // Advance time step.
-  fd_operator->Solve(*F);
-  auxkernels->Solve();
+  problem->fd_operator->Solve(*(problem->F));
+  problem->auxkernels.Solve();
 
   // Output data
   // Output timestep summary to console
-  outputs->WriteConsoleSummary(myid_, 1.0, 1);
+  problem->outputs.WriteConsoleSummary(problem->myid_, 1.0, 1);
 
   // Make sure all ranks have sent their 'v' solution before initiating
   // another set of GLVis connections (one from each rank):
-  MPI_Barrier(pmesh->GetComm());
+  MPI_Barrier(problem->pmesh.GetComm());
 
   // Send output fields to GLVis for visualisation
   if (visualization) {
-    outputs->DisplayToGLVis(*gridfunctions);
+    problem->outputs.DisplayToGLVis(problem->gridfunctions);
   }
 
   // Save output fields at timestep to DataCollections
-  for (auto const &[name, dc_] : *data_collections) {
-    outputs->WriteOutputFields(dc_, 1.0, 1);
+  for (auto const &[name, dc_] : problem->data_collections) {
+    problem->outputs.WriteOutputFields(dc_, 1.0, 1);
   }
-  postprocessors->Update();
+  problem->postprocessors.Update();
 }
 void SteadyExecutioner::Execute() const { this->Solve(); }
 } // namespace hephaestus

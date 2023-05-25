@@ -128,10 +128,12 @@ TEST_F(TestComplexERMESMouse, CheckRun) {
   zeroVec = 0.0;
   mfem::VectorConstantCoefficient zeroCoef(zeroVec);
 
-  double norm_r = executioner->gridfunctions->Get("electric_field_real")
-                      ->ComputeMaxError(zeroCoef);
-  double norm_i = executioner->gridfunctions->Get("electric_field_imag")
-                      ->ComputeMaxError(zeroCoef);
+  double norm_r =
+      executioner->problem->gridfunctions.Get("electric_field_real")
+          ->ComputeMaxError(zeroCoef);
+  double norm_i =
+      executioner->problem->gridfunctions.Get("electric_field_imag")
+          ->ComputeMaxError(zeroCoef);
   ASSERT_NEAR(norm_r, 480, 15);
   ASSERT_NEAR(norm_i, 180, 5);
 }

@@ -130,10 +130,12 @@ TEST_F(TestComplexIrisWaveguide, CheckRun) {
   zeroVec = 0.0;
   mfem::VectorConstantCoefficient zeroCoef(zeroVec);
 
-  double norm_r = executioner->gridfunctions->Get("electric_field_real")
-                      ->ComputeMaxError(zeroCoef);
-  double norm_i = executioner->gridfunctions->Get("electric_field_imag")
-                      ->ComputeMaxError(zeroCoef);
+  double norm_r =
+      executioner->problem->gridfunctions.Get("electric_field_real")
+          ->ComputeMaxError(zeroCoef);
+  double norm_i =
+      executioner->problem->gridfunctions.Get("electric_field_imag")
+          ->ComputeMaxError(zeroCoef);
   ASSERT_NEAR(norm_r, 4896.771, 0.001);
   ASSERT_NEAR(norm_i, 5357.650, 0.001);
 }

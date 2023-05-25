@@ -64,10 +64,21 @@ public:
   mfem::BlockVector trueX, trueRhs;
 };
 
-//
-// Specifies output interfaces of a time-domain EM formulation.
-class TransientFormulation : public hephaestus::Formulation {
+// Product = Formulation (EquationSystem + Operator)
+// Builder = FormulationBuilder (replaces FormFactory)
+// ConcreteBuilder = AVFormulationBuilder. Needs getFormulation()
+// Director = Executioner (currently)
 
+// Convert Formulation from Factory into Director for EquationSystems
+// Product - blfs/lfs/mblfs
+// Builder - EquationSystem (builds BLFs)
+// Director - Formulation
+
+// Formulation should be equation system + operator
+// FormulationBuilder
+
+// Abstract Factory class of a time-domain EM formulation.
+class TransientFormulation : public hephaestus::Formulation {
 public:
   TransientFormulation();
 

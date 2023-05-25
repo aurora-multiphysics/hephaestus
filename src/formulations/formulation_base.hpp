@@ -8,7 +8,24 @@
 
 namespace hephaestus {
 
-// Specifies output of an EM formulation.
+class ProblemBuilder {
+
+public:
+  ProblemBuilder(){};
+
+  virtual void RegisterMissingVariables(
+      mfem::ParMesh &pmesh,
+      mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+      mfem::NamedFieldsMap<mfem::ParGridFunction> &variables) = 0;
+
+  virtual void
+  RegisterAuxKernels(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+                     hephaestus::AuxKernels &auxkernels) = 0;
+
+  virtual void
+  RegisterCoefficients(hephaestus::DomainProperties &domain_properties) = 0;
+};
+
 class Formulation {
 
 public:
