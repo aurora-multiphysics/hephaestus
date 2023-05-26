@@ -86,9 +86,6 @@ public:
 };
 
 class SteadyExecutioner : public Executioner {
-private:
-  std::unique_ptr<hephaestus::FrequencyDomainProblemBuilder> problem_builder;
-
 public:
   SteadyExecutioner() = default;
   explicit SteadyExecutioner(const hephaestus::InputParameters &params);
@@ -98,6 +95,7 @@ public:
   void Solve() const override;
 
   void Execute() const override;
+
   std::unique_ptr<hephaestus::FrequencyDomainProblem> problem;
 };
 

@@ -121,8 +121,19 @@ protected:
 
 TEST_F(TestComplexIrisWaveguide, CheckRun) {
   hephaestus::InputParameters params(test_params());
+
+  hephaestus::FrequencyDomainProblemBuilder *problem_builder =
+      new hephaestus::FrequencyDomainProblemBuilder(params);
+  hephaestus::ProblemBuildSequencer sequencer(problem_builder);
+  sequencer.ConstructOperatorProblem();
+  std::unique_ptr<hephaestus::FrequencyDomainProblem> problem =
+      problem_builder->GetProblem();
+
+  hephaestus::InputParameters exec_params;
+  exec_params.SetParam("UseGLVis", true);
+  exec_params.SetParam("Problem", problem.get());
   hephaestus::SteadyExecutioner *executioner =
-      new hephaestus::SteadyExecutioner(params);
+      new hephaestus::SteadyExecutioner(exec_params);
   executioner->Init();
   executioner->Execute();
 
