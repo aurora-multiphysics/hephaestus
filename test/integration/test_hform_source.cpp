@@ -207,8 +207,23 @@ TEST_F(TestHFormSource, CheckRun) {
     hephaestus::TransientFormulation *formulation =
         new hephaestus::HFormulation();
     params.SetParam("Formulation", formulation);
+    hephaestus::TransientProblemBuilder *problem_builder =
+        new hephaestus::TransientProblemBuilder(params);
+    hephaestus::ProblemBuildSequencer sequencer(problem_builder);
+    sequencer.ConstructEquationSystemProblem();
+    std::unique_ptr<hephaestus::TransientProblem> problem =
+        problem_builder->GetProblem();
+
+    hephaestus::InputParameters exec_params;
+    exec_params.SetParam("TimeStep", float(0.05));
+    exec_params.SetParam("StartTime", float(0.00));
+    exec_params.SetParam("EndTime", float(0.05));
+    exec_params.SetParam("VisualisationSteps", int(1));
+    exec_params.SetParam("UseGLVis", false);
+    exec_params.SetParam("Problem", problem.get());
     hephaestus::TransientExecutioner *executioner =
-        new hephaestus::TransientExecutioner(params);
+        new hephaestus::TransientExecutioner(exec_params);
+
     executioner->Init();
     executioner->Execute();
     delete formulation;

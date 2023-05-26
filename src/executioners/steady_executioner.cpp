@@ -11,29 +11,9 @@ FrequencyDomainProblem::FrequencyDomainProblem(
 SteadyExecutioner::SteadyExecutioner(const hephaestus::InputParameters &params)
     : Executioner(params),
       problem(
-          params.GetParam<hephaestus::FrequencyDomainProblem *>("Problem")) {
-  // Set Formulation
-  // formulation = params.GetParam<hephaestus::SteadyFormulation
-  // *>("Formulation"); if (formulation->equation_system == NULL) {
-  //   formulation->CreateTimeDependentEquationSystem();
-  // }
-}
+          params.GetParam<hephaestus::FrequencyDomainProblem *>("Problem")) {}
 
-// fd_operator
-// SetVariables()
-// Init(*F)
-// Solve(*F)
 void SteadyExecutioner::Init() {
-  // problem_builder->RegisterFESpaces();
-  // problem_builder->RegisterGridFunctions();
-  // problem_builder->RegisterAuxKernels();
-  // problem_builder->RegisterCoefficients();
-  // problem_builder->InitializeKernels();
-  // problem_builder->ConstructOperator();
-  // problem_builder->ConstructState();
-  // problem_builder->InitializePostprocessors();
-
-  // problem = problem_builder->GetProblem();
   problem->auxkernels.Solve();
 
   // Set up DataCollections to track fields of interest.

@@ -124,12 +124,6 @@ protected:
         new hephaestus::HFormulation();
 
     hephaestus::InputParameters params;
-    params.SetParam("TimeStep", float(0.5));
-    params.SetParam("StartTime", float(0.0));
-    params.SetParam("EndTime", float(2.5));
-    params.SetParam("VisualisationSteps", int(1));
-    params.SetParam("UseGLVis", true);
-
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("BoundaryConditions", bc_map);
     params.SetParam("DomainProperties", domain_properties);
@@ -148,8 +142,23 @@ protected:
 
 TEST_F(TestHFormRod, CheckRun) {
   hephaestus::InputParameters params(test_params());
+  hephaestus::TransientProblemBuilder *problem_builder =
+      new hephaestus::TransientProblemBuilder(params);
+  hephaestus::ProblemBuildSequencer sequencer(problem_builder);
+  sequencer.ConstructEquationSystemProblem();
+  std::unique_ptr<hephaestus::TransientProblem> problem =
+      problem_builder->GetProblem();
+
+  hephaestus::InputParameters exec_params;
+  exec_params.SetParam("TimeStep", float(0.5));
+  exec_params.SetParam("StartTime", float(0.00));
+  exec_params.SetParam("EndTime", float(2.5));
+  exec_params.SetParam("VisualisationSteps", int(1));
+  exec_params.SetParam("UseGLVis", true);
+  exec_params.SetParam("Problem", problem.get());
   hephaestus::TransientExecutioner *executioner =
-      new hephaestus::TransientExecutioner(params);
+      new hephaestus::TransientExecutioner(exec_params);
+
   executioner->Init();
   executioner->Execute();
 }

@@ -104,7 +104,6 @@ private:
   mutable int it;         // Time index
   int vis_steps;          // Number of cyces between each output update
   mutable bool last_step; // Flag to check if current step is final
-  std::unique_ptr<hephaestus::TransientProblemBuilder> problem_builder;
 
 public:
   mutable double t_step; // Time step
@@ -119,7 +118,8 @@ public:
   void Solve() const override;
 
   void Execute() const override;
-  std::unique_ptr<hephaestus::TransientProblem> problem;
+
+  hephaestus::TransientProblem *problem;
 };
 
 } // namespace hephaestus

@@ -11,8 +11,7 @@ TransientProblem::TransientProblem(const hephaestus::InputParameters &params)
 TransientExecutioner::TransientExecutioner(
     const hephaestus::InputParameters &params)
     : Executioner(params),
-      problem_builder(
-          std::make_unique<hephaestus::TransientProblemBuilder>(params)),
+      problem(params.GetParam<hephaestus::TransientProblem *>("Problem")),
       t_step(params.GetParam<float>("TimeStep")),
       t_initial(params.GetParam<float>("StartTime")),
       t_final(params.GetParam<float>("EndTime")), t(t_initial), it(0),
@@ -20,19 +19,6 @@ TransientExecutioner::TransientExecutioner(
       last_step(false) {}
 
 void TransientExecutioner::Init() {
-  problem_builder->RegisterFESpaces();
-  problem_builder->RegisterGridFunctions();
-  problem_builder->RegisterAuxKernels();
-  problem_builder->RegisterCoefficients();
-  problem_builder->ConstructEquationSystem();
-  problem_builder->InitializeKernels();
-  problem_builder->ConstructOperator();
-  problem_builder->ConstructState();
-  problem_builder->ConstructSolver();
-  problem_builder->InitializePostprocessors();
-
-  problem = problem_builder->GetProblem();
-
   problem->auxkernels.Solve(t);
 
   // Set up DataCollections to track fields of interest.
