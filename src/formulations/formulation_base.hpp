@@ -13,17 +13,25 @@ class ProblemBuilder {
 public:
   ProblemBuilder(){};
 
-  virtual void RegisterMissingVariables(
-      mfem::ParMesh &pmesh,
-      mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-      mfem::NamedFieldsMap<mfem::ParGridFunction> &variables) = 0;
+  virtual void RegisterFESpaces() = 0;
 
-  virtual void
-  RegisterAuxKernels(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-                     hephaestus::AuxKernels &auxkernels) = 0;
+  virtual void RegisterGridFunctions() = 0;
 
-  virtual void
-  RegisterCoefficients(hephaestus::DomainProperties &domain_properties) = 0;
+  virtual void RegisterAuxKernels() = 0;
+
+  virtual void RegisterCoefficients() = 0;
+
+  virtual void InitializeKernels() = 0;
+
+  virtual void ConstructEquationSystem() = 0;
+
+  virtual void ConstructOperator() = 0;
+
+  virtual void ConstructState() = 0;
+
+  virtual void ConstructSolver() = 0;
+
+  virtual void InitializePostprocessors() = 0;
 };
 
 class Formulation {

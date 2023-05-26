@@ -15,7 +15,7 @@ public:
 };
 
 // Builder class of a time-domain EM formulation.
-class TransientProblemBuilder {
+class TransientProblemBuilder : public hephaestus::ProblemBuilder {
 private:
   std::unique_ptr<hephaestus::TransientProblem> problem;
 
@@ -28,11 +28,11 @@ public:
     return std::move(this->problem);
   };
 
-  virtual void RegisterFESpaces() {
+  virtual void RegisterFESpaces() override {
     this->problem->fespaces.Init(this->problem->pmesh);
   };
 
-  virtual void RegisterGridFunctions() {
+  virtual void RegisterGridFunctions() override {
     this->problem->gridfunctions.Init(this->problem->pmesh,
                                       this->problem->fespaces);
     this->problem->formulation->RegisterMissingVariables(
@@ -40,23 +40,23 @@ public:
         this->problem->gridfunctions);
   };
 
-  virtual void RegisterAuxKernels() {
+  virtual void RegisterAuxKernels() override {
     this->problem->formulation->RegisterAuxKernels(this->problem->gridfunctions,
                                                    this->problem->auxkernels);
   };
 
-  virtual void RegisterCoefficients() {
+  virtual void RegisterCoefficients() override {
     this->problem->formulation->RegisterCoefficients(
         this->problem->domain_properties);
   };
 
-  virtual void ConstructEquationSystem() {
+  virtual void ConstructEquationSystem() override {
     this->problem->td_equation_system->Init(
         this->problem->gridfunctions, this->problem->fespaces,
         this->problem->bc_map, this->problem->domain_properties);
   };
 
-  virtual void InitializeKernels() {
+  virtual void InitializeKernels() override {
     this->problem->auxkernels.Init(this->problem->gridfunctions,
                                    this->problem->domain_properties);
     this->problem->sources.Init(this->problem->gridfunctions,
@@ -64,7 +64,7 @@ public:
                                 this->problem->domain_properties);
   };
 
-  virtual void ConstructOperator() {
+  virtual void ConstructOperator() override {
     this->problem->td_operator =
         this->problem->formulation->CreateTimeDomainEquationSystemOperator(
             this->problem->pmesh, this->problem->fespaces,
@@ -76,7 +76,7 @@ public:
     this->problem->td_operator->SetVariables();
   };
 
-  virtual void ConstructState() {
+  virtual void ConstructState() override {
     this->problem->F = new mfem::BlockVector(
         this->problem->td_operator->true_offsets); // Vector of dofs
     this->problem->td_operator->Init(
@@ -84,12 +84,12 @@ public:
     this->problem->td_operator->SetTime(0.0);
   };
 
-  virtual void ConstructSolver() {
+  virtual void ConstructSolver() override {
     this->problem->ode_solver = new mfem::BackwardEulerSolver;
     this->problem->ode_solver->Init(*(this->problem->td_operator));
   };
 
-  virtual void InitializePostprocessors() {
+  virtual void InitializePostprocessors() override {
     this->problem->postprocessors.Init(this->problem->gridfunctions,
                                        this->problem->domain_properties);
     this->problem->auxkernels.Solve(0.0);

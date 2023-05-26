@@ -14,7 +14,7 @@ public:
 };
 
 // Builder class of a time-domain EM formulation.
-class FrequencyDomainProblemBuilder {
+class FrequencyDomainProblemBuilder : public hephaestus::ProblemBuilder {
 private:
   std::unique_ptr<hephaestus::FrequencyDomainProblem> problem;
 
@@ -27,11 +27,11 @@ public:
     return std::move(this->problem);
   };
 
-  virtual void RegisterFESpaces() {
+  virtual void RegisterFESpaces() override {
     this->problem->fespaces.Init(this->problem->pmesh);
   };
 
-  virtual void RegisterGridFunctions() {
+  virtual void RegisterGridFunctions() override {
     this->problem->gridfunctions.Init(this->problem->pmesh,
                                       this->problem->fespaces);
     this->problem->formulation->RegisterMissingVariables(
@@ -39,17 +39,17 @@ public:
         this->problem->gridfunctions);
   };
 
-  virtual void RegisterAuxKernels() {
+  virtual void RegisterAuxKernels() override {
     this->problem->formulation->RegisterAuxKernels(this->problem->gridfunctions,
                                                    this->problem->auxkernels);
   };
 
-  virtual void RegisterCoefficients() {
+  virtual void RegisterCoefficients() override {
     this->problem->formulation->RegisterCoefficients(
         this->problem->domain_properties);
   };
 
-  virtual void InitializeKernels() {
+  virtual void InitializeKernels() override {
     this->problem->auxkernels.Init(this->problem->gridfunctions,
                                    this->problem->domain_properties);
     this->problem->sources.Init(this->problem->gridfunctions,
@@ -57,7 +57,9 @@ public:
                                 this->problem->domain_properties);
   };
 
-  virtual void ConstructOperator() {
+  virtual void ConstructEquationSystem() override{};
+
+  virtual void ConstructOperator() override {
     this->problem->fd_operator =
         this->problem->formulation->CreateFrequencyDomainOperator(
             this->problem->pmesh, this->problem->fespaces,
@@ -67,14 +69,16 @@ public:
     this->problem->fd_operator->SetVariables();
   };
 
-  virtual void ConstructState() {
+  virtual void ConstructState() override {
     this->problem->F = new mfem::BlockVector(
         this->problem->fd_operator->true_offsets); // Vector of dofs
     this->problem->fd_operator->Init(
         *(this->problem->F)); // Set up initial conditions
   };
 
-  virtual void InitializePostprocessors() {
+  virtual void ConstructSolver() override{};
+
+  virtual void InitializePostprocessors() override {
     this->problem->postprocessors.Init(this->problem->gridfunctions,
                                        this->problem->domain_properties);
     this->problem->auxkernels.Solve();
