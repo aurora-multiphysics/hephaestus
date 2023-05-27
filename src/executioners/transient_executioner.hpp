@@ -28,6 +28,39 @@ public:
     return std::move(this->problem);
   };
 
+  virtual void SetFESpaces(hephaestus::FESpaces &fespaces) {
+    this->problem->fespaces = fespaces;
+  };
+
+  virtual void SetGridFunctions(hephaestus::GridFunctions &gridfunctions) {
+    this->problem->gridfunctions = gridfunctions;
+  };
+
+  virtual void SetBoundaryConditions(hephaestus::BCMap &bc_map) {
+    this->problem->bc_map = bc_map;
+  };
+
+  virtual void SetAuxKernels(hephaestus::AuxKernels &auxkernels) {
+    this->problem->auxkernels = auxkernels;
+  };
+
+  virtual void SetPostprocessors(hephaestus::Postprocessors &postprocessors) {
+    this->problem->postprocessors = postprocessors;
+  };
+
+  virtual void SetSources(hephaestus::Sources &sources) {
+    this->problem->sources = sources;
+  };
+
+  virtual void SetSolverOptions(hephaestus::InputParameters &solver_options) {
+    this->problem->solver_options = solver_options;
+  };
+
+  virtual void
+  SetCoefficients(hephaestus::DomainProperties &domain_properties) {
+    this->problem->domain_properties = domain_properties;
+  };
+
   virtual void RegisterFESpaces() override {
     this->problem->fespaces.Init(this->problem->pmesh);
   };
@@ -35,6 +68,14 @@ public:
   virtual void RegisterGridFunctions() override {
     this->problem->gridfunctions.Init(this->problem->pmesh,
                                       this->problem->fespaces);
+    std::vector<std::string> gridfunction_names;
+
+    for (auto const &[name, gf] : this->problem->gridfunctions) {
+      gridfunction_names.push_back(name);
+    }
+    this->problem->formulation->RegisterTimeDerivatives(
+        gridfunction_names, this->problem->gridfunctions);
+
     this->problem->formulation->RegisterMissingVariables(
         this->problem->pmesh, this->problem->fespaces,
         this->problem->gridfunctions);
@@ -51,12 +92,21 @@ public:
   };
 
   virtual void ConstructEquationSystem() override {
-    this->problem->td_equation_system->Init(
-        this->problem->gridfunctions, this->problem->fespaces,
-        this->problem->bc_map, this->problem->domain_properties);
+    this->problem->td_equation_system =
+        this->problem->formulation->CreateTimeDependentEquationSystem();
+  };
+
+  template <typename T>
+  void AddKernel(std::string var_name, hephaestus::Kernel<T> *kernel) {
+    this->problem->td_equation_system->addVariableNameIfMissing(var_name);
+    this->problem->td_equation_system->addKernel(var_name, kernel);
   };
 
   virtual void InitializeKernels() override {
+    this->problem->td_equation_system->Init(
+        this->problem->gridfunctions, this->problem->fespaces,
+        this->problem->bc_map, this->problem->domain_properties);
+
     this->problem->auxkernels.Init(this->problem->gridfunctions,
                                    this->problem->domain_properties);
     this->problem->sources.Init(this->problem->gridfunctions,

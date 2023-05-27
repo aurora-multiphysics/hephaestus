@@ -5,8 +5,7 @@ namespace hephaestus {
 TransientProblem::TransientProblem(const hephaestus::InputParameters &params)
     : Problem(params),
       formulation(
-          params.GetParam<hephaestus::TransientFormulation *>("Formulation")),
-      td_equation_system(formulation->CreateTimeDependentEquationSystem()) {}
+          params.GetParam<hephaestus::TransientFormulation *>("Formulation")) {}
 
 TransientExecutioner::TransientExecutioner(
     const hephaestus::InputParameters &params)
