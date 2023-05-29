@@ -1,7 +1,6 @@
 #include "transient_executioner.hpp"
 
 namespace hephaestus {
-
 TransientProblem::TransientProblem(const hephaestus::InputParameters &params)
     : Problem(params),
       formulation(
@@ -22,7 +21,7 @@ void TransientExecutioner::Init() {
 
   // Set up DataCollections to track fields of interest.
   for (auto const &[name, dc_] : problem->data_collections) {
-    problem->outputs.RegisterOutputFields(dc_, &(problem->pmesh),
+    problem->outputs.RegisterOutputFields(dc_, problem->pmesh.get(),
                                           problem->gridfunctions);
     // Write initial fields to disk
     problem->outputs.WriteOutputFields(dc_, t, 0);
@@ -54,7 +53,7 @@ void TransientExecutioner::Step(double dt, int it) const {
 
     // Make sure all ranks have sent their 'v' solution before initiating
     // another set of GLVis connections (one from each rank):
-    MPI_Barrier(problem->pmesh.GetComm());
+    MPI_Barrier(problem->pmesh->GetComm());
 
     // Send output fields to GLVis for visualisation
     if (visualization) {

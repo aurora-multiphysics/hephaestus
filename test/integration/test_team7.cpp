@@ -168,8 +168,7 @@ TEST_F(TestTeam7, CheckRun) {
   hephaestus::ProblemBuildSequencer sequencer(problem_builder);
   sequencer.ConstructEquationSystemProblem();
   std::unique_ptr<hephaestus::TransientProblem> problem =
-      problem_builder->GetProblem();
-
+      problem_builder->ReturnProblem();
   hephaestus::InputParameters exec_params;
   exec_params.SetParam("TimeStep", float(0.001));
   exec_params.SetParam("StartTime", float(0.00));

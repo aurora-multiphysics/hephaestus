@@ -184,7 +184,7 @@ TEST_F(TestAVFormSource, CheckRun) {
     hephaestus::ProblemBuildSequencer sequencer(problem_builder);
     sequencer.ConstructEquationSystemProblem();
     std::unique_ptr<hephaestus::TransientProblem> problem =
-        problem_builder->GetProblem();
+        problem_builder->ReturnProblem();
 
     hephaestus::InputParameters exec_params;
     exec_params.SetParam("TimeStep", float(0.05));

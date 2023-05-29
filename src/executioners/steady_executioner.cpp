@@ -1,7 +1,6 @@
 #include "steady_executioner.hpp"
 
 namespace hephaestus {
-
 FrequencyDomainProblem::FrequencyDomainProblem(
     const hephaestus::InputParameters &params)
     : Problem(params),
@@ -18,7 +17,7 @@ void SteadyExecutioner::Init() {
 
   // Set up DataCollections to track fields of interest.
   for (auto const &[name, dc_] : problem->data_collections) {
-    problem->outputs.RegisterOutputFields(dc_, &(problem->pmesh),
+    problem->outputs.RegisterOutputFields(dc_, problem->pmesh.get(),
                                           problem->gridfunctions);
     // Write initial fields to disk
     problem->outputs.WriteOutputFields(dc_, 0.0, 0);
@@ -34,7 +33,7 @@ void SteadyExecutioner::Init() {
 
 void SteadyExecutioner::Solve() const {
   // Advance time step.
-  problem->fd_operator->Solve(*(problem->F));
+  problem->fd_operator.get()->Solve(*(problem->F));
   problem->auxkernels.Solve();
 
   // Output data
@@ -43,7 +42,7 @@ void SteadyExecutioner::Solve() const {
 
   // Make sure all ranks have sent their 'v' solution before initiating
   // another set of GLVis connections (one from each rank):
-  MPI_Barrier(problem->pmesh.GetComm());
+  MPI_Barrier(problem->pmesh->GetComm());
 
   // Send output fields to GLVis for visualisation
   if (visualization) {

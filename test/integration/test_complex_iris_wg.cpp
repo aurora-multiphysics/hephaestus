@@ -127,7 +127,7 @@ TEST_F(TestComplexIrisWaveguide, CheckRun) {
   hephaestus::ProblemBuildSequencer sequencer(problem_builder);
   sequencer.ConstructOperatorProblem();
   std::unique_ptr<hephaestus::FrequencyDomainProblem> problem =
-      problem_builder->GetProblem();
+      problem_builder->ReturnProblem();
 
   hephaestus::InputParameters exec_params;
   exec_params.SetParam("UseGLVis", true);

@@ -3,7 +3,8 @@
 namespace hephaestus {
 
 Problem::Problem(const hephaestus::InputParameters &params)
-    : pmesh(mfem::ParMesh(params.GetParam<mfem::ParMesh>("Mesh"))),
+    : pmesh(std::make_unique<mfem::ParMesh>(
+          params.GetParam<mfem::ParMesh>("Mesh"))),
       bc_map(hephaestus::BCMap(
           params.GetParam<hephaestus::BCMap>("BoundaryConditions"))),
       domain_properties(hephaestus::DomainProperties(
@@ -26,8 +27,8 @@ Problem::Problem(const hephaestus::InputParameters &params)
           params.GetOptionalParam<hephaestus::InputParameters>(
               "SolverOptions", hephaestus::InputParameters()))) {
 
-  MPI_Comm_size(pmesh.GetComm(), &num_procs_);
-  MPI_Comm_rank(pmesh.GetComm(), &myid_);
+  MPI_Comm_size(pmesh->GetComm(), &num_procs_);
+  MPI_Comm_rank(pmesh->GetComm(), &myid_);
 }
 
 Executioner::Executioner(const hephaestus::InputParameters &params)

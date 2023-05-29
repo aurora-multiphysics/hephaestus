@@ -193,10 +193,11 @@ TEST_F(TestAFormSource, CheckRun) {
     params.SetParam("Formulation", formulation);
     hephaestus::TransientProblemBuilder *problem_builder =
         new hephaestus::TransientProblemBuilder(params);
+    problem_builder->SetFormulation(formulation);
     hephaestus::ProblemBuildSequencer sequencer(problem_builder);
     sequencer.ConstructEquationSystemProblem();
     std::unique_ptr<hephaestus::TransientProblem> problem =
-        problem_builder->GetProblem();
+        problem_builder->ReturnProblem();
 
     hephaestus::InputParameters exec_params;
     exec_params.SetParam("TimeStep", float(0.05));

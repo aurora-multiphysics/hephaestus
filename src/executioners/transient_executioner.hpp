@@ -12,61 +12,46 @@ public:
 
   TransientProblem() = default;
   explicit TransientProblem(const hephaestus::InputParameters &params);
+
+  virtual hephaestus::TransientFormulation *GetFormulation() {
+    return formulation;
+  };
+  virtual hephaestus::TimeDependentEquationSystem *GetEquationSystem() {
+    return td_equation_system.get();
+  };
+  virtual hephaestus::TimeDomainEquationSystemOperator *GetOperator() {
+    return td_operator.get();
+  };
 };
 
 // Builder class of a time-domain EM formulation.
 class TransientProblemBuilder : public hephaestus::ProblemBuilder {
 private:
   std::unique_ptr<hephaestus::TransientProblem> problem;
+  virtual hephaestus::TransientProblem *GetProblem() override {
+    return this->problem.get();
+  };
 
 public:
   TransientProblemBuilder();
   TransientProblemBuilder(const hephaestus::InputParameters &params)
       : problem(std::make_unique<hephaestus::TransientProblem>(params)){};
 
-  virtual std::unique_ptr<hephaestus::TransientProblem> GetProblem() {
+  virtual std::unique_ptr<hephaestus::TransientProblem> ReturnProblem() {
     return std::move(this->problem);
   };
 
-  virtual void SetFESpaces(hephaestus::FESpaces &fespaces) {
-    this->problem->fespaces = fespaces;
-  };
-
-  virtual void SetGridFunctions(hephaestus::GridFunctions &gridfunctions) {
-    this->problem->gridfunctions = gridfunctions;
-  };
-
-  virtual void SetBoundaryConditions(hephaestus::BCMap &bc_map) {
-    this->problem->bc_map = bc_map;
-  };
-
-  virtual void SetAuxKernels(hephaestus::AuxKernels &auxkernels) {
-    this->problem->auxkernels = auxkernels;
-  };
-
-  virtual void SetPostprocessors(hephaestus::Postprocessors &postprocessors) {
-    this->problem->postprocessors = postprocessors;
-  };
-
-  virtual void SetSources(hephaestus::Sources &sources) {
-    this->problem->sources = sources;
-  };
-
-  virtual void SetSolverOptions(hephaestus::InputParameters &solver_options) {
-    this->problem->solver_options = solver_options;
-  };
-
-  virtual void
-  SetCoefficients(hephaestus::DomainProperties &domain_properties) {
-    this->problem->domain_properties = domain_properties;
-  };
+  virtual void SetFormulation(hephaestus::TransientFormulation *formulation) {
+    this->problem->formulation = formulation;
+    ;
+  }
 
   virtual void RegisterFESpaces() override {
-    this->problem->fespaces.Init(this->problem->pmesh);
+    this->problem->fespaces.Init(*(this->problem->pmesh));
   };
 
   virtual void RegisterGridFunctions() override {
-    this->problem->gridfunctions.Init(this->problem->pmesh,
+    this->problem->gridfunctions.Init(*(this->problem->pmesh),
                                       this->problem->fespaces);
     std::vector<std::string> gridfunction_names;
 
@@ -77,7 +62,7 @@ public:
         gridfunction_names, this->problem->gridfunctions);
 
     this->problem->formulation->RegisterMissingVariables(
-        this->problem->pmesh, this->problem->fespaces,
+        *(this->problem->pmesh), this->problem->fespaces,
         this->problem->gridfunctions);
   };
 
@@ -117,7 +102,7 @@ public:
   virtual void ConstructOperator() override {
     this->problem->td_operator =
         this->problem->formulation->CreateTimeDomainEquationSystemOperator(
-            this->problem->pmesh, this->problem->fespaces,
+            *(this->problem->pmesh), this->problem->fespaces,
             this->problem->gridfunctions, this->problem->bc_map,
             this->problem->domain_properties, this->problem->sources,
             this->problem->solver_options);
