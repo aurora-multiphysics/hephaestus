@@ -15,7 +15,7 @@ public:
 
   void Execute() const override;
 
-  std::unique_ptr<hephaestus::FrequencyDomainProblem> problem;
+  hephaestus::FrequencyDomainProblem *problem;
 };
 
 } // namespace hephaestus

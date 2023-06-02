@@ -23,7 +23,7 @@ public:
   };
 };
 
-// Builder class of a time-domain EM formulation.
+// Builder class of a frequency-domain problem.
 class FrequencyDomainProblemBuilder : public hephaestus::ProblemBuilder {
 private:
   std::unique_ptr<hephaestus::FrequencyDomainProblem> problem;

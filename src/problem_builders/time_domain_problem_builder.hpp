@@ -44,7 +44,6 @@ public:
 
   virtual void SetFormulation(hephaestus::TransientFormulation *formulation) {
     this->problem->formulation = formulation;
-    ;
   }
 
   virtual void RegisterFESpaces() override {
