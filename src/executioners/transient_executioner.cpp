@@ -1,10 +1,6 @@
 #include "transient_executioner.hpp"
 
 namespace hephaestus {
-TransientProblem::TransientProblem(const hephaestus::InputParameters &params)
-    : Problem(params),
-      formulation(
-          params.GetParam<hephaestus::TransientFormulation *>("Formulation")) {}
 
 TransientExecutioner::TransientExecutioner(
     const hephaestus::InputParameters &params)

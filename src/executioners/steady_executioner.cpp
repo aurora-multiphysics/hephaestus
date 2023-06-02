@@ -1,11 +1,6 @@
 #include "steady_executioner.hpp"
 
 namespace hephaestus {
-FrequencyDomainProblem::FrequencyDomainProblem(
-    const hephaestus::InputParameters &params)
-    : Problem(params),
-      formulation(
-          params.GetParam<hephaestus::SteadyFormulation *>("Formulation")) {}
 
 SteadyExecutioner::SteadyExecutioner(const hephaestus::InputParameters &params)
     : Executioner(params),
