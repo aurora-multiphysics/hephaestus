@@ -85,20 +85,6 @@ protected:
         new mfem::ParaViewDataCollection("EBFormParaView");
     hephaestus::Outputs outputs(data_collections);
 
-    hephaestus::InputParameters hcurlfespaceparams;
-    hcurlfespaceparams.SetParam("FESpaceName", std::string("HCurl"));
-    hcurlfespaceparams.SetParam("FESpaceType", std::string("ND"));
-    hcurlfespaceparams.SetParam("order", 2);
-    hcurlfespaceparams.SetParam("components", 3);
-    hephaestus::InputParameters h1fespaceparams;
-    h1fespaceparams.SetParam("FESpaceName", std::string("H1"));
-    h1fespaceparams.SetParam("FESpaceType", std::string("H1"));
-    h1fespaceparams.SetParam("order", 2);
-    h1fespaceparams.SetParam("components", 3);
-    hephaestus::FESpaces fespaces;
-    fespaces.StoreInput(hcurlfespaceparams);
-    fespaces.StoreInput(h1fespaceparams);
-
     hephaestus::GridFunctions gridfunctions;
     hephaestus::AuxKernels auxkernels;
     hephaestus::Postprocessors postprocessors;
@@ -129,20 +115,15 @@ protected:
     solver_options.SetParam("MaxIter", (unsigned int)1000);
     solver_options.SetParam("PrintLevel", 0);
 
-    hephaestus::TransientFormulation *formulation =
-        new hephaestus::EBDualFormulation();
-
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("BoundaryConditions", bc_map);
     params.SetParam("DomainProperties", domain_properties);
-    params.SetParam("FESpaces", fespaces);
     params.SetParam("GridFunctions", gridfunctions);
     params.SetParam("AuxKernels", auxkernels);
     params.SetParam("Postprocessors", postprocessors);
     params.SetParam("Sources", sources);
     params.SetParam("Outputs", outputs);
-    params.SetParam("Formulation", formulation);
     params.SetParam("SolverOptions", solver_options);
 
     return params;
@@ -153,6 +134,16 @@ TEST_F(TestEBFormRod, CheckRun) {
   hephaestus::InputParameters params(test_params());
   hephaestus::TransientProblemBuilder *problem_builder =
       new hephaestus::TransientProblemBuilder(params);
+
+  std::shared_ptr<mfem::ParMesh> pmesh =
+      std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
+  problem_builder->SetFormulation(new hephaestus::EBDualFormulation());
+  problem_builder->SetMesh(pmesh);
+  problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P2"));
+  problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P2"));
+  problem_builder->AddGridFunction(std::string("analytic_vector_potential"),
+                                   std::string("HCurl"));
+
   hephaestus::ProblemBuildSequencer sequencer(problem_builder);
   sequencer.ConstructEquationSystemProblem();
   std::unique_ptr<hephaestus::TransientProblem> problem =

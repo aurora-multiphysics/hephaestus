@@ -93,48 +93,6 @@ protected:
         new mfem::ParaViewDataCollection("ComplexMaxwellTeam7ParaView");
     hephaestus::Outputs outputs(data_collections);
 
-    hephaestus::InputParameters hcurlfespaceparams;
-    hcurlfespaceparams.SetParam("FESpaceName", std::string("HCurl"));
-    hcurlfespaceparams.SetParam("FESpaceType", std::string("ND"));
-    hcurlfespaceparams.SetParam("order", 1);
-    hcurlfespaceparams.SetParam("components", 3);
-    hephaestus::InputParameters hdivfespaceparams;
-    hdivfespaceparams.SetParam("FESpaceName", std::string("HDiv"));
-    hdivfespaceparams.SetParam("FESpaceType", std::string("RT"));
-    hdivfespaceparams.SetParam("order", 1);
-    hdivfespaceparams.SetParam("components", 3);
-    hephaestus::InputParameters h1fespaceparams;
-    h1fespaceparams.SetParam("FESpaceName", std::string("H1"));
-    h1fespaceparams.SetParam("FESpaceType", std::string("H1"));
-    h1fespaceparams.SetParam("order", 1);
-    h1fespaceparams.SetParam("components", 3);
-    hephaestus::FESpaces fespaces;
-    fespaces.StoreInput(hcurlfespaceparams);
-    fespaces.StoreInput(hdivfespaceparams);
-    fespaces.StoreInput(h1fespaceparams);
-
-    hephaestus::InputParameters afieldparams_re;
-    afieldparams_re.SetParam("VariableName",
-                             std::string("magnetic_vector_potential_real"));
-    afieldparams_re.SetParam("FESpaceName", std::string("HCurl"));
-    hephaestus::InputParameters afieldparams_im;
-    afieldparams_im.SetParam("VariableName",
-                             std::string("magnetic_vector_potential_imag"));
-    afieldparams_im.SetParam("FESpaceName", std::string("HCurl"));
-    hephaestus::InputParameters bfieldparams_re;
-    bfieldparams_re.SetParam("VariableName",
-                             std::string("magnetic_flux_density_real"));
-    bfieldparams_re.SetParam("FESpaceName", std::string("HDiv"));
-    hephaestus::InputParameters bfieldparams_im;
-    bfieldparams_im.SetParam("VariableName",
-                             std::string("magnetic_flux_density_imag"));
-    bfieldparams_im.SetParam("FESpaceName", std::string("HDiv"));
-    hephaestus::GridFunctions gridfunctions;
-    gridfunctions.StoreInput(afieldparams_re);
-    gridfunctions.StoreInput(afieldparams_im);
-    gridfunctions.StoreInput(bfieldparams_re);
-    gridfunctions.StoreInput(bfieldparams_im);
-
     hephaestus::Postprocessors postprocessors;
     hephaestus::AuxKernels auxkernels;
 
@@ -176,22 +134,16 @@ protected:
     solver_options.SetParam("MaxIter", (unsigned int)1000);
     solver_options.SetParam("PrintLevel", 0);
 
-    hephaestus::SteadyFormulation *formulation =
-        new hephaestus::ComplexAFormulation();
-
     hephaestus::InputParameters params;
     params.SetParam("UseGLVis", true);
 
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("BoundaryConditions", bc_map);
     params.SetParam("DomainProperties", domain_properties);
-    params.SetParam("FESpaces", fespaces);
-    params.SetParam("GridFunctions", gridfunctions);
     params.SetParam("AuxKernels", auxkernels);
     params.SetParam("Postprocessors", postprocessors);
     params.SetParam("Outputs", outputs);
     params.SetParam("Sources", sources);
-    params.SetParam("Formulation", formulation);
     params.SetParam("SolverOptions", solver_options);
     std::cout << "Created params ";
     return params;
@@ -202,6 +154,22 @@ TEST_F(TestComplexTeam7, CheckRun) {
   hephaestus::InputParameters params(test_params());
   hephaestus::FrequencyDomainProblemBuilder *problem_builder =
       new hephaestus::FrequencyDomainProblemBuilder(params);
+  std::shared_ptr<mfem::ParMesh> pmesh =
+      std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
+  problem_builder->SetFormulation(new hephaestus::ComplexAFormulation());
+  problem_builder->SetMesh(pmesh);
+  problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P1"));
+  problem_builder->AddFESpace(std::string("HDiv"), std::string("RT_3D_P0"));
+  problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P1"));
+  problem_builder->AddGridFunction(
+      std::string("magnetic_vector_potential_real"), std::string("HCurl"));
+  problem_builder->AddGridFunction(
+      std::string("magnetic_vector_potential_imag"), std::string("HCurl"));
+  problem_builder->AddGridFunction(std::string("magnetic_flux_density_real"),
+                                   std::string("HDiv"));
+  problem_builder->AddGridFunction(std::string("magnetic_flux_density_imag"),
+                                   std::string("HDiv"));
+
   hephaestus::ProblemBuildSequencer sequencer(problem_builder);
   sequencer.ConstructOperatorProblem();
   std::unique_ptr<hephaestus::FrequencyDomainProblem> problem =

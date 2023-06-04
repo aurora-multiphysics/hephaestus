@@ -47,13 +47,13 @@ public:
     this->problem->formulation = formulation;
   }
 
-  virtual void RegisterFESpaces() override {
-    this->problem->fespaces.Init(*(this->problem->pmesh));
+  virtual void RegisterFESpaces() override{
+      // this->problem->fespaces.Init(*(this->problem->pmesh));
   };
 
   virtual void RegisterGridFunctions() override {
-    this->problem->gridfunctions.Init(*(this->problem->pmesh),
-                                      this->problem->fespaces);
+    // this->problem->gridfunctions.Init(*(this->problem->pmesh),
+    //                                   this->problem->fespaces);
     this->problem->formulation->RegisterMissingVariables(
         *(this->problem->pmesh), this->problem->fespaces,
         this->problem->gridfunctions);

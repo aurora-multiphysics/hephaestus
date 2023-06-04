@@ -25,8 +25,9 @@ public:
   mfem::ODESolver *ode_solver;
   mfem::BlockVector *F;
 
-  hephaestus::FESpaces fespaces;
-  hephaestus::GridFunctions gridfunctions;
+  mfem::NamedFieldsMap<mfem::FiniteElementCollection> fecs;
+  mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> fespaces;
+  mfem::NamedFieldsMap<mfem::ParGridFunction> gridfunctions;
   int myid_;
   int num_procs_;
 
@@ -87,6 +88,43 @@ public:
     this->GetProblem()->domain_properties = domain_properties;
   };
 
+  void AddFESpace(std::string fespace_name, std::string fec_name, int vdim = 1,
+                  int ordering = mfem::Ordering::byNODES) {
+    mfem::FiniteElementCollection *fec =
+        mfem::FiniteElementCollection::New(fec_name.c_str());
+    this->GetProblem()->fecs.Register(fec_name, fec, true);
+
+    mfem::ParMesh *pmesh = this->GetProblem()->pmesh.get();
+    if (pmesh == NULL) {
+      MFEM_ABORT("ParMesh not found when trying to add " << fespace_name
+                                                         << " to fespaces.");
+    }
+
+    mfem::ParFiniteElementSpace *pfes = new mfem::ParFiniteElementSpace(
+        this->GetProblem()->pmesh.get(), fec, vdim, ordering);
+
+    this->GetProblem()->fespaces.Register(fespace_name, pfes, true);
+  };
+
+  void AddGridFunction(std::string gridfunction_name,
+                       std::string fespace_name) {
+    mfem::ParFiniteElementSpace *fespace(
+        this->GetProblem()->fespaces.Get(fespace_name));
+    if (fespace == NULL) {
+      MFEM_ABORT("FESpace "
+                 << fespace_name << " not found in fespaces when trying to add "
+                 << gridfunction_name
+                 << " associated with it into gridfunctions. Please add "
+                 << fespace_name
+                 << " to fespaces before adding this gridfunction.");
+    }
+    mfem::ParGridFunction *gridfunc = new mfem::ParGridFunction(fespace);
+    *gridfunc = 0.0;
+
+    this->GetProblem()->gridfunctions.Register(gridfunction_name, gridfunc,
+                                               true);
+  };
+
   template <typename T>
   void AddKernel(std::string var_name, hephaestus::Kernel<T> *kernel) {
     this->GetProblem()->GetEquationSystem()->addVariableNameIfMissing(var_name);
@@ -112,7 +150,7 @@ public:
   virtual void ConstructSolver() = 0;
 
   virtual void InitializePostprocessors() = 0;
-};
+}; // namespace hephaestus
 
 class ProblemBuildSequencer {
   /**

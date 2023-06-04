@@ -66,46 +66,8 @@ protected:
     hephaestus::FESpaces fespaces;
     hephaestus::GridFunctions gridfunctions;
 
-    hephaestus::InputParameters l2fespaceparams;
-    l2fespaceparams.SetParam("FESpaceName", std::string("L2"));
-    l2fespaceparams.SetParam("FESpaceType", std::string("L2"));
-    l2fespaceparams.SetParam("order", 1);
-    l2fespaceparams.SetParam("components", 3);
-    fespaces.StoreInput(l2fespaceparams);
-
-    hephaestus::InputParameters jouleheatinggfparams;
-    jouleheatinggfparams.SetParam("VariableName",
-                                  std::string("joule_heating_load"));
-    jouleheatinggfparams.SetParam("FESpaceName", std::string("L2"));
-    gridfunctions.StoreInput(jouleheatinggfparams);
-
-    hephaestus::InputParameters h1fespaceparams;
-    h1fespaceparams.SetParam("FESpaceName", std::string("H1"));
-    h1fespaceparams.SetParam("FESpaceType", std::string("H1"));
-    h1fespaceparams.SetParam("order", 1);
-    h1fespaceparams.SetParam("components", 3);
-    fespaces.StoreInput(h1fespaceparams);
-
-    hephaestus::InputParameters hcurlsourcefespaceparams;
-    hcurlsourcefespaceparams.SetParam("FESpaceName",
-                                      std::string("HCurlSource"));
-    hcurlsourcefespaceparams.SetParam("FESpaceType", std::string("ND"));
-    hcurlsourcefespaceparams.SetParam("order", 2);
-    hcurlsourcefespaceparams.SetParam("components", 3);
-    hephaestus::InputParameters h1sourcefespaceparams;
-    h1sourcefespaceparams.SetParam("FESpaceName", std::string("H1Source"));
-    h1sourcefespaceparams.SetParam("FESpaceType", std::string("H1"));
-    h1sourcefespaceparams.SetParam("order", 2);
-    h1sourcefespaceparams.SetParam("components", 3);
-    fespaces.StoreInput(hcurlsourcefespaceparams);
-    fespaces.StoreInput(h1sourcefespaceparams);
-
-    hephaestus::InputParameters temperaturegfparams;
-    temperaturegfparams.SetParam("VariableName", std::string("temperature"));
-    temperaturegfparams.SetParam("FESpaceName", std::string("H1"));
-    gridfunctions.StoreInput(temperaturegfparams);
-
-    // materialCopper instances and get property coefs? init can be for all...
+    // materialCopper instances and get property coefs? init can be for
+    // all...
     // CoupledCoefficients must also be added to Auxkernels
     hephaestus::InputParameters copper_conductivity_params;
     copper_conductivity_params.SetParam("CoupledVariableName",
@@ -221,9 +183,6 @@ protected:
     solver_options.SetParam("MaxIter", (unsigned int)1000);
     solver_options.SetParam("PrintLevel", 0);
 
-    hephaestus::TransientFormulation *formulation =
-        new hephaestus::EBDualFormulation();
-
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("BoundaryConditions", bc_map);
@@ -234,7 +193,6 @@ protected:
     params.SetParam("Postprocessors", postprocessors);
     params.SetParam("Sources", sources);
     params.SetParam("Outputs", outputs);
-    params.SetParam("Formulation", formulation);
     params.SetParam("SolverOptions", solver_options);
 
     return params;
@@ -245,6 +203,21 @@ TEST_F(TestEBFormCoupled, CheckRun) {
   hephaestus::InputParameters params(test_params());
   hephaestus::TransientProblemBuilder *problem_builder =
       new hephaestus::TransientProblemBuilder(params);
+
+  std::shared_ptr<mfem::ParMesh> pmesh =
+      std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
+  problem_builder->SetFormulation(new hephaestus::EBDualFormulation());
+  problem_builder->SetMesh(pmesh);
+  problem_builder->AddFESpace(std::string("L2"), std::string("L2_3D_P1"));
+  problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P1"));
+  problem_builder->AddFESpace(std::string("H1Source"), std::string("H1_3D_P2"));
+  problem_builder->AddFESpace(std::string("HCurlSource"),
+                              std::string("ND_3D_P2"));
+  problem_builder->AddGridFunction(std::string("joule_heating_load"),
+                                   std::string("L2"));
+  problem_builder->AddGridFunction(std::string("temperature"),
+                                   std::string("H1"));
+
   hephaestus::ProblemBuildSequencer sequencer(problem_builder);
   sequencer.ConstructEquationSystemProblem();
   std::unique_ptr<hephaestus::TransientProblem> problem =

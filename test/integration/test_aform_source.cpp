@@ -6,7 +6,6 @@ extern const char *DATA_DIR;
 
 class TestAFormSource : public testing::Test {
 protected:
-  const int var_order{2};
   static double estimate_convergence_rate(HYPRE_BigInt n_i, HYPRE_BigInt n_imo,
                                           double error_i, double error_imo,
                                           int dim) {
@@ -94,27 +93,6 @@ protected:
         new mfem::VisItDataCollection("AFormVisIt");
     hephaestus::Outputs outputs(data_collections);
 
-    hephaestus::InputParameters hcurlfespaceparams;
-    hcurlfespaceparams.SetParam("FESpaceName", std::string("HCurl"));
-    hcurlfespaceparams.SetParam("FESpaceType", std::string("ND"));
-    hcurlfespaceparams.SetParam("order", var_order);
-    hcurlfespaceparams.SetParam("components", 3);
-    hephaestus::InputParameters h1fespaceparams;
-    h1fespaceparams.SetParam("FESpaceName", std::string("H1"));
-    h1fespaceparams.SetParam("FESpaceType", std::string("H1"));
-    h1fespaceparams.SetParam("order", var_order);
-    h1fespaceparams.SetParam("components", 3);
-    hephaestus::FESpaces fespaces;
-    fespaces.StoreInput(hcurlfespaceparams);
-    fespaces.StoreInput(h1fespaceparams);
-
-    hephaestus::InputParameters analyicaparams;
-    analyicaparams.SetParam("VariableName",
-                            std::string("analytic_vector_potential"));
-    analyicaparams.SetParam("FESpaceName", std::string("HCurl"));
-    hephaestus::GridFunctions gridfunctions;
-    gridfunctions.StoreInput(analyicaparams);
-
     hephaestus::InputParameters l2errpostprocparams;
     l2errpostprocparams.SetParam("VariableName",
                                  std::string("magnetic_vector_potential"));
@@ -162,8 +140,6 @@ protected:
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("BoundaryConditions", bc_map);
     params.SetParam("DomainProperties", domain_properties);
-    params.SetParam("FESpaces", fespaces);
-    params.SetParam("GridFunctions", gridfunctions);
     params.SetParam("AuxKernels", auxkernels);
     params.SetParam("Postprocessors", postprocessors);
     params.SetParam("Outputs", outputs);
@@ -182,18 +158,23 @@ TEST_F(TestAFormSource, CheckRun) {
   for (int par_ref_levels = 0; par_ref_levels < num_conv_refinements;
        ++par_ref_levels) {
 
-    mfem::ParMesh pmesh(unrefined_pmesh);
+    std::shared_ptr<mfem::ParMesh> pmesh =
+        std::make_shared<mfem::ParMesh>(unrefined_pmesh);
 
     for (int l = 0; l < par_ref_levels; l++) {
-      pmesh.UniformRefinement();
+      pmesh->UniformRefinement();
     }
-    params.SetParam("Mesh", pmesh);
     hephaestus::TransientFormulation *formulation =
         new hephaestus::AFormulation();
-    params.SetParam("Formulation", formulation);
     hephaestus::TransientProblemBuilder *problem_builder =
         new hephaestus::TransientProblemBuilder(params);
     problem_builder->SetFormulation(formulation);
+    problem_builder->SetMesh(pmesh);
+    problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P2"));
+    problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P2"));
+    problem_builder->AddGridFunction(std::string("analytic_vector_potential"),
+                                     std::string("HCurl"));
+
     hephaestus::ProblemBuildSequencer sequencer(problem_builder);
     sequencer.ConstructEquationSystemProblem();
     std::unique_ptr<hephaestus::TransientProblem> problem =
@@ -226,7 +207,7 @@ TEST_F(TestAFormSource, CheckRun) {
         l2errpostprocessor.ndofs[i], l2errpostprocessor.ndofs[i - 1],
         l2errpostprocessor.l2_errs[i], l2errpostprocessor.l2_errs[i - 1], 3);
     std::cout << r << std::endl;
-    ASSERT_TRUE(r > var_order - 0.15);
-    ASSERT_TRUE(r < var_order + 1.0);
+    ASSERT_TRUE(r > 2 - 0.15);
+    ASSERT_TRUE(r < 2 + 1.0);
   }
 }
