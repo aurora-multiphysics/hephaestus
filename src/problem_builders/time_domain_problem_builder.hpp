@@ -65,7 +65,7 @@ public:
 
   virtual void RegisterAuxSolvers() override {
     this->problem->formulation->RegisterAuxSolvers(
-        this->problem->gridfunctions, this->problem->preprocessors);
+        this->problem->gridfunctions, this->problem->postprocessors);
   };
 
   virtual void RegisterCoefficients() override {
@@ -118,7 +118,6 @@ public:
   virtual void InitializePostprocessors() override {
     this->problem->postprocessors.Init(this->problem->gridfunctions,
                                        this->problem->domain_properties);
-    this->problem->preprocessors.Solve(0.0);
   };
 };
 

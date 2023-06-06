@@ -8,8 +8,6 @@ SteadyExecutioner::SteadyExecutioner(const hephaestus::InputParameters &params)
           params.GetParam<hephaestus::FrequencyDomainProblem *>("Problem")) {}
 
 void SteadyExecutioner::Init() {
-  problem->preprocessors.Solve();
-
   // Set up DataCollections to track fields of interest.
   for (auto const &[name, dc_] : problem->data_collections) {
     problem->outputs.RegisterOutputFields(dc_, problem->pmesh.get(),
@@ -28,8 +26,9 @@ void SteadyExecutioner::Init() {
 
 void SteadyExecutioner::Solve() const {
   // Advance time step.
-  problem->fd_operator.get()->Solve(*(problem->F));
   problem->preprocessors.Solve();
+  problem->fd_operator.get()->Solve(*(problem->F));
+  problem->postprocessors.Solve();
 
   // Output data
   // Output timestep summary to console
@@ -48,7 +47,6 @@ void SteadyExecutioner::Solve() const {
   for (auto const &[name, dc_] : problem->data_collections) {
     problem->outputs.WriteOutputFields(dc_, 1.0, 1);
   }
-  problem->postprocessors.Solve();
 }
 void SteadyExecutioner::Execute() const { this->Solve(); }
 } // namespace hephaestus

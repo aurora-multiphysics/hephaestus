@@ -13,8 +13,6 @@ TransientExecutioner::TransientExecutioner(
       last_step(false) {}
 
 void TransientExecutioner::Init() {
-  problem->preprocessors.Solve(t);
-
   // Set up DataCollections to track fields of interest.
   for (auto const &[name, dc_] : problem->data_collections) {
     problem->outputs.RegisterOutputFields(dc_, problem->pmesh.get(),
@@ -38,8 +36,9 @@ void TransientExecutioner::Step(double dt, int it) const {
   }
 
   // Advance time step.
-  problem->ode_solver->Step(*(problem->F), t, dt);
   problem->preprocessors.Solve(t);
+  problem->ode_solver->Step(*(problem->F), t, dt);
+  problem->postprocessors.Solve(t);
 
   // Output data
   if (last_step || (it % vis_steps) == 0) {
@@ -60,7 +59,6 @@ void TransientExecutioner::Step(double dt, int it) const {
     for (auto const &[name, dc_] : problem->data_collections) {
       problem->outputs.WriteOutputFields(dc_, t, it);
     }
-    problem->postprocessors.Solve(t);
   }
 }
 
