@@ -15,8 +15,8 @@ Problem::Problem(const hephaestus::InputParameters &params)
           params.GetParam<hephaestus::GridFunctions>("GridFunctions"))),
       auxsolvers(hephaestus::AuxSolvers(
           params.GetParam<hephaestus::AuxSolvers>("AuxSolvers"))),
-      postprocessors(hephaestus::Postprocessors(
-          params.GetParam<hephaestus::Postprocessors>("Postprocessors"))),
+      postprocessors(hephaestus::AuxSolvers(
+          params.GetParam<hephaestus::AuxSolvers>("Postprocessors"))),
       sources(
           hephaestus::Sources(params.GetParam<hephaestus::Sources>("Sources"))),
       outputs(

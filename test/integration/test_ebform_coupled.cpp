@@ -68,7 +68,7 @@ protected:
 
     // materialCopper instances and get property coefs? init can be for
     // all...
-    // CoupledCoefficients must also be added to Auxkernels
+    // CoupledCoefficients must also be added to AuxSolvers
     hephaestus::InputParameters copper_conductivity_params;
     copper_conductivity_params.SetParam("CoupledVariableName",
                                         std::string("temperature"));
@@ -154,7 +154,7 @@ protected:
         "CoefficientAuxSolver",
         new hephaestus::CoefficientAuxSolver(jouleheatingauxparams), true);
 
-    hephaestus::Postprocessors postprocessors;
+    hephaestus::AuxSolvers postprocessors;
     hephaestus::Sources sources;
     hephaestus::InputParameters scalar_potential_source_params;
     scalar_potential_source_params.SetParam("SourceName",

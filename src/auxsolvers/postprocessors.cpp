@@ -29,23 +29,9 @@ void LorentzForceVectorCoefficient::Eval(mfem::Vector &V,
   hephaestus::cross_product(J, B, V);
 }
 
-void Postprocessors::Init(
-    const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::DomainProperties &domain_properties) {
-  for (const auto &[name, postprocessor] : GetMap()) {
-    postprocessor->Init(variables, domain_properties);
-  }
-}
-void Postprocessors::Update(double t) {
-  for (const auto &[name, postprocessor] : GetMap()) {
-    postprocessor->Update(t);
-  }
-}
-
 L2ErrorVectorPostprocessor::L2ErrorVectorPostprocessor(
     const hephaestus::InputParameters &params)
-    : Postprocessor(params),
-      var_name(params.GetParam<std::string>("VariableName")),
+    : AuxSolver(), var_name(params.GetParam<std::string>("VariableName")),
       vec_coef_name(params.GetParam<std::string>("VectorCoefficientName")) {}
 
 void L2ErrorVectorPostprocessor::Init(
@@ -55,7 +41,7 @@ void L2ErrorVectorPostprocessor::Init(
   vec_coeff = domain_properties.vector_property_map[vec_coef_name];
 }
 
-void L2ErrorVectorPostprocessor::Update(double t) {
+void L2ErrorVectorPostprocessor::Solve(double t) {
   double l2_err = gf->ComputeL2Error(*vec_coeff);
   HYPRE_BigInt ndof = gf->ParFESpace()->GlobalTrueVSize();
 

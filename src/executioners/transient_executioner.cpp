@@ -60,7 +60,7 @@ void TransientExecutioner::Step(double dt, int it) const {
     for (auto const &[name, dc_] : problem->data_collections) {
       problem->outputs.WriteOutputFields(dc_, t, it);
     }
-    problem->postprocessors.Update(t);
+    problem->postprocessors.Solve(t);
   }
 }
 

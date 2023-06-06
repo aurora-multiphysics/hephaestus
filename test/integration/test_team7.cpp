@@ -94,7 +94,7 @@ protected:
     hephaestus::Outputs outputs(data_collections);
 
     hephaestus::GridFunctions gridfunctions;
-    hephaestus::Postprocessors postprocessors;
+    hephaestus::AuxSolvers postprocessors;
     hephaestus::AuxSolvers auxsolvers;
 
     hephaestus::Sources sources;

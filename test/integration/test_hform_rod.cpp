@@ -89,7 +89,7 @@ protected:
 
     hephaestus::GridFunctions gridfunctions;
     hephaestus::AuxSolvers auxsolvers;
-    hephaestus::Postprocessors postprocessors;
+    hephaestus::AuxSolvers postprocessors;
     hephaestus::Sources sources;
     hephaestus::InputParameters scalar_potential_source_params;
     scalar_potential_source_params.SetParam("SourceName",

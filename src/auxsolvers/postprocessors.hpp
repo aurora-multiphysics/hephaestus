@@ -1,7 +1,5 @@
 #pragma once
-#include "materials.hpp"
-#include "mfem.hpp"
-#include "variables.hpp"
+#include "auxsolvers.hpp"
 
 // Specify postprocessors that depend on one or more variables
 namespace hephaestus {
@@ -42,29 +40,9 @@ public:
   virtual ~LorentzForceVectorCoefficient() {}
 };
 
-class Postprocessor {
-public:
-  Postprocessor() {}
-
-  Postprocessor(const hephaestus::InputParameters &params){};
-
-  virtual void
-  Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-       hephaestus::DomainProperties &domain_properties){};
-
-  virtual void Update(double t = 0.0){};
-};
-
-class Postprocessors : public mfem::NamedFieldsMap<hephaestus::Postprocessor> {
-public:
-  void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-            hephaestus::DomainProperties &domain_properties);
-  void Update(double t = 0.0);
-};
-
 // Class to calculate and store the L2 error
 // of a grid function with respect to a (Vector)Coefficient
-class L2ErrorVectorPostprocessor : public Postprocessor {
+class L2ErrorVectorPostprocessor : public AuxSolver {
 
 public:
   L2ErrorVectorPostprocessor(){};
@@ -73,7 +51,7 @@ public:
   void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
             hephaestus::DomainProperties &domain_properties) override;
 
-  virtual void Update(double t = 0.0) override;
+  virtual void Solve(double t = 0.0) override;
 
   std::string var_name;      // name of the variable
   std::string vec_coef_name; // name of the vector coefficient

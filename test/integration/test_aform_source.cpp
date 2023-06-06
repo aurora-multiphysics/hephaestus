@@ -98,7 +98,7 @@ protected:
                                  std::string("magnetic_vector_potential"));
     l2errpostprocparams.SetParam("VectorCoefficientName",
                                  std::string("a_exact_coeff"));
-    hephaestus::Postprocessors postprocessors;
+    hephaestus::AuxSolvers postprocessors;
     postprocessors.Register(
         "L2ErrorPostprocessor",
         new hephaestus::L2ErrorVectorPostprocessor(l2errpostprocparams), true);
@@ -198,7 +198,7 @@ TEST_F(TestAFormSource, CheckRun) {
 
   hephaestus::L2ErrorVectorPostprocessor l2errpostprocessor =
       *(dynamic_cast<hephaestus::L2ErrorVectorPostprocessor *>(
-          params.GetParam<hephaestus::Postprocessors>("Postprocessors")
+          params.GetParam<hephaestus::AuxSolvers>("Postprocessors")
               .Get("L2ErrorPostprocessor")));
 
   double r;

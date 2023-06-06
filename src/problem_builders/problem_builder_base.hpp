@@ -16,7 +16,7 @@ public:
   hephaestus::BCMap bc_map;
   hephaestus::DomainProperties domain_properties;
   hephaestus::AuxSolvers auxsolvers;
-  hephaestus::Postprocessors postprocessors;
+  hephaestus::AuxSolvers postprocessors;
   hephaestus::Sources sources;
   hephaestus::Outputs outputs;
   std::map<std::string, mfem::DataCollection *> data_collections;
@@ -67,7 +67,7 @@ public:
     this->GetProblem()->auxsolvers = auxsolvers;
   };
 
-  virtual void SetPostprocessors(hephaestus::Postprocessors &postprocessors) {
+  virtual void SetPostprocessors(hephaestus::AuxSolvers &postprocessors) {
     this->GetProblem()->postprocessors = postprocessors;
   };
 

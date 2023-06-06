@@ -48,7 +48,7 @@ void SteadyExecutioner::Solve() const {
   for (auto const &[name, dc_] : problem->data_collections) {
     problem->outputs.WriteOutputFields(dc_, 1.0, 1);
   }
-  problem->postprocessors.Update();
+  problem->postprocessors.Solve();
 }
 void SteadyExecutioner::Execute() const { this->Solve(); }
 } // namespace hephaestus

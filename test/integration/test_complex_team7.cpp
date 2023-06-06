@@ -93,7 +93,7 @@ protected:
         new mfem::ParaViewDataCollection("ComplexMaxwellTeam7ParaView");
     hephaestus::Outputs outputs(data_collections);
 
-    hephaestus::Postprocessors postprocessors;
+    hephaestus::AuxSolvers postprocessors;
     hephaestus::AuxSolvers auxsolvers;
 
     hephaestus::Sources sources;
