@@ -1,5 +1,5 @@
 #pragma once
-#include "auxkernels.hpp"
+#include "auxsolvers.hpp"
 #include "inputs.hpp"
 #include "postprocessors.hpp"
 #include "sources.hpp"
@@ -15,7 +15,7 @@ public:
   std::shared_ptr<mfem::ParMesh> pmesh;
   hephaestus::BCMap bc_map;
   hephaestus::DomainProperties domain_properties;
-  hephaestus::AuxKernels auxkernels;
+  hephaestus::AuxSolvers auxsolvers;
   hephaestus::Postprocessors postprocessors;
   hephaestus::Sources sources;
   hephaestus::Outputs outputs;
@@ -63,8 +63,8 @@ public:
     this->GetProblem()->bc_map = bc_map;
   };
 
-  virtual void SetAuxKernels(hephaestus::AuxKernels &auxkernels) {
-    this->GetProblem()->auxkernels = auxkernels;
+  virtual void SetAuxSolvers(hephaestus::AuxSolvers &auxsolvers) {
+    this->GetProblem()->auxsolvers = auxsolvers;
   };
 
   virtual void SetPostprocessors(hephaestus::Postprocessors &postprocessors) {
@@ -135,7 +135,7 @@ public:
 
   virtual void RegisterGridFunctions() = 0;
 
-  virtual void RegisterAuxKernels() = 0;
+  virtual void RegisterAuxSolvers() = 0;
 
   virtual void RegisterCoefficients() = 0;
 
@@ -176,7 +176,7 @@ public:
     // SteadyStateProblem
     this->problem_builder->RegisterFESpaces();
     this->problem_builder->RegisterGridFunctions();
-    this->problem_builder->RegisterAuxKernels();
+    this->problem_builder->RegisterAuxSolvers();
     this->problem_builder->RegisterCoefficients();
     this->problem_builder->InitializeKernels();
     this->problem_builder->ConstructOperator();
@@ -186,7 +186,7 @@ public:
   void ConstructEquationSystemProblem() {
     this->problem_builder->RegisterFESpaces();
     this->problem_builder->RegisterGridFunctions();
-    this->problem_builder->RegisterAuxKernels();
+    this->problem_builder->RegisterAuxSolvers();
     this->problem_builder->RegisterCoefficients();
     this->problem_builder->ConstructEquationSystem();
     this->problem_builder->InitializeKernels();

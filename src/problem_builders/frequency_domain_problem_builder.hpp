@@ -59,9 +59,9 @@ public:
         this->problem->gridfunctions);
   };
 
-  virtual void RegisterAuxKernels() override {
-    this->problem->formulation->RegisterAuxKernels(this->problem->gridfunctions,
-                                                   this->problem->auxkernels);
+  virtual void RegisterAuxSolvers() override {
+    this->problem->formulation->RegisterAuxSolvers(this->problem->gridfunctions,
+                                                   this->problem->auxsolvers);
   };
 
   virtual void RegisterCoefficients() override {
@@ -70,7 +70,7 @@ public:
   };
 
   virtual void InitializeKernels() override {
-    this->problem->auxkernels.Init(this->problem->gridfunctions,
+    this->problem->auxsolvers.Init(this->problem->gridfunctions,
                                    this->problem->domain_properties);
     this->problem->sources.Init(this->problem->gridfunctions,
                                 this->problem->fespaces, this->problem->bc_map,
@@ -101,7 +101,7 @@ public:
   virtual void InitializePostprocessors() override {
     this->problem->postprocessors.Init(this->problem->gridfunctions,
                                        this->problem->domain_properties);
-    this->problem->auxkernels.Solve();
+    this->problem->auxsolvers.Solve();
   };
 };
 

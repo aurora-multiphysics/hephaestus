@@ -13,8 +13,8 @@ Problem::Problem(const hephaestus::InputParameters &params)
           params.GetParam<hephaestus::FESpaces>("FESpaces"))),
       gridfunctions(hephaestus::GridFunctions(
           params.GetParam<hephaestus::GridFunctions>("GridFunctions"))),
-      auxkernels(hephaestus::AuxKernels(
-          params.GetParam<hephaestus::AuxKernels>("AuxKernels"))),
+      auxsolvers(hephaestus::AuxSolvers(
+          params.GetParam<hephaestus::AuxSolvers>("AuxSolvers"))),
       postprocessors(hephaestus::Postprocessors(
           params.GetParam<hephaestus::Postprocessors>("Postprocessors"))),
       sources(

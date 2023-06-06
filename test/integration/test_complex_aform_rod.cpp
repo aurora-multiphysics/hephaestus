@@ -92,7 +92,7 @@ protected:
     hephaestus::Outputs outputs(data_collections);
 
     hephaestus::GridFunctions gridfunctions;
-    hephaestus::AuxKernels auxkernels;
+    hephaestus::AuxSolvers auxsolvers;
     hephaestus::Postprocessors postprocessors;
     hephaestus::Sources sources;
     hephaestus::InputParameters scalar_potential_source_params;
@@ -127,7 +127,7 @@ protected:
     params.SetParam("BoundaryConditions", bc_map);
     params.SetParam("DomainProperties", domain_properties);
     params.SetParam("GridFunctions", gridfunctions);
-    params.SetParam("AuxKernels", auxkernels);
+    params.SetParam("AuxSolvers", auxsolvers);
     params.SetParam("Postprocessors", postprocessors);
     params.SetParam("Sources", sources);
     params.SetParam("Outputs", outputs);

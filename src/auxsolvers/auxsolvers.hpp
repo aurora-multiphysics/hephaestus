@@ -7,29 +7,27 @@
 // one or more DomainProperties.
 namespace hephaestus {
 
-class AuxKernel {
+class AuxSolver {
 public:
-  AuxKernel() {}
-
-  AuxKernel(const hephaestus::InputParameters &params){};
+  AuxSolver() = default;
 
   virtual void
   Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-       hephaestus::DomainProperties &domain_properties){};
+       hephaestus::DomainProperties &domain_properties) = 0;
 
-  virtual void Solve(double t = 0.0){};
+  virtual void Solve(double t = 0.0) = 0;
 };
 
-class AuxKernels : public mfem::NamedFieldsMap<hephaestus::AuxKernel> {
+class AuxSolvers : public mfem::NamedFieldsMap<hephaestus::AuxSolver> {
 public:
   void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
             hephaestus::DomainProperties &domain_properties);
   void Solve(double t = 0.0);
 };
 
-class CurlAuxKernel : public AuxKernel {
+class CurlAuxSolver : public AuxSolver {
 public:
-  CurlAuxKernel(const hephaestus::InputParameters &params);
+  CurlAuxSolver(const hephaestus::InputParameters &params);
 
   void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
             hephaestus::DomainProperties &domain_properties) override;
@@ -43,9 +41,9 @@ public:
   mfem::ParDiscreteLinearOperator *curl;
 };
 
-class CoefficientAuxKernel : public AuxKernel {
+class CoefficientAuxSolver : public AuxSolver {
 public:
-  CoefficientAuxKernel(const hephaestus::InputParameters &params);
+  CoefficientAuxSolver(const hephaestus::InputParameters &params);
 
   void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
             hephaestus::DomainProperties &domain_properties) override;
@@ -59,9 +57,9 @@ public:
   mfem::Coefficient *coeff;
 };
 
-class VectorCoefficientAuxKernel : public AuxKernel {
+class VectorCoefficientAuxSolver : public AuxSolver {
 public:
-  VectorCoefficientAuxKernel(const hephaestus::InputParameters &params);
+  VectorCoefficientAuxSolver(const hephaestus::InputParameters &params);
 
   void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
             hephaestus::DomainProperties &domain_properties) override;
@@ -76,8 +74,8 @@ public:
 };
 
 // Class to allow creation of coefficients that are coupled to gridfunctions.
-// Should be separate to Auxkernels? Most similar to MOOSE materials...
-class CoupledCoefficient : public mfem::Coefficient, public AuxKernel {
+// Should be separate to AuxSolvers? Most similar to MOOSE materials...
+class CoupledCoefficient : public mfem::Coefficient, public AuxSolver {
 protected:
   // pointer to coupled variable (could just be to vars?)
   mfem::ParGridFunction *gf;
@@ -93,6 +91,7 @@ public:
   virtual double Eval(mfem::ElementTransformation &T,
                       const mfem::IntegrationPoint &ip) override;
 
+  void Solve(double t = 0.0) override{};
   virtual ~CoupledCoefficient() {}
 
   std::string coupled_var_name; // name of the variable

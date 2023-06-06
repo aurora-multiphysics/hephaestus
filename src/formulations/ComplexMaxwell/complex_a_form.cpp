@@ -11,9 +11,9 @@ ComplexAFormulation::ComplexAFormulation() : ComplexMaxwellFormulation() {
   zeta_coef_name = std::string("dielectric_permittivity");
 };
 
-void ComplexAFormulation::RegisterAuxKernels(
+void ComplexAFormulation::RegisterAuxSolvers(
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::AuxKernels &auxkernels) {
+    hephaestus::AuxSolvers &auxsolvers) {
   std::vector<std::string> aux_var_names;
   std::string b_field_name = "magnetic_flux_density";
   if (variables.Get(b_field_name + "_real") != NULL) {
@@ -24,14 +24,14 @@ void ComplexAFormulation::RegisterAuxKernels(
     hephaestus::InputParameters b_field_aux_params;
     b_field_aux_params.SetParam("VariableName", h_curl_var_name + "_real");
     b_field_aux_params.SetParam("CurlVariableName", b_field_name + "_real");
-    auxkernels.Register("_magnetic_flux_density_re_aux",
-                        new hephaestus::CurlAuxKernel(b_field_aux_params),
+    auxsolvers.Register("_magnetic_flux_density_re_aux",
+                        new hephaestus::CurlAuxSolver(b_field_aux_params),
                         true);
 
     b_field_aux_params.SetParam("VariableName", h_curl_var_name + "_imag");
     b_field_aux_params.SetParam("CurlVariableName", b_field_name + "_imag");
-    auxkernels.Register("_magnetic_flux_density_im_aux",
-                        new hephaestus::CurlAuxKernel(b_field_aux_params),
+    auxsolvers.Register("_magnetic_flux_density_im_aux",
+                        new hephaestus::CurlAuxSolver(b_field_aux_params),
                         true);
   }
 }

@@ -8,7 +8,7 @@ SteadyExecutioner::SteadyExecutioner(const hephaestus::InputParameters &params)
           params.GetParam<hephaestus::FrequencyDomainProblem *>("Problem")) {}
 
 void SteadyExecutioner::Init() {
-  problem->auxkernels.Solve();
+  problem->auxsolvers.Solve();
 
   // Set up DataCollections to track fields of interest.
   for (auto const &[name, dc_] : problem->data_collections) {
@@ -29,7 +29,7 @@ void SteadyExecutioner::Init() {
 void SteadyExecutioner::Solve() const {
   // Advance time step.
   problem->fd_operator.get()->Solve(*(problem->F));
-  problem->auxkernels.Solve();
+  problem->auxsolvers.Solve();
 
   // Output data
   // Output timestep summary to console

@@ -89,7 +89,7 @@ protected:
     hephaestus::FESpaces fespaces;
     hephaestus::GridFunctions gridfunctions;
     hephaestus::Postprocessors postprocessors;
-    hephaestus::AuxKernels auxkernels;
+    hephaestus::AuxSolvers auxsolvers;
     hephaestus::Sources sources;
 
     hephaestus::SteadyFormulation *formulation =
@@ -108,7 +108,7 @@ protected:
     params.SetParam("DomainProperties", domain_properties);
     params.SetParam("FESpaces", fespaces);
     params.SetParam("GridFunctions", gridfunctions);
-    params.SetParam("AuxKernels", auxkernels);
+    params.SetParam("AuxSolvers", auxsolvers);
     params.SetParam("Postprocessors", postprocessors);
     params.SetParam("Outputs", outputs);
     params.SetParam("Sources", sources);

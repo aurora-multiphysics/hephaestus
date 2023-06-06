@@ -30,8 +30,8 @@ public:
   ComplexAFormulation();
 
   virtual void
-  RegisterAuxKernels(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-                     hephaestus::AuxKernels &auxkernels) override;
+  RegisterAuxSolvers(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+                     hephaestus::AuxSolvers &auxsolvers) override;
 
   virtual void RegisterCoefficients(
       hephaestus::DomainProperties &domain_properties) override;

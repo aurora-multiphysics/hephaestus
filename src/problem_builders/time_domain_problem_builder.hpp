@@ -46,13 +46,10 @@ public:
     this->problem->formulation = formulation;
   }
 
-  virtual void RegisterFESpaces() override{
-      // this->problem->fespaces.Init(*(this->problem->pmesh));
-  };
+  virtual void RegisterFESpaces() override{};
 
   virtual void RegisterGridFunctions() override {
-    // this->problem->gridfunctions.Init(*(this->problem->pmesh),
-    //                                   this->problem->fespaces);
+
     std::vector<std::string> gridfunction_names;
 
     for (auto const &[name, gf] : this->problem->gridfunctions) {
@@ -66,9 +63,9 @@ public:
         this->problem->gridfunctions);
   };
 
-  virtual void RegisterAuxKernels() override {
-    this->problem->formulation->RegisterAuxKernels(this->problem->gridfunctions,
-                                                   this->problem->auxkernels);
+  virtual void RegisterAuxSolvers() override {
+    this->problem->formulation->RegisterAuxSolvers(this->problem->gridfunctions,
+                                                   this->problem->auxsolvers);
   };
 
   virtual void RegisterCoefficients() override {
@@ -86,7 +83,7 @@ public:
         this->problem->gridfunctions, this->problem->fespaces,
         this->problem->bc_map, this->problem->domain_properties);
 
-    this->problem->auxkernels.Init(this->problem->gridfunctions,
+    this->problem->auxsolvers.Init(this->problem->gridfunctions,
                                    this->problem->domain_properties);
     this->problem->sources.Init(this->problem->gridfunctions,
                                 this->problem->fespaces, this->problem->bc_map,
@@ -121,7 +118,7 @@ public:
   virtual void InitializePostprocessors() override {
     this->problem->postprocessors.Init(this->problem->gridfunctions,
                                        this->problem->domain_properties);
-    this->problem->auxkernels.Solve(0.0);
+    this->problem->auxsolvers.Solve(0.0);
   };
 };
 

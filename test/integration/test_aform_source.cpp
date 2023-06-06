@@ -109,10 +109,10 @@ protected:
     vectorcoeffauxparams.SetParam("VectorCoefficientName",
                                   std::string("a_exact_coeff"));
 
-    hephaestus::AuxKernels auxkernels;
-    auxkernels.Register(
-        "VectorCoefficientAuxKernel",
-        new hephaestus::VectorCoefficientAuxKernel(vectorcoeffauxparams), true);
+    hephaestus::AuxSolvers auxsolvers;
+    auxsolvers.Register(
+        "VectorCoefficientAuxSolver",
+        new hephaestus::VectorCoefficientAuxSolver(vectorcoeffauxparams), true);
 
     hephaestus::Sources sources;
     mfem::VectorFunctionCoefficient *JSrcCoef =
@@ -140,7 +140,7 @@ protected:
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("BoundaryConditions", bc_map);
     params.SetParam("DomainProperties", domain_properties);
-    params.SetParam("AuxKernels", auxkernels);
+    params.SetParam("AuxSolvers", auxsolvers);
     params.SetParam("Postprocessors", postprocessors);
     params.SetParam("Outputs", outputs);
     params.SetParam("Sources", sources);

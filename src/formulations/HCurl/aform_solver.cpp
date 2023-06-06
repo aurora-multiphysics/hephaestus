@@ -8,9 +8,9 @@ AFormulation::AFormulation() : HCurlFormulation() {
   h_curl_var_name = std::string("magnetic_vector_potential");
 }
 
-void AFormulation::RegisterAuxKernels(
+void AFormulation::RegisterAuxSolvers(
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::AuxKernels &auxkernels) {
+    hephaestus::AuxSolvers &auxsolvers) {
   std::vector<std::string> aux_var_names;
   std::string b_field_name = "magnetic_flux_density";
   if (variables.Get(b_field_name) != NULL) {
@@ -21,8 +21,8 @@ void AFormulation::RegisterAuxKernels(
     hephaestus::InputParameters b_field_aux_params;
     b_field_aux_params.SetParam("VariableName", h_curl_var_name);
     b_field_aux_params.SetParam("CurlVariableName", b_field_name);
-    auxkernels.Register("_magnetic_flux_density_aux",
-                        new hephaestus::CurlAuxKernel(b_field_aux_params),
+    auxsolvers.Register("_magnetic_flux_density_aux",
+                        new hephaestus::CurlAuxSolver(b_field_aux_params),
                         true);
   }
 }

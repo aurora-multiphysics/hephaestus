@@ -1,25 +1,25 @@
-#include "auxkernels.hpp"
+#include "auxsolvers.hpp"
 
 namespace hephaestus {
 
-void AuxKernels::Init(
+void AuxSolvers::Init(
     const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::DomainProperties &domain_properties) {
-  for (const auto &[name, auxkernel] : GetMap()) {
-    auxkernel->Init(variables, domain_properties);
+  for (const auto &[name, auxsolver] : GetMap()) {
+    auxsolver->Init(variables, domain_properties);
   }
 }
-void AuxKernels::Solve(double t) {
-  for (const auto &[name, auxkernel] : GetMap()) {
-    auxkernel->Solve(t);
+void AuxSolvers::Solve(double t) {
+  for (const auto &[name, auxsolver] : GetMap()) {
+    auxsolver->Solve(t);
   }
 }
 
-CurlAuxKernel::CurlAuxKernel(const hephaestus::InputParameters &params)
-    : AuxKernel(params), var_name(params.GetParam<std::string>("VariableName")),
+CurlAuxSolver::CurlAuxSolver(const hephaestus::InputParameters &params)
+    : AuxSolver(), var_name(params.GetParam<std::string>("VariableName")),
       curl_var_name(params.GetParam<std::string>("CurlVariableName")) {}
 
-void CurlAuxKernel::Init(
+void CurlAuxSolver::Init(
     const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::DomainProperties &domain_properties) {
   u_ = variables.Get(var_name);
@@ -31,45 +31,45 @@ void CurlAuxKernel::Init(
   curl->Assemble();
 }
 
-void CurlAuxKernel::Solve(double t) { curl->Mult(*u_, *curl_u_); }
+void CurlAuxSolver::Solve(double t) { curl->Mult(*u_, *curl_u_); }
 
-CoefficientAuxKernel::CoefficientAuxKernel(
+CoefficientAuxSolver::CoefficientAuxSolver(
     const hephaestus::InputParameters &params)
-    : AuxKernel(params), var_name(params.GetParam<std::string>("VariableName")),
+    : AuxSolver(), var_name(params.GetParam<std::string>("VariableName")),
       coef_name(params.GetParam<std::string>("CoefficientName")) {}
 
-void CoefficientAuxKernel::Init(
+void CoefficientAuxSolver::Init(
     const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::DomainProperties &domain_properties) {
   gf = variables.Get(var_name);
   coeff = domain_properties.scalar_property_map[coef_name];
 }
 
-void CoefficientAuxKernel::Solve(double t) {
+void CoefficientAuxSolver::Solve(double t) {
   coeff->SetTime(t);
   gf->ProjectCoefficient(*coeff);
 }
 
-VectorCoefficientAuxKernel::VectorCoefficientAuxKernel(
+VectorCoefficientAuxSolver::VectorCoefficientAuxSolver(
     const hephaestus::InputParameters &params)
-    : AuxKernel(params), var_name(params.GetParam<std::string>("VariableName")),
+    : AuxSolver(), var_name(params.GetParam<std::string>("VariableName")),
       vec_coef_name(params.GetParam<std::string>("VectorCoefficientName")) {}
 
-void VectorCoefficientAuxKernel::Init(
+void VectorCoefficientAuxSolver::Init(
     const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::DomainProperties &domain_properties) {
   gf = variables.Get(var_name);
   vec_coeff = domain_properties.vector_property_map[vec_coef_name];
 }
 
-void VectorCoefficientAuxKernel::Solve(double t) {
+void VectorCoefficientAuxSolver::Solve(double t) {
   vec_coeff->SetTime(t);
   gf->ProjectCoefficient(*vec_coeff);
 }
 
 CoupledCoefficient::CoupledCoefficient(
     const hephaestus::InputParameters &params)
-    : AuxKernel(params),
+    : AuxSolver(),
       coupled_var_name(params.GetParam<std::string>("CoupledVariableName")) {}
 
 void CoupledCoefficient::Init(

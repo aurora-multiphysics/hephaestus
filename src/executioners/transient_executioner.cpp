@@ -13,7 +13,7 @@ TransientExecutioner::TransientExecutioner(
       last_step(false) {}
 
 void TransientExecutioner::Init() {
-  problem->auxkernels.Solve(t);
+  problem->auxsolvers.Solve(t);
 
   // Set up DataCollections to track fields of interest.
   for (auto const &[name, dc_] : problem->data_collections) {
@@ -39,7 +39,7 @@ void TransientExecutioner::Step(double dt, int it) const {
 
   // Advance time step.
   problem->ode_solver->Step(*(problem->F), t, dt);
-  problem->auxkernels.Solve(t);
+  problem->auxsolvers.Solve(t);
 
   // Output data
   if (last_step || (it % vis_steps) == 0) {

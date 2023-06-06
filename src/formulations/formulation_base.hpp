@@ -1,6 +1,6 @@
 #pragma once
 #include "../common/pfem_extras.hpp"
-#include "auxkernels.hpp"
+#include "auxsolvers.hpp"
 #include "equation_system.hpp"
 #include "hephaestus_solvers.hpp"
 #include "inputs.hpp"
@@ -20,8 +20,8 @@ public:
       mfem::NamedFieldsMap<mfem::ParGridFunction> &variables){};
 
   virtual void
-  RegisterAuxKernels(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-                     hephaestus::AuxKernels &auxkernels){};
+  RegisterAuxSolvers(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+                     hephaestus::AuxSolvers &auxsolvers){};
 
   virtual void
   RegisterCoefficients(hephaestus::DomainProperties &domain_properties){};

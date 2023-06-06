@@ -1,4 +1,4 @@
-#include "auxkernels.hpp"
+#include "auxsolvers.hpp"
 #include "steady_executioner.hpp"
 
 #include "hephaestus.hpp"
@@ -94,7 +94,7 @@ protected:
     hephaestus::Outputs outputs(data_collections);
 
     hephaestus::Postprocessors postprocessors;
-    hephaestus::AuxKernels auxkernels;
+    hephaestus::AuxSolvers auxsolvers;
 
     hephaestus::Sources sources;
     mfem::VectorFunctionCoefficient *JSrcCoef =
@@ -140,7 +140,7 @@ protected:
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("BoundaryConditions", bc_map);
     params.SetParam("DomainProperties", domain_properties);
-    params.SetParam("AuxKernels", auxkernels);
+    params.SetParam("AuxSolvers", auxsolvers);
     params.SetParam("Postprocessors", postprocessors);
     params.SetParam("Outputs", outputs);
     params.SetParam("Sources", sources);

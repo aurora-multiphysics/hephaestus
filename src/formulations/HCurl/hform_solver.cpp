@@ -8,9 +8,9 @@ HFormulation::HFormulation() : HCurlFormulation() {
   h_curl_var_name = std::string("magnetic_field");
 }
 
-void HFormulation::RegisterAuxKernels(
+void HFormulation::RegisterAuxSolvers(
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::AuxKernels &auxkernels) {
+    hephaestus::AuxSolvers &auxsolvers) {
   std::vector<std::string> aux_var_names;
   std::string j_field_name = "current_density";
   if (variables.Get(j_field_name) != NULL) {
@@ -21,8 +21,8 @@ void HFormulation::RegisterAuxKernels(
     hephaestus::InputParameters j_field_aux_params;
     j_field_aux_params.SetParam("VariableName", std::string("magnetic_field"));
     j_field_aux_params.SetParam("CurlVariableName", j_field_name);
-    auxkernels.Register("_magnetic_flux_density_aux",
-                        new hephaestus::CurlAuxKernel(j_field_aux_params),
+    auxsolvers.Register("_magnetic_flux_density_aux",
+                        new hephaestus::CurlAuxSolver(j_field_aux_params),
                         true);
   }
 }
@@ -66,7 +66,7 @@ void HFormulation::RegisterCoefficients(
 //   aux_var_names.at(0) = "current_density";
 // }
 
-// void HFormSolver::RegisterAuxKernels(hephaestus::AuxKernels &auxkernels) {
+// void HFormSolver::RegisterAuxSolvers(hephaestus::AuxSolvers &auxsolvers) {
 //   for (auto &active_aux_var_name : active_aux_var_names) {
 //     // Check if current density should be added as auxvar
 //     if (active_aux_var_name == aux_var_names.at(0)) {
@@ -79,9 +79,9 @@ void HFormulation::RegisterCoefficients(
 //                                           state_var_names.at(0));
 //       current_density_aux_params.SetParam("CurlVariableName",
 //                                           active_aux_var_name);
-//       auxkernels.Register(
+//       auxsolvers.Register(
 //           "_current_density_aux",
-//           new hephaestus::CurlAuxKernel(current_density_aux_params), true);
+//           new hephaestus::CurlAuxSolver(current_density_aux_params), true);
 //     }
 //   }
 // }
