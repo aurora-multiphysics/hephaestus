@@ -13,7 +13,7 @@ public:
 
   virtual void
   RegisterAuxSolvers(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-                     hephaestus::AuxSolvers &auxsolvers) override;
+                     hephaestus::AuxSolvers &preprocessors) override;
 
   virtual void RegisterCoefficients(
       hephaestus::DomainProperties &domain_properties) override;

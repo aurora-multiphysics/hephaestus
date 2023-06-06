@@ -98,9 +98,9 @@ protected:
         new JouleHeatingCoefficient(joule_heating_params);
     domain_properties.scalar_property_map["JouleHeating"] = jouleHeating;
 
-    hephaestus::AuxSolvers auxsolvers;
-    auxsolvers.Register("CoupledCoefficient", wireConductivity, false);
-    auxsolvers.Register("JouleHeating", jouleHeating, false);
+    hephaestus::AuxSolvers preprocessors;
+    preprocessors.Register("CoupledCoefficient", wireConductivity, false);
+    preprocessors.Register("JouleHeating", jouleHeating, false);
 
     hephaestus::BCMap bc_map;
     mfem::VectorFunctionCoefficient *edotVecCoef =
@@ -150,7 +150,7 @@ protected:
                                    std::string("joule_heating_load"));
     jouleheatingauxparams.SetParam("CoefficientName",
                                    std::string("JouleHeating"));
-    auxsolvers.Register(
+    preprocessors.Register(
         "CoefficientAuxSolver",
         new hephaestus::CoefficientAuxSolver(jouleheatingauxparams), true);
 
@@ -189,8 +189,8 @@ protected:
     params.SetParam("DomainProperties", domain_properties);
     params.SetParam("FESpaces", fespaces);
     params.SetParam("GridFunctions", gridfunctions);
-    params.SetParam("AuxSolvers", auxsolvers);
-    params.SetParam("Postprocessors", postprocessors);
+    params.SetParam("PreProcessors", preprocessors);
+    params.SetParam("PostProcessors", postprocessors);
     params.SetParam("Sources", sources);
     params.SetParam("Outputs", outputs);
     params.SetParam("SolverOptions", solver_options);

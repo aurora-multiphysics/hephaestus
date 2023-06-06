@@ -94,7 +94,7 @@ protected:
     hephaestus::Outputs outputs(data_collections);
 
     hephaestus::AuxSolvers postprocessors;
-    hephaestus::AuxSolvers auxsolvers;
+    hephaestus::AuxSolvers preprocessors;
 
     hephaestus::Sources sources;
     mfem::VectorFunctionCoefficient *JSrcCoef =
@@ -140,8 +140,8 @@ protected:
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("BoundaryConditions", bc_map);
     params.SetParam("DomainProperties", domain_properties);
-    params.SetParam("AuxSolvers", auxsolvers);
-    params.SetParam("Postprocessors", postprocessors);
+    params.SetParam("PreProcessors", preprocessors);
+    params.SetParam("PostProcessors", postprocessors);
     params.SetParam("Outputs", outputs);
     params.SetParam("Sources", sources);
     params.SetParam("SolverOptions", solver_options);

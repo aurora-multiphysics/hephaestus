@@ -3,8 +3,8 @@
 #include "materials.hpp"
 #include "mfem.hpp"
 
-// Specify kernels to modify and solve auxiliary variables or coefficients using
-// one or more DomainProperties.
+// Specify classes that perform auxiliary calculations on GridFunctions or
+// Coefficients.
 namespace hephaestus {
 
 class AuxSolver {

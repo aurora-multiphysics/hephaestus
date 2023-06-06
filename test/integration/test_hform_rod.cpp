@@ -88,7 +88,7 @@ protected:
     solver_options.SetParam("PrintLevel", 0);
 
     hephaestus::GridFunctions gridfunctions;
-    hephaestus::AuxSolvers auxsolvers;
+    hephaestus::AuxSolvers preprocessors;
     hephaestus::AuxSolvers postprocessors;
     hephaestus::Sources sources;
     hephaestus::InputParameters scalar_potential_source_params;
@@ -117,8 +117,8 @@ protected:
     params.SetParam("BoundaryConditions", bc_map);
     params.SetParam("DomainProperties", domain_properties);
     params.SetParam("GridFunctions", gridfunctions);
-    params.SetParam("AuxSolvers", auxsolvers);
-    params.SetParam("Postprocessors", postprocessors);
+    params.SetParam("PreProcessors", preprocessors);
+    params.SetParam("PostProcessors", postprocessors);
     params.SetParam("Outputs", outputs);
     params.SetParam("Sources", sources);
     params.SetParam("SolverOptions", solver_options);

@@ -15,7 +15,7 @@ public:
   std::shared_ptr<mfem::ParMesh> pmesh;
   hephaestus::BCMap bc_map;
   hephaestus::DomainProperties domain_properties;
-  hephaestus::AuxSolvers auxsolvers;
+  hephaestus::AuxSolvers preprocessors;
   hephaestus::AuxSolvers postprocessors;
   hephaestus::Sources sources;
   hephaestus::Outputs outputs;
@@ -63,8 +63,8 @@ public:
     this->GetProblem()->bc_map = bc_map;
   };
 
-  virtual void SetAuxSolvers(hephaestus::AuxSolvers &auxsolvers) {
-    this->GetProblem()->auxsolvers = auxsolvers;
+  virtual void SetAuxSolvers(hephaestus::AuxSolvers &preprocessors) {
+    this->GetProblem()->preprocessors = preprocessors;
   };
 
   virtual void SetPostprocessors(hephaestus::AuxSolvers &postprocessors) {

@@ -109,8 +109,8 @@ protected:
     vectorcoeffauxparams.SetParam("VectorCoefficientName",
                                   std::string("a_exact_coeff"));
 
-    hephaestus::AuxSolvers auxsolvers;
-    auxsolvers.Register(
+    hephaestus::AuxSolvers preprocessors;
+    preprocessors.Register(
         "VectorCoefficientAuxSolver",
         new hephaestus::VectorCoefficientAuxSolver(vectorcoeffauxparams), true);
 
@@ -136,8 +136,8 @@ protected:
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("BoundaryConditions", bc_map);
     params.SetParam("DomainProperties", domain_properties);
-    params.SetParam("AuxSolvers", auxsolvers);
-    params.SetParam("Postprocessors", postprocessors);
+    params.SetParam("PreProcessors", preprocessors);
+    params.SetParam("PostProcessors", postprocessors);
     params.SetParam("Outputs", outputs);
     params.SetParam("Sources", sources);
 
@@ -191,7 +191,7 @@ TEST_F(TestAVFormSource, CheckRun) {
 
   hephaestus::L2ErrorVectorPostprocessor l2errpostprocessor =
       *(dynamic_cast<hephaestus::L2ErrorVectorPostprocessor *>(
-          params.GetParam<hephaestus::AuxSolvers>("Postprocessors")
+          params.GetParam<hephaestus::AuxSolvers>("PostProcessors")
               .Get("L2ErrorPostprocessor")));
 
   double r;
