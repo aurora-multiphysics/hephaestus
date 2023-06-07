@@ -1,3 +1,17 @@
+//* Solves:
+//* ∇×(ν∇×E) + σdE/dt = -dJᵉ/dt
+//*
+//* in weak form
+//* (ν∇×E, ∇×E') + (σdE/dt, E') + (dJᵉ/dt, E') - <(ν∇×E)×n, E'>  = 0
+
+//* where:
+//* reluctivity ν = 1/μ
+//* electrical_conductivity σ=1/ρ
+//* Electric Field E
+//* Current density J = σE
+//* Magnetic flux density, dB/dt = -∇×E
+//* Magnetic field dH/dt = -ν∇×E
+
 #include "eform_solver.hpp"
 
 namespace hephaestus {

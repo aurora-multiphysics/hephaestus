@@ -1,41 +1,30 @@
-// Solves the equations
-// ∇⋅s0 = 0
-// ∇×(α∇×u) + βdu/dt = s0
+// Solves:
+// ∇×(ν∇×A) + σ(dA/dt + ∇ V) = Jᵉ
+// ∇·(σ(dA/dt + ∇ V))= 0
 
 // where
-// s0 ∈ H(div) source field
-// u ∈ H(curl)
-// p ∈ H1
+// Jᵉ ∈ H(div) source field
+// A ∈ H(curl)
+// V ∈ H1
 
-// Dirichlet boundaries constrain du/dt
-// Integrated boundaries constrain (α∇×u) × n
+//* in weak form
+//* (ν∇×A, ∇×A') + (σ(dA/dt + ∇ V), A') - (Jᵉ, A') - <(ν∇×A) × n, A'>  = 0
+//* (σ(dA/dt + ∇ V), ∇V') - <σ(dA/dt + ∇ V)·n, V'> =0
+//*
+//* where:
+//* reluctivity ν = 1/μ
+//* electrical_conductivity σ=1/ρ
+//* Magnetic vector potential A
+//* Scalar electric potential V
+//* Electric field, E = -dA/dt -∇V
+//* Magnetic flux density, B = ∇×A
+//* Magnetic field H = ν∇×A
+//* Current density J = -σ(dA/dt + ∇ V)
 
-// Weak form (Space discretisation)
-// -(s0, ∇ p') + <n.s0, p'> = 0
-// (α∇×u, ∇×u') + (βdu/dt, u') - (s0, u') - <(α∇×u) × n, u'> = 0
-
-// Time discretisation using implicit scheme:
-// Unknowns
-// s0_{n+1} ∈ H(div) source field, where s0 = -β∇p
-// du/dt_{n+1} ∈ H(curl)
-// p_{n+1} ∈ H1
-
-// Fully discretised equations
-// -(s0_{n+1}, ∇ p') + <n.s0_{n+1}, p'> = 0
-// (α∇×u_{n}, ∇×u') + (αdt∇×du/dt_{n+1}, ∇×u') + (βdu/dt_{n+1}, u')
-// - (s0_{n+1}, u') - <(α∇×u_{n+1}) × n, u'> = 0
-// using
-// u_{n+1} = u_{n} + dt du/dt_{n+1}
-
-// Rewritten as
-// a0(p_{n+1}, p') = b0(p')
-// a1(du/dt_{n+1}, u') = b1(u')
-
-// where
-// a0(p, p') = (β ∇ p, ∇ p')
-// b0(p') = <n.s0, p'>
-// a1(u, u') = (βu, u') + (αdt∇×u, ∇×u')
-// b1(u') = (s0_{n+1}, u') - (α∇×u_{n}, ∇×u') + <(α∇×u_{n+1}) × n, u'>
+//* Either:
+//* B.n (or E×n) at boundary: A×n (Dirichlet)
+//* H×n at boundary: ν∇×A (Integrated)
+//* -σ(dA/dt + ∇ V)·n (J·n, Neumann), V (potential, Dirichlet)
 
 #include "av_solver.hpp"
 

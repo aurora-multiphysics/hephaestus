@@ -1,3 +1,16 @@
+//* Solves:
+//* ∇×(ρ∇×H) + μdH/dt = -dBᵉ/dt
+//*
+//* in weak form
+//* (ρ∇×H, ∇×v) + (μdH/dt, v) + (dBᵉ/dt, v) - <(ρ∇×H)×n, v>  = 0
+
+//* where:
+//* magnetic permeability μ = 1/ν
+//* electrical resistivity ρ=1/σ
+//* Magnetic field, E = ρ∇×H
+//* Magnetic flux density, B = Bᵉ + μH
+//* Current density J = ∇×H
+
 #include "hform_solver.hpp"
 
 namespace hephaestus {
