@@ -14,7 +14,7 @@ TransientExecutioner::TransientExecutioner(
 
 void TransientExecutioner::Init() {
   // Set up DataCollections to track fields of interest.
-  for (auto const &[name, dc_] : problem->data_collections) {
+  for (auto const &[name, dc_] : problem->outputs.data_collections) {
     problem->outputs.RegisterOutputFields(dc_, problem->pmesh.get(),
                                           problem->gridfunctions);
     // Write initial fields to disk
@@ -56,7 +56,7 @@ void TransientExecutioner::Step(double dt, int it) const {
     }
 
     // Save output fields at timestep to DataCollections
-    for (auto const &[name, dc_] : problem->data_collections) {
+    for (auto const &[name, dc_] : problem->outputs.data_collections) {
       problem->outputs.WriteOutputFields(dc_, t, it);
     }
   }

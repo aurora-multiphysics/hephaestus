@@ -9,7 +9,7 @@ SteadyExecutioner::SteadyExecutioner(const hephaestus::InputParameters &params)
 
 void SteadyExecutioner::Init() {
   // Set up DataCollections to track fields of interest.
-  for (auto const &[name, dc_] : problem->data_collections) {
+  for (auto const &[name, dc_] : problem->outputs.data_collections) {
     problem->outputs.RegisterOutputFields(dc_, problem->pmesh.get(),
                                           problem->gridfunctions);
     // Write initial fields to disk
@@ -44,7 +44,7 @@ void SteadyExecutioner::Solve() const {
   }
 
   // Save output fields at timestep to DataCollections
-  for (auto const &[name, dc_] : problem->data_collections) {
+  for (auto const &[name, dc_] : problem->outputs.data_collections) {
     problem->outputs.WriteOutputFields(dc_, 1.0, 1);
   }
 }

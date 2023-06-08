@@ -21,8 +21,6 @@ Problem::Problem(const hephaestus::InputParameters &params)
           hephaestus::Sources(params.GetParam<hephaestus::Sources>("Sources"))),
       outputs(
           hephaestus::Outputs(params.GetParam<hephaestus::Outputs>("Outputs"))),
-      data_collections(std::map<std::string, mfem::DataCollection *>(
-          outputs.data_collections)),
       solver_options(hephaestus::InputParameters(
           params.GetOptionalParam<hephaestus::InputParameters>(
               "SolverOptions", hephaestus::InputParameters()))) {
