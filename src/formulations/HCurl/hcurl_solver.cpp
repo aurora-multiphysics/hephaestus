@@ -93,7 +93,8 @@ void HCurlFormulation::RegisterMissingVariables(
   variables.Register(
       hephaestus::TimeDependentEquationSystem::GetTimeDerivativeName(
           h_curl_var_name),
-      new mfem::ParGridFunction(fespaces.Get("_HCurlFESpace")), true);
+      new mfem::ParGridFunction(variables.Get(h_curl_var_name)->ParFESpace()),
+      true);
 };
 
 void HCurlFormulation::RegisterCoefficients(

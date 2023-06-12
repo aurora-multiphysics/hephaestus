@@ -99,7 +99,8 @@ void DualFormulation::RegisterMissingVariables(
   variables.Register(
       hephaestus::TimeDependentEquationSystem::GetTimeDerivativeName(
           h_curl_var_name),
-      new mfem::ParGridFunction(fespaces.Get("_HCurlFESpace")), true);
+      new mfem::ParGridFunction(variables.Get(h_curl_var_name)->ParFESpace()),
+      true);
 
   // Register default ParGridFunctions of state variables if not provided
   if (!variables.Has(h_div_var_name)) {
@@ -119,7 +120,8 @@ void DualFormulation::RegisterMissingVariables(
   variables.Register(
       hephaestus::TimeDependentEquationSystem::GetTimeDerivativeName(
           h_div_var_name),
-      new mfem::ParGridFunction(fespaces.Get("_HDivFESpace")), true);
+      new mfem::ParGridFunction(variables.Get(h_div_var_name)->ParFESpace()),
+      true);
 };
 
 void DualFormulation::RegisterCoefficients(

@@ -85,7 +85,9 @@ void AVFormulation::RegisterMissingVariables(
   variables.Register(
       hephaestus::TimeDependentEquationSystem::GetTimeDerivativeName(
           vector_potential_name),
-      new mfem::ParGridFunction(fespaces.Get("_HCurlFESpace")), true);
+      new mfem::ParGridFunction(
+          variables.Get(vector_potential_name)->ParFESpace()),
+      true);
   if (!variables.Has(scalar_potential_name)) {
     if (myid == 0) {
       std::cout
@@ -103,7 +105,9 @@ void AVFormulation::RegisterMissingVariables(
   variables.Register(
       hephaestus::TimeDependentEquationSystem::GetTimeDerivativeName(
           scalar_potential_name),
-      new mfem::ParGridFunction(fespaces.Get("_H1FESpace")), true);
+      new mfem::ParGridFunction(
+          variables.Get(scalar_potential_name)->ParFESpace()),
+      true);
 };
 
 void AVFormulation::RegisterCoefficients(
