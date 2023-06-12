@@ -72,7 +72,7 @@ void TransientExecutioner::Execute() const {
   t = t_initial;
   last_step = false;
   it = 0;
-  while (it != last_step) {
+  while (last_step != true) {
     Solve();
   }
 }
