@@ -62,14 +62,17 @@ void TransientExecutioner::Step(double dt, int it) const {
   }
 }
 
-void TransientExecutioner::Solve() const { Step(t_step, it); }
+void TransientExecutioner::Solve() const {
+  it++;
+  Step(t_step, it);
+}
 
 void TransientExecutioner::Execute() const {
   // Initialise time variables
   t = t_initial;
   last_step = false;
-
-  for (it = 1; !last_step; it++) {
+  it = 0;
+  while (it != last_step) {
     Solve();
   }
 }
