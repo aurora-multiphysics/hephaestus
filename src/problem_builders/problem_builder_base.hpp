@@ -89,20 +89,22 @@ public:
 
   void AddFESpace(std::string fespace_name, std::string fec_name, int vdim = 1,
                   int ordering = mfem::Ordering::byNODES) {
-    mfem::FiniteElementCollection *fec =
-        mfem::FiniteElementCollection::New(fec_name.c_str());
-    this->GetProblem()->fecs.Register(fec_name, fec, true);
+    if (!this->GetProblem()->fespaces.Has(fespace_name)) {
+      mfem::FiniteElementCollection *fec =
+          mfem::FiniteElementCollection::New(fec_name.c_str());
+      this->GetProblem()->fecs.Register(fec_name, fec, true);
 
-    mfem::ParMesh *pmesh = this->GetProblem()->pmesh.get();
-    if (pmesh == NULL) {
-      MFEM_ABORT("ParMesh not found when trying to add " << fespace_name
-                                                         << " to fespaces.");
+      mfem::ParMesh *pmesh = this->GetProblem()->pmesh.get();
+      if (pmesh == NULL) {
+        MFEM_ABORT("ParMesh not found when trying to add " << fespace_name
+                                                           << " to fespaces.");
+      }
+
+      mfem::ParFiniteElementSpace *pfes = new mfem::ParFiniteElementSpace(
+          this->GetProblem()->pmesh.get(), fec, vdim, ordering);
+
+      this->GetProblem()->fespaces.Register(fespace_name, pfes, true);
     }
-
-    mfem::ParFiniteElementSpace *pfes = new mfem::ParFiniteElementSpace(
-        this->GetProblem()->pmesh.get(), fec, vdim, ordering);
-
-    this->GetProblem()->fespaces.Register(fespace_name, pfes, true);
   };
 
   void AddGridFunction(std::string gridfunction_name,
