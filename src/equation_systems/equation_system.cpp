@@ -251,14 +251,15 @@ void EquationSystem::buildLinearForms(hephaestus::BCMap &bc_map,
   for (auto &test_var_name : test_var_names) {
     // Apply kernels
     auto lf = lfs.Get(test_var_name);
+    // Assemble. Must be done before applying kernels that add to lf.
+    lf->Assemble();
+
     auto lf_kernels = lf_kernels_map.Get(test_var_name);
     if (lf_kernels != NULL) {
       for (auto &lf_kernel : *lf_kernels) {
         lf_kernel->Apply(lf);
       }
     }
-    // Assemble
-    lf->Assemble();
     if (test_var_name == test_var_names.at(0)) {
       sources.Apply(lf);
     }
