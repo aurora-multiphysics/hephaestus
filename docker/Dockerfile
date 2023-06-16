@@ -36,18 +36,6 @@ RUN cd /$WORKDIR && \
     make install && \
     alias cmake='/$WORKDIR/CMake/bin/cmake'
 
-# Install Hypre v2.16.0
-RUN cd /$WORKDIR && \
-    git clone https://github.com/hypre-space/hypre.git && \
-    mv hypre hypre-2.16.0 && \
-    cd hypre-2.16.0 && \
-    git checkout "$hypre_git_sha" && \
-    cd src/ && \
-    ./configure --enable-debug --enable-shared --disable-fortran && \
-    make -j && \
-    cd ../.. && \
-    ln -s hypre-2.16.0 hypre
-
 # Install METIS 5.1.0
 RUN cd /$WORKDIR && \
     git clone https://github.com/mfem/tpls.git && \
@@ -59,17 +47,6 @@ RUN cd /$WORKDIR && \
     make && \
     make install && \
     ln -s ../build/Linux-x86_64/libmetis/libmetis.so lib
-
-# Install MUMPS
-RUN cd /$WORKDIR && \
-    git clone https://github.com/scivision/mumps && \
-    cd mumps/ && \
-    mkdir build && \
-    cd build && \
-    cmake -DBUILD_SHARED_LIBS=on -Dscotch=true -Dintsize64=false -Darith="s;d;c;z"  \
-    -DCMAKE_INSTALL_PREFIX=/usr/local/ .. && \
-    make -j"$compile_cores" && \
-    make install
 
 # Build MFEM and common miniapp
 RUN cd /$WORKDIR && \
