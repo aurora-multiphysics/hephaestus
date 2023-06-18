@@ -79,19 +79,6 @@ protected:
         new mfem::VectorFunctionCoefficient(3, source_field);
     domain_properties.vector_property_map["source"] = dBdtSrcCoef;
 
-    // bc_map.Register("ground_potential",
-    //                 new hephaestus::FunctionDirichletBC(
-    //                     std::string("magnetic_potential"),
-    //                     mfem::Array<int>({1, 2, 3}),
-    //                     new mfem::FunctionCoefficient(potential_ground)),
-    //                 true);
-    // bc_map.Register("ground_potential",
-    //                 new hephaestus::IntegratedBC(
-    //                     std::string("magnetic_potential"),
-    //                     mfem::Array<int>({1, 2, 3}),
-    //                     new mfem::BoundaryNormalLFIntegrator(*dBdtSrcCoef)),
-    //                 true);
-
     mfem::VectorFunctionCoefficient *H_exact =
         new mfem::VectorFunctionCoefficient(3, H_exact_expr);
     domain_properties.vector_property_map["h_exact_coeff"] = H_exact;
@@ -181,17 +168,40 @@ TEST_F(TestHFormSource, CheckRun) {
     for (int l = 0; l < par_ref_levels; l++) {
       pmesh->UniformRefinement();
     }
-    hephaestus::TransientFormulation *formulation =
-        new hephaestus::HFormulation();
     hephaestus::TransientProblemBuilder *problem_builder =
-        new hephaestus::TransientProblemBuilder(params);
+        new hephaestus::HFormulation();
+    hephaestus::BCMap bc_map(
+        params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
+    hephaestus::DomainProperties domain_properties(
+        params.GetParam<hephaestus::DomainProperties>("DomainProperties"));
+    //   hephaestus::FESpaces fespaces(
+    //       params.GetParam<hephaestus::FESpaces>("FESpaces"));
+    //   hephaestus::GridFunctions gridfunctions(
+    //       params.GetParam<hephaestus::GridFunctions>("GridFunctions"));
+    hephaestus::AuxSolvers preprocessors(
+        params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
+    hephaestus::AuxSolvers postprocessors(
+        params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
+    hephaestus::Sources sources(
+        params.GetParam<hephaestus::Sources>("Sources"));
+    hephaestus::Outputs outputs(
+        params.GetParam<hephaestus::Outputs>("Outputs"));
+    hephaestus::InputParameters solver_options(
+        params.GetOptionalParam<hephaestus::InputParameters>(
+            "SolverOptions", hephaestus::InputParameters()));
 
-    problem_builder->SetFormulation(formulation);
     problem_builder->SetMesh(pmesh);
     problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P2"));
     problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P2"));
     problem_builder->AddGridFunction(std::string("analytic_magnetic_field"),
                                      std::string("HCurl"));
+    problem_builder->SetBoundaryConditions(bc_map);
+    problem_builder->SetAuxSolvers(preprocessors);
+    problem_builder->SetCoefficients(domain_properties);
+    problem_builder->SetPostprocessors(postprocessors);
+    problem_builder->SetSources(sources);
+    problem_builder->SetOutputs(outputs);
+    problem_builder->SetSolverOptions(solver_options);
 
     hephaestus::ProblemBuildSequencer sequencer(problem_builder);
     sequencer.ConstructEquationSystemProblem();
@@ -210,7 +220,6 @@ TEST_F(TestHFormSource, CheckRun) {
 
     executioner->Init();
     executioner->Execute();
-    delete formulation;
   }
 
   hephaestus::L2ErrorVectorPostprocessor l2errpostprocessor =

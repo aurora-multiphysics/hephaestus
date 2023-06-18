@@ -152,11 +152,25 @@ protected:
 
 TEST_F(TestComplexTeam7, CheckRun) {
   hephaestus::InputParameters params(test_params());
-  hephaestus::FrequencyDomainProblemBuilder *problem_builder =
-      new hephaestus::FrequencyDomainProblemBuilder(params);
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
-  problem_builder->SetFormulation(new hephaestus::ComplexAFormulation());
+
+  hephaestus::BCMap bc_map(
+      params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
+  hephaestus::DomainProperties domain_properties(
+      params.GetParam<hephaestus::DomainProperties>("DomainProperties"));
+  hephaestus::AuxSolvers preprocessors(
+      params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
+  hephaestus::AuxSolvers postprocessors(
+      params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
+  hephaestus::Sources sources(params.GetParam<hephaestus::Sources>("Sources"));
+  hephaestus::Outputs outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
+  hephaestus::InputParameters solver_options(
+      params.GetOptionalParam<hephaestus::InputParameters>(
+          "SolverOptions", hephaestus::InputParameters()));
+
+  hephaestus::FrequencyDomainProblemBuilder *problem_builder =
+      new hephaestus::ComplexAFormulation();
   problem_builder->SetMesh(pmesh);
   problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P1"));
   problem_builder->AddFESpace(std::string("HDiv"), std::string("RT_3D_P0"));
@@ -169,6 +183,13 @@ TEST_F(TestComplexTeam7, CheckRun) {
                                    std::string("HDiv"));
   problem_builder->AddGridFunction(std::string("magnetic_flux_density_imag"),
                                    std::string("HDiv"));
+  problem_builder->SetBoundaryConditions(bc_map);
+  problem_builder->SetAuxSolvers(preprocessors);
+  problem_builder->SetCoefficients(domain_properties);
+  problem_builder->SetPostprocessors(postprocessors);
+  problem_builder->SetSources(sources);
+  problem_builder->SetOutputs(outputs);
+  problem_builder->SetSolverOptions(solver_options);
 
   hephaestus::ProblemBuildSequencer sequencer(problem_builder);
   sequencer.ConstructOperatorProblem();

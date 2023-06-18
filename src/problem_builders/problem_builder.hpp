@@ -1,4 +1,5 @@
 #pragma once
+#include "factory.hpp"
 #include "frequency_domain_problem_builder.hpp"
 #include "time_domain_problem_builder.hpp"
 
@@ -12,21 +13,21 @@ createProblemBuilder(std::string &formulation_name) {
       formulation_name == "Custom") {
     hephaestus::TransientProblemBuilder *builder =
         new hephaestus::TransientProblemBuilder();
-    hephaestus::TransientFormulation *_formulation =
-        hephaestus::Factory::createTransientFormulation(formulation_name);
-    builder->SetFormulation(_formulation);
+    // hephaestus::TransientFormulation *_formulation =
+    //     hephaestus::Factory::createTransientFormulation(formulation_name);
+    // builder->SetFormulation(_formulation);
     return builder;
   } else if (formulation_name == "ComplexEForm" ||
              formulation_name == "ComplexAForm") {
     hephaestus::FrequencyDomainProblemBuilder *builder =
         new hephaestus::FrequencyDomainProblemBuilder();
     ;
-    hephaestus::SteadyFormulation *_formulation =
-        hephaestus::Factory::createSteadyFormulation(formulation_name);
-    builder->SetFormulation(_formulation);
+    // hephaestus::SteadyFormulation *_formulation =
+    //     hephaestus::Factory::createSteadyFormulation();
+    // builder->SetFormulation(_formulation);
     return builder;
 
-    return new hephaestus::FrequencyDomainProblemBuilder();
+    // return new hephaestus::FrequencyDomainProblemBuilder();
   } else {
     std::cout << "Formulation name " << formulation_name
               << " not recognised. \n";

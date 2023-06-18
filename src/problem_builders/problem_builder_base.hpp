@@ -1,5 +1,6 @@
 #pragma once
 #include "auxsolvers.hpp"
+#include "equation_system.hpp"
 #include "inputs.hpp"
 #include "postprocessors.hpp"
 #include "sources.hpp"
@@ -33,7 +34,6 @@ public:
   Problem() = default;
   explicit Problem(const hephaestus::InputParameters &params);
 
-  virtual hephaestus::Formulation *GetFormulation() = 0;
   virtual hephaestus::EquationSystem *GetEquationSystem() = 0;
   virtual mfem::Operator *GetOperator() = 0;
 };

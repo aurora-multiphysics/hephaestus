@@ -164,16 +164,40 @@ TEST_F(TestAFormSource, CheckRun) {
     for (int l = 0; l < par_ref_levels; l++) {
       pmesh->UniformRefinement();
     }
-    hephaestus::TransientFormulation *formulation =
-        new hephaestus::AFormulation();
     hephaestus::TransientProblemBuilder *problem_builder =
-        new hephaestus::TransientProblemBuilder(params);
-    problem_builder->SetFormulation(formulation);
+        new hephaestus::AFormulation();
+    hephaestus::BCMap bc_map(
+        params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
+    hephaestus::DomainProperties domain_properties(
+        params.GetParam<hephaestus::DomainProperties>("DomainProperties"));
+    //   hephaestus::FESpaces fespaces(
+    //       params.GetParam<hephaestus::FESpaces>("FESpaces"));
+    //   hephaestus::GridFunctions gridfunctions(
+    //       params.GetParam<hephaestus::GridFunctions>("GridFunctions"));
+    hephaestus::AuxSolvers preprocessors(
+        params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
+    hephaestus::AuxSolvers postprocessors(
+        params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
+    hephaestus::Sources sources(
+        params.GetParam<hephaestus::Sources>("Sources"));
+    hephaestus::Outputs outputs(
+        params.GetParam<hephaestus::Outputs>("Outputs"));
+    hephaestus::InputParameters solver_options(
+        params.GetOptionalParam<hephaestus::InputParameters>(
+            "SolverOptions", hephaestus::InputParameters()));
+
     problem_builder->SetMesh(pmesh);
     problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P2"));
     problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P2"));
     problem_builder->AddGridFunction(std::string("analytic_vector_potential"),
                                      std::string("HCurl"));
+    problem_builder->SetBoundaryConditions(bc_map);
+    problem_builder->SetAuxSolvers(preprocessors);
+    problem_builder->SetCoefficients(domain_properties);
+    problem_builder->SetPostprocessors(postprocessors);
+    problem_builder->SetSources(sources);
+    problem_builder->SetOutputs(outputs);
+    problem_builder->SetSolverOptions(solver_options);
 
     hephaestus::ProblemBuildSequencer sequencer(problem_builder);
     sequencer.ConstructEquationSystemProblem();
@@ -192,7 +216,7 @@ TEST_F(TestAFormSource, CheckRun) {
 
     executioner->Init();
     executioner->Execute();
-    delete formulation;
+
     delete executioner;
   }
 

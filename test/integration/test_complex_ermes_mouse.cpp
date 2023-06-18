@@ -119,8 +119,34 @@ protected:
 
 TEST_F(TestComplexERMESMouse, CheckRun) {
   hephaestus::InputParameters params(test_params());
+  std::shared_ptr<mfem::ParMesh> pmesh =
+      std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
+
   hephaestus::FrequencyDomainProblemBuilder *problem_builder =
-      new hephaestus::FrequencyDomainProblemBuilder(params);
+      new hephaestus::ComplexEFormulation();
+  hephaestus::BCMap bc_map(
+      params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
+  hephaestus::DomainProperties domain_properties(
+      params.GetParam<hephaestus::DomainProperties>("DomainProperties"));
+  hephaestus::AuxSolvers preprocessors(
+      params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
+  hephaestus::AuxSolvers postprocessors(
+      params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
+  hephaestus::Sources sources(params.GetParam<hephaestus::Sources>("Sources"));
+  hephaestus::Outputs outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
+  hephaestus::InputParameters solver_options(
+      params.GetOptionalParam<hephaestus::InputParameters>(
+          "SolverOptions", hephaestus::InputParameters()));
+
+  problem_builder->SetMesh(pmesh);
+  problem_builder->SetBoundaryConditions(bc_map);
+  problem_builder->SetAuxSolvers(preprocessors);
+  problem_builder->SetCoefficients(domain_properties);
+  problem_builder->SetPostprocessors(postprocessors);
+  problem_builder->SetSources(sources);
+  problem_builder->SetOutputs(outputs);
+  problem_builder->SetSolverOptions(solver_options);
+
   hephaestus::ProblemBuildSequencer sequencer(problem_builder);
   sequencer.ConstructOperatorProblem();
   std::unique_ptr<hephaestus::FrequencyDomainProblem> problem =

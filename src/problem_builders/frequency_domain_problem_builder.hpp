@@ -1,20 +1,16 @@
 #pragma once
+#include "frequency_domain_equation_system_operator.hpp"
 #include "problem_builder_base.hpp"
-
 namespace hephaestus {
 
 class FrequencyDomainProblem : public hephaestus::Problem {
 public:
-  hephaestus::SteadyFormulation *formulation;
   std::unique_ptr<hephaestus::EquationSystem> eq_sys;
   std::unique_ptr<hephaestus::FrequencyDomainOperator> fd_operator;
 
   FrequencyDomainProblem() = default;
   explicit FrequencyDomainProblem(const hephaestus::InputParameters &params);
 
-  virtual hephaestus::SteadyFormulation *GetFormulation() {
-    return formulation;
-  };
   virtual hephaestus::EquationSystem *GetEquationSystem() {
     return eq_sys.get();
   };
@@ -38,35 +34,53 @@ public:
   FrequencyDomainProblemBuilder(const hephaestus::InputParameters &params)
       : hephaestus::ProblemBuilder(params),
         problem(std::make_unique<hephaestus::FrequencyDomainProblem>(params)){};
-
+  mfem::ConstantCoefficient oneCoef{1.0};
+  mfem::ConstantCoefficient *freqCoef;
   virtual std::unique_ptr<hephaestus::FrequencyDomainProblem> ReturnProblem() {
     return std::move(this->problem);
   };
 
-  virtual void SetFormulation(hephaestus::SteadyFormulation *formulation) {
-    this->problem->formulation = formulation;
-  }
-
-  virtual void RegisterFESpaces() override{
-      // this->problem->fespaces.Init(*(this->problem->pmesh));
+  virtual std::unique_ptr<hephaestus::FrequencyDomainOperator>
+  CreateFrequencyDomainOperator(
+      mfem::ParMesh &pmesh,
+      mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+      mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+      hephaestus::BCMap &bc_map,
+      hephaestus::DomainProperties &domain_properties,
+      hephaestus::Sources &sources,
+      hephaestus::InputParameters &solver_options) const {
+    return std::make_unique<hephaestus::FrequencyDomainOperator>(
+        pmesh, fespaces, variables, bc_map, domain_properties, sources,
+        solver_options);
   };
 
+  virtual void RegisterMissingVariables(
+      mfem::ParMesh &pmesh,
+      mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+      mfem::NamedFieldsMap<mfem::ParGridFunction> &variables){};
+
+  virtual void
+  RegisterAuxSolvers(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+                     hephaestus::AuxSolvers &auxsolvers){};
+
+  virtual void
+  RegisterCoefficients(hephaestus::DomainProperties &domain_properties){};
+
+  virtual void RegisterFESpaces() override{};
+
   virtual void RegisterGridFunctions() override {
-    // this->problem->gridfunctions.Init(*(this->problem->pmesh),
-    //                                   this->problem->fespaces);
-    this->problem->formulation->RegisterMissingVariables(
-        *(this->problem->pmesh), this->problem->fespaces,
-        this->problem->gridfunctions);
+    this->RegisterMissingVariables(*(this->problem->pmesh),
+                                   this->problem->fespaces,
+                                   this->problem->gridfunctions);
   };
 
   virtual void RegisterAuxSolvers() override {
-    this->problem->formulation->RegisterAuxSolvers(
-        this->problem->gridfunctions, this->problem->postprocessors);
+    this->RegisterAuxSolvers(this->problem->gridfunctions,
+                             this->problem->postprocessors);
   };
 
   virtual void RegisterCoefficients() override {
-    this->problem->formulation->RegisterCoefficients(
-        this->problem->domain_properties);
+    this->RegisterCoefficients(this->problem->domain_properties);
   };
 
   virtual void InitializeKernels() override {
@@ -80,12 +94,11 @@ public:
   virtual void ConstructEquationSystem() override{};
 
   virtual void ConstructOperator() override {
-    this->problem->fd_operator =
-        this->problem->formulation->CreateFrequencyDomainOperator(
-            *(this->problem->pmesh), this->problem->fespaces,
-            this->problem->gridfunctions, this->problem->bc_map,
-            this->problem->domain_properties, this->problem->sources,
-            this->problem->solver_options);
+    this->problem->fd_operator = this->CreateFrequencyDomainOperator(
+        *(this->problem->pmesh), this->problem->fespaces,
+        this->problem->gridfunctions, this->problem->bc_map,
+        this->problem->domain_properties, this->problem->sources,
+        this->problem->solver_options);
     this->problem->fd_operator->SetVariables();
   };
 

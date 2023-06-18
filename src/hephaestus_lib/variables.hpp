@@ -1,6 +1,5 @@
 #pragma once
 #include "../common/pfem_extras.hpp"
-#include "factory.hpp"
 #include "inputs.hpp"
 #include "mfem.hpp"
 
