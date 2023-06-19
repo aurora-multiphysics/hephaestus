@@ -22,7 +22,7 @@ public:
 
 // Builder class of a time-domain EM formulation.
 class TimeDomainProblemBuilder : public hephaestus::ProblemBuilder {
-private:
+protected:
   std::unique_ptr<hephaestus::TimeDomainProblem> problem;
   virtual hephaestus::TimeDomainProblem *GetProblem() override {
     return this->problem.get();
@@ -58,13 +58,6 @@ public:
       mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
       mfem::NamedFieldsMap<mfem::ParGridFunction> &variables){};
 
-  virtual void
-  RegisterAuxSolvers(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-                     hephaestus::AuxSolvers &auxsolvers){};
-
-  virtual void
-  RegisterCoefficients(hephaestus::DomainProperties &domain_properties){};
-
   virtual void RegisterFESpaces() override{};
 
   virtual void RegisterGridFunctions() override {
@@ -82,14 +75,9 @@ public:
                                    this->problem->gridfunctions);
   };
 
-  virtual void RegisterAuxSolvers() override {
-    this->RegisterAuxSolvers(this->problem->gridfunctions,
-                             this->problem->postprocessors);
-  };
+  virtual void RegisterAuxSolvers() override{};
 
-  virtual void RegisterCoefficients() override {
-    this->RegisterCoefficients(this->problem->domain_properties);
-  };
+  virtual void RegisterCoefficients() override{};
 
   virtual void ConstructEquationSystem() override {
     this->problem->td_equation_system =

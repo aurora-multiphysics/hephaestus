@@ -3,6 +3,7 @@
 namespace hephaestus {
 void ProblemBuilder::SetMesh(std::shared_ptr<mfem::ParMesh> pmesh) {
   this->GetProblem()->pmesh = pmesh;
+  MPI_Comm_rank(pmesh->GetComm(), &(this->GetProblem()->myid_));
 };
 
 void ProblemBuilder::SetFESpaces(hephaestus::FESpaces &fespaces) {

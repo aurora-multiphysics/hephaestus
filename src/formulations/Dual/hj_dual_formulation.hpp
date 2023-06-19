@@ -11,8 +11,7 @@ public:
 
   ~HJDualFormulation(){};
 
-  virtual void RegisterCoefficients(
-      hephaestus::DomainProperties &domain_properties) override;
+  virtual void RegisterCoefficients() override;
 };
 
 } // namespace hephaestus

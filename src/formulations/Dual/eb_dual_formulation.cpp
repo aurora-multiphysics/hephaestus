@@ -9,8 +9,9 @@ EBDualFormulation::EBDualFormulation() : DualFormulation() {
   h_div_var_name = std::string("magnetic_flux_density");
 }
 
-void EBDualFormulation::RegisterCoefficients(
-    hephaestus::DomainProperties &domain_properties) {
+void EBDualFormulation::RegisterCoefficients() {
+  hephaestus::DomainProperties &domain_properties =
+      this->GetProblem()->domain_properties;
   if (domain_properties.scalar_property_map.count("magnetic_permeability") ==
       0) {
     domain_properties.scalar_property_map["magnetic_permeability"] =

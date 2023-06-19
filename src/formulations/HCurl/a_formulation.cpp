@@ -23,16 +23,12 @@ AFormulation::AFormulation() : HCurlFormulation() {
   h_curl_var_name = std::string("magnetic_vector_potential");
 }
 
-void AFormulation::RegisterAuxSolvers(
-    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::AuxSolvers &auxsolvers) {
+void AFormulation::RegisterAuxSolvers() {
+  hephaestus::GridFunctions &variables = this->GetProblem()->gridfunctions;
+  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
   std::vector<std::string> aux_var_names;
   std::string b_field_name = "magnetic_flux_density";
   if (variables.Get(b_field_name) != NULL) {
-    // if (myid_ == 0) {
-    //   std::cout << b_field_name << " found in variables: building auxvar "
-    //             << std::endl;
-    // }
     hephaestus::InputParameters b_field_aux_params;
     b_field_aux_params.SetParam("VariableName", h_curl_var_name);
     b_field_aux_params.SetParam("CurlVariableName", b_field_name);
@@ -42,8 +38,9 @@ void AFormulation::RegisterAuxSolvers(
   }
 }
 
-void AFormulation::RegisterCoefficients(
-    hephaestus::DomainProperties &domain_properties) {
+void AFormulation::RegisterCoefficients() {
+  hephaestus::DomainProperties &domain_properties =
+      this->GetProblem()->domain_properties;
   if (domain_properties.scalar_property_map.count("magnetic_permeability") ==
       0) {
     domain_properties.scalar_property_map["magnetic_permeability"] =

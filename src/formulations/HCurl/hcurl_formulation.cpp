@@ -97,8 +97,9 @@ void HCurlFormulation::RegisterMissingVariables(
       true);
 };
 
-void HCurlFormulation::RegisterCoefficients(
-    hephaestus::DomainProperties &domain_properties) {
+void HCurlFormulation::RegisterCoefficients() {
+  hephaestus::DomainProperties &domain_properties =
+      this->GetProblem()->domain_properties;
   if (domain_properties.scalar_property_map.count("alpha") == 0) {
     domain_properties.scalar_property_map["alpha"] = new mfem::PWCoefficient(
         domain_properties.getGlobalScalarProperty(std::string("alpha")));

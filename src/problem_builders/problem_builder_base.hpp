@@ -25,9 +25,9 @@ public:
   mfem::ODESolver *ode_solver;
   mfem::BlockVector *F;
 
-  mfem::NamedFieldsMap<mfem::FiniteElementCollection> fecs;
-  mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> fespaces;
-  mfem::NamedFieldsMap<mfem::ParGridFunction> gridfunctions;
+  hephaestus::FECollections fecs;
+  hephaestus::FESpaces fespaces;
+  hephaestus::GridFunctions gridfunctions;
   int myid_;
   int num_procs_;
 

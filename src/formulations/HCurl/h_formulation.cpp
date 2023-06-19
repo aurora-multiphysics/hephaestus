@@ -21,9 +21,9 @@ HFormulation::HFormulation() : HCurlFormulation() {
   h_curl_var_name = std::string("magnetic_field");
 }
 
-void HFormulation::RegisterAuxSolvers(
-    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::AuxSolvers &auxsolvers) {
+void HFormulation::RegisterAuxSolvers() {
+  hephaestus::GridFunctions &variables = this->GetProblem()->gridfunctions;
+  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
   std::vector<std::string> aux_var_names;
   std::string j_field_name = "current_density";
   if (variables.Get(j_field_name) != NULL) {
@@ -36,8 +36,9 @@ void HFormulation::RegisterAuxSolvers(
   }
 }
 
-void HFormulation::RegisterCoefficients(
-    hephaestus::DomainProperties &domain_properties) {
+void HFormulation::RegisterCoefficients() {
+  hephaestus::DomainProperties &domain_properties =
+      this->GetProblem()->domain_properties;
   if (domain_properties.scalar_property_map.count("magnetic_permeability") ==
       0) {
     domain_properties.scalar_property_map["magnetic_permeability"] =

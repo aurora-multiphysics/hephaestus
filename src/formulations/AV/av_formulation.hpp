@@ -31,12 +31,7 @@ public:
       mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
       mfem::NamedFieldsMap<mfem::ParGridFunction> &variables) override;
 
-  virtual void
-  RegisterAuxSolvers(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-                     hephaestus::AuxSolvers &auxsolvers) override{};
-
-  virtual void RegisterCoefficients(
-      hephaestus::DomainProperties &domain_properties) override;
+  virtual void RegisterCoefficients() override;
 };
 
 class AVOperator : public TimeDomainEquationSystemOperator {

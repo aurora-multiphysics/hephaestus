@@ -22,8 +22,9 @@ EFormulation::EFormulation() : HCurlFormulation() {
   h_curl_var_name = std::string("electric_field");
 }
 
-void EFormulation::RegisterCoefficients(
-    hephaestus::DomainProperties &domain_properties) {
+void EFormulation::RegisterCoefficients() {
+  hephaestus::DomainProperties &domain_properties =
+      this->GetProblem()->domain_properties;
   if (domain_properties.scalar_property_map.count("magnetic_permeability") ==
       0) {
     domain_properties.scalar_property_map["magnetic_permeability"] =

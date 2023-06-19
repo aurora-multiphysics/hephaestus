@@ -11,11 +11,8 @@ public:
 
   ~AFormulation(){};
 
-  virtual void
-  RegisterAuxSolvers(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-                     hephaestus::AuxSolvers &auxsolvers) override;
+  virtual void RegisterAuxSolvers() override;
 
-  virtual void RegisterCoefficients(
-      hephaestus::DomainProperties &domain_properties) override;
+  virtual void RegisterCoefficients() override;
 };
 } // namespace hephaestus
