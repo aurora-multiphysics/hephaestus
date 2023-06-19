@@ -89,7 +89,7 @@ protected:
     hephaestus::AuxSolvers preprocessors;
     hephaestus::Sources sources;
 
-    hephaestus::SteadyFormulation *formulation =
+    hephaestus::FrequencyDomainFormulation *formulation =
         new hephaestus::ComplexEFormulation();
 
     hephaestus::InputParameters solver_options;

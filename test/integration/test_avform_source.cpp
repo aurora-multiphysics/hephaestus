@@ -159,7 +159,7 @@ TEST_F(TestAVFormSource, CheckRun) {
     for (int l = 0; l < par_ref_levels; l++) {
       pmesh->UniformRefinement();
     }
-    hephaestus::TransientProblemBuilder *problem_builder =
+    hephaestus::TimeDomainProblemBuilder *problem_builder =
         new hephaestus::AVFormulation();
     hephaestus::BCMap bc_map(
         params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
@@ -196,7 +196,7 @@ TEST_F(TestAVFormSource, CheckRun) {
 
     hephaestus::ProblemBuildSequencer sequencer(problem_builder);
     sequencer.ConstructEquationSystemProblem();
-    std::unique_ptr<hephaestus::TransientProblem> problem =
+    std::unique_ptr<hephaestus::TimeDomainProblem> problem =
         problem_builder->ReturnProblem();
 
     hephaestus::InputParameters exec_params;

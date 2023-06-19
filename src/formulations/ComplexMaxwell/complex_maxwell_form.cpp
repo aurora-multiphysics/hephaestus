@@ -8,8 +8,9 @@ ComplexMaxwellOperator::ComplexMaxwellOperator(
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
     hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
-    : FrequencyDomainOperator(pmesh, fespaces, variables, bc_map,
-                              domain_properties, sources, solver_options),
+    : FrequencyDomainEquationSystemOperator(pmesh, fespaces, variables, bc_map,
+                                            domain_properties, sources,
+                                            solver_options),
       h_curl_var_name(solver_options.GetParam<std::string>("HCurlVarName")),
       stiffness_coef_name(
           solver_options.GetParam<std::string>("StiffnessCoefName")),
@@ -20,14 +21,14 @@ void ComplexMaxwellOperator::SetVariables() {
   state_var_names.push_back(h_curl_var_name + "_real");
   state_var_names.push_back(h_curl_var_name + "_imag");
 
-  FrequencyDomainOperator::SetVariables();
+  FrequencyDomainEquationSystemOperator::SetVariables();
 
   u_ = new mfem::ParComplexGridFunction(local_test_vars.at(0)->ParFESpace());
   *u_ = std::complex(0.0, 0.0);
 };
 
 void ComplexMaxwellOperator::Init(mfem::Vector &X) {
-  FrequencyDomainOperator::Init(X);
+  FrequencyDomainEquationSystemOperator::Init(X);
 
   stiffCoef_ = _domain_properties.scalar_property_map[stiffness_coef_name];
   massCoef_ = _domain_properties.scalar_property_map[mass_coef_name];
@@ -97,7 +98,8 @@ void ComplexMaxwellOperator::Solve(mfem::Vector &X) {
   *_variables.Get(state_var_names.at(1)) = u_->imag();
 }
 
-ComplexMaxwellFormulation::ComplexMaxwellFormulation() : SteadyFormulation() {
+ComplexMaxwellFormulation::ComplexMaxwellFormulation()
+    : FrequencyDomainFormulation() {
   frequency_coef_name = std::string("frequency");
   h_curl_var_name = std::string("h_curl_var");
   mass_coef_name = std::string("maxwell_mass");
@@ -108,8 +110,8 @@ ComplexMaxwellFormulation::ComplexMaxwellFormulation() : SteadyFormulation() {
   beta_coef_name = std::string("beta");
 };
 
-std::unique_ptr<hephaestus::FrequencyDomainOperator>
-ComplexMaxwellFormulation::CreateFrequencyDomainOperator(
+std::unique_ptr<hephaestus::FrequencyDomainEquationSystemOperator>
+ComplexMaxwellFormulation::CreateFrequencyDomainEquationSystemOperator(
     mfem::ParMesh &pmesh,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,

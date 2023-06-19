@@ -1,3 +1,3 @@
 #pragma once
-#include "steady_formulation.hpp"
-#include "transient_formulation.hpp"
+#include "frequency_domain_formulation.hpp"
+#include "time_domain_formulation.hpp"

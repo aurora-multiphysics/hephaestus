@@ -4,8 +4,8 @@
 namespace hephaestus {
 
 // Abstract Factory class of a time-domain EM formulation.
-class TransientFormulation : public hephaestus::TransientProblemBuilder {
+class TimeDomainFormulation : public hephaestus::TimeDomainProblemBuilder {
 public:
-  TransientFormulation();
+  TimeDomainFormulation();
 };
 } // namespace hephaestus

@@ -1,10 +1,15 @@
 #pragma once
-#include "formulation_base.hpp"
+#include "../common/pfem_extras.hpp"
+#include "auxsolvers.hpp"
+#include "equation_system.hpp"
+#include "hephaestus_solvers.hpp"
+#include "inputs.hpp"
+#include "sources.hpp"
 
 namespace hephaestus {
-class FrequencyDomainOperator : public mfem::Operator {
+class FrequencyDomainEquationSystemOperator : public mfem::Operator {
 public:
-  FrequencyDomainOperator(
+  FrequencyDomainEquationSystemOperator(
       mfem::ParMesh &pmesh,
       mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
       mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
@@ -16,7 +21,7 @@ public:
         _domain_properties(domain_properties),
         _solver_options(solver_options){};
 
-  ~FrequencyDomainOperator(){};
+  ~FrequencyDomainEquationSystemOperator(){};
 
   virtual void SetVariables();
   virtual void Init(mfem::Vector &X);

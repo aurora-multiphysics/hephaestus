@@ -5,7 +5,7 @@
 
 namespace hephaestus {
 
-class DualFormulation : public TransientFormulation {
+class DualFormulation : public TimeDomainFormulation {
 public:
   DualFormulation();
 

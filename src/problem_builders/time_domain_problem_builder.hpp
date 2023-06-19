@@ -5,13 +5,12 @@
 namespace hephaestus {
 
 // Stores data required to describe a time domain formulation
-class TransientProblem : public hephaestus::Problem {
+class TimeDomainProblem : public hephaestus::Problem {
 public:
   std::unique_ptr<hephaestus::TimeDependentEquationSystem> td_equation_system;
   std::unique_ptr<hephaestus::TimeDomainEquationSystemOperator> td_operator;
 
-  TransientProblem() = default;
-  explicit TransientProblem(const hephaestus::InputParameters &params);
+  TimeDomainProblem() = default;
 
   virtual hephaestus::TimeDependentEquationSystem *GetEquationSystem() {
     return td_equation_system.get();
@@ -22,20 +21,18 @@ public:
 };
 
 // Builder class of a time-domain EM formulation.
-class TransientProblemBuilder : public hephaestus::ProblemBuilder {
+class TimeDomainProblemBuilder : public hephaestus::ProblemBuilder {
 private:
-  std::unique_ptr<hephaestus::TransientProblem> problem;
-  virtual hephaestus::TransientProblem *GetProblem() override {
+  std::unique_ptr<hephaestus::TimeDomainProblem> problem;
+  virtual hephaestus::TimeDomainProblem *GetProblem() override {
     return this->problem.get();
   };
 
 public:
-  TransientProblemBuilder()
-      : problem(std::make_unique<hephaestus::TransientProblem>()){};
-  TransientProblemBuilder(const hephaestus::InputParameters &params)
-      : problem(std::make_unique<hephaestus::TransientProblem>(params)){};
+  TimeDomainProblemBuilder()
+      : problem(std::make_unique<hephaestus::TimeDomainProblem>()){};
   mfem::ConstantCoefficient oneCoef{1.0};
-  virtual std::unique_ptr<hephaestus::TransientProblem> ReturnProblem() {
+  virtual std::unique_ptr<hephaestus::TimeDomainProblem> ReturnProblem() {
     return std::move(this->problem);
   };
 

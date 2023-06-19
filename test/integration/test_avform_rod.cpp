@@ -89,7 +89,7 @@ protected:
     hephaestus::AuxSolvers preprocessors;
     hephaestus::Sources sources;
 
-    hephaestus::TransientFormulation *formulation =
+    hephaestus::TimeDomainFormulation *formulation =
         new hephaestus::AVFormulation();
 
     hephaestus::InputParameters params;
@@ -113,7 +113,7 @@ TEST_F(TestAVFormRod, CheckRun) {
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
 
-  hephaestus::TransientProblemBuilder *problem_builder =
+  hephaestus::TimeDomainProblemBuilder *problem_builder =
       new hephaestus::AVFormulation();
   hephaestus::BCMap bc_map(
       params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
@@ -140,7 +140,7 @@ TEST_F(TestAVFormRod, CheckRun) {
 
   hephaestus::ProblemBuildSequencer sequencer(problem_builder);
   sequencer.ConstructEquationSystemProblem();
-  std::unique_ptr<hephaestus::TransientProblem> problem =
+  std::unique_ptr<hephaestus::TimeDomainProblem> problem =
       problem_builder->ReturnProblem();
 
   hephaestus::InputParameters exec_params;

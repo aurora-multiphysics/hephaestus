@@ -6,7 +6,7 @@
 
 namespace hephaestus {
 
-class HCurlFormulation : public TransientFormulation {
+class HCurlFormulation : public TimeDomainFormulation {
 public:
   HCurlFormulation();
 
@@ -55,7 +55,7 @@ public:
                      mfem::Vector &dX_dt) override;
 };
 
-// class HCurlSolver : public TransientFormulation {
+// class HCurlSolver : public TimeDomainFormulation {
 //   virtual void SetMaterialCoefficients(
 //       hephaestus::DomainProperties &domain_properties) override;
 //   virtual void SetEquationSystem() override;

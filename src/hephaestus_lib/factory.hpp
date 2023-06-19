@@ -14,11 +14,11 @@ namespace hephaestus {
 
 class Factory {
 public:
-  static hephaestus::TransientFormulation *
-  createTransientFormulation(std::string &formulation);
+  static hephaestus::TimeDomainFormulation *
+  createTimeDomainFormulation(std::string &formulation);
 
-  static hephaestus::SteadyFormulation *
-  createSteadyFormulation(std::string &formulation);
+  static hephaestus::FrequencyDomainFormulation *
+  createFrequencyDomainFormulation(std::string &formulation);
 
   static mfem::ParFiniteElementSpace *
   createParFESpace(const hephaestus::InputParameters params,

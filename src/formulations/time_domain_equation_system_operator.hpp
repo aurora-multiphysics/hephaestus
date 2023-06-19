@@ -1,5 +1,10 @@
 #pragma once
-#include "formulation_base.hpp"
+#include "../common/pfem_extras.hpp"
+#include "auxsolvers.hpp"
+#include "equation_system.hpp"
+#include "hephaestus_solvers.hpp"
+#include "inputs.hpp"
+#include "sources.hpp"
 
 namespace hephaestus {
 

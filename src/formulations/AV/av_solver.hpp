@@ -6,7 +6,7 @@
 
 namespace hephaestus {
 
-class AVFormulation : public TransientFormulation {
+class AVFormulation : public TimeDomainFormulation {
   std::string vector_potential_name, scalar_potential_name, alpha_coef_name,
       beta_coef_name;
 

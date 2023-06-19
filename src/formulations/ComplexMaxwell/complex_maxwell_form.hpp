@@ -1,5 +1,5 @@
 #pragma once
-#include "steady_formulation.hpp"
+#include "frequency_domain_formulation.hpp"
 
 namespace hephaestus {
 /*
@@ -24,7 +24,7 @@ Robin boundaries weakly constrain (α∇×u)×n + γ(n×n×u) = F
 Divergence cleaning (such as via Helmholtz projection)
 should be performed on g before use in this operator.
 */
-class ComplexMaxwellOperator : public FrequencyDomainOperator {
+class ComplexMaxwellOperator : public FrequencyDomainEquationSystemOperator {
 public:
   ComplexMaxwellOperator(
       mfem::ParMesh &pmesh,
@@ -60,7 +60,8 @@ public:
 
 //
 // Specifies output interfaces of a time-domain EM formulation.
-class ComplexMaxwellFormulation : public hephaestus::SteadyFormulation {
+class ComplexMaxwellFormulation
+    : public hephaestus::FrequencyDomainFormulation {
   // std::vector<mfem::ParGridFunction *> local_trial_vars, local_test_vars;
 protected:
   std::string frequency_coef_name, h_curl_var_name, alpha_coef_name,
@@ -69,8 +70,8 @@ protected:
 public:
   ComplexMaxwellFormulation();
 
-  virtual std::unique_ptr<hephaestus::FrequencyDomainOperator>
-  CreateFrequencyDomainOperator(
+  virtual std::unique_ptr<hephaestus::FrequencyDomainEquationSystemOperator>
+  CreateFrequencyDomainEquationSystemOperator(
       mfem::ParMesh &pmesh,
       mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
       mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,

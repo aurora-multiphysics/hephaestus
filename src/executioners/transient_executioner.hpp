@@ -27,7 +27,7 @@ public:
 
   void Execute() const override;
 
-  hephaestus::TransientProblem *problem;
+  hephaestus::TimeDomainProblem *problem;
 };
 
 } // namespace hephaestus

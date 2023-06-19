@@ -40,7 +40,7 @@
 
 namespace hephaestus {
 
-HCurlFormulation::HCurlFormulation() : TransientFormulation() {
+HCurlFormulation::HCurlFormulation() : TimeDomainFormulation() {
   alpha_coef_name = std::string("alpha");
   beta_coef_name = std::string("beta");
   h_curl_var_name = std::string("h_curl_var");

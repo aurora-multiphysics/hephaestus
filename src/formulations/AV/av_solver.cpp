@@ -30,7 +30,7 @@
 
 namespace hephaestus {
 
-AVFormulation::AVFormulation() : TransientFormulation() {
+AVFormulation::AVFormulation() : TimeDomainFormulation() {
   alpha_coef_name = std::string("magnetic_reluctivity");
   beta_coef_name = std::string("electrical_conductivity");
   vector_potential_name = std::string("magnetic_vector_potential");

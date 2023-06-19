@@ -6,7 +6,8 @@ namespace hephaestus {
 class FrequencyDomainProblem : public hephaestus::Problem {
 public:
   std::unique_ptr<hephaestus::EquationSystem> eq_sys;
-  std::unique_ptr<hephaestus::FrequencyDomainOperator> fd_operator;
+  std::unique_ptr<hephaestus::FrequencyDomainEquationSystemOperator>
+      fd_operator;
 
   FrequencyDomainProblem() = default;
   explicit FrequencyDomainProblem(const hephaestus::InputParameters &params);
@@ -14,7 +15,7 @@ public:
   virtual hephaestus::EquationSystem *GetEquationSystem() {
     return eq_sys.get();
   };
-  virtual hephaestus::FrequencyDomainOperator *GetOperator() {
+  virtual hephaestus::FrequencyDomainEquationSystemOperator *GetOperator() {
     return fd_operator.get();
   };
 };
@@ -31,17 +32,14 @@ private:
 public:
   FrequencyDomainProblemBuilder()
       : problem(std::make_unique<hephaestus::FrequencyDomainProblem>()){};
-  FrequencyDomainProblemBuilder(const hephaestus::InputParameters &params)
-      : hephaestus::ProblemBuilder(params),
-        problem(std::make_unique<hephaestus::FrequencyDomainProblem>(params)){};
   mfem::ConstantCoefficient oneCoef{1.0};
   mfem::ConstantCoefficient *freqCoef;
   virtual std::unique_ptr<hephaestus::FrequencyDomainProblem> ReturnProblem() {
     return std::move(this->problem);
   };
 
-  virtual std::unique_ptr<hephaestus::FrequencyDomainOperator>
-  CreateFrequencyDomainOperator(
+  virtual std::unique_ptr<hephaestus::FrequencyDomainEquationSystemOperator>
+  CreateFrequencyDomainEquationSystemOperator(
       mfem::ParMesh &pmesh,
       mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
       mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
@@ -49,7 +47,7 @@ public:
       hephaestus::DomainProperties &domain_properties,
       hephaestus::Sources &sources,
       hephaestus::InputParameters &solver_options) const {
-    return std::make_unique<hephaestus::FrequencyDomainOperator>(
+    return std::make_unique<hephaestus::FrequencyDomainEquationSystemOperator>(
         pmesh, fespaces, variables, bc_map, domain_properties, sources,
         solver_options);
   };
@@ -94,11 +92,12 @@ public:
   virtual void ConstructEquationSystem() override{};
 
   virtual void ConstructOperator() override {
-    this->problem->fd_operator = this->CreateFrequencyDomainOperator(
-        *(this->problem->pmesh), this->problem->fespaces,
-        this->problem->gridfunctions, this->problem->bc_map,
-        this->problem->domain_properties, this->problem->sources,
-        this->problem->solver_options);
+    this->problem->fd_operator =
+        this->CreateFrequencyDomainEquationSystemOperator(
+            *(this->problem->pmesh), this->problem->fespaces,
+            this->problem->gridfunctions, this->problem->bc_map,
+            this->problem->domain_properties, this->problem->sources,
+            this->problem->solver_options);
     this->problem->fd_operator->SetVariables();
   };
 

@@ -1,17 +1,15 @@
 #include "time_domain_problem_builder.hpp"
 
 namespace hephaestus {
-TransientProblem::TransientProblem(const hephaestus::InputParameters &params)
-    : Problem(params) {}
 
 std::unique_ptr<hephaestus::TimeDependentEquationSystem>
-TransientProblemBuilder::CreateTimeDependentEquationSystem() const {
+TimeDomainProblemBuilder::CreateTimeDependentEquationSystem() const {
   hephaestus::InputParameters params;
   return std::make_unique<hephaestus::TimeDependentEquationSystem>(params);
 };
 
 std::unique_ptr<hephaestus::TimeDomainEquationSystemOperator>
-TransientProblemBuilder::CreateTimeDomainEquationSystemOperator(
+TimeDomainProblemBuilder::CreateTimeDomainEquationSystemOperator(
     mfem::ParMesh &pmesh,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
@@ -24,7 +22,7 @@ TransientProblemBuilder::CreateTimeDomainEquationSystemOperator(
 };
 
 std::vector<mfem::ParGridFunction *>
-TransientProblemBuilder::RegisterTimeDerivatives(
+TimeDomainProblemBuilder::RegisterTimeDerivatives(
     std::vector<std::string> gridfunction_names,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &gridfunctions) {
   std::vector<mfem::ParGridFunction *> time_derivatives;

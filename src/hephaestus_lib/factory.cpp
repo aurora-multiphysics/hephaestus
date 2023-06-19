@@ -2,8 +2,8 @@
 
 namespace hephaestus {
 
-hephaestus::SteadyFormulation *
-Factory::createSteadyFormulation(std::string &formulation) {
+hephaestus::FrequencyDomainFormulation *
+Factory::createFrequencyDomainFormulation(std::string &formulation) {
   if (formulation == "ComplexEForm") {
     return new hephaestus::ComplexEFormulation();
   } else if (formulation == "ComplexAForm") {
@@ -15,8 +15,8 @@ Factory::createSteadyFormulation(std::string &formulation) {
   return nullptr;
 }
 
-hephaestus::TransientFormulation *
-Factory::createTransientFormulation(std::string &formulation) {
+hephaestus::TimeDomainFormulation *
+Factory::createTimeDomainFormulation(std::string &formulation) {
   if (formulation == "EBForm") {
     return new hephaestus::EBDualFormulation();
   } else if (formulation == "HJForm") {
@@ -30,7 +30,7 @@ Factory::createTransientFormulation(std::string &formulation) {
   } else if (formulation == "AVForm") {
     return new hephaestus::AVFormulation();
   } else if (formulation == "Custom") {
-    return new hephaestus::TransientFormulation();
+    return new hephaestus::TimeDomainFormulation();
   } else {
     std::cout << "Formulation name " << formulation << " not recognised. \n";
   }

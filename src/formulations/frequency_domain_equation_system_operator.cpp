@@ -2,7 +2,7 @@
 
 namespace hephaestus {
 
-void FrequencyDomainOperator::SetVariables() {
+void FrequencyDomainEquationSystemOperator::SetVariables() {
   local_test_vars = populateVectorFromNamedFieldsMap<mfem::ParGridFunction>(
       _variables, state_var_names);
 
@@ -36,7 +36,7 @@ void FrequencyDomainOperator::SetVariables() {
   }
 };
 
-void FrequencyDomainOperator::Init(mfem::Vector &X) {
+void FrequencyDomainEquationSystemOperator::Init(mfem::Vector &X) {
   // Define material property coefficients
   for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
     local_test_vars.at(ind)->MakeRef(local_test_vars.at(ind)->ParFESpace(),
@@ -45,6 +45,6 @@ void FrequencyDomainOperator::Init(mfem::Vector &X) {
   }
 }
 
-void FrequencyDomainOperator::Solve(mfem::Vector &X) {}
+void FrequencyDomainEquationSystemOperator::Solve(mfem::Vector &X) {}
 
 } // namespace hephaestus

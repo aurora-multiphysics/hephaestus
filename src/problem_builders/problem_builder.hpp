@@ -11,10 +11,10 @@ createProblemBuilder(std::string &formulation_name) {
       formulation_name == "HForm" || formulation_name == "AForm" ||
       formulation_name == "EForm" || formulation_name == "AVForm" ||
       formulation_name == "Custom") {
-    hephaestus::TransientProblemBuilder *builder =
-        new hephaestus::TransientProblemBuilder();
-    // hephaestus::TransientFormulation *_formulation =
-    //     hephaestus::Factory::createTransientFormulation(formulation_name);
+    hephaestus::TimeDomainProblemBuilder *builder =
+        new hephaestus::TimeDomainProblemBuilder();
+    // hephaestus::TimeDomainFormulation *_formulation =
+    //     hephaestus::Factory::createTimeDomainFormulation(formulation_name);
     // builder->SetFormulation(_formulation);
     return builder;
   } else if (formulation_name == "ComplexEForm" ||
@@ -22,8 +22,8 @@ createProblemBuilder(std::string &formulation_name) {
     hephaestus::FrequencyDomainProblemBuilder *builder =
         new hephaestus::FrequencyDomainProblemBuilder();
     ;
-    // hephaestus::SteadyFormulation *_formulation =
-    //     hephaestus::Factory::createSteadyFormulation();
+    // hephaestus::FrequencyDomainFormulation *_formulation =
+    //     hephaestus::Factory::createFrequencyDomainFormulation();
     // builder->SetFormulation(_formulation);
     return builder;
 

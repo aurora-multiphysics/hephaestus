@@ -32,7 +32,6 @@ public:
   int num_procs_;
 
   Problem() = default;
-  explicit Problem(const hephaestus::InputParameters &params);
 
   virtual hephaestus::EquationSystem *GetEquationSystem() = 0;
   virtual mfem::Operator *GetOperator() = 0;
@@ -44,7 +43,6 @@ private:
 
 public:
   ProblemBuilder(){};
-  ProblemBuilder(const hephaestus::InputParameters &params){};
 
   virtual void SetMesh(std::shared_ptr<mfem::ParMesh> pmesh) {
     this->GetProblem()->pmesh = pmesh;

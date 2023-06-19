@@ -150,7 +150,7 @@ protected:
 TEST_F(TestTeam7, CheckRun) {
   hephaestus::InputParameters params(test_params());
 
-  hephaestus::TransientProblemBuilder *problem_builder =
+  hephaestus::TimeDomainProblemBuilder *problem_builder =
       new hephaestus::AFormulation();
   hephaestus::BCMap bc_map(
       params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
@@ -183,7 +183,7 @@ TEST_F(TestTeam7, CheckRun) {
 
   hephaestus::ProblemBuildSequencer sequencer(problem_builder);
   sequencer.ConstructEquationSystemProblem();
-  std::unique_ptr<hephaestus::TransientProblem> problem =
+  std::unique_ptr<hephaestus::TimeDomainProblem> problem =
       problem_builder->ReturnProblem();
   hephaestus::InputParameters exec_params;
   exec_params.SetParam("TimeStep", float(0.001));
