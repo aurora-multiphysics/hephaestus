@@ -1,15 +1,15 @@
-#include "eb_dual_solver.hpp"
+#include "hj_dual_formulation.hpp"
 
 namespace hephaestus {
 
-EBDualFormulation::EBDualFormulation() : DualFormulation() {
-  alpha_coef_name = std::string("magnetic_reluctivity");
-  beta_coef_name = std::string("electrical_conductivity");
-  h_curl_var_name = std::string("electric_field");
-  h_div_var_name = std::string("magnetic_flux_density");
+HJDualFormulation::HJDualFormulation() : DualFormulation() {
+  alpha_coef_name = std::string("electrical_resistivity");
+  beta_coef_name = std::string("magnetic_permeability");
+  h_curl_var_name = std::string("magnetic_field");
+  h_div_var_name = std::string("current_density");
 }
 
-void EBDualFormulation::RegisterCoefficients(
+void HJDualFormulation::RegisterCoefficients(
     hephaestus::DomainProperties &domain_properties) {
   if (domain_properties.scalar_property_map.count("magnetic_permeability") ==
       0) {
@@ -27,7 +27,7 @@ void EBDualFormulation::RegisterCoefficients(
   domain_properties.scalar_property_map[alpha_coef_name] =
       new mfem::TransformedCoefficient(
           &oneCoef,
-          domain_properties.scalar_property_map["magnetic_permeability"],
+          domain_properties.scalar_property_map["electrical_conductivity"],
           fracFunc);
 }
 

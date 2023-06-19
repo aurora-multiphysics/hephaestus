@@ -1,17 +1,42 @@
-#include "complex_e_form.hpp"
+#include "complex_a_formulation.hpp"
 
 namespace hephaestus {
 
-ComplexEFormulation::ComplexEFormulation()
-    : hephaestus::ComplexMaxwellFormulation() {
-  h_curl_var_name = std::string("electric_field");
+ComplexAFormulation::ComplexAFormulation() : ComplexMaxwellFormulation() {
+  frequency_coef_name = std::string("frequency");
+  h_curl_var_name = std::string("magnetic_vector_potential");
 
   alpha_coef_name = std::string("magnetic_reluctivity");
   beta_coef_name = std::string("electrical_conductivity");
   zeta_coef_name = std::string("dielectric_permittivity");
 };
 
-void ComplexEFormulation::RegisterCoefficients(
+void ComplexAFormulation::RegisterAuxSolvers(
+    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+    hephaestus::AuxSolvers &auxsolvers) {
+  std::vector<std::string> aux_var_names;
+  std::string b_field_name = "magnetic_flux_density";
+  if (variables.Get(b_field_name + "_real") != NULL) {
+    // if (myid_ == 0) {
+    std::cout << b_field_name + "_real"
+              << " found in variables: building auxvar " << std::endl;
+    // }
+    hephaestus::InputParameters b_field_aux_params;
+    b_field_aux_params.SetParam("VariableName", h_curl_var_name + "_real");
+    b_field_aux_params.SetParam("CurlVariableName", b_field_name + "_real");
+    auxsolvers.Register("_magnetic_flux_density_re_aux",
+                        new hephaestus::CurlAuxSolver(b_field_aux_params),
+                        true);
+
+    b_field_aux_params.SetParam("VariableName", h_curl_var_name + "_imag");
+    b_field_aux_params.SetParam("CurlVariableName", b_field_name + "_imag");
+    auxsolvers.Register("_magnetic_flux_density_im_aux",
+                        new hephaestus::CurlAuxSolver(b_field_aux_params),
+                        true);
+  }
+}
+
+void ComplexAFormulation::RegisterCoefficients(
     hephaestus::DomainProperties &domain_properties) {
 
   freqCoef = dynamic_cast<mfem::ConstantCoefficient *>(

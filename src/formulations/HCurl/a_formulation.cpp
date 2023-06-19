@@ -13,7 +13,7 @@
 //* Magnetic field H = ν∇×A
 //* Current density J = Jᵉ -σdA/dt
 
-#include "aform_solver.hpp"
+#include "a_formulation.hpp"
 
 namespace hephaestus {
 

@@ -1,6 +1,6 @@
 #pragma once
 #include "../common/pfem_extras.hpp"
-#include "dual_solver.hpp"
+#include "dual_formulation.hpp"
 #include "inputs.hpp"
 
 namespace hephaestus {

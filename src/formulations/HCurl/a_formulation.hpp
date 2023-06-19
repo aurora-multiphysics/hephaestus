@@ -1,6 +1,6 @@
 #pragma once
 #include "../common/pfem_extras.hpp"
-#include "hcurl_solver.hpp"
+#include "hcurl_formulation.hpp"
 #include "inputs.hpp"
 
 namespace hephaestus {

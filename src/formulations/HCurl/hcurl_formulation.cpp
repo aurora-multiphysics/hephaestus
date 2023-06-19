@@ -1,80 +1,74 @@
 // Solves the equations
 // ∇⋅s0 = 0
-// ∇×(αv) - βu = s0
-// dv/dt = -∇×u
+// ∇×(α∇×u) + βdu/dt = s0
 
 // where
 // s0 ∈ H(div) source field
-// v ∈ H(div)
 // u ∈ H(curl)
 // p ∈ H1
 
+// Dirichlet boundaries constrain du/dt
+// Integrated boundaries constrain (α∇×u) × n
+
 // Weak form (Space discretisation)
 // -(s0, ∇ p') + <n.s0, p'> = 0
-// (αv, ∇×u') - (βu, u') - (s0, u') - <(αv) × n, u'> = 0
-// (dv/dt, v') + (∇×u, v') = 0
+// (α∇×u, ∇×u') + (βdu/dt, u') - (s0, u') - <(α∇×u) × n, u'> = 0
 
 // Time discretisation using implicit scheme:
 // Unknowns
 // s0_{n+1} ∈ H(div) source field, where s0 = -β∇p
-// dv/dt_{n+1} ∈ H(div)
-// u_{n+1} ∈ H(curl)
+// du/dt_{n+1} ∈ H(curl)
 // p_{n+1} ∈ H1
 
 // Fully discretised equations
 // -(s0_{n+1}, ∇ p') + <n.s0_{n+1}, p'> = 0
-// (αv_{n}, ∇×u') - (αdt∇×u_{n+1}, ∇×u') - (βu_{n+1}, u') - (s0_{n+1}, u') -
-// <(αv) × n, u'> = 0
-// (dv/dt_{n+1}, v') + (∇×u_{n+1}, v') = 0
+// (α∇×u_{n}, ∇×u') + (αdt∇×du/dt_{n+1}, ∇×u') + (βdu/dt_{n+1}, u')
+// - (s0_{n+1}, u') - <(α∇×u_{n+1}) × n, u'> = 0
 // using
-// v_{n+1} = v_{n} + dt dv/dt_{n+1} = v_{n} - dt ∇×u_{n+1}
+// u_{n+1} = u_{n} + dt du/dt_{n+1}
 
 // Rewritten as
 // a0(p_{n+1}, p') = b0(p')
-// a1(u_{n+1}, u') = b1(u')
-// dv/dt_{n+1} = -∇×u
+// a1(du/dt_{n+1}, u') = b1(u')
 
 // where
 // a0(p, p') = (β ∇ p, ∇ p')
 // b0(p') = <n.s0, p'>
 // a1(u, u') = (βu, u') + (αdt∇×u, ∇×u')
-// b1(u') = (s0_{n+1}, u') + (αv_{n}, ∇×u') + <(αdt∇×u_{n+1}) × n, u'>
-
-#include "dual_solver.hpp"
+// b1(u') = (s0_{n+1}, u') - (α∇×u_{n}, ∇×u') + <(α∇×u_{n+1}) × n, u'>
+#include "hcurl_formulation.hpp"
 
 namespace hephaestus {
 
-DualFormulation::DualFormulation() : TimeDomainFormulation() {
+HCurlFormulation::HCurlFormulation() : TimeDomainFormulation() {
   alpha_coef_name = std::string("alpha");
   beta_coef_name = std::string("beta");
   h_curl_var_name = std::string("h_curl_var");
-  h_div_var_name = std::string("h_div_var");
 }
 
 std::unique_ptr<hephaestus::TimeDependentEquationSystem>
-DualFormulation::CreateTimeDependentEquationSystem() const {
+HCurlFormulation::CreateTimeDependentEquationSystem() const {
   hephaestus::InputParameters weak_form_params;
   weak_form_params.SetParam("HCurlVarName", h_curl_var_name);
-  weak_form_params.SetParam("HDivVarName", h_div_var_name);
   weak_form_params.SetParam("AlphaCoefName", alpha_coef_name);
   weak_form_params.SetParam("BetaCoefName", beta_coef_name);
-  return std::make_unique<hephaestus::WeakCurlEquationSystem>(weak_form_params);
+  return std::make_unique<hephaestus::CurlCurlEquationSystem>(weak_form_params);
 }
 
 std::unique_ptr<hephaestus::TimeDomainEquationSystemOperator>
-DualFormulation::CreateTimeDomainEquationSystemOperator(
+HCurlFormulation::CreateTimeDomainEquationSystemOperator(
     mfem::ParMesh &pmesh,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
     hephaestus::Sources &sources,
     hephaestus::InputParameters &solver_options) const {
-  return std::make_unique<hephaestus::DualOperator>(pmesh, fespaces, variables,
-                                                    bc_map, domain_properties,
-                                                    sources, solver_options);
+  return std::make_unique<hephaestus::HCurlOperator>(pmesh, fespaces, variables,
+                                                     bc_map, domain_properties,
+                                                     sources, solver_options);
 };
 
-void DualFormulation::RegisterMissingVariables(
+void HCurlFormulation::RegisterMissingVariables(
     mfem::ParMesh &pmesh,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables) {
@@ -101,30 +95,9 @@ void DualFormulation::RegisterMissingVariables(
           h_curl_var_name),
       new mfem::ParGridFunction(variables.Get(h_curl_var_name)->ParFESpace()),
       true);
-
-  // Register default ParGridFunctions of state variables if not provided
-  if (!variables.Has(h_div_var_name)) {
-    if (myid == 0) {
-      std::cout
-          << h_div_var_name
-          << " not found in variables: building gridfunction from defaults"
-          << std::endl;
-    }
-    fespaces.Register(
-        "_HDivFESpace",
-        new mfem::common::RT_ParFESpace(&pmesh, 2, pmesh.Dimension()), true);
-    variables.Register(h_div_var_name,
-                       new mfem::ParGridFunction(fespaces.Get("_HDivFESpace")),
-                       true);
-  };
-  variables.Register(
-      hephaestus::TimeDependentEquationSystem::GetTimeDerivativeName(
-          h_div_var_name),
-      new mfem::ParGridFunction(variables.Get(h_div_var_name)->ParFESpace()),
-      true);
 };
 
-void DualFormulation::RegisterCoefficients(
+void HCurlFormulation::RegisterCoefficients(
     hephaestus::DomainProperties &domain_properties) {
   if (domain_properties.scalar_property_map.count("alpha") == 0) {
     domain_properties.scalar_property_map["alpha"] = new mfem::PWCoefficient(
@@ -136,39 +109,7 @@ void DualFormulation::RegisterCoefficients(
   }
 }
 
-void DualOperator::SetVariables() {
-  TimeDomainEquationSystemOperator::SetVariables();
-  // Blocks for solution vector are smaller than the operator size
-  // for DualOperator, as curl is stored separately.
-  // Block operator only has the HCurl TrueVSize;
-  block_trueOffsets.SetSize(local_test_vars.size());
-  block_trueOffsets[0] = 0;
-  for (unsigned int ind = 0; ind < local_test_vars.size() - 1; ++ind) {
-    block_trueOffsets[ind + 1] =
-        local_test_vars.at(ind)->ParFESpace()->TrueVSize();
-  }
-  block_trueOffsets.PartialSum();
-
-  trueX.Update(block_trueOffsets);
-  trueRhs.Update(block_trueOffsets);
-};
-
-void DualOperator::Init(mfem::Vector &X) {
-  TimeDomainEquationSystemOperator::Init(X);
-  hephaestus::WeakCurlEquationSystem *eqs =
-      dynamic_cast<hephaestus::WeakCurlEquationSystem *>(_equation_system);
-  h_curl_var_name = eqs->h_curl_var_name;
-  h_div_var_name = eqs->h_div_var_name;
-  u_ = _variables.Get(h_curl_var_name);
-  dv_ = _variables.Get(GetTimeDerivativeName(h_div_var_name));
-  HCurlFESpace_ = u_->ParFESpace();
-  HDivFESpace_ = dv_->ParFESpace();
-  curl = new mfem::ParDiscreteLinearOperator(HCurlFESpace_, HDivFESpace_);
-  curl->AddDomainInterpolator(new mfem::CurlInterpolator);
-  curl->Assemble();
-}
-
-DualOperator::DualOperator(
+HCurlOperator::HCurlOperator(
     mfem::ParMesh &pmesh,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
@@ -178,8 +119,24 @@ DualOperator::DualOperator(
                                        domain_properties, sources,
                                        solver_options) {}
 
-void DualOperator::ImplicitSolve(const double dt, const mfem::Vector &X,
-                                 mfem::Vector &dX_dt) {
+/*
+This is the main computational code that computes dX/dt implicitly
+where X is the state vector containing p, u and v.
+
+Unknowns
+s0_{n+1} ∈ H(div) source field, where s0 = -β∇p
+du/dt_{n+1} ∈ H(curl)
+p_{n+1} ∈ H1
+
+Fully discretised equations
+-(s0_{n+1}, ∇ p') + <n.s0_{n+1}, p'> = 0
+(α∇×u_{n}, ∇×u') + (αdt∇×du/dt_{n+1}, ∇×u') + (βdu/dt_{n+1}, u')
+- (s0_{n+1}, u') - <(α∇×u_{n+1}) × n, u'> = 0
+using
+u_{n+1} = u_{n} + dt du/dt_{n+1}
+*/
+void HCurlOperator::ImplicitSolve(const double dt, const mfem::Vector &X,
+                                  mfem::Vector &dX_dt) {
   dX_dt = 0.0;
   for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
     local_test_vars.at(ind)->MakeRef(local_test_vars.at(ind)->ParFESpace(),
@@ -202,13 +159,6 @@ void DualOperator::ImplicitSolve(const double dt, const mfem::Vector &X,
       _equation_system->test_pfespaces.at(0));
   a1_solver->Mult(trueRhs, trueX);
   _equation_system->RecoverFEMSolution(trueX, _variables);
-
-  // Subtract off contribution from source
-  _sources.SubtractSources(u_);
-
-  // dv/dt_{n+1} = -∇×u
-  curl->Mult(*u_, *dv_);
-  *dv_ *= -1.0;
 }
 
 } // namespace hephaestus

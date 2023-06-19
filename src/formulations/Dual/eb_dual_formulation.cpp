@@ -1,28 +1,15 @@
-//* Solves:
-//* ∇×(ν∇×E) + σdE/dt = -dJᵉ/dt
-//*
-//* in weak form
-//* (ν∇×E, ∇×E') + (σdE/dt, E') + (dJᵉ/dt, E') - <(ν∇×E)×n, E'>  = 0
-
-//* where:
-//* reluctivity ν = 1/μ
-//* electrical_conductivity σ=1/ρ
-//* Electric Field E
-//* Current density J = σE
-//* Magnetic flux density, dB/dt = -∇×E
-//* Magnetic field dH/dt = -ν∇×E
-
-#include "eform_solver.hpp"
+#include "eb_dual_formulation.hpp"
 
 namespace hephaestus {
 
-EFormulation::EFormulation() : HCurlFormulation() {
+EBDualFormulation::EBDualFormulation() : DualFormulation() {
   alpha_coef_name = std::string("magnetic_reluctivity");
   beta_coef_name = std::string("electrical_conductivity");
   h_curl_var_name = std::string("electric_field");
+  h_div_var_name = std::string("magnetic_flux_density");
 }
 
-void EFormulation::RegisterCoefficients(
+void EBDualFormulation::RegisterCoefficients(
     hephaestus::DomainProperties &domain_properties) {
   if (domain_properties.scalar_property_map.count("magnetic_permeability") ==
       0) {

@@ -26,7 +26,7 @@
 //* H×n at boundary: ν∇×A (Integrated)
 //* -σ(dA/dt + ∇ V)·n (J·n, Neumann), V (potential, Dirichlet)
 
-#include "av_solver.hpp"
+#include "av_formulation.hpp"
 
 namespace hephaestus {
 
