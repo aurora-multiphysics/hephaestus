@@ -131,11 +131,6 @@ public:
     this->problem->ode_solver = new mfem::BackwardEulerSolver;
     this->problem->ode_solver->Init(*(this->problem->td_operator));
   };
-
-  virtual void InitializePostprocessors() override {
-    this->problem->postprocessors.Init(this->problem->gridfunctions,
-                                       this->problem->domain_properties);
-  };
 };
 
 } // namespace hephaestus

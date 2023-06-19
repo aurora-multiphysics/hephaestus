@@ -109,11 +109,6 @@ public:
   };
 
   virtual void ConstructSolver() override{};
-
-  virtual void InitializePostprocessors() override {
-    this->problem->postprocessors.Init(this->problem->gridfunctions,
-                                       this->problem->domain_properties);
-  };
 };
 
 } // namespace hephaestus
