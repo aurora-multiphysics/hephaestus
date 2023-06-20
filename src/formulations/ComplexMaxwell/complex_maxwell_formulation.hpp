@@ -70,26 +70,10 @@ protected:
 public:
   ComplexMaxwellFormulation();
 
-  virtual std::unique_ptr<hephaestus::FrequencyDomainEquationSystemOperator>
-  CreateFrequencyDomainEquationSystemOperator(
-      mfem::ParMesh &pmesh,
-      mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-      mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-      hephaestus::BCMap &bc_map,
-      hephaestus::DomainProperties &domain_properties,
-      hephaestus::Sources &sources,
-      hephaestus::InputParameters &solver_options) const override;
+  virtual void ConstructOperator() override;
 
-  virtual void RegisterMissingVariables(
-      mfem::ParMesh &pmesh,
-      mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-      mfem::NamedFieldsMap<mfem::ParGridFunction> &variables) override;
+  virtual void RegisterGridFunctions() override;
 
-  virtual void
-  RegisterAuxSolvers(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-                     hephaestus::AuxSolvers &auxsolvers) override{};
-
-  virtual void RegisterCoefficients(
-      hephaestus::DomainProperties &domain_properties) override;
+  virtual void RegisterCoefficients() override;
 };
 } // namespace hephaestus

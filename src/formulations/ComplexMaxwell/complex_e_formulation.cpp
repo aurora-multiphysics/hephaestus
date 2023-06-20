@@ -11,8 +11,9 @@ ComplexEFormulation::ComplexEFormulation()
   zeta_coef_name = std::string("dielectric_permittivity");
 };
 
-void ComplexEFormulation::RegisterCoefficients(
-    hephaestus::DomainProperties &domain_properties) {
+void ComplexEFormulation::RegisterCoefficients() {
+  hephaestus::DomainProperties &domain_properties =
+      this->GetProblem()->domain_properties;
 
   freqCoef = dynamic_cast<mfem::ConstantCoefficient *>(
       domain_properties.scalar_property_map[frequency_coef_name]);

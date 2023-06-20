@@ -11,9 +11,9 @@ ComplexAFormulation::ComplexAFormulation() : ComplexMaxwellFormulation() {
   zeta_coef_name = std::string("dielectric_permittivity");
 };
 
-void ComplexAFormulation::RegisterAuxSolvers(
-    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::AuxSolvers &auxsolvers) {
+void ComplexAFormulation::RegisterAuxSolvers() {
+  hephaestus::GridFunctions &variables = this->GetProblem()->gridfunctions;
+  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
   std::vector<std::string> aux_var_names;
   std::string b_field_name = "magnetic_flux_density";
   if (variables.Get(b_field_name + "_real") != NULL) {
@@ -36,8 +36,9 @@ void ComplexAFormulation::RegisterAuxSolvers(
   }
 }
 
-void ComplexAFormulation::RegisterCoefficients(
-    hephaestus::DomainProperties &domain_properties) {
+void ComplexAFormulation::RegisterCoefficients() {
+  hephaestus::DomainProperties &domain_properties =
+      this->GetProblem()->domain_properties;
 
   freqCoef = dynamic_cast<mfem::ConstantCoefficient *>(
       domain_properties.scalar_property_map[frequency_coef_name]);

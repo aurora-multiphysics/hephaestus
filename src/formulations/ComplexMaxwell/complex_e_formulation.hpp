@@ -28,11 +28,6 @@ class ComplexEFormulation : public hephaestus::ComplexMaxwellFormulation {
 public:
   ComplexEFormulation();
 
-  virtual void
-  RegisterAuxSolvers(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-                     hephaestus::AuxSolvers &auxsolvers) override{};
-
-  virtual void RegisterCoefficients(
-      hephaestus::DomainProperties &domain_properties) override;
+  virtual void RegisterCoefficients() override;
 };
 } // namespace hephaestus

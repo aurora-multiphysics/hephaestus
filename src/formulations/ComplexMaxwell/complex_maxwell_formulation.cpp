@@ -108,55 +108,45 @@ ComplexMaxwellFormulation::ComplexMaxwellFormulation()
   zeta_coef_name = std::string("zeta");
   alpha_coef_name = std::string("alpha");
   beta_coef_name = std::string("beta");
-};
+}
 
-std::unique_ptr<hephaestus::FrequencyDomainEquationSystemOperator>
-ComplexMaxwellFormulation::CreateFrequencyDomainEquationSystemOperator(
-    mfem::ParMesh &pmesh,
-    mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
-    hephaestus::Sources &sources,
-    hephaestus::InputParameters &solver_options) const {
-
+void ComplexMaxwellFormulation::ConstructOperator() {
+  hephaestus::InputParameters &solver_options =
+      this->GetProblem()->solver_options;
   solver_options.SetParam("HCurlVarName", h_curl_var_name);
   solver_options.SetParam("StiffnessCoefName", alpha_coef_name);
   solver_options.SetParam("MassCoefName", mass_coef_name);
   solver_options.SetParam("LossCoefName", loss_coef_name);
+  this->problem->fd_operator =
+      std::make_unique<hephaestus::ComplexMaxwellOperator>(
+          *(this->problem->pmesh), this->problem->fespaces,
+          this->problem->gridfunctions, this->problem->bc_map,
+          this->problem->domain_properties, this->problem->sources,
+          this->problem->solver_options);
+  this->problem->fd_operator->SetVariables();
+}
 
-  return std::make_unique<hephaestus::ComplexMaxwellOperator>(
-      pmesh, fespaces, variables, bc_map, domain_properties, sources,
-      solver_options);
-};
+void ComplexMaxwellFormulation::RegisterGridFunctions() {
+  int &myid = this->GetProblem()->myid_;
+  hephaestus::GridFunctions &variables = this->GetProblem()->gridfunctions;
+  hephaestus::FESpaces &fespaces = this->GetProblem()->fespaces;
 
-void ComplexMaxwellFormulation::RegisterMissingVariables(
-    mfem::ParMesh &pmesh,
-    mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables) {
-  int myid;
-  MPI_Comm_rank(pmesh.GetComm(), &myid);
   // Register default ParGridFunctions of state variables if not provided
   if (!variables.Has(h_curl_var_name + "_real")) {
     if (myid == 0) {
-      std::cout
-          << h_curl_var_name
-          << " not found in variables: building gridfunction from defaults"
-          << std::endl;
+      MFEM_WARNING(
+          h_curl_var_name
+          << " not found in variables: building gridfunction from defaults");
     }
-    fespaces.Register(
-        "_HCurlFESpace",
-        new mfem::common::ND_ParFESpace(&pmesh, 1, pmesh.Dimension()), true);
-    variables.Register(h_curl_var_name + "_real",
-                       new mfem::ParGridFunction(fespaces.Get("_HCurlFESpace")),
-                       true);
-    variables.Register(h_curl_var_name + "_imag",
-                       new mfem::ParGridFunction(fespaces.Get("_HCurlFESpace")),
-                       true);
+    AddFESpace(std::string("_HCurlFESpace"), std::string("ND_3D_P1"));
+    AddGridFunction(h_curl_var_name + "_real", std::string("_HCurlFESpace"));
+    AddGridFunction(h_curl_var_name + "_imag", std::string("_HCurlFESpace"));
   };
-};
+}
 
-void ComplexMaxwellFormulation::RegisterCoefficients(
-    hephaestus::DomainProperties &domain_properties) {
+void ComplexMaxwellFormulation::RegisterCoefficients() {
+  hephaestus::DomainProperties &domain_properties =
+      this->GetProblem()->domain_properties;
 
   freqCoef = dynamic_cast<mfem::ConstantCoefficient *>(
       domain_properties.scalar_property_map[frequency_coef_name]);
