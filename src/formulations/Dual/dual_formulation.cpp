@@ -61,17 +61,15 @@ void DualFormulation::ConstructEquationSystem() {
       std::make_unique<hephaestus::WeakCurlEquationSystem>(weak_form_params);
 }
 
-std::unique_ptr<hephaestus::TimeDomainEquationSystemOperator>
-DualFormulation::CreateTimeDomainEquationSystemOperator(
-    mfem::ParMesh &pmesh,
-    mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
-    hephaestus::Sources &sources,
-    hephaestus::InputParameters &solver_options) const {
-  return std::make_unique<hephaestus::DualOperator>(pmesh, fespaces, variables,
-                                                    bc_map, domain_properties,
-                                                    sources, solver_options);
+void DualFormulation::ConstructOperator() {
+  this->problem->td_operator = std::make_unique<hephaestus::DualOperator>(
+      *(this->problem->pmesh), this->problem->fespaces,
+      this->problem->gridfunctions, this->problem->bc_map,
+      this->problem->domain_properties, this->problem->sources,
+      this->problem->solver_options);
+  this->problem->td_operator->SetEquationSystem(
+      this->problem->td_equation_system.get());
+  this->problem->td_operator->SetVariables();
 };
 
 void DualFormulation::RegisterGridFunctions() {

@@ -47,17 +47,15 @@ void AVFormulation::ConstructEquationSystem() {
       std::make_unique<hephaestus::AVEquationSystem>(av_system_params);
 }
 
-std::unique_ptr<hephaestus::TimeDomainEquationSystemOperator>
-AVFormulation::CreateTimeDomainEquationSystemOperator(
-    mfem::ParMesh &pmesh,
-    mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
-    hephaestus::Sources &sources,
-    hephaestus::InputParameters &solver_options) const {
-  return std::make_unique<hephaestus::AVOperator>(pmesh, fespaces, variables,
-                                                  bc_map, domain_properties,
-                                                  sources, solver_options);
+void AVFormulation::ConstructOperator() {
+  this->problem->td_operator = std::make_unique<hephaestus::AVOperator>(
+      *(this->problem->pmesh), this->problem->fespaces,
+      this->problem->gridfunctions, this->problem->bc_map,
+      this->problem->domain_properties, this->problem->sources,
+      this->problem->solver_options);
+  this->problem->td_operator->SetEquationSystem(
+      this->problem->td_equation_system.get());
+  this->problem->td_operator->SetVariables();
 };
 
 void AVFormulation::RegisterGridFunctions() {
@@ -172,6 +170,5 @@ void AVOperator::ImplicitSolve(const double dt, const mfem::Vector &X,
 
   solver->Mult(trueRhs, trueX);
   _equation_system->RecoverFEMSolution(trueX, _variables);
-
-} // namespace hephaestus
+}
 } // namespace hephaestus

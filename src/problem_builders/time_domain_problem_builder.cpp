@@ -2,19 +2,6 @@
 
 namespace hephaestus {
 
-std::unique_ptr<hephaestus::TimeDomainEquationSystemOperator>
-TimeDomainProblemBuilder::CreateTimeDomainEquationSystemOperator(
-    mfem::ParMesh &pmesh,
-    mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
-    hephaestus::Sources &sources,
-    hephaestus::InputParameters &solver_options) const {
-  return std::make_unique<hephaestus::TimeDomainEquationSystemOperator>(
-      pmesh, fespaces, variables, bc_map, domain_properties, sources,
-      solver_options);
-};
-
 std::vector<mfem::ParGridFunction *>
 TimeDomainProblemBuilder::RegisterTimeDerivatives(
     std::vector<std::string> gridfunction_names,

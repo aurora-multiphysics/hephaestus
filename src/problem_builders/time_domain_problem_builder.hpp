@@ -36,16 +36,6 @@ public:
     return std::move(this->problem);
   };
 
-  virtual std::unique_ptr<hephaestus::TimeDomainEquationSystemOperator>
-  CreateTimeDomainEquationSystemOperator(
-      mfem::ParMesh &pmesh,
-      mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-      mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-      hephaestus::BCMap &bc_map,
-      hephaestus::DomainProperties &domain_properties,
-      hephaestus::Sources &sources,
-      hephaestus::InputParameters &solver_options) const;
-
   static std::vector<mfem::ParGridFunction *> RegisterTimeDerivatives(
       std::vector<std::string> gridfunction_names,
       mfem::NamedFieldsMap<mfem::ParGridFunction> &gridfunctions);
@@ -84,11 +74,12 @@ public:
   };
 
   virtual void ConstructOperator() override {
-    this->problem->td_operator = this->CreateTimeDomainEquationSystemOperator(
-        *(this->problem->pmesh), this->problem->fespaces,
-        this->problem->gridfunctions, this->problem->bc_map,
-        this->problem->domain_properties, this->problem->sources,
-        this->problem->solver_options);
+    this->problem->td_operator =
+        std::make_unique<hephaestus::TimeDomainEquationSystemOperator>(
+            *(this->problem->pmesh), this->problem->fespaces,
+            this->problem->gridfunctions, this->problem->bc_map,
+            this->problem->domain_properties, this->problem->sources,
+            this->problem->solver_options);
     this->problem->td_operator->SetEquationSystem(
         this->problem->td_equation_system.get());
     this->problem->td_operator->SetVariables();
