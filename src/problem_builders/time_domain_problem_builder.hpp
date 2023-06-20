@@ -53,26 +53,15 @@ public:
       std::vector<std::string> gridfunction_names,
       mfem::NamedFieldsMap<mfem::ParGridFunction> &gridfunctions);
 
-  virtual void RegisterMissingVariables(
-      mfem::ParMesh &pmesh,
-      mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-      mfem::NamedFieldsMap<mfem::ParGridFunction> &variables){};
-
   virtual void RegisterFESpaces() override{};
 
   virtual void RegisterGridFunctions() override {
-
     std::vector<std::string> gridfunction_names;
-
     for (auto const &[name, gf] : this->problem->gridfunctions) {
       gridfunction_names.push_back(name);
     }
     this->RegisterTimeDerivatives(gridfunction_names,
                                   this->problem->gridfunctions);
-
-    this->RegisterMissingVariables(*(this->problem->pmesh),
-                                   this->problem->fespaces,
-                                   this->problem->gridfunctions);
   };
 
   virtual void RegisterAuxSolvers() override{};

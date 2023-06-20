@@ -60,54 +60,34 @@ AVFormulation::CreateTimeDomainEquationSystemOperator(
                                                   sources, solver_options);
 };
 
-void AVFormulation::RegisterMissingVariables(
-    mfem::ParMesh &pmesh,
-    mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables) {
-  int myid;
-  MPI_Comm_rank(pmesh.GetComm(), &myid);
+void AVFormulation::RegisterGridFunctions() {
+  int &myid = this->GetProblem()->myid_;
+  hephaestus::GridFunctions &variables = this->GetProblem()->gridfunctions;
 
   // Register default ParGridFunctions of state variables if not provided
   if (!variables.Has(vector_potential_name)) {
     if (myid == 0) {
-      std::cout
-          << vector_potential_name
-          << " not found in variables: building gridfunction from defaults"
-          << std::endl;
+      MFEM_WARNING(
+          vector_potential_name
+          << " not found in variables: building gridfunction from defaults");
     }
-    fespaces.Register(
-        "_HCurlFESpace",
-        new mfem::common::ND_ParFESpace(&pmesh, 2, pmesh.Dimension()), true);
-    variables.Register(vector_potential_name,
-                       new mfem::ParGridFunction(fespaces.Get("_HCurlFESpace")),
-                       true);
-  };
-  variables.Register(
-      hephaestus::TimeDependentEquationSystem::GetTimeDerivativeName(
-          vector_potential_name),
-      new mfem::ParGridFunction(
-          variables.Get(vector_potential_name)->ParFESpace()),
-      true);
+    AddFESpace(std::string("_HCurlFESpace"), std::string("ND_3D_P2"));
+    AddGridFunction(vector_potential_name, std::string("_HCurlFESpace"));
+  }
+
+  // Register default ParGridFunctions of state variables if not provided
   if (!variables.Has(scalar_potential_name)) {
     if (myid == 0) {
-      std::cout
-          << scalar_potential_name
-          << " not found in variables: building gridfunction from defaults"
-          << std::endl;
+      MFEM_WARNING(
+          scalar_potential_name
+          << " not found in variables: building gridfunction from defaults");
     }
-    fespaces.Register(
-        "_H1FESpace",
-        new mfem::common::H1_ParFESpace(&pmesh, 2, pmesh.Dimension()), true);
-    variables.Register(scalar_potential_name,
-                       new mfem::ParGridFunction(fespaces.Get("_H1FESpace")),
-                       true);
-  };
-  variables.Register(
-      hephaestus::TimeDependentEquationSystem::GetTimeDerivativeName(
-          scalar_potential_name),
-      new mfem::ParGridFunction(
-          variables.Get(scalar_potential_name)->ParFESpace()),
-      true);
+    AddFESpace(std::string("_H1FESpace"), std::string("H1_3D_P2"));
+    AddGridFunction(scalar_potential_name, std::string("_H1FESpace"));
+  }
+
+  // Register time derivatives
+  TimeDomainProblemBuilder::RegisterGridFunctions();
 };
 
 void AVFormulation::RegisterCoefficients() {

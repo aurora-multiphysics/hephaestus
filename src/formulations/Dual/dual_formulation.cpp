@@ -74,54 +74,34 @@ DualFormulation::CreateTimeDomainEquationSystemOperator(
                                                     sources, solver_options);
 };
 
-void DualFormulation::RegisterMissingVariables(
-    mfem::ParMesh &pmesh,
-    mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables) {
-  int myid;
-  MPI_Comm_rank(pmesh.GetComm(), &myid);
+void DualFormulation::RegisterGridFunctions() {
+  int &myid = this->GetProblem()->myid_;
+  hephaestus::GridFunctions &variables = this->GetProblem()->gridfunctions;
 
   // Register default ParGridFunctions of state variables if not provided
   if (!variables.Has(h_curl_var_name)) {
     if (myid == 0) {
-      std::cout
-          << h_curl_var_name
-          << " not found in variables: building gridfunction from defaults"
-          << std::endl;
+      MFEM_WARNING(
+          h_curl_var_name
+          << " not found in variables: building gridfunction from defaults");
     }
-    fespaces.Register(
-        "_HCurlFESpace",
-        new mfem::common::ND_ParFESpace(&pmesh, 2, pmesh.Dimension()), true);
-    variables.Register(h_curl_var_name,
-                       new mfem::ParGridFunction(fespaces.Get("_HCurlFESpace")),
-                       true);
-  };
-  variables.Register(
-      hephaestus::TimeDependentEquationSystem::GetTimeDerivativeName(
-          h_curl_var_name),
-      new mfem::ParGridFunction(variables.Get(h_curl_var_name)->ParFESpace()),
-      true);
+    AddFESpace(std::string("_HCurlFESpace"), std::string("ND_3D_P2"));
+    AddGridFunction(h_curl_var_name, std::string("_HCurlFESpace"));
+  }
 
   // Register default ParGridFunctions of state variables if not provided
   if (!variables.Has(h_div_var_name)) {
     if (myid == 0) {
-      std::cout
-          << h_div_var_name
-          << " not found in variables: building gridfunction from defaults"
-          << std::endl;
+      MFEM_WARNING(
+          h_div_var_name
+          << " not found in variables: building gridfunction from defaults");
     }
-    fespaces.Register(
-        "_HDivFESpace",
-        new mfem::common::RT_ParFESpace(&pmesh, 2, pmesh.Dimension()), true);
-    variables.Register(h_div_var_name,
-                       new mfem::ParGridFunction(fespaces.Get("_HDivFESpace")),
-                       true);
-  };
-  variables.Register(
-      hephaestus::TimeDependentEquationSystem::GetTimeDerivativeName(
-          h_div_var_name),
-      new mfem::ParGridFunction(variables.Get(h_div_var_name)->ParFESpace()),
-      true);
+    AddFESpace(std::string("_HDivFESpace"), std::string("RT_3D_P3"));
+    AddGridFunction(h_div_var_name, std::string("_HDivFESpace"));
+  }
+
+  // Register time derivatives
+  TimeDomainProblemBuilder::RegisterGridFunctions();
 };
 
 void DualFormulation::RegisterCoefficients() {

@@ -47,19 +47,21 @@ void ProblemBuilder::SetCoefficients(
 
 void ProblemBuilder::AddFESpace(std::string fespace_name, std::string fec_name,
                                 int vdim, int ordering) {
-  if (!this->GetProblem()->fespaces.Has(fespace_name)) {
+  if (!this->GetProblem()->fecs.Has(fec_name)) {
     mfem::FiniteElementCollection *fec =
         mfem::FiniteElementCollection::New(fec_name.c_str());
     this->GetProblem()->fecs.Register(fec_name, fec, true);
+  }
 
+  if (!this->GetProblem()->fespaces.Has(fespace_name)) {
     mfem::ParMesh *pmesh = this->GetProblem()->pmesh.get();
     if (pmesh == NULL) {
       MFEM_ABORT("ParMesh not found when trying to add " << fespace_name
                                                          << " to fespaces.");
     }
-
     mfem::ParFiniteElementSpace *pfes = new mfem::ParFiniteElementSpace(
-        this->GetProblem()->pmesh.get(), fec, vdim, ordering);
+        this->GetProblem()->pmesh.get(), this->GetProblem()->fecs.Get(fec_name),
+        vdim, ordering);
 
     this->GetProblem()->fespaces.Register(fespace_name, pfes, true);
   }

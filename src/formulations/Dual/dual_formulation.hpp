@@ -22,10 +22,7 @@ public:
       hephaestus::Sources &sources,
       hephaestus::InputParameters &solver_options) const override;
 
-  virtual void RegisterMissingVariables(
-      mfem::ParMesh &pmesh,
-      mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-      mfem::NamedFieldsMap<mfem::ParGridFunction> &variables) override;
+  virtual void RegisterGridFunctions() override;
 
   virtual void RegisterCoefficients() override;
 
