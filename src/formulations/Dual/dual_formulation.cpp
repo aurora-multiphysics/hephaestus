@@ -51,14 +51,14 @@ DualFormulation::DualFormulation() : TimeDomainFormulation() {
   h_div_var_name = std::string("h_div_var");
 }
 
-std::unique_ptr<hephaestus::TimeDependentEquationSystem>
-DualFormulation::CreateTimeDependentEquationSystem() const {
+void DualFormulation::ConstructEquationSystem() {
   hephaestus::InputParameters weak_form_params;
   weak_form_params.SetParam("HCurlVarName", h_curl_var_name);
   weak_form_params.SetParam("HDivVarName", h_div_var_name);
   weak_form_params.SetParam("AlphaCoefName", alpha_coef_name);
   weak_form_params.SetParam("BetaCoefName", beta_coef_name);
-  return std::make_unique<hephaestus::WeakCurlEquationSystem>(weak_form_params);
+  this->GetProblem()->td_equation_system =
+      std::make_unique<hephaestus::WeakCurlEquationSystem>(weak_form_params);
 }
 
 std::unique_ptr<hephaestus::TimeDomainEquationSystemOperator>

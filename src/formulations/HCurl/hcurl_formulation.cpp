@@ -46,13 +46,13 @@ HCurlFormulation::HCurlFormulation() : TimeDomainFormulation() {
   h_curl_var_name = std::string("h_curl_var");
 }
 
-std::unique_ptr<hephaestus::TimeDependentEquationSystem>
-HCurlFormulation::CreateTimeDependentEquationSystem() const {
+void HCurlFormulation::ConstructEquationSystem() {
   hephaestus::InputParameters weak_form_params;
   weak_form_params.SetParam("HCurlVarName", h_curl_var_name);
   weak_form_params.SetParam("AlphaCoefName", alpha_coef_name);
   weak_form_params.SetParam("BetaCoefName", beta_coef_name);
-  return std::make_unique<hephaestus::CurlCurlEquationSystem>(weak_form_params);
+  this->GetProblem()->td_equation_system =
+      std::make_unique<hephaestus::CurlCurlEquationSystem>(weak_form_params);
 }
 
 std::unique_ptr<hephaestus::TimeDomainEquationSystemOperator>
@@ -76,9 +76,9 @@ void HCurlFormulation::RegisterGridFunctions() {
   // Register default ParGridFunctions of state variables if not provided
   if (!variables.Has(h_curl_var_name)) {
     if (myid == 0) {
-      mfem::out
-          << h_curl_var_name
-          << " not found in variables: building gridfunction from defaults";
+      MFEM_WARNING(
+          h_curl_var_name
+          << " not found in variables: building gridfunction from defaults");
     }
     AddFESpace(std::string("_HCurlFESpace"), std::string("ND_3D_P2"));
     AddGridFunction(h_curl_var_name, std::string("_HCurlFESpace"));

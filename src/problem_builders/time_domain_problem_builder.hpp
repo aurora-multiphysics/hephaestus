@@ -36,9 +36,6 @@ public:
     return std::move(this->problem);
   };
 
-  virtual std::unique_ptr<hephaestus::TimeDependentEquationSystem>
-  CreateTimeDependentEquationSystem() const;
-
   virtual std::unique_ptr<hephaestus::TimeDomainEquationSystemOperator>
   CreateTimeDomainEquationSystemOperator(
       mfem::ParMesh &pmesh,
@@ -69,8 +66,9 @@ public:
   virtual void RegisterCoefficients() override{};
 
   virtual void ConstructEquationSystem() override {
+    hephaestus::InputParameters params;
     this->problem->td_equation_system =
-        this->CreateTimeDependentEquationSystem();
+        std::make_unique<hephaestus::TimeDependentEquationSystem>(params);
   };
 
   virtual void InitializeKernels() override {

@@ -2,12 +2,6 @@
 
 namespace hephaestus {
 
-std::unique_ptr<hephaestus::TimeDependentEquationSystem>
-TimeDomainProblemBuilder::CreateTimeDependentEquationSystem() const {
-  hephaestus::InputParameters params;
-  return std::make_unique<hephaestus::TimeDependentEquationSystem>(params);
-};
-
 std::unique_ptr<hephaestus::TimeDomainEquationSystemOperator>
 TimeDomainProblemBuilder::CreateTimeDomainEquationSystemOperator(
     mfem::ParMesh &pmesh,

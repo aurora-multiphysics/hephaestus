@@ -37,14 +37,14 @@ AVFormulation::AVFormulation() : TimeDomainFormulation() {
   scalar_potential_name = std::string("electric_potential");
 }
 
-std::unique_ptr<hephaestus::TimeDependentEquationSystem>
-AVFormulation::CreateTimeDependentEquationSystem() const {
+void AVFormulation::ConstructEquationSystem() {
   hephaestus::InputParameters av_system_params;
   av_system_params.SetParam("VectorPotentialName", vector_potential_name);
   av_system_params.SetParam("ScalarPotentialName", scalar_potential_name);
   av_system_params.SetParam("AlphaCoefName", alpha_coef_name);
   av_system_params.SetParam("BetaCoefName", beta_coef_name);
-  return std::make_unique<hephaestus::AVEquationSystem>(av_system_params);
+  this->GetProblem()->td_equation_system =
+      std::make_unique<hephaestus::AVEquationSystem>(av_system_params);
 }
 
 std::unique_ptr<hephaestus::TimeDomainEquationSystemOperator>

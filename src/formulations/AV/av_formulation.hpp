@@ -13,8 +13,7 @@ class AVFormulation : public TimeDomainFormulation {
 public:
   AVFormulation();
 
-  virtual std::unique_ptr<hephaestus::TimeDependentEquationSystem>
-  CreateTimeDependentEquationSystem() const override;
+  virtual void ConstructEquationSystem() override;
 
   virtual std::unique_ptr<hephaestus::TimeDomainEquationSystemOperator>
   CreateTimeDomainEquationSystemOperator(

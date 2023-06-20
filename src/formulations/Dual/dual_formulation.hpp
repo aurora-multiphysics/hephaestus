@@ -9,8 +9,7 @@ class DualFormulation : public TimeDomainFormulation {
 public:
   DualFormulation();
 
-  virtual std::unique_ptr<hephaestus::TimeDependentEquationSystem>
-  CreateTimeDependentEquationSystem() const override;
+  virtual void ConstructEquationSystem() override;
 
   virtual std::unique_ptr<hephaestus::TimeDomainEquationSystemOperator>
   CreateTimeDomainEquationSystemOperator(
