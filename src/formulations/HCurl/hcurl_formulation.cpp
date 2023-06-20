@@ -85,6 +85,50 @@ void HCurlFormulation::RegisterGridFunctions() {
   TimeDomainProblemBuilder::RegisterGridFunctions();
 };
 
+CurlCurlEquationSystem::CurlCurlEquationSystem(
+    const hephaestus::InputParameters &params)
+    : TimeDependentEquationSystem(params),
+      h_curl_var_name(params.GetParam<std::string>("HCurlVarName")),
+      alpha_coef_name(params.GetParam<std::string>("AlphaCoefName")),
+      beta_coef_name(params.GetParam<std::string>("BetaCoefName")),
+      dtalpha_coef_name(std::string("dt_") + alpha_coef_name) {}
+
+void CurlCurlEquationSystem::Init(
+    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+    const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+    hephaestus::BCMap &bc_map,
+    hephaestus::DomainProperties &domain_properties) {
+  domain_properties.scalar_property_map[dtalpha_coef_name] =
+      new mfem::TransformedCoefficient(
+          &dtCoef, domain_properties.scalar_property_map[alpha_coef_name],
+          prodFunc);
+  TimeDependentEquationSystem::Init(variables, fespaces, bc_map,
+                                    domain_properties);
+}
+
+void CurlCurlEquationSystem::addKernels() {
+  addVariableNameIfMissing(h_curl_var_name);
+  std::string dh_curl_var_dt = GetTimeDerivativeName(h_curl_var_name);
+
+  // (α∇×u_{n}, ∇×u')
+  hephaestus::InputParameters weakCurlCurlParams;
+  weakCurlCurlParams.SetParam("CoupledVariableName", h_curl_var_name);
+  weakCurlCurlParams.SetParam("CoefficientName", alpha_coef_name);
+  addKernel(dh_curl_var_dt,
+            new hephaestus::WeakCurlCurlKernel(weakCurlCurlParams));
+
+  // (αdt∇×du/dt_{n+1}, ∇×u')
+  hephaestus::InputParameters curlCurlParams;
+  curlCurlParams.SetParam("CoefficientName", dtalpha_coef_name);
+  addKernel(dh_curl_var_dt, new hephaestus::CurlCurlKernel(curlCurlParams));
+
+  // (βdu/dt_{n+1}, u')
+  hephaestus::InputParameters vectorFEMassParams;
+  vectorFEMassParams.SetParam("CoefficientName", beta_coef_name);
+  addKernel(dh_curl_var_dt,
+            new hephaestus::VectorFEMassKernel(vectorFEMassParams));
+}
+
 void HCurlFormulation::RegisterCoefficients() {
   hephaestus::DomainProperties &domain_properties =
       this->GetProblem()->domain_properties;

@@ -115,22 +115,61 @@ void DualFormulation::RegisterCoefficients() {
   }
 }
 
-void DualOperator::SetVariables() {
-  TimeDomainEquationSystemOperator::SetVariables();
-  // Blocks for solution vector are smaller than the operator size
-  // for DualOperator, as curl is stored separately.
-  // Block operator only has the HCurl TrueVSize;
-  block_trueOffsets.SetSize(local_test_vars.size());
-  block_trueOffsets[0] = 0;
-  for (unsigned int ind = 0; ind < local_test_vars.size() - 1; ++ind) {
-    block_trueOffsets[ind + 1] =
-        local_test_vars.at(ind)->ParFESpace()->TrueVSize();
-  }
-  block_trueOffsets.PartialSum();
+WeakCurlEquationSystem::WeakCurlEquationSystem(
+    const hephaestus::InputParameters &params)
+    : TimeDependentEquationSystem(params),
+      h_curl_var_name(params.GetParam<std::string>("HCurlVarName")),
+      h_div_var_name(params.GetParam<std::string>("HDivVarName")),
+      alpha_coef_name(params.GetParam<std::string>("AlphaCoefName")),
+      beta_coef_name(params.GetParam<std::string>("BetaCoefName")),
+      dtalpha_coef_name(std::string("dt_") + alpha_coef_name) {}
 
-  trueX.Update(block_trueOffsets);
-  trueRhs.Update(block_trueOffsets);
-};
+void WeakCurlEquationSystem::Init(
+    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+    const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+    hephaestus::BCMap &bc_map,
+    hephaestus::DomainProperties &domain_properties) {
+  domain_properties.scalar_property_map[dtalpha_coef_name] =
+      new mfem::TransformedCoefficient(
+          &dtCoef, domain_properties.scalar_property_map[alpha_coef_name],
+          prodFunc);
+  TimeDependentEquationSystem::Init(variables, fespaces, bc_map,
+                                    domain_properties);
+}
+
+void WeakCurlEquationSystem::addKernels() {
+  addVariableNameIfMissing(h_curl_var_name);
+  addVariableNameIfMissing(h_div_var_name);
+  std::string dh_curl_var_dt = GetTimeDerivativeName(h_curl_var_name);
+
+  // (αv_{n}, ∇×u')
+  hephaestus::InputParameters weakCurlParams;
+  weakCurlParams.SetParam("HCurlVarName", h_curl_var_name);
+  weakCurlParams.SetParam("HDivVarName", h_div_var_name);
+  weakCurlParams.SetParam("CoefficientName", alpha_coef_name);
+  addKernel(h_curl_var_name, new hephaestus::WeakCurlKernel(weakCurlParams));
+
+  // (αdt∇×u_{n+1}, ∇×u')
+  hephaestus::InputParameters curlCurlParams;
+  curlCurlParams.SetParam("CoefficientName", dtalpha_coef_name);
+  addKernel(h_curl_var_name, new hephaestus::CurlCurlKernel(curlCurlParams));
+
+  // (βu_{n+1}, u')
+  hephaestus::InputParameters vectorFEMassParams;
+  vectorFEMassParams.SetParam("CoefficientName", beta_coef_name);
+  addKernel(h_curl_var_name,
+            new hephaestus::VectorFEMassKernel(vectorFEMassParams));
+}
+
+DualOperator::DualOperator(
+    mfem::ParMesh &pmesh,
+    mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+    hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
+    hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
+    : TimeDomainEquationSystemOperator(pmesh, fespaces, variables, bc_map,
+                                       domain_properties, sources,
+                                       solver_options) {}
 
 void DualOperator::Init(mfem::Vector &X) {
   TimeDomainEquationSystemOperator::Init(X);
@@ -146,16 +185,6 @@ void DualOperator::Init(mfem::Vector &X) {
   curl->AddDomainInterpolator(new mfem::CurlInterpolator);
   curl->Assemble();
 }
-
-DualOperator::DualOperator(
-    mfem::ParMesh &pmesh,
-    mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
-    hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
-    : TimeDomainEquationSystemOperator(pmesh, fespaces, variables, bc_map,
-                                       domain_properties, sources,
-                                       solver_options) {}
 
 void DualOperator::ImplicitSolve(const double dt, const mfem::Vector &X,
                                  mfem::Vector &dX_dt) {
@@ -188,6 +217,23 @@ void DualOperator::ImplicitSolve(const double dt, const mfem::Vector &X,
   // dv/dt_{n+1} = -∇×u
   curl->Mult(*u_, *dv_);
   *dv_ *= -1.0;
+}
+
+void DualOperator::SetVariables() {
+  TimeDomainEquationSystemOperator::SetVariables();
+  // Blocks for solution vector are smaller than the operator size
+  // for DualOperator, as curl is stored separately.
+  // Block operator only has the HCurl TrueVSize;
+  block_trueOffsets.SetSize(local_test_vars.size());
+  block_trueOffsets[0] = 0;
+  for (unsigned int ind = 0; ind < local_test_vars.size() - 1; ++ind) {
+    block_trueOffsets[ind + 1] =
+        local_test_vars.at(ind)->ParFESpace()->TrueVSize();
+  }
+  block_trueOffsets.PartialSum();
+
+  trueX.Update(block_trueOffsets);
+  trueRhs.Update(block_trueOffsets);
 }
 
 } // namespace hephaestus

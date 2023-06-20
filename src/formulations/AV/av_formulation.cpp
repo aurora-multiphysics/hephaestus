@@ -111,6 +111,75 @@ void AVFormulation::RegisterCoefficients() {
           fracFunc);
 }
 
+AVEquationSystem::AVEquationSystem(const hephaestus::InputParameters &params)
+    : TimeDependentEquationSystem(params),
+      a_name(params.GetParam<std::string>("VectorPotentialName")),
+      v_name(params.GetParam<std::string>("ScalarPotentialName")),
+      alpha_coef_name(params.GetParam<std::string>("AlphaCoefName")),
+      beta_coef_name(params.GetParam<std::string>("BetaCoefName")),
+      dtalpha_coef_name(std::string("dt_") + alpha_coef_name),
+      neg_beta_coef_name(std::string("negative_") + beta_coef_name),
+      negCoef(-1.0) {}
+
+void AVEquationSystem::Init(
+    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+    const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
+    hephaestus::BCMap &bc_map,
+    hephaestus::DomainProperties &domain_properties) {
+  domain_properties.scalar_property_map[dtalpha_coef_name] =
+      new mfem::TransformedCoefficient(
+          &dtCoef, domain_properties.scalar_property_map[alpha_coef_name],
+          prodFunc);
+  domain_properties.scalar_property_map[neg_beta_coef_name] =
+      new mfem::TransformedCoefficient(
+          &negCoef, domain_properties.scalar_property_map[beta_coef_name],
+          prodFunc);
+  TimeDependentEquationSystem::Init(variables, fespaces, bc_map,
+                                    domain_properties);
+}
+
+void AVEquationSystem::addKernels() {
+  addVariableNameIfMissing(a_name);
+  std::string da_dt_name = GetTimeDerivativeName(a_name);
+  addVariableNameIfMissing(v_name);
+  std::string dv_dt_name = GetTimeDerivativeName(v_name);
+
+  // (α∇×A_{n}, ∇×A')
+  hephaestus::InputParameters weakCurlCurlParams;
+  weakCurlCurlParams.SetParam("CoupledVariableName", a_name);
+  weakCurlCurlParams.SetParam("CoefficientName", alpha_coef_name);
+  addKernel(da_dt_name, new hephaestus::WeakCurlCurlKernel(weakCurlCurlParams));
+
+  // (αdt∇×dA/dt_{n+1}, ∇×A')
+  hephaestus::InputParameters curlCurlParams;
+  curlCurlParams.SetParam("CoefficientName", dtalpha_coef_name);
+  addKernel(da_dt_name, new hephaestus::CurlCurlKernel(curlCurlParams));
+
+  // (βdA/dt_{n+1}, A')
+  hephaestus::InputParameters vectorFEMassParams;
+  vectorFEMassParams.SetParam("CoefficientName", beta_coef_name);
+  addKernel(da_dt_name, new hephaestus::VectorFEMassKernel(vectorFEMassParams));
+
+  // (σ ∇ V, dA'/dt)
+  hephaestus::InputParameters mixedVectorGradientParams;
+  mixedVectorGradientParams.SetParam("CoefficientName", beta_coef_name);
+  addKernel(
+      v_name, da_dt_name,
+      new hephaestus::MixedVectorGradientKernel(mixedVectorGradientParams));
+
+  // (σ ∇ V, ∇ V')
+  hephaestus::InputParameters diffusionParams;
+  diffusionParams.SetParam("CoefficientName", beta_coef_name);
+  addKernel(v_name, new hephaestus::DiffusionKernel(diffusionParams));
+
+  // (σdA/dt, ∇ V')
+  hephaestus::InputParameters vectorFEWeakDivergenceParams;
+  vectorFEWeakDivergenceParams.SetParam("CoefficientName", beta_coef_name);
+  addKernel(da_dt_name, v_name,
+            new hephaestus::VectorFEWeakDivergenceKernel(
+                vectorFEWeakDivergenceParams));
+}
+
 AVOperator::AVOperator(
     mfem::ParMesh &pmesh,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
