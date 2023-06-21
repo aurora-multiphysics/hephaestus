@@ -27,7 +27,7 @@ public:
   void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
             hephaestus::DomainProperties &domain_properties) {
     hephaestus::CoupledCoefficient::Init(variables, domain_properties);
-    sigma = domain_properties.scalar_property_map[conductivity_coef_name];
+    sigma = domain_properties.scalar_property_map.Get(conductivity_coef_name);
   }
   virtual double Eval(mfem::ElementTransformation &T,
                       const mfem::IntegrationPoint &ip) {
@@ -76,18 +76,21 @@ protected:
         new CopperConductivityCoefficient(copper_conductivity_params);
 
     hephaestus::Subdomain wire("wire", 1);
-    wire.property_map["electrical_conductivity"] = wireConductivity;
+    wire.property_map.Register("electrical_conductivity", wireConductivity,
+                               true);
 
     hephaestus::Subdomain air("air", 2);
-    air.property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(sigmaAir);
+    air.property_map.Register("electrical_conductivity",
+                              new mfem::ConstantCoefficient(sigmaAir), true);
 
     hephaestus::DomainProperties domain_properties(
         std::vector<hephaestus::Subdomain>({wire, air}));
 
-    domain_properties.scalar_property_map["electrical_conductivity"] =
+    domain_properties.scalar_property_map.Register(
+        "electrical_conductivity",
         new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
-            std::string("electrical_conductivity")));
+            std::string("electrical_conductivity"))),
+        true);
 
     hephaestus::InputParameters joule_heating_params;
     joule_heating_params.SetParam("CoupledVariableName",
@@ -96,7 +99,8 @@ protected:
                                   std::string("electrical_conductivity"));
     JouleHeatingCoefficient *jouleHeating =
         new JouleHeatingCoefficient(joule_heating_params);
-    domain_properties.scalar_property_map["JouleHeating"] = jouleHeating;
+    domain_properties.scalar_property_map.Register("JouleHeating", jouleHeating,
+                                                   true);
 
     hephaestus::AuxSolvers preprocessors;
     preprocessors.Register("CoupledCoefficient", wireConductivity, false);
@@ -110,10 +114,10 @@ protected:
                         std::string("electric_field"),
                         mfem::Array<int>({1, 2, 3}), edotVecCoef),
                     true);
-    domain_properties.scalar_property_map["magnetic_permeability"] =
-        new mfem::ConstantCoefficient(1.0);
-    domain_properties.vector_property_map["surface_tangential_dEdt"] =
-        edotVecCoef;
+    domain_properties.scalar_property_map.Register(
+        "magnetic_permeability", new mfem::ConstantCoefficient(1.0), true);
+    domain_properties.vector_property_map.Register("surface_tangential_dEdt",
+                                                   edotVecCoef, true);
 
     mfem::Array<int> high_terminal(1);
     high_terminal[0] = 1;
@@ -124,7 +128,8 @@ protected:
         new hephaestus::FunctionDirichletBC(std::string("electric_potential"),
                                             high_terminal, potential_src),
         true);
-    domain_properties.scalar_property_map["source_potential"] = potential_src;
+    domain_properties.scalar_property_map.Register("source_potential",
+                                                   potential_src, true);
 
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 2;

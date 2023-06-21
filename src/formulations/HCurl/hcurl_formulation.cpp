@@ -98,10 +98,12 @@ void CurlCurlEquationSystem::Init(
     const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     hephaestus::BCMap &bc_map,
     hephaestus::DomainProperties &domain_properties) {
-  domain_properties.scalar_property_map[dtalpha_coef_name] =
+  domain_properties.scalar_property_map.Register(
+      dtalpha_coef_name,
       new mfem::TransformedCoefficient(
-          &dtCoef, domain_properties.scalar_property_map[alpha_coef_name],
-          prodFunc);
+          &dtCoef, domain_properties.scalar_property_map.Get(alpha_coef_name),
+          prodFunc),
+      true);
   TimeDependentEquationSystem::Init(variables, fespaces, bc_map,
                                     domain_properties);
 }
@@ -132,13 +134,19 @@ void CurlCurlEquationSystem::addKernels() {
 void HCurlFormulation::RegisterCoefficients() {
   hephaestus::DomainProperties &domain_properties =
       this->GetProblem()->domain_properties;
-  if (domain_properties.scalar_property_map.count("alpha") == 0) {
-    domain_properties.scalar_property_map["alpha"] = new mfem::PWCoefficient(
-        domain_properties.getGlobalScalarProperty(std::string("alpha")));
+  if (!domain_properties.scalar_property_map.Has("alpha")) {
+    domain_properties.scalar_property_map.Register(
+        "alpha",
+        new mfem::PWCoefficient(
+            domain_properties.getGlobalScalarProperty(std::string("alpha"))),
+        true);
   }
-  if (domain_properties.scalar_property_map.count("beta") == 0) {
-    domain_properties.scalar_property_map["beta"] = new mfem::PWCoefficient(
-        domain_properties.getGlobalScalarProperty(std::string("beta")));
+  if (!domain_properties.scalar_property_map.Has("beta")) {
+    domain_properties.scalar_property_map.Register(
+        "beta",
+        new mfem::PWCoefficient(
+            domain_properties.getGlobalScalarProperty(std::string("beta"))),
+        true);
   }
 }
 

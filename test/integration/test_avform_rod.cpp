@@ -29,18 +29,18 @@ protected:
     sigmaAir = 1.0e-6 * sigma;
 
     hephaestus::Subdomain wire("wire", 1);
-    wire.property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(sigma);
+    wire.property_map.Register("electrical_conductivity",
+                               new mfem::ConstantCoefficient(sigma), true);
 
     hephaestus::Subdomain air("air", 2);
-    air.property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(sigmaAir);
+    air.property_map.Register("electrical_conductivity",
+                              new mfem::ConstantCoefficient(sigmaAir), true);
 
     hephaestus::DomainProperties domain_properties(
         std::vector<hephaestus::Subdomain>({wire, air}));
 
-    domain_properties.scalar_property_map["magnetic_permeability"] =
-        new mfem::ConstantCoefficient(1.0);
+    domain_properties.scalar_property_map.Register(
+        "magnetic_permeability", new mfem::ConstantCoefficient(1.0), true);
 
     hephaestus::BCMap bc_map;
     mfem::VectorFunctionCoefficient *adotVecCoef =
@@ -50,8 +50,8 @@ protected:
                         std::string("dmagnetic_vector_potential_dt"),
                         mfem::Array<int>({1, 2, 3}), adotVecCoef),
                     true);
-    domain_properties.vector_property_map["surface_tangential_dAdt"] =
-        adotVecCoef;
+    domain_properties.vector_property_map.Register("surface_tangential_dAdt",
+                                                   adotVecCoef, true);
 
     mfem::Array<int> high_terminal(1);
     high_terminal[0] = 1;

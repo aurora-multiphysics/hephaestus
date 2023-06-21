@@ -46,9 +46,8 @@ void DivFreeSource::Init(
                                       "creating DivFreeSource\n";
     mfem::mfem_error(error_message.c_str());
   }
-  if (domain_properties.vector_property_map.find(src_coef_name) !=
-      domain_properties.vector_property_map.end()) {
-    sourceVecCoef = domain_properties.vector_property_map[src_coef_name];
+  if (domain_properties.vector_property_map.Has(src_coef_name)) {
+    sourceVecCoef = domain_properties.vector_property_map.Get(src_coef_name);
   } else {
     std::cout << "SOURCE NOT FOUND";
     exit;

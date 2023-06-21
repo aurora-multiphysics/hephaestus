@@ -30,25 +30,26 @@ protected:
     hephaestus::Subdomain mouse("mouse", 1);
     hephaestus::Subdomain air("air", 2);
 
-    air.property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(0.0);
-    air.property_map["dielectric_permittivity"] =
-        new mfem::ConstantCoefficient(epsilon0_);
-    air.property_map["magnetic_permeability"] =
-        new mfem::ConstantCoefficient(mu0_);
+    air.property_map.Register("electrical_conductivity",
+                              new mfem::ConstantCoefficient(0.0), true);
+    air.property_map.Register("dielectric_permittivity",
+                              new mfem::ConstantCoefficient(epsilon0_), true);
+    air.property_map.Register("magnetic_permeability",
+                              new mfem::ConstantCoefficient(mu0_), true);
 
-    mouse.property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(0.97);
-    mouse.property_map["dielectric_permittivity"] =
-        new mfem::ConstantCoefficient(43 * epsilon0_);
-    mouse.property_map["magnetic_permeability"] =
-        new mfem::ConstantCoefficient(mu0_);
+    mouse.property_map.Register("electrical_conductivity",
+                                new mfem::ConstantCoefficient(0.97), true);
+    mouse.property_map.Register("dielectric_permittivity",
+                                new mfem::ConstantCoefficient(43 * epsilon0_),
+                                true);
+    mouse.property_map.Register("magnetic_permeability",
+                                new mfem::ConstantCoefficient(mu0_), true);
 
     hephaestus::DomainProperties domain_properties(
         std::vector<hephaestus::Subdomain>({air, mouse}));
 
-    domain_properties.scalar_property_map["frequency"] =
-        new mfem::ConstantCoefficient(freq_);
+    domain_properties.scalar_property_map.Register(
+        "frequency", new mfem::ConstantCoefficient(freq_), true);
 
     hephaestus::BCMap bc_map;
     mfem::Array<int> dirichlet_attr({2, 3, 4});

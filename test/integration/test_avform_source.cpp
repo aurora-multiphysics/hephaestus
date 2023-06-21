@@ -45,17 +45,17 @@ protected:
 
   hephaestus::InputParameters test_params() {
     hephaestus::Subdomain wire("wire", 1);
-    wire.property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(1.0);
+    wire.property_map.Register("electrical_conductivity",
+                               new mfem::ConstantCoefficient(1.0), true);
     hephaestus::Subdomain air("air", 2);
-    air.property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(1.0);
+    air.property_map.Register("electrical_conductivity",
+                              new mfem::ConstantCoefficient(1.0), true);
 
     hephaestus::DomainProperties domain_properties(
         std::vector<hephaestus::Subdomain>({wire, air}));
 
-    domain_properties.scalar_property_map["magnetic_permeability"] =
-        new mfem::FunctionCoefficient(mu_expr);
+    domain_properties.scalar_property_map.Register(
+        "magnetic_permeability", new mfem::FunctionCoefficient(mu_expr), true);
 
     hephaestus::BCMap bc_map;
     mfem::VectorFunctionCoefficient *adotVecCoef =
@@ -65,10 +65,10 @@ protected:
                         std::string("dmagnetic_vector_potential_dt"),
                         mfem::Array<int>({1, 2, 3}), adotVecCoef),
                     true);
-    domain_properties.vector_property_map["surface_tangential_dAdt"] =
-        adotVecCoef;
-    domain_properties.scalar_property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(1.0);
+    domain_properties.vector_property_map.Register("surface_tangential_dAdt",
+                                                   adotVecCoef, true);
+    domain_properties.scalar_property_map.Register(
+        "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
 
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 1;
@@ -79,11 +79,13 @@ protected:
                         std::string("electric_potential"),
                         mfem::Array<int>({1, 2, 3}), ground_coeff),
                     true);
-    domain_properties.scalar_property_map["ground_potential"] = ground_coeff;
+    domain_properties.scalar_property_map.Register("ground_potential",
+                                                   ground_coeff, true);
 
     mfem::VectorFunctionCoefficient *A_exact =
         new mfem::VectorFunctionCoefficient(3, A_exact_expr);
-    domain_properties.vector_property_map["a_exact_coeff"] = A_exact;
+    domain_properties.vector_property_map.Register("a_exact_coeff", A_exact,
+                                                   true);
 
     mfem::Mesh mesh(
         (std::string(DATA_DIR) + std::string("./beam-tet.mesh")).c_str(), 1, 1);
@@ -117,7 +119,7 @@ protected:
     hephaestus::Sources sources;
     mfem::VectorFunctionCoefficient *JSrcCoef =
         new mfem::VectorFunctionCoefficient(3, source_field);
-    domain_properties.vector_property_map["source"] = JSrcCoef;
+    domain_properties.vector_property_map.Register("source", JSrcCoef, true);
     hephaestus::InputParameters div_free_source_params;
     div_free_source_params.SetParam("SourceName", std::string("source"));
     div_free_source_params.SetParam("HCurlFESpaceName",

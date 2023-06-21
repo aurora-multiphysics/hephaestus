@@ -43,7 +43,7 @@ void ScalarPotentialSource::Init(
 
   _bc_map = &bc_map;
 
-  betaCoef = domain_properties.scalar_property_map[beta_coef_name];
+  betaCoef = domain_properties.scalar_property_map.Get(beta_coef_name);
 
   a0 = new mfem::ParBilinearForm(H1FESpace_);
   a0->AddDomainIntegrator(new mfem::DiffusionIntegrator(*betaCoef));

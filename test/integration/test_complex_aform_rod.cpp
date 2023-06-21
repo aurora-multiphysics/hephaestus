@@ -30,21 +30,23 @@ protected:
     sigmaAir = 1.0e-6 * sigma;
 
     hephaestus::Subdomain wire("wire", 1);
-    wire.property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(sigma);
+    wire.property_map.Register("electrical_conductivity",
+                               new mfem::ConstantCoefficient(sigma), true);
 
     hephaestus::Subdomain air("air", 2);
-    air.property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(sigmaAir);
+    air.property_map.Register("electrical_conductivity",
+                              new mfem::ConstantCoefficient(sigmaAir), true);
 
     hephaestus::DomainProperties domain_properties(
         std::vector<hephaestus::Subdomain>({wire, air}));
 
-    domain_properties.scalar_property_map["frequency"] =
-        new mfem::ConstantCoefficient(1.0 / 60.0);
-    domain_properties.scalar_property_map["electrical_conductivity"] =
+    domain_properties.scalar_property_map.Register(
+        "frequency", new mfem::ConstantCoefficient(1.0 / 60.0), true);
+    domain_properties.scalar_property_map.Register(
+        "electrical_conductivity",
         new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
-            std::string("electrical_conductivity")));
+            std::string("electrical_conductivity"))),
+        true);
 
     hephaestus::BCMap bc_map;
 
@@ -56,10 +58,10 @@ protected:
                         new mfem::VectorFunctionCoefficient(3, a_bc_i)),
                     true);
 
-    domain_properties.scalar_property_map["magnetic_permeability"] =
-        new mfem::ConstantCoefficient(1.0);
-    // domain_properties.vector_property_map["surface_tangential_dEdt"] =
-    //     edotVecCoef;
+    domain_properties.scalar_property_map.Register(
+        "magnetic_permeability", new mfem::ConstantCoefficient(1.0), true);
+    // domain_properties.vector_property_map.Register("surface_tangential_dEdt",
+    //     edotVecCoef, true);
 
     mfem::Array<int> high_terminal(1);
     high_terminal[0] = 1;
@@ -70,7 +72,8 @@ protected:
         new hephaestus::FunctionDirichletBC(std::string("electric_potential"),
                                             high_terminal, potential_src),
         true);
-    domain_properties.scalar_property_map["source_potential"] = potential_src;
+    domain_properties.scalar_property_map.Register("source_potential",
+                                                   potential_src, true);
 
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 2;

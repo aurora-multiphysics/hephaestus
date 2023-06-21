@@ -23,7 +23,7 @@ void WeakCurlKernel::Init(
   u_ = variables.Get(hcurl_gf_name);
   v_ = variables.Get(hdiv_gf_name);
 
-  coef = domain_properties.scalar_property_map[coef_name];
+  coef = domain_properties.scalar_property_map.Get(coef_name);
 
   weakCurl = new mfem::ParMixedBilinearForm(u_->ParFESpace(), v_->ParFESpace());
   weakCurl->AddDomainIntegrator(new mfem::VectorFECurlIntegrator(*coef));

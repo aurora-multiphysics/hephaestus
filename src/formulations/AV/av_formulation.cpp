@@ -91,24 +91,28 @@ void AVFormulation::RegisterGridFunctions() {
 void AVFormulation::RegisterCoefficients() {
   hephaestus::DomainProperties &domain_properties =
       this->GetProblem()->domain_properties;
-  if (domain_properties.scalar_property_map.count("magnetic_permeability") ==
-      0) {
-    domain_properties.scalar_property_map["magnetic_permeability"] =
+  if (!domain_properties.scalar_property_map.Has("magnetic_permeability")) {
+    domain_properties.scalar_property_map.Register(
+        "magnetic_permeability",
         new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
-            std::string("magnetic_permeability")));
+            std::string("magnetic_permeability"))),
+        true);
   }
-  if (domain_properties.scalar_property_map.count("electrical_conductivity") ==
-      0) {
-    domain_properties.scalar_property_map["electrical_conductivity"] =
+  if (!domain_properties.scalar_property_map.Has("electrical_conductivity")) {
+    domain_properties.scalar_property_map.Register(
+        "electrical_conductivity",
         new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
-            std::string("electrical_conductivity")));
+            std::string("electrical_conductivity"))),
+        true);
   }
 
-  domain_properties.scalar_property_map[alpha_coef_name] =
+  domain_properties.scalar_property_map.Register(
+      alpha_coef_name,
       new mfem::TransformedCoefficient(
           &oneCoef,
-          domain_properties.scalar_property_map["magnetic_permeability"],
-          fracFunc);
+          domain_properties.scalar_property_map.Get("magnetic_permeability"),
+          fracFunc),
+      true);
 }
 
 AVEquationSystem::AVEquationSystem(const hephaestus::InputParameters &params)
@@ -126,14 +130,20 @@ void AVEquationSystem::Init(
     const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     hephaestus::BCMap &bc_map,
     hephaestus::DomainProperties &domain_properties) {
-  domain_properties.scalar_property_map[dtalpha_coef_name] =
+  domain_properties.scalar_property_map.Register(
+      dtalpha_coef_name,
       new mfem::TransformedCoefficient(
-          &dtCoef, domain_properties.scalar_property_map[alpha_coef_name],
-          prodFunc);
-  domain_properties.scalar_property_map[neg_beta_coef_name] =
+          &dtCoef, domain_properties.scalar_property_map.Get(alpha_coef_name),
+          prodFunc),
+      true);
+
+  domain_properties.scalar_property_map.Register(
+      neg_beta_coef_name,
       new mfem::TransformedCoefficient(
-          &negCoef, domain_properties.scalar_property_map[beta_coef_name],
-          prodFunc);
+          &negCoef, domain_properties.scalar_property_map.Get(beta_coef_name),
+          prodFunc),
+      true);
+
   TimeDependentEquationSystem::Init(variables, fespaces, bc_map,
                                     domain_properties);
 }

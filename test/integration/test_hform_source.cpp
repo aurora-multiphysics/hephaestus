@@ -50,17 +50,18 @@ protected:
 
   hephaestus::InputParameters test_params() {
     hephaestus::Subdomain wire("wire", 1);
-    wire.property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(1.0);
+    wire.property_map.Register("electrical_conductivity",
+                               new mfem::ConstantCoefficient(1.0), true);
     hephaestus::Subdomain air("air", 2);
-    air.property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(1.0);
+    air.property_map.Register("electrical_conductivity",
+                              new mfem::ConstantCoefficient(1.0), true);
 
     hephaestus::DomainProperties domain_properties(
         std::vector<hephaestus::Subdomain>({wire, air}));
 
-    domain_properties.scalar_property_map["electrical_conductivity"] =
-        new mfem::FunctionCoefficient(sigma_expr);
+    domain_properties.scalar_property_map.Register(
+        "electrical_conductivity", new mfem::FunctionCoefficient(sigma_expr),
+        true);
 
     hephaestus::BCMap bc_map;
     mfem::VectorFunctionCoefficient *hdotVecCoef =
@@ -70,18 +71,19 @@ protected:
                         std::string("dmagnetic_field_dt"),
                         mfem::Array<int>({1, 2, 3}), hdotVecCoef),
                     true);
-    domain_properties.vector_property_map["surface_tangential_dHdt"] =
-        hdotVecCoef;
-    domain_properties.scalar_property_map["magnetic_permeability"] =
-        new mfem::ConstantCoefficient(1.0);
+    domain_properties.vector_property_map.Register("surface_tangential_dHdt",
+                                                   hdotVecCoef, true);
+    domain_properties.scalar_property_map.Register(
+        "magnetic_permeability", new mfem::ConstantCoefficient(1.0), true);
 
     mfem::VectorFunctionCoefficient *dBdtSrcCoef =
         new mfem::VectorFunctionCoefficient(3, source_field);
-    domain_properties.vector_property_map["source"] = dBdtSrcCoef;
+    domain_properties.vector_property_map.Register("source", dBdtSrcCoef, true);
 
     mfem::VectorFunctionCoefficient *H_exact =
         new mfem::VectorFunctionCoefficient(3, H_exact_expr);
-    domain_properties.vector_property_map["h_exact_coeff"] = H_exact;
+    domain_properties.vector_property_map.Register("h_exact_coeff", H_exact,
+                                                   true);
 
     mfem::Mesh mesh(
         (std::string(DATA_DIR) + std::string("./beam-tet.mesh")).c_str(), 1, 1);

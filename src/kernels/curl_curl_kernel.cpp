@@ -12,7 +12,7 @@ void CurlCurlKernel::Init(
     hephaestus::BCMap &bc_map,
     hephaestus::DomainProperties &domain_properties) {
 
-  coef = domain_properties.scalar_property_map[coef_name];
+  coef = domain_properties.scalar_property_map.Get(coef_name);
 }
 
 void CurlCurlKernel::Apply(mfem::ParBilinearForm *blf) {

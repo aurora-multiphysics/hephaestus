@@ -55,32 +55,33 @@ protected:
 
   hephaestus::InputParameters test_params() {
     hephaestus::Subdomain air("air", 1);
-    air.property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(1.0);
+    air.property_map.Register("electrical_conductivity",
+                              new mfem::ConstantCoefficient(1.0), true);
     hephaestus::Subdomain plate("plate", 2);
-    plate.property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(3.526e7);
+    plate.property_map.Register("electrical_conductivity",
+                                new mfem::ConstantCoefficient(3.526e7), true);
     hephaestus::Subdomain coil1("coil1", 3);
-    coil1.property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(1.0);
+    coil1.property_map.Register("electrical_conductivity",
+                                new mfem::ConstantCoefficient(1.0), true);
     hephaestus::Subdomain coil2("coil2", 4);
-    coil2.property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(1.0);
+    coil2.property_map.Register("electrical_conductivity",
+                                new mfem::ConstantCoefficient(1.0), true);
     hephaestus::Subdomain coil3("coil3", 5);
-    coil3.property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(1.0);
+    coil3.property_map.Register("electrical_conductivity",
+                                new mfem::ConstantCoefficient(1.0), true);
     hephaestus::Subdomain coil4("coil4", 6);
-    coil4.property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(1.0);
+    coil4.property_map.Register("electrical_conductivity",
+                                new mfem::ConstantCoefficient(1.0), true);
 
     hephaestus::DomainProperties domain_properties(
         std::vector<hephaestus::Subdomain>(
             {air, plate, coil1, coil2, coil3, coil4}));
 
-    domain_properties.scalar_property_map["frequency"] =
-        new mfem::ConstantCoefficient(200.0);
-    domain_properties.scalar_property_map["magnetic_permeability"] =
-        new mfem::ConstantCoefficient(M_PI * 4.0e-7);
+    domain_properties.scalar_property_map.Register(
+        "frequency", new mfem::ConstantCoefficient(200.0), true);
+    domain_properties.scalar_property_map.Register(
+        "magnetic_permeability", new mfem::ConstantCoefficient(M_PI * 4.0e-7),
+        true);
     hephaestus::BCMap bc_map;
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team7.g")).c_str(),
@@ -111,7 +112,8 @@ protected:
     coilsegments[3] = 6;
     mfem::PWVectorCoefficient *JSrcRestricted =
         new mfem::PWVectorCoefficient(3, coilsegments, sourcecoefs);
-    domain_properties.vector_property_map["source"] = JSrcRestricted;
+    domain_properties.vector_property_map.Register("source", JSrcRestricted,
+                                                   true);
 
     hephaestus::InputParameters div_free_source_params;
     div_free_source_params.SetParam("SourceName", std::string("source"));

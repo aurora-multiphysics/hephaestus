@@ -31,7 +31,7 @@ DomainProperties::getGlobalScalarProperty(std::string property_name_) {
 
   for (std::size_t i = 0; i < subdomains.size(); i++) {
     subdomain_ids.Append(subdomains[i].id);
-    subdomain_coefs.Append(subdomains[i].property_map[property_name_]);
+    subdomain_coefs.Append(subdomains[i].property_map.Get(property_name_));
   }
   mfem::PWCoefficient global_property_map(subdomain_ids, subdomain_coefs);
   return global_property_map;

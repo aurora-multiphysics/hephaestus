@@ -16,7 +16,7 @@ public:
 
   std::string name;
   int id;
-  std::map<std::string, mfem::Coefficient *> property_map;
+  mfem::NamedFieldsMap<mfem::Coefficient> property_map;
 };
 
 class DomainProperties {
@@ -27,8 +27,8 @@ public:
   void SetTime(double t);
   mfem::PWCoefficient getGlobalScalarProperty(std::string property_name_);
 
-  std::map<std::string, mfem::Coefficient *> scalar_property_map;
-  std::map<std::string, mfem::VectorCoefficient *> vector_property_map;
+  mfem::NamedFieldsMap<mfem::Coefficient> scalar_property_map;
+  mfem::NamedFieldsMap<mfem::VectorCoefficient> vector_property_map;
   std::vector<Subdomain> subdomains;
 };
 

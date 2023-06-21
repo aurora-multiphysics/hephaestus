@@ -30,9 +30,9 @@ void ComplexMaxwellOperator::SetVariables() {
 void ComplexMaxwellOperator::Init(mfem::Vector &X) {
   FrequencyDomainEquationSystemOperator::Init(X);
 
-  stiffCoef_ = _domain_properties.scalar_property_map[stiffness_coef_name];
-  massCoef_ = _domain_properties.scalar_property_map[mass_coef_name];
-  lossCoef_ = _domain_properties.scalar_property_map[loss_coef_name];
+  stiffCoef_ = _domain_properties.scalar_property_map.Get(stiffness_coef_name);
+  massCoef_ = _domain_properties.scalar_property_map.Get(mass_coef_name);
+  lossCoef_ = _domain_properties.scalar_property_map.Get(loss_coef_name);
 }
 
 void ComplexMaxwellOperator::Solve(mfem::Vector &X) {
@@ -149,53 +149,71 @@ void ComplexMaxwellFormulation::RegisterCoefficients() {
       this->GetProblem()->domain_properties;
 
   freqCoef = dynamic_cast<mfem::ConstantCoefficient *>(
-      domain_properties.scalar_property_map[frequency_coef_name]);
+      domain_properties.scalar_property_map.Get(frequency_coef_name));
   if (freqCoef == NULL) {
     MFEM_ABORT("No frequency coefficient found. Frequency must be specified "
                "for frequency domain formulations.");
   }
   // define transformed
-  domain_properties.scalar_property_map["_angular_frequency"] =
-      new mfem::ConstantCoefficient(2.0 * M_PI * freqCoef->constant);
-  domain_properties.scalar_property_map["_neg_angular_frequency"] =
-      new mfem::ConstantCoefficient(-2.0 * M_PI * freqCoef->constant);
-  domain_properties.scalar_property_map["_angular_frequency_sq"] =
-      new mfem::ConstantCoefficient(pow(2.0 * M_PI * freqCoef->constant, 2));
-  domain_properties.scalar_property_map["_neg_angular_frequency_sq"] =
-      new mfem::ConstantCoefficient(-pow(2.0 * M_PI * freqCoef->constant, 2));
+  domain_properties.scalar_property_map.Register(
+      "_angular_frequency",
+      new mfem::ConstantCoefficient(2.0 * M_PI * freqCoef->constant), true);
+  domain_properties.scalar_property_map.Register(
+      "_neg_angular_frequency",
+      new mfem::ConstantCoefficient(-2.0 * M_PI * freqCoef->constant), true);
+  domain_properties.scalar_property_map.Register(
+      "_angular_frequency_sq",
+      new mfem::ConstantCoefficient(pow(2.0 * M_PI * freqCoef->constant, 2)),
+      true);
+  domain_properties.scalar_property_map.Register(
+      "_neg_angular_frequency_sq",
+      new mfem::ConstantCoefficient(-pow(2.0 * M_PI * freqCoef->constant, 2)),
+      true);
 
-  if (domain_properties.scalar_property_map.count("magnetic_permeability") ==
-      0) {
-    domain_properties.scalar_property_map["magnetic_permeability"] =
+  if (!domain_properties.scalar_property_map.Has("magnetic_permeability")) {
+    domain_properties.scalar_property_map.Register(
+        "magnetic_permeability",
         new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
-            std::string("magnetic_permeability")));
+            std::string("magnetic_permeability"))),
+        true);
   }
-  if (domain_properties.scalar_property_map.count(beta_coef_name) == 0) {
-    domain_properties.scalar_property_map[beta_coef_name] =
+  if (!domain_properties.scalar_property_map.Has(beta_coef_name)) {
+    domain_properties.scalar_property_map.Register(
+        beta_coef_name,
         new mfem::PWCoefficient(
-            domain_properties.getGlobalScalarProperty(beta_coef_name));
+            domain_properties.getGlobalScalarProperty(beta_coef_name)),
+        true);
   }
-  if (domain_properties.scalar_property_map.count(zeta_coef_name) == 0) {
-    domain_properties.scalar_property_map[zeta_coef_name] =
+  if (!domain_properties.scalar_property_map.Has(zeta_coef_name)) {
+    domain_properties.scalar_property_map.Register(
+        zeta_coef_name,
         new mfem::PWCoefficient(
-            domain_properties.getGlobalScalarProperty(zeta_coef_name));
+            domain_properties.getGlobalScalarProperty(zeta_coef_name)),
+        true);
   }
 
-  domain_properties.scalar_property_map[mass_coef_name] =
+  domain_properties.scalar_property_map.Register(
+      mass_coef_name,
       new mfem::TransformedCoefficient(
-          domain_properties.scalar_property_map["_neg_angular_frequency_sq"],
-          domain_properties.scalar_property_map[zeta_coef_name], prodFunc);
+          domain_properties.scalar_property_map.Get(
+              "_neg_angular_frequency_sq"),
+          domain_properties.scalar_property_map.Get(zeta_coef_name), prodFunc),
+      true);
 
-  domain_properties.scalar_property_map[loss_coef_name] =
+  domain_properties.scalar_property_map.Register(
+      loss_coef_name,
       new mfem::TransformedCoefficient(
-          domain_properties.scalar_property_map["_angular_frequency"],
-          domain_properties.scalar_property_map[beta_coef_name], prodFunc);
+          domain_properties.scalar_property_map.Get("_angular_frequency"),
+          domain_properties.scalar_property_map.Get(beta_coef_name), prodFunc),
+      true);
 
-  domain_properties.scalar_property_map[alpha_coef_name] =
+  domain_properties.scalar_property_map.Register(
+      alpha_coef_name,
       new mfem::TransformedCoefficient(
           &oneCoef,
-          domain_properties.scalar_property_map["magnetic_permeability"],
-          fracFunc);
+          domain_properties.scalar_property_map.Get("magnetic_permeability"),
+          fracFunc),
+      true);
 }
 
 } // namespace hephaestus

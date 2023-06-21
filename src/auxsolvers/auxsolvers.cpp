@@ -42,7 +42,7 @@ void CoefficientAuxSolver::Init(
     const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::DomainProperties &domain_properties) {
   gf = variables.Get(var_name);
-  coeff = domain_properties.scalar_property_map[coef_name];
+  coeff = domain_properties.scalar_property_map.Get(coef_name);
 }
 
 void CoefficientAuxSolver::Solve(double t) {
@@ -59,7 +59,7 @@ void VectorCoefficientAuxSolver::Init(
     const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::DomainProperties &domain_properties) {
   gf = variables.Get(var_name);
-  vec_coeff = domain_properties.vector_property_map[vec_coef_name];
+  vec_coeff = domain_properties.vector_property_map.Get(vec_coef_name);
 }
 
 void VectorCoefficientAuxSolver::Solve(double t) {

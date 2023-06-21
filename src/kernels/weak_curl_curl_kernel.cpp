@@ -21,7 +21,7 @@ void WeakCurlCurlKernel::Init(
     hephaestus::DomainProperties &domain_properties) {
 
   u_ = variables.Get(coupled_gf_name);
-  coef = domain_properties.scalar_property_map[coef_name];
+  coef = domain_properties.scalar_property_map.Get(coef_name);
 
   curlCurl = new mfem::ParBilinearForm(u_->ParFESpace());
   curlCurl->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*coef));

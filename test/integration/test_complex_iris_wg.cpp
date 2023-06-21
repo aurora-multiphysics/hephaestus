@@ -24,30 +24,31 @@ protected:
   hephaestus::InputParameters test_params() {
     hephaestus::Subdomain air("air", 1);
 
-    air.property_map["real_electrical_conductivity"] =
-        new mfem::ConstantCoefficient(0.0);
-    air.property_map["imag_electrical_conductivity"] =
-        new mfem::ConstantCoefficient(0.0);
-    air.property_map["real_rel_permittivity"] =
-        new mfem::ConstantCoefficient(1.0);
-    air.property_map["imag_rel_permittivity"] =
-        new mfem::ConstantCoefficient(0.0);
-    air.property_map["real_rel_permeability"] =
-        new mfem::ConstantCoefficient(1.0);
-    air.property_map["imag_rel_permeability"] =
-        new mfem::ConstantCoefficient(0.0);
+    air.property_map.Register("real_electrical_conductivity",
+                              new mfem::ConstantCoefficient(0.0), true);
+    air.property_map.Register("imag_electrical_conductivity",
+                              new mfem::ConstantCoefficient(0.0), true);
+    air.property_map.Register("real_rel_permittivity",
+                              new mfem::ConstantCoefficient(1.0), true);
+    air.property_map.Register("imag_rel_permittivity",
+                              new mfem::ConstantCoefficient(0.0), true);
+    air.property_map.Register("real_rel_permeability",
+                              new mfem::ConstantCoefficient(1.0), true);
+    air.property_map.Register("imag_rel_permeability",
+                              new mfem::ConstantCoefficient(0.0), true);
 
     hephaestus::DomainProperties domain_properties(
         std::vector<hephaestus::Subdomain>({air}));
 
-    domain_properties.scalar_property_map["frequency"] =
-        new mfem::ConstantCoefficient(freq_);
-    domain_properties.scalar_property_map["magnetic_permeability"] =
-        new mfem::ConstantCoefficient(mu0_);
-    domain_properties.scalar_property_map["dielectric_permittivity"] =
-        new mfem::ConstantCoefficient(epsilon0_);
-    domain_properties.scalar_property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(0.0);
+    domain_properties.scalar_property_map.Register(
+        "frequency", new mfem::ConstantCoefficient(freq_), true);
+    domain_properties.scalar_property_map.Register(
+        "magnetic_permeability", new mfem::ConstantCoefficient(mu0_), true);
+    domain_properties.scalar_property_map.Register(
+        "dielectric_permittivity", new mfem::ConstantCoefficient(epsilon0_),
+        true);
+    domain_properties.scalar_property_map.Register(
+        "electrical_conductivity", new mfem::ConstantCoefficient(0.0), true);
 
     hephaestus::BCMap bc_map;
     mfem::Array<int> dirichlet_attr(1);
