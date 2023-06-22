@@ -60,8 +60,11 @@ public:
 
   void AddGridFunction(std::string gridfunction_name, std::string fespace_name);
 
-  template <typename T>
-  void AddKernel(std::string var_name, hephaestus::Kernel<T> *kernel);
+  template <class T>
+  void AddKernel(std::string var_name, hephaestus::Kernel<T> *kernel) {
+    this->GetProblem()->GetEquationSystem()->addVariableNameIfMissing(var_name);
+    this->GetProblem()->GetEquationSystem()->addKernel(var_name, kernel);
+  };
 
   virtual void RegisterFESpaces() = 0;
 

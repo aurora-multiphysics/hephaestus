@@ -2,6 +2,32 @@
 
 namespace hephaestus {
 
+hephaestus::ProblemBuilder *
+Factory::createProblemBuilder(std::string &formulation_name) {
+  if (formulation_name == "EBForm") {
+    return new hephaestus::EBDualFormulation();
+  } else if (formulation_name == "HJForm") {
+    return new hephaestus::HJDualFormulation();
+  } else if (formulation_name == "HForm") {
+    return new hephaestus::HFormulation();
+  } else if (formulation_name == "AForm") {
+    return new hephaestus::AFormulation();
+  } else if (formulation_name == "EForm") {
+    return new hephaestus::EFormulation();
+  } else if (formulation_name == "AVForm") {
+    return new hephaestus::AVFormulation();
+  } else if (formulation_name == "ComplexEForm") {
+    return new hephaestus::ComplexEFormulation();
+  } else if (formulation_name == "ComplexAForm") {
+    return new hephaestus::ComplexAFormulation();
+  } else if (formulation_name == "Custom") {
+    return new hephaestus::TimeDomainFormulation();
+  } else {
+    MFEM_WARNING("Formulation name " << formulation_name << " not recognised.");
+    return nullptr;
+  }
+};
+
 hephaestus::FrequencyDomainFormulation *
 Factory::createFrequencyDomainFormulation(std::string &formulation) {
   if (formulation == "ComplexEForm") {

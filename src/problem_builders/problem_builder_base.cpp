@@ -86,13 +86,6 @@ void ProblemBuilder::AddGridFunction(std::string gridfunction_name,
   this->GetProblem()->gridfunctions.Register(gridfunction_name, gridfunc, true);
 };
 
-template <typename T>
-void ProblemBuilder::AddKernel(std::string var_name,
-                               hephaestus::Kernel<T> *kernel) {
-  this->GetProblem()->GetEquationSystem()->addVariableNameIfMissing(var_name);
-  this->GetProblem()->GetEquationSystem()->addKernel(var_name, kernel);
-};
-
 void ProblemBuilder::InitializePostprocessors() {
   this->GetProblem()->postprocessors.Init(
       this->GetProblem()->gridfunctions, this->GetProblem()->domain_properties);

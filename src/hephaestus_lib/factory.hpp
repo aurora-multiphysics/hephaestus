@@ -14,6 +14,9 @@ namespace hephaestus {
 
 class Factory {
 public:
+  static hephaestus::ProblemBuilder *
+  createProblemBuilder(std::string &formulation_name);
+
   static hephaestus::TimeDomainFormulation *
   createTimeDomainFormulation(std::string &formulation);
 
