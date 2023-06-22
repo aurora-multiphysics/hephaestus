@@ -14,7 +14,7 @@ static void source_current(const mfem::Vector &xv, double t, mfem::Vector &J) {
   double y = xv(1);
 
   // Current density magnitude
-  double Jmag = (I0 / S) * sin(2 * M_PI * freq * t);
+  double Jmag = (I0 / S);
 
   // Calculate x component of current density unit vector
   if (abs(x - x0) < a) {
@@ -132,8 +132,8 @@ int main(int argc, char *argv[]) {
       std::make_shared<mfem::ParMesh>(mfem::ParMesh(MPI_COMM_WORLD, mesh));
   problem_builder->SetMesh(pmesh);
   problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P1"));
-  problem_builder->AddFESpace(std::string("HDiv"), std::string("RT_3D_P0"));
   problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P1"));
+  problem_builder->AddFESpace(std::string("HDiv"), std::string("RT_3D_P0"));
   problem_builder->AddGridFunction(
       std::string("magnetic_vector_potential_real"), std::string("HCurl"));
   problem_builder->AddGridFunction(
@@ -164,7 +164,7 @@ int main(int argc, char *argv[]) {
       problem_builder->ReturnProblem();
 
   hephaestus::InputParameters exec_params;
-  exec_params.SetParam("UseGLVis", false);
+  exec_params.SetParam("UseGLVis", true);
   exec_params.SetParam("Problem", problem.get());
   hephaestus::SteadyExecutioner *executioner =
       new hephaestus::SteadyExecutioner(exec_params);
