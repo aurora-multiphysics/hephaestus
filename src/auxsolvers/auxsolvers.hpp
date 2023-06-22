@@ -10,16 +10,27 @@ namespace hephaestus {
 class AuxSolver {
 public:
   AuxSolver() = default;
+  int priority{0};
 
   virtual void
   Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
        hephaestus::DomainProperties &domain_properties) = 0;
 
   virtual void Solve(double t = 0.0) = 0;
+  // Set priority. Lower values are evaluated first.
+  void SetPriority(int prty) { priority = prty; };
+};
+
+struct AuxCompare {
+  bool const operator()(AuxSolver *lhs, AuxSolver *rhs) const {
+    return (lhs->priority) < (rhs->priority);
+  }
 };
 
 class AuxSolvers : public mfem::NamedFieldsMap<hephaestus::AuxSolver> {
+private:
 public:
+  std::vector<hephaestus::AuxSolver *> aux_queue;
   void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
             hephaestus::DomainProperties &domain_properties);
   void Solve(double t = 0.0);
