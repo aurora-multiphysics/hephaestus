@@ -68,6 +68,8 @@ hephaestus::DomainProperties defineCoefficients() {
       std::vector<hephaestus::Subdomain>(
           {air, plate, coil1, coil2, coil3, coil4}));
   domain_properties.scalar_property_map.Register(
+      "frequency", new mfem::ConstantCoefficient(200.0), true);
+  domain_properties.scalar_property_map.Register(
       "magnetic_permeability", new mfem::ConstantCoefficient(M_PI * 4.0e-7),
       true);
 
@@ -108,7 +110,7 @@ hephaestus::Sources defineSources() {
 hephaestus::Outputs defineOutputs() {
   std::map<std::string, mfem::DataCollection *> data_collections;
   data_collections["ParaViewDataCollection"] =
-      new mfem::ParaViewDataCollection("Team7ParaView");
+      new mfem::ParaViewDataCollection("ComplexTeam7ParaView");
   hephaestus::Outputs outputs(data_collections);
   return outputs;
 }
@@ -121,21 +123,26 @@ int main(int argc, char *argv[]) {
   MPI_Init(&argc, &argv);
 
   // Create Formulation
-  hephaestus::TimeDomainProblemBuilder *problem_builder =
-      new hephaestus::AFormulation();
+  hephaestus::FrequencyDomainProblemBuilder *problem_builder =
+      new hephaestus::ComplexAFormulation();
   // Set Mesh
   mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team7.g")).c_str(), 1,
                   1);
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(mfem::ParMesh(MPI_COMM_WORLD, mesh));
   problem_builder->SetMesh(pmesh);
-  problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P1"));
   problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P1"));
   problem_builder->AddFESpace(std::string("HDiv"), std::string("RT_3D_P0"));
-  problem_builder->AddGridFunction(std::string("magnetic_vector_potential"),
-                                   std::string("HCurl"));
-  problem_builder->AddGridFunction(std::string("magnetic_flux_density"),
+  problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P1"));
+  problem_builder->AddGridFunction(
+      std::string("magnetic_vector_potential_real"), std::string("HCurl"));
+  problem_builder->AddGridFunction(
+      std::string("magnetic_vector_potential_imag"), std::string("HCurl"));
+  problem_builder->AddGridFunction(std::string("magnetic_flux_density_real"),
                                    std::string("HDiv"));
+  problem_builder->AddGridFunction(std::string("magnetic_flux_density_imag"),
+                                   std::string("HDiv"));
+
   hephaestus::DomainProperties domain_properties = defineCoefficients();
   problem_builder->SetCoefficients(domain_properties);
 
@@ -152,20 +159,17 @@ int main(int argc, char *argv[]) {
   problem_builder->SetSolverOptions(solver_options);
 
   hephaestus::ProblemBuildSequencer sequencer(problem_builder);
-  sequencer.ConstructEquationSystemProblem();
-  std::unique_ptr<hephaestus::TimeDomainProblem> problem =
+  sequencer.ConstructOperatorProblem();
+  std::unique_ptr<hephaestus::FrequencyDomainProblem> problem =
       problem_builder->ReturnProblem();
+
   hephaestus::InputParameters exec_params;
-  exec_params.SetParam("TimeStep", float(0.001));
-  exec_params.SetParam("StartTime", float(0.00));
-  exec_params.SetParam("EndTime", float(0.002));
-  exec_params.SetParam("VisualisationSteps", int(1));
   exec_params.SetParam("UseGLVis", false);
   exec_params.SetParam("Problem", problem.get());
-  hephaestus::TransientExecutioner *executioner =
-      new hephaestus::TransientExecutioner(exec_params);
+  hephaestus::SteadyExecutioner *executioner =
+      new hephaestus::SteadyExecutioner(exec_params);
 
-  mfem::out << "Created executioner";
+  std::cout << "Created exec ";
   executioner->Init();
   executioner->Execute();
 
