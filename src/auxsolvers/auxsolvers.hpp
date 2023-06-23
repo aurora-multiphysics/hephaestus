@@ -2,6 +2,7 @@
 #include "coefficient_aux.hpp"
 #include "coupled_coefficient_aux.hpp"
 #include "curl_aux.hpp"
+#include "joule_heating_aux.hpp"
 #include "l2_error_vector_aux.hpp"
 #include "vector_coefficient_aux.hpp"
 

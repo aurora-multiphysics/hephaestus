@@ -9,15 +9,6 @@ void cross_product(mfem::Vector &va, mfem::Vector &vb, mfem::Vector &V) {
   V[2] = va[0] * vb[1] - va[1] * vb[0];
 }
 
-double JouleHeatingCoefficient::Eval(mfem::ElementTransformation &T,
-                                     const mfem::IntegrationPoint &ip) {
-  mfem::Vector E;
-  double thisSigma;
-  E_gf.GetVectorValue(T, ip, E);
-  thisSigma = sigma.Eval(T, ip);
-  return thisSigma * (E * E);
-}
-
 void LorentzForceVectorCoefficient::Eval(mfem::Vector &V,
                                          mfem::ElementTransformation &T,
                                          const mfem::IntegrationPoint &ip) {

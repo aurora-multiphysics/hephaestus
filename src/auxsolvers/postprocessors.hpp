@@ -6,23 +6,6 @@ namespace hephaestus {
 
 void cross_product(mfem::Vector &va, mfem::Vector &vb, mfem::Vector &V);
 
-// The JouleHeatingCoefficient object will contain a reference to the electric
-// field grid function, and the conductivity sigma, and returns sigma E dot E at
-// a point.
-class JouleHeatingCoefficient : public mfem::Coefficient {
-private:
-  mfem::ParGridFunction &E_gf;
-  mfem::PWCoefficient sigma;
-
-public:
-  JouleHeatingCoefficient(const mfem::PWCoefficient &sigma_,
-                          mfem::ParGridFunction &E_gf_)
-      : E_gf(E_gf_), sigma(sigma_) {}
-  virtual double Eval(mfem::ElementTransformation &T,
-                      const mfem::IntegrationPoint &ip);
-  virtual ~JouleHeatingCoefficient() {}
-};
-
 // The LorentzForceVectorCoefficient object will contain a reference to the
 // current density and magnetic flux density grid functions,
 // and returns the Lorentz force density coefficient.
