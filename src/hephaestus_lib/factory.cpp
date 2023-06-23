@@ -35,8 +35,8 @@ Factory::createFrequencyDomainFormulation(std::string &formulation) {
   } else if (formulation == "ComplexAForm") {
     return new hephaestus::ComplexAFormulation();
   } else {
-    std::cout << "Steady formulation name " << formulation
-              << " not recognised. \n";
+    MFEM_WARNING("Steady formulation name " << formulation
+                                            << " not recognised.");
   }
   return nullptr;
 }
@@ -58,7 +58,7 @@ Factory::createTimeDomainFormulation(std::string &formulation) {
   } else if (formulation == "Custom") {
     return new hephaestus::TimeDomainFormulation();
   } else {
-    std::cout << "Formulation name " << formulation << " not recognised. \n";
+    MFEM_WARNING("Formulation name " << formulation << " not recognised.");
   }
   return nullptr;
 }
@@ -80,7 +80,7 @@ Factory::createParFESpace(hephaestus::InputParameters params,
   } else if (FEType == "L2") {
     return new mfem::common::L2_ParFESpace(&pmesh, order, components);
   } else {
-    std::cout << "FESpaceType " << FEType << " not recognised. \n";
+    MFEM_WARNING("FESpaceType " << FEType << " not recognised.");
   }
   return nullptr;
 }

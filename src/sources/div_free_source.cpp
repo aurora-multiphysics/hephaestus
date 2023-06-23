@@ -49,8 +49,7 @@ void DivFreeSource::Init(
   if (domain_properties.vector_property_map.Has(src_coef_name)) {
     sourceVecCoef = domain_properties.vector_property_map.Get(src_coef_name);
   } else {
-    std::cout << "SOURCE NOT FOUND";
-    exit;
+    MFEM_ABORT("SOURCE NOT FOUND");
   }
 
   div_free_src_gf = new mfem::ParGridFunction(HCurlFESpace_);
