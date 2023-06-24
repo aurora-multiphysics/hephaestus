@@ -11,7 +11,17 @@ void VectorCoefficientAuxSolver::Init(
     const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     hephaestus::DomainProperties &domain_properties) {
   gf = variables.Get(var_name);
+  if (gf == NULL) {
+    MFEM_ABORT("GridFunction "
+               << var_name
+               << " not found when initializing CoefficientAuxSolver");
+  }
   vec_coeff = domain_properties.vector_property_map.Get(vec_coef_name);
+  if (vec_coeff == NULL) {
+    MFEM_ABORT("VectorCoefficient "
+               << vec_coef_name
+               << " not found when initializing VectorCoefficientAuxSolver");
+  }
 }
 
 void VectorCoefficientAuxSolver::Solve(double t) {
