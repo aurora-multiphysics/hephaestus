@@ -106,6 +106,7 @@ void DivFreeSource::buildGrad() {
     delete grad;
   }
   grad = new mfem::ParDiscreteLinearOperator(H1FESpace_, HCurlFESpace_);
+  grad->AddDomainInterpolator(new mfem::GradientInterpolator());
   grad->Assemble();
   grad->Finalize();
 }

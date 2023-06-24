@@ -26,7 +26,7 @@ public:
 
   mfem::ParFiniteElementSpace *H1FESpace_;
   mfem::ParFiniteElementSpace *HCurlFESpace_;
-  mfem::ParGridFunction *q_; // Potential
+  mfem::ParGridFunction *q_, *grad_q; // Potential
   hephaestus::BCMap *_bc_map;
   mfem::Coefficient *betaCoef;
 
