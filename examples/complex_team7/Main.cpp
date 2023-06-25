@@ -134,15 +134,21 @@ int main(int argc, char *argv[]) {
   problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P1"));
   problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P1"));
   problem_builder->AddFESpace(std::string("HDiv"), std::string("RT_3D_P0"));
+  problem_builder->AddFESpace(std::string("L2"), std::string("L2_3D_P1"));
   problem_builder->AddGridFunction(
       std::string("magnetic_vector_potential_real"), std::string("HCurl"));
   problem_builder->AddGridFunction(
       std::string("magnetic_vector_potential_imag"), std::string("HCurl"));
+  problem_builder->AddGridFunction(std::string("electric_field_real"),
+                                   std::string("HCurl"));
+  problem_builder->AddGridFunction(std::string("electric_field_imag"),
+                                   std::string("HCurl"));
   problem_builder->AddGridFunction(std::string("magnetic_flux_density_real"),
                                    std::string("HDiv"));
   problem_builder->AddGridFunction(std::string("magnetic_flux_density_imag"),
                                    std::string("HDiv"));
-
+  problem_builder->AddGridFunction(std::string("joule_heating_load"),
+                                   std::string("L2"));
   hephaestus::DomainProperties domain_properties = defineCoefficients();
   problem_builder->SetCoefficients(domain_properties);
 
@@ -151,6 +157,21 @@ int main(int argc, char *argv[]) {
 
   hephaestus::Outputs outputs = defineOutputs();
   problem_builder->SetOutputs(outputs);
+
+  hephaestus::AuxSolvers postprocessors;
+  hephaestus::InputParameters joule_heating_params;
+  joule_heating_params.SetParam("VariableName",
+                                std::string("joule_heating_load"));
+  joule_heating_params.SetParam("CoefficientName", std::string("JouleHeating"));
+  joule_heating_params.SetParam("ElectricFieldName",
+                                std::string("magnetic_vector_potential"));
+  joule_heating_params.SetParam("ConductivityCoefName",
+                                std::string("electrical_conductivity"));
+  joule_heating_params.SetParam("ComplexField", true);
+  postprocessors.Register(
+      "JouleHeatingAux",
+      new hephaestus::JouleHeatingAuxSolver(joule_heating_params), true);
+  problem_builder->SetPostprocessors(postprocessors);
 
   hephaestus::InputParameters solver_options;
   solver_options.SetParam("Tolerance", float(1.0e-16));

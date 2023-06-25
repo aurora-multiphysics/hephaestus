@@ -4,6 +4,7 @@
 #include "curl_aux.hpp"
 #include "joule_heating_aux.hpp"
 #include "l2_error_vector_aux.hpp"
+#include "scaled_gridfunction_aux.hpp"
 #include "vector_coefficient_aux.hpp"
 
 // Specify classes that perform auxiliary calculations on GridFunctions or
