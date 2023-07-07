@@ -12,7 +12,7 @@ ComplexEFormulation::ComplexEFormulation()
 };
 
 void ComplexEFormulation::RegisterCoefficients() {
-  hephaestus::DomainProperties &domain_properties =
+  hephaestus::Coefficients &domain_properties =
       this->GetProblem()->domain_properties;
 
   freqCoef = dynamic_cast<mfem::ConstantCoefficient *>(
@@ -37,27 +37,28 @@ void ComplexEFormulation::RegisterCoefficients() {
       new mfem::ConstantCoefficient(-pow(2.0 * M_PI * freqCoef->constant, 2)),
       true);
 
-  if (!domain_properties.scalar_property_map.Has("magnetic_permeability")) {
-    domain_properties.scalar_property_map.Register(
-        "magnetic_permeability",
-        new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
-            std::string("magnetic_permeability"))),
-        true);
-  }
-  if (!domain_properties.scalar_property_map.Has(beta_coef_name)) {
-    domain_properties.scalar_property_map.Register(
-        beta_coef_name,
-        new mfem::PWCoefficient(
-            domain_properties.getGlobalScalarProperty(beta_coef_name)),
-        true);
-  }
-  if (!domain_properties.scalar_property_map.Has(zeta_coef_name)) {
-    domain_properties.scalar_property_map.Register(
-        zeta_coef_name,
-        new mfem::PWCoefficient(
-            domain_properties.getGlobalScalarProperty(zeta_coef_name)),
-        true);
-  }
+  //   if (!domain_properties.scalar_property_map.Has("magnetic_permeability"))
+  //   {
+  //     domain_properties.scalar_property_map.Register(
+  //         "magnetic_permeability",
+  //         new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
+  //             std::string("magnetic_permeability"))),
+  //         true);
+  //   }
+  //   if (!domain_properties.scalar_property_map.Has(beta_coef_name)) {
+  //     domain_properties.scalar_property_map.Register(
+  //         beta_coef_name,
+  //         new mfem::PWCoefficient(
+  //             domain_properties.getGlobalScalarProperty(beta_coef_name)),
+  //         true);
+  //   }
+  //   if (!domain_properties.scalar_property_map.Has(zeta_coef_name)) {
+  //     domain_properties.scalar_property_map.Register(
+  //         zeta_coef_name,
+  //         new mfem::PWCoefficient(
+  //             domain_properties.getGlobalScalarProperty(zeta_coef_name)),
+  //         true);
+  //   }
 
   domain_properties.scalar_property_map.Register(
       "maxwell_mass",

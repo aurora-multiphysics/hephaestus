@@ -4,7 +4,7 @@ namespace hephaestus {
 
 void AuxSolvers::Init(
     const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::DomainProperties &domain_properties) {
+    hephaestus::Coefficients &domain_properties) {
 
   for (const auto &[name, auxsolver] : GetMap()) {
     auxsolver->Init(variables, domain_properties);

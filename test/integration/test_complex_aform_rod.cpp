@@ -37,16 +37,16 @@ protected:
     air.property_map.Register("electrical_conductivity",
                               new mfem::ConstantCoefficient(sigmaAir), true);
 
-    hephaestus::DomainProperties domain_properties(
+    hephaestus::Coefficients domain_properties(
         std::vector<hephaestus::Subdomain>({wire, air}));
 
     domain_properties.scalar_property_map.Register(
         "frequency", new mfem::ConstantCoefficient(1.0 / 60.0), true);
-    domain_properties.scalar_property_map.Register(
-        "electrical_conductivity",
-        new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
-            std::string("electrical_conductivity"))),
-        true);
+    // domain_properties.scalar_property_map.Register(
+    //     "electrical_conductivity",
+    //     new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
+    //         std::string("electrical_conductivity"))),
+    //     true);
 
     hephaestus::BCMap bc_map;
 
@@ -128,7 +128,7 @@ protected:
     params.SetParam("UseGLVis", true);
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("BoundaryConditions", bc_map);
-    params.SetParam("DomainProperties", domain_properties);
+    params.SetParam("Coefficients", domain_properties);
     params.SetParam("GridFunctions", gridfunctions);
     params.SetParam("PreProcessors", preprocessors);
     params.SetParam("PostProcessors", postprocessors);
@@ -148,8 +148,8 @@ TEST_F(TestComplexAFormRod, CheckRun) {
       new hephaestus::ComplexAFormulation();
   hephaestus::BCMap bc_map(
       params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-  hephaestus::DomainProperties domain_properties(
-      params.GetParam<hephaestus::DomainProperties>("DomainProperties"));
+  hephaestus::Coefficients domain_properties(
+      params.GetParam<hephaestus::Coefficients>("Coefficients"));
   hephaestus::AuxSolvers preprocessors(
       params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
   hephaestus::AuxSolvers postprocessors(

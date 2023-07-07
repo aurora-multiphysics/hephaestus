@@ -51,7 +51,7 @@ protected:
     air.property_map.Register("electrical_conductivity",
                               new mfem::ConstantCoefficient(1.0), true);
 
-    hephaestus::DomainProperties domain_properties(
+    hephaestus::Coefficients domain_properties(
         std::vector<hephaestus::Subdomain>({wire, air}));
 
     domain_properties.scalar_property_map.Register(
@@ -111,10 +111,12 @@ protected:
     vectorcoeffauxparams.SetParam("VectorCoefficientName",
                                   std::string("a_exact_coeff"));
 
+    hephaestus::VectorCoefficientAuxSolver *vec_coef_aux =
+        new hephaestus::VectorCoefficientAuxSolver(vectorcoeffauxparams);
+    vec_coef_aux->SetPriority(-1);
+    postprocessors.Register("VectorCoefficientAuxSolver", vec_coef_aux, true);
+
     hephaestus::AuxSolvers preprocessors;
-    preprocessors.Register(
-        "VectorCoefficientAuxSolver",
-        new hephaestus::VectorCoefficientAuxSolver(vectorcoeffauxparams), true);
 
     hephaestus::Sources sources;
     mfem::VectorFunctionCoefficient *JSrcCoef =
@@ -137,7 +139,7 @@ protected:
 
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("BoundaryConditions", bc_map);
-    params.SetParam("DomainProperties", domain_properties);
+    params.SetParam("Coefficients", domain_properties);
     params.SetParam("PreProcessors", preprocessors);
     params.SetParam("PostProcessors", postprocessors);
     params.SetParam("Outputs", outputs);
@@ -165,8 +167,8 @@ TEST_F(TestAVFormSource, CheckRun) {
         new hephaestus::AVFormulation();
     hephaestus::BCMap bc_map(
         params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-    hephaestus::DomainProperties domain_properties(
-        params.GetParam<hephaestus::DomainProperties>("DomainProperties"));
+    hephaestus::Coefficients domain_properties(
+        params.GetParam<hephaestus::Coefficients>("Coefficients"));
     //   hephaestus::FESpaces fespaces(
     //       params.GetParam<hephaestus::FESpaces>("FESpaces"));
     //   hephaestus::GridFunctions gridfunctions(
@@ -206,7 +208,7 @@ TEST_F(TestAVFormSource, CheckRun) {
     exec_params.SetParam("StartTime", float(0.00));
     exec_params.SetParam("EndTime", float(0.05));
     exec_params.SetParam("VisualisationSteps", int(1));
-    exec_params.SetParam("UseGLVis", false);
+    exec_params.SetParam("UseGLVis", true);
     exec_params.SetParam("Problem", problem.get());
     hephaestus::TransientExecutioner *executioner =
         new hephaestus::TransientExecutioner(exec_params);

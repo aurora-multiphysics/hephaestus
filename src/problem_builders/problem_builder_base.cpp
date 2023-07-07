@@ -41,7 +41,7 @@ void ProblemBuilder::SetSolverOptions(
 };
 
 void ProblemBuilder::SetCoefficients(
-    hephaestus::DomainProperties &domain_properties) {
+    hephaestus::Coefficients &domain_properties) {
   this->GetProblem()->domain_properties = domain_properties;
 };
 

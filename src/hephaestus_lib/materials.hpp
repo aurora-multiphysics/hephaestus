@@ -1,9 +1,9 @@
 #pragma once
+#include "mesh_extras.hpp"
 #include <fstream>
 #include <iostream>
 #include <memory>
-
-#include "mesh_extras.hpp"
+#include <unordered_set>
 
 namespace hephaestus {
 
@@ -19,13 +19,19 @@ public:
   mfem::NamedFieldsMap<mfem::Coefficient> property_map;
 };
 
-class DomainProperties {
+// Coefficients - stores all scalar and vector coefficients
+//--SetTime
+//--scalar_property_map
+//--vector_property_map
+
+// Stores all coefficients defined over
+class Coefficients {
   double t; // Time at which time-dependent coefficients are evaluated
 public:
-  DomainProperties();
-  DomainProperties(std::vector<Subdomain> subdomains_);
+  Coefficients();
+  Coefficients(std::vector<Subdomain> subdomains_);
   void SetTime(double t);
-  mfem::PWCoefficient getGlobalScalarProperty(std::string property_name_);
+  void AddGlobalCoefficientsFromSubdomains();
 
   mfem::NamedFieldsMap<mfem::Coefficient> scalar_property_map;
   mfem::NamedFieldsMap<mfem::VectorCoefficient> vector_property_map;

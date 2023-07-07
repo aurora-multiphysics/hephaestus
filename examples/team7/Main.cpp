@@ -45,7 +45,7 @@ static void source_current(const mfem::Vector &xv, double t, mfem::Vector &J) {
   J *= Jmag;
 }
 
-hephaestus::DomainProperties defineCoefficients() {
+hephaestus::Coefficients defineCoefficients() {
   hephaestus::Subdomain air("air", 1);
   air.property_map.Register("electrical_conductivity",
                             new mfem::ConstantCoefficient(1.0), true);
@@ -64,9 +64,8 @@ hephaestus::DomainProperties defineCoefficients() {
   hephaestus::Subdomain coil4("coil4", 6);
   coil4.property_map.Register("electrical_conductivity",
                               new mfem::ConstantCoefficient(1.0), true);
-  hephaestus::DomainProperties domain_properties(
-      std::vector<hephaestus::Subdomain>(
-          {air, plate, coil1, coil2, coil3, coil4}));
+  hephaestus::Coefficients domain_properties(std::vector<hephaestus::Subdomain>(
+      {air, plate, coil1, coil2, coil3, coil4}));
   domain_properties.scalar_property_map.Register(
       "magnetic_permeability", new mfem::ConstantCoefficient(M_PI * 4.0e-7),
       true);
@@ -136,7 +135,7 @@ int main(int argc, char *argv[]) {
                                    std::string("HCurl"));
   problem_builder->AddGridFunction(std::string("magnetic_flux_density"),
                                    std::string("HDiv"));
-  hephaestus::DomainProperties domain_properties = defineCoefficients();
+  hephaestus::Coefficients domain_properties = defineCoefficients();
   problem_builder->SetCoefficients(domain_properties);
 
   hephaestus::Sources sources = defineSources();

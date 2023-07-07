@@ -73,7 +73,7 @@ protected:
     coil4.property_map.Register("electrical_conductivity",
                                 new mfem::ConstantCoefficient(1.0), true);
 
-    hephaestus::DomainProperties domain_properties(
+    hephaestus::Coefficients domain_properties(
         std::vector<hephaestus::Subdomain>(
             {air, plate, coil1, coil2, coil3, coil4}));
 
@@ -141,7 +141,7 @@ protected:
 
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("BoundaryConditions", bc_map);
-    params.SetParam("DomainProperties", domain_properties);
+    params.SetParam("Coefficients", domain_properties);
     params.SetParam("PreProcessors", preprocessors);
     params.SetParam("PostProcessors", postprocessors);
     params.SetParam("Outputs", outputs);
@@ -159,8 +159,8 @@ TEST_F(TestComplexTeam7, CheckRun) {
 
   hephaestus::BCMap bc_map(
       params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-  hephaestus::DomainProperties domain_properties(
-      params.GetParam<hephaestus::DomainProperties>("DomainProperties"));
+  hephaestus::Coefficients domain_properties(
+      params.GetParam<hephaestus::Coefficients>("Coefficients"));
   hephaestus::AuxSolvers preprocessors(
       params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
   hephaestus::AuxSolvers postprocessors(

@@ -177,8 +177,7 @@ void EquationSystem::RecoverFEMSolution(
 void EquationSystem::Init(
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    hephaestus::BCMap &bc_map,
-    hephaestus::DomainProperties &domain_properties) {
+    hephaestus::BCMap &bc_map, hephaestus::Coefficients &domain_properties) {
 
   // Add optional kernels to the EquationSystem
   addKernels();

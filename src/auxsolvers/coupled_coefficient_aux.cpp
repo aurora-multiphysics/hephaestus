@@ -9,7 +9,7 @@ CoupledCoefficient::CoupledCoefficient(
 
 void CoupledCoefficient::Init(
     const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::DomainProperties &domain_properties) {
+    hephaestus::Coefficients &domain_properties) {
   if (variables.Has(coupled_var_name)) {
     gf = variables.Get(coupled_var_name);
   } else {

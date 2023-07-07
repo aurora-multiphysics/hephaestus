@@ -15,7 +15,7 @@ class Problem {
 public:
   std::shared_ptr<mfem::ParMesh> pmesh;
   hephaestus::BCMap bc_map;
-  hephaestus::DomainProperties domain_properties;
+  hephaestus::Coefficients domain_properties;
   hephaestus::AuxSolvers preprocessors;
   hephaestus::AuxSolvers postprocessors;
   hephaestus::Sources sources;
@@ -53,7 +53,7 @@ public:
   void SetSources(hephaestus::Sources &sources);
   void SetOutputs(hephaestus::Outputs &outputs);
   void SetSolverOptions(hephaestus::InputParameters &solver_options);
-  void SetCoefficients(hephaestus::DomainProperties &domain_properties);
+  void SetCoefficients(hephaestus::Coefficients &domain_properties);
 
   void AddFESpace(std::string fespace_name, std::string fec_name, int vdim = 1,
                   int ordering = mfem::Ordering::byNODES);

@@ -38,7 +38,7 @@ public:
   JouleHeatingAuxSolver(const hephaestus::InputParameters &params);
 
   void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-            hephaestus::DomainProperties &domain_properties) override;
+            hephaestus::Coefficients &domain_properties) override;
 };
 
 } // namespace hephaestus

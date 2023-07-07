@@ -10,8 +10,7 @@ VectorFEMassKernel::VectorFEMassKernel(
 void VectorFEMassKernel::Init(
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    hephaestus::BCMap &bc_map,
-    hephaestus::DomainProperties &domain_properties) {
+    hephaestus::BCMap &bc_map, hephaestus::Coefficients &domain_properties) {
 
   coef = domain_properties.scalar_property_map.Get(coef_name);
 }

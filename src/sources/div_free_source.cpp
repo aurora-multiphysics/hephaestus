@@ -30,8 +30,7 @@ DivFreeSource::DivFreeSource(const hephaestus::InputParameters &params)
 void DivFreeSource::Init(
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    hephaestus::BCMap &bc_map,
-    hephaestus::DomainProperties &domain_properties) {
+    hephaestus::BCMap &bc_map, hephaestus::Coefficients &domain_properties) {
   H1FESpace_ = fespaces.Get(h1_fespace_name);
   if (H1FESpace_ == NULL) {
     const std::string error_message = h1_fespace_name +
@@ -144,8 +143,9 @@ void DivFreeSource::Apply(mfem::ParLinearForm *lf) {
   _bc_map->applyIntegratedBCs(potential_gf_name, *gDiv_,
                               (H1FESpace_->GetParMesh()));
   gDiv_->Assemble();
+
   // Compute the divergence of g
-  // // (g, ∇q)
+  // (g, ∇q)
   weakDiv_->AddMult(g, *gDiv_, -1.0);
 
   // Apply essential BC and form linear system

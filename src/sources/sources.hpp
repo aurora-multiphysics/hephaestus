@@ -9,7 +9,7 @@ public:
   void Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
             const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
             hephaestus::BCMap &bc_map,
-            hephaestus::DomainProperties &domain_properties);
+            hephaestus::Coefficients &domain_properties);
   void Apply(mfem::ParLinearForm *lf);
   void SubtractSources(mfem::ParGridFunction *gf);
 };

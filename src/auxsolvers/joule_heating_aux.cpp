@@ -34,7 +34,7 @@ JouleHeatingAuxSolver::JouleHeatingAuxSolver(
 
 void JouleHeatingAuxSolver::Init(
     const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::DomainProperties &domain_properties) {
+    hephaestus::Coefficients &domain_properties) {
 
   sigma = domain_properties.scalar_property_map.Get(conductivity_coef_name);
   if (sigma == NULL) {

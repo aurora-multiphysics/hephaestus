@@ -9,7 +9,7 @@ public:
   CoefficientAuxSolver(const hephaestus::InputParameters &params);
 
   void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-            hephaestus::DomainProperties &domain_properties) override;
+            hephaestus::Coefficients &domain_properties) override;
 
   void Solve(double t = 0.0) override;
 

@@ -11,7 +11,7 @@ ScaledGridFunctionAuxSolver::ScaledGridFunctionAuxSolver(
 
 void ScaledGridFunctionAuxSolver::Init(
     const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::DomainProperties &domain_properties) {
+    hephaestus::Coefficients &domain_properties) {
   input_gf = variables.Get(input_gf_name);
   if (input_gf == NULL) {
     MFEM_ABORT("GridFunction "

@@ -17,10 +17,10 @@ protected:
     return 0.0;
   }
 
-  static void hdot_bc(const mfem::Vector &x, double t, mfem::Vector &H) {
-    H(0) = sin(x(1) * M_PI) * sin(x(2) * M_PI);
-    H(1) = 0;
-    H(2) = 0;
+  static void adot_bc(const mfem::Vector &x, double t, mfem::Vector &A) {
+    A(0) = sin(x(1) * M_PI) * sin(x(2) * M_PI);
+    A(1) = 0;
+    A(2) = 0;
   }
 
   static void A_exact_expr(const mfem::Vector &x, double t,
@@ -30,14 +30,14 @@ protected:
     A_exact(2) = 0;
   }
   static double mu_expr(const mfem::Vector &x) {
-    double variation_scale = 0.5;
+    double variation_scale = 0.0;
     double mu =
         1.0 / (1.0 + variation_scale * cos(M_PI * x(0)) * cos(M_PI * x(1)));
     return mu;
   }
   // Source field
   static void source_field(const mfem::Vector &x, double t, mfem::Vector &f) {
-    double variation_scale = 0.5;
+    double variation_scale = 0.0;
     f(0) = t * M_PI * M_PI * sin(M_PI * x(1)) * sin(M_PI * x(2)) *
                (3 * variation_scale * cos(M_PI * x(0)) * cos(M_PI * x(1)) + 2) +
            sin(M_PI * x(1)) * sin(M_PI * x(2));
@@ -46,7 +46,10 @@ protected:
     f(2) = -0.5 * variation_scale * M_PI * M_PI * t * sin(M_PI * x(0)) *
            sin(2 * M_PI * x(1)) * cos(M_PI * x(2));
   }
-
+  static void neg_source_field(const mfem::Vector &x, double t,
+                               mfem::Vector &f) {
+    source_field(x, t, f);
+  }
   hephaestus::InputParameters test_params() {
     hephaestus::Subdomain wire("wire", 1);
     wire.property_map.Register("electrical_conductivity",
@@ -55,7 +58,7 @@ protected:
     air.property_map.Register("electrical_conductivity",
                               new mfem::ConstantCoefficient(1.0), true);
 
-    hephaestus::DomainProperties domain_properties(
+    hephaestus::Coefficients domain_properties(
         std::vector<hephaestus::Subdomain>({wire, air}));
 
     domain_properties.scalar_property_map.Register(
@@ -63,7 +66,7 @@ protected:
 
     hephaestus::BCMap bc_map;
     mfem::VectorFunctionCoefficient *adotVecCoef =
-        new mfem::VectorFunctionCoefficient(3, hdot_bc);
+        new mfem::VectorFunctionCoefficient(3, adot_bc);
     bc_map.Register("tangential_dAdt",
                     new hephaestus::VectorFunctionDirichletBC(
                         std::string("dmagnetic_vector_potential_dt"),
@@ -73,13 +76,6 @@ protected:
                                                    adotVecCoef, true);
     domain_properties.scalar_property_map.Register(
         "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
-
-    bc_map.Register("ground_potential",
-                    new hephaestus::FunctionDirichletBC(
-                        std::string("magnetic_potential"),
-                        mfem::Array<int>({1, 2, 3}),
-                        new mfem::FunctionCoefficient(potential_ground)),
-                    true);
 
     mfem::VectorFunctionCoefficient *A_exact =
         new mfem::VectorFunctionCoefficient(3, A_exact_expr);
@@ -110,10 +106,10 @@ protected:
     vectorcoeffauxparams.SetParam("VectorCoefficientName",
                                   std::string("a_exact_coeff"));
 
-    hephaestus::AuxSolvers preprocessors;
-    preprocessors.Register(
-        "VectorCoefficientAuxSolver",
-        new hephaestus::VectorCoefficientAuxSolver(vectorcoeffauxparams), true);
+    hephaestus::VectorCoefficientAuxSolver *vec_coef_aux =
+        new hephaestus::VectorCoefficientAuxSolver(vectorcoeffauxparams);
+    vec_coef_aux->SetPriority(-1);
+    postprocessors.Register("VectorCoefficientAuxSolver", vec_coef_aux, true);
 
     hephaestus::Sources sources;
     mfem::VectorFunctionCoefficient *JSrcCoef =
@@ -140,8 +136,7 @@ protected:
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("BoundaryConditions", bc_map);
-    params.SetParam("DomainProperties", domain_properties);
-    params.SetParam("PreProcessors", preprocessors);
+    params.SetParam("Coefficients", domain_properties);
     params.SetParam("PostProcessors", postprocessors);
     params.SetParam("Outputs", outputs);
     params.SetParam("Sources", sources);
@@ -169,14 +164,12 @@ TEST_F(TestAFormSource, CheckRun) {
         new hephaestus::AFormulation();
     hephaestus::BCMap bc_map(
         params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-    hephaestus::DomainProperties domain_properties(
-        params.GetParam<hephaestus::DomainProperties>("DomainProperties"));
+    hephaestus::Coefficients domain_properties(
+        params.GetParam<hephaestus::Coefficients>("Coefficients"));
     //   hephaestus::FESpaces fespaces(
     //       params.GetParam<hephaestus::FESpaces>("FESpaces"));
     //   hephaestus::GridFunctions gridfunctions(
     //       params.GetParam<hephaestus::GridFunctions>("GridFunctions"));
-    hephaestus::AuxSolvers preprocessors(
-        params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
     hephaestus::AuxSolvers postprocessors(
         params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
     hephaestus::Sources sources(
@@ -193,7 +186,6 @@ TEST_F(TestAFormSource, CheckRun) {
     problem_builder->AddGridFunction(std::string("analytic_vector_potential"),
                                      std::string("HCurl"));
     problem_builder->SetBoundaryConditions(bc_map);
-    problem_builder->SetAuxSolvers(preprocessors);
     problem_builder->SetCoefficients(domain_properties);
     problem_builder->SetPostprocessors(postprocessors);
     problem_builder->SetSources(sources);
@@ -210,7 +202,7 @@ TEST_F(TestAFormSource, CheckRun) {
     exec_params.SetParam("StartTime", float(0.00));
     exec_params.SetParam("EndTime", float(0.05));
     exec_params.SetParam("VisualisationSteps", int(1));
-    exec_params.SetParam("UseGLVis", false);
+    exec_params.SetParam("UseGLVis", true);
     exec_params.SetParam("Problem", problem.get());
     hephaestus::TransientExecutioner *executioner =
         new hephaestus::TransientExecutioner(exec_params);

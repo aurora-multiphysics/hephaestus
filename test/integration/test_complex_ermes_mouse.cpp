@@ -45,7 +45,7 @@ protected:
     mouse.property_map.Register("magnetic_permeability",
                                 new mfem::ConstantCoefficient(mu0_), true);
 
-    hephaestus::DomainProperties domain_properties(
+    hephaestus::Coefficients domain_properties(
         std::vector<hephaestus::Subdomain>({air, mouse}));
 
     domain_properties.scalar_property_map.Register(
@@ -104,7 +104,7 @@ protected:
 
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("BoundaryConditions", bc_map);
-    params.SetParam("DomainProperties", domain_properties);
+    params.SetParam("Coefficients", domain_properties);
     params.SetParam("FESpaces", fespaces);
     params.SetParam("GridFunctions", gridfunctions);
     params.SetParam("PreProcessors", preprocessors);
@@ -127,8 +127,8 @@ TEST_F(TestComplexERMESMouse, CheckRun) {
       new hephaestus::ComplexEFormulation();
   hephaestus::BCMap bc_map(
       params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-  hephaestus::DomainProperties domain_properties(
-      params.GetParam<hephaestus::DomainProperties>("DomainProperties"));
+  hephaestus::Coefficients domain_properties(
+      params.GetParam<hephaestus::Coefficients>("Coefficients"));
   hephaestus::AuxSolvers preprocessors(
       params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
   hephaestus::AuxSolvers postprocessors(

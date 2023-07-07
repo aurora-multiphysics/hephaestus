@@ -9,7 +9,7 @@ public:
   void Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
             const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
             hephaestus::BCMap &bc_map,
-            hephaestus::DomainProperties &domain_properties) override;
+            hephaestus::Coefficients &domain_properties) override;
   void Apply(mfem::ParLinearForm *lf) override;
   void SubtractSource(mfem::ParGridFunction *gf) override;
   void buildH1Diffusion();
@@ -44,7 +44,7 @@ public:
   mfem::ParGridFunction *grad_p_;
 
   mfem::VectorCoefficient *sourceVecCoef;
-  mfem::ParGridFunction *div_free_src_gf; // Source field
+  mfem::ParGridFunction *g, *div_free_src_gf; // Source field
 
   mfem::Solver *solver;
 };

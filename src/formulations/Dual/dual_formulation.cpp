@@ -103,22 +103,22 @@ void DualFormulation::RegisterGridFunctions() {
 };
 
 void DualFormulation::RegisterCoefficients() {
-  hephaestus::DomainProperties &domain_properties =
+  hephaestus::Coefficients &domain_properties =
       this->GetProblem()->domain_properties;
-  if (!domain_properties.scalar_property_map.Has("alpha")) {
-    domain_properties.scalar_property_map.Register(
-        "alpha",
-        new mfem::PWCoefficient(
-            domain_properties.getGlobalScalarProperty(std::string("alpha"))),
-        true);
-  }
-  if (!domain_properties.scalar_property_map.Has("beta")) {
-    domain_properties.scalar_property_map.Register(
-        "beta",
-        new mfem::PWCoefficient(
-            domain_properties.getGlobalScalarProperty(std::string("beta"))),
-        true);
-  }
+  //   if (!domain_properties.scalar_property_map.Has("alpha")) {
+  //     domain_properties.scalar_property_map.Register(
+  //         "alpha",
+  //         new mfem::PWCoefficient(
+  //             domain_properties.getGlobalScalarProperty(std::string("alpha"))),
+  //         true);
+  //   }
+  //   if (!domain_properties.scalar_property_map.Has("beta")) {
+  //     domain_properties.scalar_property_map.Register(
+  //         "beta",
+  //         new mfem::PWCoefficient(
+  //             domain_properties.getGlobalScalarProperty(std::string("beta"))),
+  //         true);
+  //   }
 }
 
 WeakCurlEquationSystem::WeakCurlEquationSystem(
@@ -133,8 +133,7 @@ WeakCurlEquationSystem::WeakCurlEquationSystem(
 void WeakCurlEquationSystem::Init(
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    hephaestus::BCMap &bc_map,
-    hephaestus::DomainProperties &domain_properties) {
+    hephaestus::BCMap &bc_map, hephaestus::Coefficients &domain_properties) {
   domain_properties.scalar_property_map.Register(
       dtalpha_coef_name,
       new mfem::TransformedCoefficient(
@@ -173,7 +172,7 @@ DualOperator::DualOperator(
     mfem::ParMesh &pmesh,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
+    hephaestus::BCMap &bc_map, hephaestus::Coefficients &domain_properties,
     hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
     : TimeDomainEquationSystemOperator(pmesh, fespaces, variables, bc_map,
                                        domain_properties, sources,

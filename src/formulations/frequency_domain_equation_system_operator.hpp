@@ -13,8 +13,7 @@ public:
       mfem::ParMesh &pmesh,
       mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
       mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-      hephaestus::BCMap &bc_map,
-      hephaestus::DomainProperties &domain_properties,
+      hephaestus::BCMap &bc_map, hephaestus::Coefficients &domain_properties,
       hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
       : myid_(0), num_procs_(1), pmesh_(&pmesh), _fespaces(fespaces),
         _variables(variables), _bc_map(bc_map), _sources(sources),
@@ -48,7 +47,7 @@ public:
   mfem::NamedFieldsMap<mfem::ParGridFunction> &_variables;
   hephaestus::BCMap &_bc_map;
   hephaestus::Sources &_sources;
-  hephaestus::DomainProperties &_domain_properties;
+  hephaestus::Coefficients &_domain_properties;
   hephaestus::InputParameters &_solver_options;
 
   mfem::OperatorHandle blockA;

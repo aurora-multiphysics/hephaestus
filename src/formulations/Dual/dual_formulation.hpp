@@ -29,7 +29,7 @@ public:
   Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
        const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
        hephaestus::BCMap &bc_map,
-       hephaestus::DomainProperties &domain_properties) override;
+       hephaestus::Coefficients &domain_properties) override;
   virtual void addKernels() override;
 
   std::string h_curl_var_name, h_div_var_name, alpha_coef_name, beta_coef_name,
@@ -42,7 +42,7 @@ public:
                mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
                mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
                hephaestus::BCMap &bc_map,
-               hephaestus::DomainProperties &domain_properties,
+               hephaestus::Coefficients &domain_properties,
                hephaestus::Sources &sources,
                hephaestus::InputParameters &solver_options);
 

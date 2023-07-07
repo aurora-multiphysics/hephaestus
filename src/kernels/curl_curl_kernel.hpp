@@ -13,7 +13,7 @@ public:
   Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
        const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
        hephaestus::BCMap &bc_map,
-       hephaestus::DomainProperties &domain_properties) override;
+       hephaestus::Coefficients &domain_properties) override;
   virtual void Apply(mfem::ParBilinearForm *blf) override;
   std::string coef_name;
   mfem::Coefficient *coef;

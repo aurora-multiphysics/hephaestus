@@ -74,7 +74,7 @@ protected:
     coil4.property_map.Register("electrical_conductivity",
                                 new mfem::ConstantCoefficient(1.0), true);
 
-    hephaestus::DomainProperties domain_properties(
+    hephaestus::Coefficients domain_properties(
         std::vector<hephaestus::Subdomain>(
             {air, plate, coil1, coil2, coil3, coil4}));
 
@@ -137,7 +137,7 @@ protected:
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("BoundaryConditions", bc_map);
-    params.SetParam("DomainProperties", domain_properties);
+    params.SetParam("Coefficients", domain_properties);
     params.SetParam("GridFunctions", gridfunctions);
     params.SetParam("PreProcessors", preprocessors);
     params.SetParam("PostProcessors", postprocessors);
@@ -156,8 +156,8 @@ TEST_F(TestTeam7, CheckRun) {
       new hephaestus::AFormulation();
   hephaestus::BCMap bc_map(
       params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-  hephaestus::DomainProperties domain_properties(
-      params.GetParam<hephaestus::DomainProperties>("DomainProperties"));
+  hephaestus::Coefficients domain_properties(
+      params.GetParam<hephaestus::Coefficients>("Coefficients"));
   hephaestus::AuxSolvers preprocessors(
       params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
   hephaestus::AuxSolvers postprocessors(
@@ -192,7 +192,7 @@ TEST_F(TestTeam7, CheckRun) {
   exec_params.SetParam("StartTime", float(0.00));
   exec_params.SetParam("EndTime", float(0.002));
   exec_params.SetParam("VisualisationSteps", int(1));
-  exec_params.SetParam("UseGLVis", false);
+  exec_params.SetParam("UseGLVis", true);
   exec_params.SetParam("Problem", problem.get());
   hephaestus::TransientExecutioner *executioner =
       new hephaestus::TransientExecutioner(exec_params);

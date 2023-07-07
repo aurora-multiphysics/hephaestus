@@ -89,22 +89,23 @@ void AVFormulation::RegisterGridFunctions() {
 };
 
 void AVFormulation::RegisterCoefficients() {
-  hephaestus::DomainProperties &domain_properties =
+  hephaestus::Coefficients &domain_properties =
       this->GetProblem()->domain_properties;
-  if (!domain_properties.scalar_property_map.Has("magnetic_permeability")) {
-    domain_properties.scalar_property_map.Register(
-        "magnetic_permeability",
-        new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
-            std::string("magnetic_permeability"))),
-        true);
-  }
-  if (!domain_properties.scalar_property_map.Has("electrical_conductivity")) {
-    domain_properties.scalar_property_map.Register(
-        "electrical_conductivity",
-        new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
-            std::string("electrical_conductivity"))),
-        true);
-  }
+  // if (!domain_properties.scalar_property_map.Has("magnetic_permeability")) {
+  //   domain_properties.scalar_property_map.Register(
+  //       "magnetic_permeability",
+  //       new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
+  //           std::string("magnetic_permeability"))),
+  //       true);
+  // }
+  // if (!domain_properties.scalar_property_map.Has("electrical_conductivity"))
+  // {
+  //   domain_properties.scalar_property_map.Register(
+  //       "electrical_conductivity",
+  //       new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
+  //           std::string("electrical_conductivity"))),
+  //       true);
+  // }
 
   domain_properties.scalar_property_map.Register(
       alpha_coef_name,
@@ -128,8 +129,7 @@ AVEquationSystem::AVEquationSystem(const hephaestus::InputParameters &params)
 void AVEquationSystem::Init(
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    hephaestus::BCMap &bc_map,
-    hephaestus::DomainProperties &domain_properties) {
+    hephaestus::BCMap &bc_map, hephaestus::Coefficients &domain_properties) {
   domain_properties.scalar_property_map.Register(
       dtalpha_coef_name,
       new mfem::TransformedCoefficient(
@@ -194,7 +194,7 @@ AVOperator::AVOperator(
     mfem::ParMesh &pmesh,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
+    hephaestus::BCMap &bc_map, hephaestus::Coefficients &domain_properties,
     hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
     : TimeDomainEquationSystemOperator(pmesh, fespaces, variables, bc_map,
                                        domain_properties, sources,

@@ -17,8 +17,7 @@ WeakCurlKernel::~WeakCurlKernel() {
 void WeakCurlKernel::Init(
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    hephaestus::BCMap &bc_map,
-    hephaestus::DomainProperties &domain_properties) {
+    hephaestus::BCMap &bc_map, hephaestus::Coefficients &domain_properties) {
 
   u_ = variables.Get(hcurl_gf_name);
   v_ = variables.Get(hdiv_gf_name);

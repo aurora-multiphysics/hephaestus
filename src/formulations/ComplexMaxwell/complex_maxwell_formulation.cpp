@@ -6,7 +6,7 @@ ComplexMaxwellOperator::ComplexMaxwellOperator(
     mfem::ParMesh &pmesh,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::BCMap &bc_map, hephaestus::DomainProperties &domain_properties,
+    hephaestus::BCMap &bc_map, hephaestus::Coefficients &domain_properties,
     hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
     : FrequencyDomainEquationSystemOperator(pmesh, fespaces, variables, bc_map,
                                             domain_properties, sources,
@@ -145,7 +145,7 @@ void ComplexMaxwellFormulation::RegisterGridFunctions() {
 }
 
 void ComplexMaxwellFormulation::RegisterCoefficients() {
-  hephaestus::DomainProperties &domain_properties =
+  hephaestus::Coefficients &domain_properties =
       this->GetProblem()->domain_properties;
 
   freqCoef = dynamic_cast<mfem::ConstantCoefficient *>(
@@ -170,27 +170,27 @@ void ComplexMaxwellFormulation::RegisterCoefficients() {
       new mfem::ConstantCoefficient(-pow(2.0 * M_PI * freqCoef->constant, 2)),
       true);
 
-  if (!domain_properties.scalar_property_map.Has("magnetic_permeability")) {
-    domain_properties.scalar_property_map.Register(
-        "magnetic_permeability",
-        new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
-            std::string("magnetic_permeability"))),
-        true);
-  }
-  if (!domain_properties.scalar_property_map.Has(beta_coef_name)) {
-    domain_properties.scalar_property_map.Register(
-        beta_coef_name,
-        new mfem::PWCoefficient(
-            domain_properties.getGlobalScalarProperty(beta_coef_name)),
-        true);
-  }
-  if (!domain_properties.scalar_property_map.Has(zeta_coef_name)) {
-    domain_properties.scalar_property_map.Register(
-        zeta_coef_name,
-        new mfem::PWCoefficient(
-            domain_properties.getGlobalScalarProperty(zeta_coef_name)),
-        true);
-  }
+  // if (!domain_properties.scalar_property_map.Has("magnetic_permeability")) {
+  //   domain_properties.scalar_property_map.Register(
+  //       "magnetic_permeability",
+  //       new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
+  //           std::string("magnetic_permeability"))),
+  //       true);
+  // }
+  // if (!domain_properties.scalar_property_map.Has(beta_coef_name)) {
+  //   domain_properties.scalar_property_map.Register(
+  //       beta_coef_name,
+  //       new mfem::PWCoefficient(
+  //           domain_properties.getGlobalScalarProperty(beta_coef_name)),
+  //       true);
+  // }
+  // if (!domain_properties.scalar_property_map.Has(zeta_coef_name)) {
+  //   domain_properties.scalar_property_map.Register(
+  //       zeta_coef_name,
+  //       new mfem::PWCoefficient(
+  //           domain_properties.getGlobalScalarProperty(zeta_coef_name)),
+  //       true);
+  // }
 
   domain_properties.scalar_property_map.Register(
       mass_coef_name,

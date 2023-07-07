@@ -8,12 +8,14 @@ double fracFunc(double a, double b) { return a / b; }
 Subdomain::Subdomain(const std::string &name_, int id_)
     : name(name_), id(id_) {}
 
-DomainProperties::DomainProperties() {}
+Coefficients::Coefficients() {}
 
-DomainProperties::DomainProperties(std::vector<Subdomain> subdomains_)
-    : subdomains(subdomains_) {}
+Coefficients::Coefficients(std::vector<Subdomain> subdomains_)
+    : subdomains(subdomains_) {
+  AddGlobalCoefficientsFromSubdomains();
+}
 
-void DomainProperties::SetTime(double time) {
+void Coefficients::SetTime(double time) {
   for (auto const &[name, coeff_] : scalar_property_map) {
     coeff_->SetTime(time);
   }
@@ -23,18 +25,40 @@ void DomainProperties::SetTime(double time) {
   t = time;
 }
 
-mfem::PWCoefficient
-DomainProperties::getGlobalScalarProperty(std::string property_name_) {
+// merge subdomains?
+void Coefficients::AddGlobalCoefficientsFromSubdomains() {
 
+  // iterate over subdomains
+  // check IDs span domain
+  // accumulate list of property_name in unordered map
+
+  // for each property_name
+  // iterate over subdomains
+  // accumulate coefs
   mfem::Array<int> subdomain_ids;
-  mfem::Array<mfem::Coefficient *> subdomain_coefs;
+  std::unordered_set<std::string> scalar_property_names;
 
   for (std::size_t i = 0; i < subdomains.size(); i++) {
     subdomain_ids.Append(subdomains[i].id);
-    subdomain_coefs.Append(subdomains[i].property_map.Get(property_name_));
+    // accumulate property names on subdomains, ignoring duplicates
+    for (auto const &[name, coeff_] : subdomains[i].property_map) {
+      scalar_property_names.insert(name);
+    }
   }
-  mfem::PWCoefficient global_property_map(subdomain_ids, subdomain_coefs);
-  return global_property_map;
+  // check if IDs span
+  // iterate over properties stored on subdomains, and create global
+  // coefficients
+  for (auto &scalar_property_name : scalar_property_names) {
+    mfem::Array<mfem::Coefficient *> subdomain_coefs;
+    for (std::size_t i = 0; i < subdomains.size(); i++) {
+      subdomain_coefs.Append(
+          subdomains[i].property_map.Get(scalar_property_name));
+    }
+    if (!scalar_property_map.Has(scalar_property_name)) {
+      scalar_property_map.Register(
+          scalar_property_name,
+          new mfem::PWCoefficient(subdomain_ids, subdomain_coefs), true);
+    }
+  }
 }
-
 } // namespace hephaestus

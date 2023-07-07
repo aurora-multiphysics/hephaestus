@@ -19,7 +19,7 @@ public:
 
   virtual void
   Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-       hephaestus::DomainProperties &domain_properties) override;
+       hephaestus::Coefficients &domain_properties) override;
 
   virtual double Eval(mfem::ElementTransformation &T,
                       const mfem::IntegrationPoint &ip) override;

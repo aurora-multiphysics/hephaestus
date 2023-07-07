@@ -35,14 +35,14 @@ protected:
     air.property_map.Register("electrical_conductivity",
                               new mfem::ConstantCoefficient(sigmaAir), true);
 
-    hephaestus::DomainProperties domain_properties(
+    hephaestus::Coefficients domain_properties(
         std::vector<hephaestus::Subdomain>({wire, air}));
 
-    domain_properties.scalar_property_map.Register(
-        "electrical_conductivity",
-        new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
-            std::string("electrical_conductivity"))),
-        true);
+    // domain_properties.scalar_property_map.Register(
+    //     "electrical_conductivity",
+    //     new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
+    //         std::string("electrical_conductivity"))),
+    //     true);
 
     hephaestus::BCMap bc_map;
     mfem::VectorFunctionCoefficient *edotVecCoef =
@@ -121,7 +121,7 @@ protected:
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("BoundaryConditions", bc_map);
-    params.SetParam("DomainProperties", domain_properties);
+    params.SetParam("Coefficients", domain_properties);
     params.SetParam("GridFunctions", gridfunctions);
     params.SetParam("PreProcessors", preprocessors);
     params.SetParam("PostProcessors", postprocessors);
@@ -139,8 +139,8 @@ TEST_F(TestHJFormRod, CheckRun) {
       new hephaestus::HJDualFormulation();
   hephaestus::BCMap bc_map(
       params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-  hephaestus::DomainProperties domain_properties(
-      params.GetParam<hephaestus::DomainProperties>("DomainProperties"));
+  hephaestus::Coefficients domain_properties(
+      params.GetParam<hephaestus::Coefficients>("Coefficients"));
   hephaestus::AuxSolvers preprocessors(
       params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
   hephaestus::AuxSolvers postprocessors(
