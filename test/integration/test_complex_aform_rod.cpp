@@ -44,12 +44,8 @@ protected:
         "frequency", new mfem::ConstantCoefficient(1.0 / 60.0), true);
     domain_properties.scalar_property_map.Register(
         "dielectric_permittivity", new mfem::ConstantCoefficient(0.0), true);
-
-    // domain_properties.scalar_property_map.Register(
-    //     "electrical_conductivity",
-    //     new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
-    //         std::string("electrical_conductivity"))),
-    //     true);
+    domain_properties.scalar_property_map.Register(
+        "magnetic_permeability", new mfem::ConstantCoefficient(1.0), true);
 
     hephaestus::BCMap bc_map;
 
@@ -60,11 +56,6 @@ protected:
                         new mfem::VectorFunctionCoefficient(3, a_bc_r),
                         new mfem::VectorFunctionCoefficient(3, a_bc_i)),
                     true);
-
-    domain_properties.scalar_property_map.Register(
-        "magnetic_permeability", new mfem::ConstantCoefficient(1.0), true);
-    // domain_properties.vector_property_map.Register("surface_tangential_dEdt",
-    //     edotVecCoef, true);
 
     mfem::Array<int> high_terminal(1);
     high_terminal[0] = 1;

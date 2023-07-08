@@ -27,7 +27,5 @@ should be performed on J꜀ᵉ before use in this operator.
 class ComplexEFormulation : public hephaestus::ComplexMaxwellFormulation {
 public:
   ComplexEFormulation();
-
-  virtual void RegisterCoefficients() override;
 };
 } // namespace hephaestus

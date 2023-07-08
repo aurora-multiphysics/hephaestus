@@ -105,20 +105,13 @@ void DualFormulation::RegisterGridFunctions() {
 void DualFormulation::RegisterCoefficients() {
   hephaestus::Coefficients &domain_properties =
       this->GetProblem()->domain_properties;
-  //   if (!domain_properties.scalar_property_map.Has("alpha")) {
-  //     domain_properties.scalar_property_map.Register(
-  //         "alpha",
-  //         new mfem::PWCoefficient(
-  //             domain_properties.getGlobalScalarProperty(std::string("alpha"))),
-  //         true);
-  //   }
-  //   if (!domain_properties.scalar_property_map.Has("beta")) {
-  //     domain_properties.scalar_property_map.Register(
-  //         "beta",
-  //         new mfem::PWCoefficient(
-  //             domain_properties.getGlobalScalarProperty(std::string("beta"))),
-  //         true);
-  //   }
+
+  if (!domain_properties.scalar_property_map.Has(alpha_coef_name)) {
+    MFEM_ABORT(alpha_coef_name + " coefficient not found.");
+  }
+  if (!domain_properties.scalar_property_map.Has(beta_coef_name)) {
+    MFEM_ABORT(beta_coef_name + " coefficient not found.");
+  }
 }
 
 WeakCurlEquationSystem::WeakCurlEquationSystem(

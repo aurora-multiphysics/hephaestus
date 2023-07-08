@@ -30,7 +30,5 @@ public:
   ComplexAFormulation();
 
   virtual void RegisterAuxSolvers() override;
-
-  virtual void RegisterCoefficients() override;
 };
 } // namespace hephaestus

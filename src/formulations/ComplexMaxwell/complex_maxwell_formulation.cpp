@@ -148,12 +148,22 @@ void ComplexMaxwellFormulation::RegisterCoefficients() {
   hephaestus::Coefficients &domain_properties =
       this->GetProblem()->domain_properties;
 
+  if (!domain_properties.scalar_property_map.Has(frequency_coef_name)) {
+    MFEM_ABORT(frequency_coef_name + " coefficient not found.");
+  }
+  if (!domain_properties.scalar_property_map.Has("magnetic_permeability")) {
+    MFEM_ABORT("Magnetic permeability coefficient not found.");
+  }
+  if (!domain_properties.scalar_property_map.Has(beta_coef_name)) {
+    MFEM_ABORT(beta_coef_name + " coefficient not found.");
+  }
+  if (!domain_properties.scalar_property_map.Has(zeta_coef_name)) {
+    MFEM_ABORT(zeta_coef_name + " coefficient not found.");
+  }
+
   freqCoef = dynamic_cast<mfem::ConstantCoefficient *>(
       domain_properties.scalar_property_map.Get(frequency_coef_name));
-  if (freqCoef == NULL) {
-    MFEM_ABORT("No frequency coefficient found. Frequency must be specified "
-               "for frequency domain formulations.");
-  }
+
   // define transformed
   domain_properties.scalar_property_map.Register(
       "_angular_frequency",
@@ -169,16 +179,6 @@ void ComplexMaxwellFormulation::RegisterCoefficients() {
       "_neg_angular_frequency_sq",
       new mfem::ConstantCoefficient(-pow(2.0 * M_PI * freqCoef->constant, 2)),
       true);
-
-  if (!domain_properties.scalar_property_map.Has("magnetic_permeability")) {
-    MFEM_ABORT("Magnetic permeability coefficient not found.");
-  }
-  if (!domain_properties.scalar_property_map.Has(beta_coef_name)) {
-    MFEM_ABORT(beta_coef_name + " coefficient not found.");
-  }
-  if (!domain_properties.scalar_property_map.Has(zeta_coef_name)) {
-    MFEM_ABORT(zeta_coef_name + " coefficient not found.");
-  }
 
   domain_properties.scalar_property_map.Register(
       mass_coef_name,

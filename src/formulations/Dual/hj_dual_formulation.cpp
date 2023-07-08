@@ -12,23 +12,12 @@ HJDualFormulation::HJDualFormulation() : DualFormulation() {
 void HJDualFormulation::RegisterCoefficients() {
   hephaestus::Coefficients &domain_properties =
       this->GetProblem()->domain_properties;
-  //   if (!domain_properties.scalar_property_map.Has("magnetic_permeability"))
-  //   {
-  //     domain_properties.scalar_property_map.Register(
-  //         "magnetic_permeability",
-  //         new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
-  //             std::string("magnetic_permeability"))),
-  //         true);
-  //   }
-  //   if
-  //   (!domain_properties.scalar_property_map.Has("electrical_conductivity")) {
-  //     domain_properties.scalar_property_map.Register(
-  //         "electrical_conductivity",
-  //         new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
-  //             std::string("electrical_conductivity"))),
-  //         true);
-  //   }
-
+  if (!domain_properties.scalar_property_map.Has("magnetic_permeability")) {
+    MFEM_ABORT("magnetic_permeability coefficient not found.");
+  }
+  if (!domain_properties.scalar_property_map.Has("electrical_conductivity")) {
+    MFEM_ABORT("electrical_conductivity coefficient not found.");
+  }
   domain_properties.scalar_property_map.Register(
       alpha_coef_name,
       new mfem::TransformedCoefficient(
