@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "boundary_conditions.hpp"
-#include "materials.hpp"
+#include "coefficients.hpp"
 #include "outputs.hpp"
 
 namespace hephaestus {

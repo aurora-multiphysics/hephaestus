@@ -1,4 +1,4 @@
-#include "materials.hpp"
+#include "coefficients.hpp"
 #include <gtest/gtest.h>
 
 TEST(CoefficientsTest, CheckData) {

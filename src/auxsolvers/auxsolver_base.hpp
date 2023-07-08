@@ -1,6 +1,6 @@
 #pragma once
+#include "coefficients.hpp"
 #include "inputs.hpp"
-#include "materials.hpp"
 #include "mfem.hpp"
 
 // Specify classes that perform auxiliary calculations on GridFunctions or
