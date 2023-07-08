@@ -42,6 +42,9 @@ protected:
 
     domain_properties.scalar_property_map.Register(
         "frequency", new mfem::ConstantCoefficient(1.0 / 60.0), true);
+    domain_properties.scalar_property_map.Register(
+        "dielectric_permittivity", new mfem::ConstantCoefficient(0.0), true);
+
     // domain_properties.scalar_property_map.Register(
     //     "electrical_conductivity",
     //     new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(

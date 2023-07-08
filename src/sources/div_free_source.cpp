@@ -12,8 +12,6 @@ P(g) = g + β∇p - ∇×M
 
 via the weak form:
 (g, ∇q) - (∇Q, ∇q) - <P(g).n, q> = 0
-
-(-Q u, grad v)
 */
 DivFreeSource::DivFreeSource(const hephaestus::InputParameters &params)
     : src_coef_name(params.GetParam<std::string>("SourceName")),
@@ -24,6 +22,8 @@ DivFreeSource::DivFreeSource(const hephaestus::InputParameters &params)
           "PotentialName", std::string("_source_potential"))),
       solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
           "SolverOptions", hephaestus::InputParameters())),
+      perform_helmholtz_projection(
+          params.GetOptionalParam<bool>("HelmholtzProjection", true)),
       a0(NULL), h_curl_mass(NULL), weakDiv_(NULL), grad(NULL), a0_solver(NULL) {
 }
 
@@ -53,6 +53,8 @@ void DivFreeSource::Init(
 
   div_free_src_gf = new mfem::ParGridFunction(HCurlFESpace_);
   variables.Register(src_gf_name, div_free_src_gf, false);
+  g = new mfem::ParGridFunction(HCurlFESpace_);
+  variables.Register("_user_source", g, false);
   q_ = new mfem::ParGridFunction(H1FESpace_);
   variables.Register(potential_gf_name, q_, false);
 
@@ -111,75 +113,82 @@ void DivFreeSource::buildGrad() {
 }
 
 void DivFreeSource::Apply(mfem::ParLinearForm *lf) {
-  // (g, ∇q) - (∇Q, ∇q) - <P(g).n, q> = 0
-  mfem::ParGridFunction g(HCurlFESpace_);
-  g.ProjectCoefficient(*sourceVecCoef);
-
+  // Find an averaged representation of current density in H(curl)*
+  g->ProjectCoefficient(*sourceVecCoef);
   mfem::ParLinearForm J(HCurlFESpace_);
   J.AddDomainIntegrator(new mfem::VectorFEDomainLFIntegrator(*sourceVecCoef));
   J.Assemble();
-
   {
     mfem::HypreParMatrix M;
     mfem::Vector X, RHS;
     mfem::Array<int> ess_tdof_list;
-    h_curl_mass->FormLinearSystem(ess_tdof_list, g, J, M, X, RHS);
+    h_curl_mass->FormLinearSystem(ess_tdof_list, *g, J, M, X, RHS);
 
     DefaultGMRESSolver solver(solver_options, M);
     solver.Mult(RHS, X);
 
-    h_curl_mass->RecoverFEMSolution(X, J, g);
+    h_curl_mass->RecoverFEMSolution(X, J, *g);
   }
 
-  // begin div free proj
-  *q_ = 0.0;
-  int myid = H1FESpace_->GetMyRank();
-  mfem::Array<int> ess_bdr_;
-  mfem::Array<int> ess_bdr_tdofs_;
-  mfem::ParGridFunction Phi_gf(H1FESpace_);
-  // <P(g).n, q>
-  _bc_map->applyEssentialBCs(potential_gf_name, ess_bdr_tdofs_, Phi_gf,
-                             (H1FESpace_->GetParMesh()));
-  _bc_map->applyIntegratedBCs(potential_gf_name, *gDiv_,
-                              (H1FESpace_->GetParMesh()));
-  gDiv_->Assemble();
-
-  // Compute the divergence of g
-  // (g, ∇q)
-  weakDiv_->AddMult(g, *gDiv_, -1.0);
-
-  // Apply essential BC and form linear system
-  ess_bdr_.SetSize(H1FESpace_->GetParMesh()->bdr_attributes.Max());
-  ess_bdr_ = 0;
-  ess_bdr_tdofs_.SetSize((myid == 0) ? 1 : 0);
-  if (myid == 0) {
-    ess_bdr_tdofs_[0] = 0;
-  }
-
+  // Begin Divergence free projection
   // (g, ∇q) - (∇Q, ∇q) - <P(g).n, q> = 0
-  // (∇Q, ∇q) = (g, ∇q) - <P(g).n, q>
-  a0->FormLinearSystem(ess_bdr_tdofs_, *q_, *gDiv_, *A0, *X0, *B0);
+  if (perform_helmholtz_projection) {
 
-  // Solve the linear system for Psi
-  mfem::HypreBoomerAMG *amg_ = new mfem::HypreBoomerAMG(*A0);
-  amg_->SetPrintLevel(0);
-  mfem::HyprePCG *pcg_ = new mfem::HyprePCG(*A0);
-  pcg_->SetTol(1e-14);
-  pcg_->SetMaxIter(200);
-  pcg_->SetPrintLevel(0);
-  pcg_->SetPreconditioner(*amg_);
-  pcg_->Mult(*B0, *X0);
-  delete amg_;
-  delete pcg_;
+    *q_ = 0.0;
+    int myid = H1FESpace_->GetMyRank();
+    mfem::Array<int> ess_bdr_;
+    mfem::Array<int> ess_bdr_tdofs_;
+    mfem::ParGridFunction Phi_gf(H1FESpace_);
 
-  a0->RecoverFEMSolution(*X0, *gDiv_, *q_);
-  // Compute the irrotational component of g
-  // P(g) = g - ∇Q
-  grad->Mult(*q_, *div_free_src_gf);
-  *div_free_src_gf -= g;
-  *div_free_src_gf *= -1.0;
-  // end div free proj
-  // Compute the dual of div_free_src_gf
+    // <P(g).n, q>
+    _bc_map->applyEssentialBCs(potential_gf_name, ess_bdr_tdofs_, Phi_gf,
+                               (H1FESpace_->GetParMesh()));
+    _bc_map->applyIntegratedBCs(potential_gf_name, *gDiv_,
+                                (H1FESpace_->GetParMesh()));
+    gDiv_->Assemble();
+
+    // Compute the divergence of g
+    // (g, ∇q)
+    weakDiv_->AddMult(*g, *gDiv_, -1.0);
+
+    // Apply essential BC. Necessary to ensure potential at least one point is
+    // fixed.
+    ess_bdr_.SetSize(H1FESpace_->GetParMesh()->bdr_attributes.Max());
+    ess_bdr_ = 0;
+    ess_bdr_tdofs_.SetSize((myid == 0) ? 1 : 0);
+    if (myid == 0) {
+      ess_bdr_tdofs_[0] = 0;
+    }
+
+    // Form linear system
+    // (g, ∇q) - (∇Q, ∇q) - <P(g).n, q> = 0
+    // (∇Q, ∇q) = (g, ∇q) - <P(g).n, q>
+    a0->FormLinearSystem(ess_bdr_tdofs_, *q_, *gDiv_, *A0, *X0, *B0);
+
+    // Solve the linear system for Q
+    mfem::HypreBoomerAMG *amg_ = new mfem::HypreBoomerAMG(*A0);
+    amg_->SetPrintLevel(0);
+    mfem::HyprePCG *pcg_ = new mfem::HyprePCG(*A0);
+    pcg_->SetTol(1e-14);
+    pcg_->SetMaxIter(200);
+    pcg_->SetPrintLevel(0);
+    pcg_->SetPreconditioner(*amg_);
+    pcg_->Mult(*B0, *X0);
+    delete amg_;
+    delete pcg_;
+
+    a0->RecoverFEMSolution(*X0, *gDiv_, *q_);
+    // Compute the irrotational component of g
+    // P(g) = g - ∇Q
+    grad->Mult(*q_, *div_free_src_gf);
+    *div_free_src_gf -= *g;
+    *div_free_src_gf *= -1.0;
+  } else {
+    *div_free_src_gf = *g;
+  }
+  // End of divergence free projection
+
+  // Add divergence free source to target linear form
   h_curl_mass->Update();
   h_curl_mass->Assemble();
   h_curl_mass->Finalize();

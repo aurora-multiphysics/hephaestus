@@ -82,6 +82,9 @@ protected:
     domain_properties.scalar_property_map.Register(
         "magnetic_permeability", new mfem::ConstantCoefficient(M_PI * 4.0e-7),
         true);
+    domain_properties.scalar_property_map.Register(
+        "dielectric_permittivity", new mfem::ConstantCoefficient(0.0), true);
+
     hephaestus::BCMap bc_map;
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team7.g")).c_str(),

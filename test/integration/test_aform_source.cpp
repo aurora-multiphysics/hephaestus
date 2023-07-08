@@ -46,10 +46,6 @@ protected:
     f(2) = -0.5 * variation_scale * M_PI * M_PI * t * sin(M_PI * x(0)) *
            sin(2 * M_PI * x(1)) * cos(M_PI * x(2));
   }
-  static void neg_source_field(const mfem::Vector &x, double t,
-                               mfem::Vector &f) {
-    source_field(x, t, f);
-  }
   hephaestus::InputParameters test_params() {
     hephaestus::Subdomain wire("wire", 1);
     wire.property_map.Register("electrical_conductivity",
@@ -125,6 +121,7 @@ protected:
     current_solver_options.SetParam("MaxIter", (unsigned int)200);
     current_solver_options.SetParam("PrintLevel", 0);
     div_free_source_params.SetParam("SolverOptions", current_solver_options);
+    div_free_source_params.SetParam("HelmholtzProjection", false);
     sources.Register(
         "source", new hephaestus::DivFreeSource(div_free_source_params), true);
 

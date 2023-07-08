@@ -23,6 +23,7 @@ public:
   std::string hcurl_fespace_name;
   std::string h1_fespace_name;
   const hephaestus::InputParameters solver_options;
+  bool perform_helmholtz_projection;
 
   mfem::ParFiniteElementSpace *H1FESpace_;
   mfem::ParFiniteElementSpace *HCurlFESpace_;
@@ -44,8 +45,8 @@ public:
   mfem::ParGridFunction *grad_p_;
 
   mfem::VectorCoefficient *sourceVecCoef;
-  mfem::ParGridFunction *g, *div_free_src_gf; // Source field
-
+  mfem::ParGridFunction *g; // H(Curl) projection of user specified source
+  mfem::ParGridFunction *div_free_src_gf; // Divergence free projected source
   mfem::Solver *solver;
 };
 

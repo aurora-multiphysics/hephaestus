@@ -170,27 +170,15 @@ void ComplexMaxwellFormulation::RegisterCoefficients() {
       new mfem::ConstantCoefficient(-pow(2.0 * M_PI * freqCoef->constant, 2)),
       true);
 
-  // if (!domain_properties.scalar_property_map.Has("magnetic_permeability")) {
-  //   domain_properties.scalar_property_map.Register(
-  //       "magnetic_permeability",
-  //       new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
-  //           std::string("magnetic_permeability"))),
-  //       true);
-  // }
-  // if (!domain_properties.scalar_property_map.Has(beta_coef_name)) {
-  //   domain_properties.scalar_property_map.Register(
-  //       beta_coef_name,
-  //       new mfem::PWCoefficient(
-  //           domain_properties.getGlobalScalarProperty(beta_coef_name)),
-  //       true);
-  // }
-  // if (!domain_properties.scalar_property_map.Has(zeta_coef_name)) {
-  //   domain_properties.scalar_property_map.Register(
-  //       zeta_coef_name,
-  //       new mfem::PWCoefficient(
-  //           domain_properties.getGlobalScalarProperty(zeta_coef_name)),
-  //       true);
-  // }
+  if (!domain_properties.scalar_property_map.Has("magnetic_permeability")) {
+    MFEM_ABORT("Magnetic permeability coefficient not found.");
+  }
+  if (!domain_properties.scalar_property_map.Has(beta_coef_name)) {
+    MFEM_ABORT(beta_coef_name + " coefficient not found.");
+  }
+  if (!domain_properties.scalar_property_map.Has(zeta_coef_name)) {
+    MFEM_ABORT(zeta_coef_name + " coefficient not found.");
+  }
 
   domain_properties.scalar_property_map.Register(
       mass_coef_name,

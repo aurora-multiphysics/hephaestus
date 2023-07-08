@@ -128,6 +128,7 @@ protected:
     current_solver_options.SetParam("MaxIter", (unsigned int)200);
     current_solver_options.SetParam("PrintLevel", 0);
     div_free_source_params.SetParam("SolverOptions", current_solver_options);
+    div_free_source_params.SetParam("HelmholtzProjection", false);
     sources.Register(
         "source", new hephaestus::DivFreeSource(div_free_source_params), true);
 

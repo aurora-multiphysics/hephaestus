@@ -127,6 +127,7 @@ protected:
     div_free_source_params.SetParam("HCurlFESpaceName",
                                     std::string("_HCurlFESpace"));
     div_free_source_params.SetParam("H1FESpaceName", std::string("_H1FESpace"));
+    div_free_source_params.SetParam("HelmholtzProjection", false);
     sources.Register(
         "source", new hephaestus::DivFreeSource(div_free_source_params), true);
 
