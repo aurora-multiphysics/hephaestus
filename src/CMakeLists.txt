@@ -1,6 +1,3 @@
-add_subdirectory(${PROJECT_NAME}_lib)
-add_subdirectory(formulations)
-
 file(GLOB_RECURSE src_files "*.h" "*.hpp" "*.cpp")
 
 message(STATUS "src files:")
