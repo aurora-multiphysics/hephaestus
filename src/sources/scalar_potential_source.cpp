@@ -16,10 +16,10 @@ ScalarPotentialSource::ScalarPotentialSource(
           "SolverOptions", hephaestus::InputParameters())),
       grad(NULL), m1(NULL), a0_solver(NULL) {}
 
-void ScalarPotentialSource::Init(
-    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients) {
+void ScalarPotentialSource::Init(hephaestus::GridFunctions &gridfunctions,
+                                 const hephaestus::FESpaces &fespaces,
+                                 hephaestus::BCMap &bc_map,
+                                 hephaestus::Coefficients &coefficients) {
   H1FESpace_ = fespaces.Get(h1_fespace_name);
   if (H1FESpace_ == NULL) {
     const std::string error_message = h1_fespace_name +
@@ -37,8 +37,8 @@ void ScalarPotentialSource::Init(
   }
 
   p_ = new mfem::ParGridFunction(H1FESpace_);
-  variables.Register(potential_gf_name, p_, false);
-  p_ = variables.Get(potential_gf_name);
+  gridfunctions.Register(potential_gf_name, p_, false);
+  p_ = gridfunctions.Get(potential_gf_name);
 
   _bc_map = &bc_map;
 
@@ -57,7 +57,7 @@ void ScalarPotentialSource::Init(
   B0 = new mfem::Vector;
 
   grad_p_ = new mfem::ParGridFunction(HCurlFESpace_);
-  variables.Register(src_gf_name, grad_p_, false);
+  gridfunctions.Register(src_gf_name, grad_p_, false);
 }
 
 void ScalarPotentialSource::buildM1(mfem::Coefficient *Sigma) {

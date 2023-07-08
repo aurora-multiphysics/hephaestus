@@ -6,11 +6,10 @@ CurlAuxSolver::CurlAuxSolver(const hephaestus::InputParameters &params)
     : AuxSolver(), var_name(params.GetParam<std::string>("VariableName")),
       curl_var_name(params.GetParam<std::string>("CurlVariableName")) {}
 
-void CurlAuxSolver::Init(
-    const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::Coefficients &coefficients) {
-  u_ = variables.Get(var_name);
-  curl_u_ = variables.Get(curl_var_name);
+void CurlAuxSolver::Init(const hephaestus::GridFunctions &gridfunctions,
+                         hephaestus::Coefficients &coefficients) {
+  u_ = gridfunctions.Get(var_name);
+  curl_u_ = gridfunctions.Get(curl_var_name);
 
   curl = new mfem::ParDiscreteLinearOperator(u_->ParFESpace(),
                                              curl_u_->ParFESpace());

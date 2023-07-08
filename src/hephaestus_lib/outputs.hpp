@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "../common/pfem_extras.hpp"
+#include "gridfunctions.hpp"
 #include "mesh_extras.hpp"
 
 namespace hephaestus {
@@ -16,11 +17,11 @@ public:
   std::map<std::string, mfem::DataCollection *> data_collections;
   std::map<std::string, mfem::socketstream *> socks_;
 
-  void RegisterOutputFields(
-      mfem::DataCollection *dc_, mfem::ParMesh *pmesh_,
-      mfem::NamedFieldsMap<mfem::ParGridFunction> &_variables) {
+  void RegisterOutputFields(mfem::DataCollection *dc_, mfem::ParMesh *pmesh_,
+                            hephaestus::GridFunctions &_gridfunctions) {
     dc_->SetMesh(pmesh_);
-    for (auto var = _variables.begin(); var != _variables.end(); ++var) {
+    for (auto var = _gridfunctions.begin(); var != _gridfunctions.end();
+         ++var) {
       dc_->RegisterField(var->first, var->second);
     }
   }
@@ -42,14 +43,13 @@ public:
     }
   }
 
-  void
-  InitializeGLVis(int id,
-                  mfem::NamedFieldsMap<mfem::ParGridFunction> &_variables) {
+  void InitializeGLVis(int id, hephaestus::GridFunctions &_gridfunctions) {
     if (id == 0) {
       std::cout << "Opening GLVis sockets." << std::endl;
     }
 
-    for (auto var = _variables.begin(); var != _variables.end(); ++var) {
+    for (auto var = _gridfunctions.begin(); var != _gridfunctions.end();
+         ++var) {
       socks_[var->first] = new mfem::socketstream;
       socks_[var->first]->precision(8);
     }
@@ -59,7 +59,7 @@ public:
     }
   }
 
-  void DisplayToGLVis(mfem::NamedFieldsMap<mfem::ParGridFunction> &_variables) {
+  void DisplayToGLVis(hephaestus::GridFunctions &_gridfunctions) {
     char vishost[] = "localhost";
     int visport = 19916;
 
@@ -67,7 +67,8 @@ public:
     int Ww = 350, Wh = 350;             // window size
     int offx = Ww + 10, offy = Wh + 45; // window offsets
 
-    for (auto var = _variables.begin(); var != _variables.end(); ++var) {
+    for (auto var = _gridfunctions.begin(); var != _gridfunctions.end();
+         ++var) {
       mfem::common::VisualizeField(*socks_[var->first], vishost, visport,
                                    *(var->second), (var->first).c_str(), Wx, Wy,
                                    Ww, Wh);

@@ -10,15 +10,15 @@ ScaledGridFunctionAuxSolver::ScaledGridFunctionAuxSolver(
       scaled_gf_name(params.GetParam<std::string>("ScaledVariableName")) {}
 
 void ScaledGridFunctionAuxSolver::Init(
-    const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+    const hephaestus::GridFunctions &gridfunctions,
     hephaestus::Coefficients &coefficients) {
-  input_gf = variables.Get(input_gf_name);
+  input_gf = gridfunctions.Get(input_gf_name);
   if (input_gf == NULL) {
     MFEM_ABORT("GridFunction "
                << input_gf_name
                << " not found when initializing CoefficientAuxSolver");
   }
-  scaled_gf = variables.Get(scaled_gf_name);
+  scaled_gf = gridfunctions.Get(scaled_gf_name);
   if (scaled_gf == NULL) {
     MFEM_ABORT("GridFunction "
                << scaled_gf_name

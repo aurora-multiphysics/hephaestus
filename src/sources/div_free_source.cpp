@@ -27,10 +27,10 @@ DivFreeSource::DivFreeSource(const hephaestus::InputParameters &params)
       a0(NULL), h_curl_mass(NULL), weakDiv_(NULL), grad(NULL), a0_solver(NULL) {
 }
 
-void DivFreeSource::Init(
-    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients) {
+void DivFreeSource::Init(hephaestus::GridFunctions &gridfunctions,
+                         const hephaestus::FESpaces &fespaces,
+                         hephaestus::BCMap &bc_map,
+                         hephaestus::Coefficients &coefficients) {
   H1FESpace_ = fespaces.Get(h1_fespace_name);
   if (H1FESpace_ == NULL) {
     const std::string error_message = h1_fespace_name +
@@ -52,11 +52,11 @@ void DivFreeSource::Init(
   }
 
   div_free_src_gf = new mfem::ParGridFunction(HCurlFESpace_);
-  variables.Register(src_gf_name, div_free_src_gf, false);
+  gridfunctions.Register(src_gf_name, div_free_src_gf, false);
   g = new mfem::ParGridFunction(HCurlFESpace_);
-  variables.Register("_user_source", g, false);
+  gridfunctions.Register("_user_source", g, false);
   q_ = new mfem::ParGridFunction(H1FESpace_);
-  variables.Register(potential_gf_name, q_, false);
+  gridfunctions.Register(potential_gf_name, q_, false);
 
   _bc_map = &bc_map;
 

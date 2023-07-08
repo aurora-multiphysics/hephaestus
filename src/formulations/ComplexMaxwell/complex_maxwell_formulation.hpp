@@ -26,17 +26,16 @@ should be performed on g before use in this operator.
 */
 class ComplexMaxwellOperator : public FrequencyDomainEquationSystemOperator {
 public:
-  ComplexMaxwellOperator(
-      mfem::ParMesh &pmesh,
-      mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-      mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-      hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients,
-      hephaestus::Sources &sources,
-      hephaestus::InputParameters &solver_options);
+  ComplexMaxwellOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
+                         hephaestus::GridFunctions &gridfunctions,
+                         hephaestus::BCMap &bc_map,
+                         hephaestus::Coefficients &coefficients,
+                         hephaestus::Sources &sources,
+                         hephaestus::InputParameters &solver_options);
 
   ~ComplexMaxwellOperator(){};
 
-  virtual void SetVariables() override;
+  virtual void Setgridfunctions() override;
   virtual void Init(mfem::Vector &X) override;
   virtual void Solve(mfem::Vector &X) override;
 

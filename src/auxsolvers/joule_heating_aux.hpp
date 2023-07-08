@@ -1,7 +1,7 @@
 #pragma once
 #include "auxsolvers.hpp"
 
-// Specify postprocessors that depend on one or more variables
+// Specify postprocessors that depend on one or more gridfunctions
 namespace hephaestus {
 
 // The JouleHeatingCoefficient object will contain a reference to the electric
@@ -37,7 +37,7 @@ private:
 public:
   JouleHeatingAuxSolver(const hephaestus::InputParameters &params);
 
-  void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+  void Init(const hephaestus::GridFunctions &gridfunctions,
             hephaestus::Coefficients &coefficients) override;
 };
 

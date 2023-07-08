@@ -2,12 +2,12 @@
 
 namespace hephaestus {
 
-void Sources::Init(
-    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients) {
+void Sources::Init(hephaestus::GridFunctions &gridfunctions,
+                   const hephaestus::FESpaces &fespaces,
+                   hephaestus::BCMap &bc_map,
+                   hephaestus::Coefficients &coefficients) {
   for (const auto &[name, source] : GetMap()) {
-    source->Init(variables, fespaces, bc_map, coefficients);
+    source->Init(gridfunctions, fespaces, bc_map, coefficients);
   }
 }
 

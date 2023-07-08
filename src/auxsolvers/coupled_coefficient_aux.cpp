@@ -7,14 +7,13 @@ CoupledCoefficient::CoupledCoefficient(
     : AuxSolver(),
       coupled_var_name(params.GetParam<std::string>("CoupledVariableName")) {}
 
-void CoupledCoefficient::Init(
-    const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::Coefficients &coefficients) {
-  if (variables.Has(coupled_var_name)) {
-    gf = variables.Get(coupled_var_name);
+void CoupledCoefficient::Init(const hephaestus::GridFunctions &gridfunctions,
+                              hephaestus::Coefficients &coefficients) {
+  if (gridfunctions.Has(coupled_var_name)) {
+    gf = gridfunctions.Get(coupled_var_name);
   } else {
     const std::string error_message = coupled_var_name +
-                                      " not found in variables when "
+                                      " not found in gridfunctions when "
                                       "creating CoupledCoefficient\n";
     mfem::mfem_error(error_message.c_str());
   }

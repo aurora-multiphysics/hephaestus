@@ -30,10 +30,10 @@ public:
 
   virtual ~EquationSystem();
 
-  // Names of all variables corresponding to variables. This may differ from
-  // test_var_names when test variables include time derivatives.
+  // Names of all gridfunctions corresponding to gridfunctions. This may differ
+  // from test_var_names when test gridfunctions include time derivatives.
   std::vector<std::string> var_names;
-  // Names of all test variables with kernels in this equation system.
+  // Names of all test gridfunctions with kernels in this equation system.
   std::vector<std::string> test_var_names;
   std::vector<mfem::ParFiniteElementSpace *> test_pfespaces;
 
@@ -63,10 +63,10 @@ public:
   virtual void addKernels(){};
 
   // Build forms
-  virtual void
-  Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-       const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-       hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients);
+  virtual void Init(hephaestus::GridFunctions &gridfunctions,
+                    const hephaestus::FESpaces &fespaces,
+                    hephaestus::BCMap &bc_map,
+                    hephaestus::Coefficients &coefficients);
   virtual void buildLinearForms(hephaestus::BCMap &bc_map,
                                 hephaestus::Sources &sources);
   virtual void buildBilinearForms();
@@ -80,12 +80,11 @@ public:
                                 mfem::BlockVector &trueRHS);
 
   // Update variable from solution vector after solve
-  virtual void
-  RecoverFEMSolution(mfem::BlockVector &trueX,
-                     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables);
+  virtual void RecoverFEMSolution(mfem::BlockVector &trueX,
+                                  hephaestus::GridFunctions &gridfunctions);
 
 protected:
-  // Variables for setting Dirichlet BCs
+  // gridfunctions for setting Dirichlet BCs
   std::vector<mfem::Array<int>> ess_tdof_lists;
   std::vector<mfem::ParGridFunction *> xs;
 

@@ -1,7 +1,7 @@
 #pragma once
 #include "auxsolver_base.hpp"
 
-// Specify postprocessors that depend on one or more variables
+// Specify postprocessors that depend on one or more gridfunctions
 namespace hephaestus {
 
 // Class to calculate and store the L2 error
@@ -12,7 +12,7 @@ public:
   L2ErrorVectorPostprocessor(){};
   L2ErrorVectorPostprocessor(const hephaestus::InputParameters &params);
 
-  void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+  void Init(const hephaestus::GridFunctions &gridfunctions,
             hephaestus::Coefficients &coefficients) override;
 
   virtual void Solve(double t = 0.0) override;

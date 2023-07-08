@@ -17,9 +17,8 @@ protected:
 public:
   CoupledCoefficient(const hephaestus::InputParameters &params);
 
-  virtual void
-  Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-       hephaestus::Coefficients &coefficients) override;
+  virtual void Init(const hephaestus::GridFunctions &gridfunctions,
+                    hephaestus::Coefficients &coefficients) override;
 
   virtual double Eval(mfem::ElementTransformation &T,
                       const mfem::IntegrationPoint &ip) override;

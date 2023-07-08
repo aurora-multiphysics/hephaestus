@@ -1,6 +1,4 @@
 #pragma once
-#include "../common/pfem_extras.hpp"
-#include "inputs.hpp"
 #include "mfem.hpp"
 
 namespace hephaestus {

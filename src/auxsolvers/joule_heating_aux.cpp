@@ -32,17 +32,16 @@ JouleHeatingAuxSolver::JouleHeatingAuxSolver(
       complex_field(params.GetOptionalParam<bool>("ComplexField", false)),
       sigma(nullptr), E_gf_re(nullptr), E_gf_im(nullptr) {}
 
-void JouleHeatingAuxSolver::Init(
-    const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::Coefficients &coefficients) {
+void JouleHeatingAuxSolver::Init(const hephaestus::GridFunctions &gridfunctions,
+                                 hephaestus::Coefficients &coefficients) {
 
   sigma = coefficients.scalars.Get(conductivity_coef_name);
   if (sigma == NULL) {
     MFEM_ABORT("Conductivity coefficient not found for Joule heating");
   }
   if (complex_field) {
-    E_gf_re = variables.Get(electric_field_name + "_real");
-    E_gf_im = variables.Get(electric_field_name + "_imag");
+    E_gf_re = gridfunctions.Get(electric_field_name + "_real");
+    E_gf_im = gridfunctions.Get(electric_field_name + "_imag");
     if (E_gf_re == NULL) {
       MFEM_ABORT("Electric field real component not found for Joule heating");
     }
@@ -51,7 +50,7 @@ void JouleHeatingAuxSolver::Init(
           "Electric field imaginary component not found for Joule heating");
     }
   } else {
-    E_gf_re = variables.Get(electric_field_name);
+    E_gf_re = gridfunctions.Get(electric_field_name);
     if (E_gf_re == NULL) {
       MFEM_ABORT("Electric field not found for Joule heating");
     }
@@ -60,7 +59,7 @@ void JouleHeatingAuxSolver::Init(
   coefficients.scalars.Register(
       coef_name, new JouleHeatingCoefficient(sigma, E_gf_re, E_gf_im), true);
 
-  CoefficientAuxSolver::Init(variables, coefficients);
+  CoefficientAuxSolver::Init(gridfunctions, coefficients);
 }
 
 } // namespace hephaestus

@@ -165,56 +165,55 @@ void EquationSystem::FormLinearSystem(mfem::OperatorHandle &op,
 }
 
 void EquationSystem::RecoverFEMSolution(
-    mfem::BlockVector &trueX,
-    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables) {
+    mfem::BlockVector &trueX, hephaestus::GridFunctions &gridfunctions) {
   for (int i = 0; i < test_var_names.size(); i++) {
     auto &test_var_name = test_var_names.at(i);
     trueX.GetBlock(i).SyncAliasMemory(trueX);
-    variables.Get(test_var_name)->Distribute(&(trueX.GetBlock(i)));
+    gridfunctions.Get(test_var_name)->Distribute(&(trueX.GetBlock(i)));
   }
 }
 
-void EquationSystem::Init(
-    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients) {
+void EquationSystem::Init(hephaestus::GridFunctions &gridfunctions,
+                          const hephaestus::FESpaces &fespaces,
+                          hephaestus::BCMap &bc_map,
+                          hephaestus::Coefficients &coefficients) {
 
   // Add optional kernels to the EquationSystem
   addKernels();
 
   for (auto &test_var_name : test_var_names) {
-    if (!variables.Has(test_var_name)) {
+    if (!gridfunctions.Has(test_var_name)) {
       MFEM_ABORT("Test variable "
                  << test_var_name
                  << " requested by equation system during initialisation was "
-                    "not found in variables");
+                    "not found in gridfunctions");
     }
     // Store pointers to variable FESpaces
-    test_pfespaces.push_back(variables.Get(test_var_name)->ParFESpace());
+    test_pfespaces.push_back(gridfunctions.Get(test_var_name)->ParFESpace());
     // Create auxiliary gridfunctions for applying Dirichlet conditions
-    xs.push_back(
-        new mfem::ParGridFunction(variables.Get(test_var_name)->ParFESpace()));
+    xs.push_back(new mfem::ParGridFunction(
+        gridfunctions.Get(test_var_name)->ParFESpace()));
   }
 
   // Initialise bilinear forms
 
   for (const auto &[test_var_name, blf_kernels] : blf_kernels_map.GetMap()) {
     for (int i = 0; i < blf_kernels->Size(); i++) {
-      (*blf_kernels)[i]->Init(variables, fespaces, bc_map, coefficients);
+      (*blf_kernels)[i]->Init(gridfunctions, fespaces, bc_map, coefficients);
     }
     blf_kernels->MakeDataOwner();
   }
   // Initialise linear form kernels
   for (const auto &[test_var_name, lf_kernels] : lf_kernels_map.GetMap()) {
     for (int i = 0; i < lf_kernels->Size(); i++) {
-      (*lf_kernels)[i]->Init(variables, fespaces, bc_map, coefficients);
+      (*lf_kernels)[i]->Init(gridfunctions, fespaces, bc_map, coefficients);
     }
     lf_kernels->MakeDataOwner();
   }
   // Initialise nonlinear form kernels
   for (const auto &[test_var_name, nlf_kernels] : nlf_kernels_map.GetMap()) {
     for (int i = 0; i < nlf_kernels->Size(); i++) {
-      (*nlf_kernels)[i]->Init(variables, fespaces, bc_map, coefficients);
+      (*nlf_kernels)[i]->Init(gridfunctions, fespaces, bc_map, coefficients);
     }
     nlf_kernels->MakeDataOwner();
   }
@@ -224,7 +223,7 @@ void EquationSystem::Init(
     for (const auto &[trial_var_name, mblf_kernels] :
          mblf_kernels_map->GetMap()) {
       for (int i = 0; i < mblf_kernels->Size(); i++) {
-        (*mblf_kernels)[i]->Init(variables, fespaces, bc_map, coefficients);
+        (*mblf_kernels)[i]->Init(gridfunctions, fespaces, bc_map, coefficients);
       }
       mblf_kernels->MakeDataOwner();
     }

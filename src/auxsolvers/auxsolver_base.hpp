@@ -1,5 +1,6 @@
 #pragma once
 #include "coefficients.hpp"
+#include "gridfunctions.hpp"
 #include "inputs.hpp"
 #include "mfem.hpp"
 
@@ -12,9 +13,8 @@ public:
   AuxSolver() = default;
   int priority{0};
 
-  virtual void
-  Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-       hephaestus::Coefficients &coefficients) = 0;
+  virtual void Init(const hephaestus::GridFunctions &gridfunctions,
+                    hephaestus::Coefficients &coefficients) = 0;
 
   virtual void Solve(double t = 0.0) = 0;
   // Set priority. Lower values are evaluated first.

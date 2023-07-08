@@ -1,7 +1,7 @@
 #pragma once
 #include "auxsolvers.hpp"
 
-// Specify postprocessors that depend on one or more variables
+// Specify postprocessors that depend on one or more gridfunctions
 namespace hephaestus {
 
 // Multiply a GridFunction by a scalar Coefficient GridFunction
@@ -22,7 +22,7 @@ private:
 public:
   ScaledGridFunctionAuxSolver(const hephaestus::InputParameters &params);
 
-  void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+  void Init(const hephaestus::GridFunctions &gridfunctions,
             hephaestus::Coefficients &coefficients) override;
 
   void Solve(double t = 0.0) override;

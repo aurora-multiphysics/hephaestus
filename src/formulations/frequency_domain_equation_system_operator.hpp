@@ -10,30 +10,29 @@ namespace hephaestus {
 class FrequencyDomainEquationSystemOperator : public mfem::Operator {
 public:
   FrequencyDomainEquationSystemOperator(
-      mfem::ParMesh &pmesh,
-      mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-      mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-      hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients,
-      hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
+      mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
+      hephaestus::GridFunctions &gridfunctions, hephaestus::BCMap &bc_map,
+      hephaestus::Coefficients &coefficients, hephaestus::Sources &sources,
+      hephaestus::InputParameters &solver_options)
       : myid_(0), num_procs_(1), pmesh_(&pmesh), _fespaces(fespaces),
-        _variables(variables), _bc_map(bc_map), _sources(sources),
+        _gridfunctions(gridfunctions), _bc_map(bc_map), _sources(sources),
         _domain_properties(coefficients), _solver_options(solver_options){};
 
   ~FrequencyDomainEquationSystemOperator(){};
 
-  virtual void SetVariables();
+  virtual void Setgridfunctions();
   virtual void Init(mfem::Vector &X);
   virtual void Solve(mfem::Vector &X);
   void Mult(const mfem::Vector &x, mfem::Vector &y) const override{};
 
   mfem::Array<int> true_offsets, block_trueOffsets;
-  // Vector of names of state variables used in formulation, ordered by
+  // Vector of names of state gridfunctions used in formulation, ordered by
   // appearance in block vector during solve.
   std::vector<std::string> state_var_names;
-  // Vector of names of recognised auxiliary variables that can be calculated
-  // from formulation,
+  // Vector of names of recognised auxiliary gridfunctions that can be
+  // calculated from formulation,
   std::vector<std::string> aux_var_names;
-  // Vector of names of active auxiliary variables that are being calculated
+  // Vector of names of active auxiliary gridfunctions that are being calculated
   // in formulation,
   std::vector<std::string> active_aux_var_names;
 
@@ -42,8 +41,8 @@ public:
   int myid_;
   int num_procs_;
   mfem::ParMesh *pmesh_;
-  mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &_fespaces;
-  mfem::NamedFieldsMap<mfem::ParGridFunction> &_variables;
+  hephaestus::FESpaces &_fespaces;
+  hephaestus::GridFunctions &_gridfunctions;
   hephaestus::BCMap &_bc_map;
   hephaestus::Sources &_sources;
   hephaestus::Coefficients &_domain_properties;

@@ -8,7 +8,7 @@ class VectorCoefficientAuxSolver : public AuxSolver {
 public:
   VectorCoefficientAuxSolver(const hephaestus::InputParameters &params);
 
-  void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+  void Init(const hephaestus::GridFunctions &gridfunctions,
             hephaestus::Coefficients &coefficients) override;
 
   void Solve(double t = 0.0) override;

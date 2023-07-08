@@ -6,9 +6,9 @@ namespace hephaestus {
 
 class Sources : public mfem::NamedFieldsMap<hephaestus::Source> {
 public:
-  void Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-            const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-            hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients);
+  void Init(hephaestus::GridFunctions &gridfunctions,
+            const hephaestus::FESpaces &fespaces, hephaestus::BCMap &bc_map,
+            hephaestus::Coefficients &coefficients);
   void Apply(mfem::ParLinearForm *lf);
   void SubtractSources(mfem::ParGridFunction *gf);
 };

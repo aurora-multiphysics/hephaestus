@@ -15,12 +15,12 @@ GetTimeDerivativeNames(std::vector<std::string> gridfunction_names) {
   return time_derivative_names;
 }
 
-void TimeDomainEquationSystemOperator::SetVariables() {
+void TimeDomainEquationSystemOperator::Setgridfunctions() {
   state_var_names = _equation_system->var_names;
   local_test_vars = populateVectorFromNamedFieldsMap<mfem::ParGridFunction>(
-      _variables, _equation_system->var_names);
+      _gridfunctions, _equation_system->var_names);
   local_trial_vars = populateVectorFromNamedFieldsMap<mfem::ParGridFunction>(
-      _variables, _equation_system->var_time_derivative_names);
+      _gridfunctions, _equation_system->var_time_derivative_names);
 
   // Set operator size and block structure
   block_trueOffsets.SetSize(local_test_vars.size() + 1);
@@ -43,10 +43,10 @@ void TimeDomainEquationSystemOperator::SetVariables() {
   trueX.Update(block_trueOffsets);
   trueRhs.Update(block_trueOffsets);
 
-  // Populate vector of active auxiliary variables
+  // Populate vector of active auxiliary gridfunctions
   active_aux_var_names.resize(0);
   for (auto &aux_var_name : aux_var_names) {
-    if (_variables.Has(aux_var_name)) {
+    if (_gridfunctions.Has(aux_var_name)) {
       active_aux_var_names.push_back(aux_var_name);
     }
   }
@@ -87,7 +87,7 @@ void TimeDomainEquationSystemOperator::ImplicitSolve(const double dt,
   solver = new hephaestus::DefaultGMRESSolver(
       _solver_options, *blockA.As<mfem::HypreParMatrix>());
   solver->Mult(trueRhs, trueX);
-  _equation_system->RecoverFEMSolution(trueX, _variables);
+  _equation_system->RecoverFEMSolution(trueX, _gridfunctions);
 }
 
 void TimeDomainEquationSystemOperator::SetEquationSystem(

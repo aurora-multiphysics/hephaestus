@@ -2,12 +2,11 @@
 
 namespace hephaestus {
 
-void AuxSolvers::Init(
-    const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::Coefficients &coefficients) {
+void AuxSolvers::Init(const hephaestus::GridFunctions &gridfunctions,
+                      hephaestus::Coefficients &coefficients) {
 
   for (const auto &[name, auxsolver] : GetMap()) {
-    auxsolver->Init(variables, coefficients);
+    auxsolver->Init(gridfunctions, coefficients);
     aux_queue.push_back(auxsolver);
   }
   std::sort(aux_queue.begin(), aux_queue.end(), AuxCompare());

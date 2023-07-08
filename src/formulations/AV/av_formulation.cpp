@@ -55,30 +55,30 @@ void AVFormulation::ConstructOperator() {
       this->problem->solver_options);
   this->problem->td_operator->SetEquationSystem(
       this->problem->td_equation_system.get());
-  this->problem->td_operator->SetVariables();
+  this->problem->td_operator->Setgridfunctions();
 };
 
 void AVFormulation::RegisterGridFunctions() {
   int &myid = this->GetProblem()->myid_;
-  hephaestus::GridFunctions &variables = this->GetProblem()->gridfunctions;
+  hephaestus::GridFunctions &gridfunctions = this->GetProblem()->gridfunctions;
 
-  // Register default ParGridFunctions of state variables if not provided
-  if (!variables.Has(vector_potential_name)) {
+  // Register default ParGridFunctions of state gridfunctions if not provided
+  if (!gridfunctions.Has(vector_potential_name)) {
     if (myid == 0) {
-      MFEM_WARNING(
-          vector_potential_name
-          << " not found in variables: building gridfunction from defaults");
+      MFEM_WARNING(vector_potential_name
+                   << " not found in gridfunctions: building gridfunction from "
+                      "defaults");
     }
     AddFESpace(std::string("_HCurlFESpace"), std::string("ND_3D_P2"));
     AddGridFunction(vector_potential_name, std::string("_HCurlFESpace"));
   }
 
-  // Register default ParGridFunctions of state variables if not provided
-  if (!variables.Has(scalar_potential_name)) {
+  // Register default ParGridFunctions of state gridfunctions if not provided
+  if (!gridfunctions.Has(scalar_potential_name)) {
     if (myid == 0) {
-      MFEM_WARNING(
-          scalar_potential_name
-          << " not found in variables: building gridfunction from defaults");
+      MFEM_WARNING(scalar_potential_name
+                   << " not found in gridfunctions: building gridfunction from "
+                      "defaults");
     }
     AddFESpace(std::string("_H1FESpace"), std::string("H1_3D_P2"));
     AddGridFunction(scalar_potential_name, std::string("_H1FESpace"));
@@ -115,10 +115,10 @@ AVEquationSystem::AVEquationSystem(const hephaestus::InputParameters &params)
       neg_beta_coef_name(std::string("negative_") + beta_coef_name),
       negCoef(-1.0) {}
 
-void AVEquationSystem::Init(
-    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients) {
+void AVEquationSystem::Init(hephaestus::GridFunctions &gridfunctions,
+                            const hephaestus::FESpaces &fespaces,
+                            hephaestus::BCMap &bc_map,
+                            hephaestus::Coefficients &coefficients) {
   coefficients.scalars.Register(
       dtalpha_coef_name,
       new mfem::TransformedCoefficient(
@@ -131,7 +131,8 @@ void AVEquationSystem::Init(
           &negCoef, coefficients.scalars.Get(beta_coef_name), prodFunc),
       true);
 
-  TimeDependentEquationSystem::Init(variables, fespaces, bc_map, coefficients);
+  TimeDependentEquationSystem::Init(gridfunctions, fespaces, bc_map,
+                                    coefficients);
 }
 
 void AVEquationSystem::addKernels() {
@@ -176,15 +177,15 @@ void AVEquationSystem::addKernels() {
                 vectorFEWeakDivergenceParams));
 }
 
-AVOperator::AVOperator(
-    mfem::ParMesh &pmesh,
-    mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients,
-    hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
-    : TimeDomainEquationSystemOperator(pmesh, fespaces, variables, bc_map,
+AVOperator::AVOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
+                       hephaestus::GridFunctions &gridfunctions,
+                       hephaestus::BCMap &bc_map,
+                       hephaestus::Coefficients &coefficients,
+                       hephaestus::Sources &sources,
+                       hephaestus::InputParameters &solver_options)
+    : TimeDomainEquationSystemOperator(pmesh, fespaces, gridfunctions, bc_map,
                                        coefficients, sources, solver_options) {
-  // Initialize MPI variables
+  // Initialize MPI gridfunctions
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh.GetComm(), &myid_);
 
@@ -233,6 +234,6 @@ void AVOperator::ImplicitSolve(const double dt, const mfem::Vector &X,
   //                                             pmesh_->GetComm());
 
   solver->Mult(trueRhs, trueX);
-  _equation_system->RecoverFEMSolution(trueX, _variables);
+  _equation_system->RecoverFEMSolution(trueX, _gridfunctions);
 }
 } // namespace hephaestus

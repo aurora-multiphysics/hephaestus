@@ -1,7 +1,7 @@
 #pragma once
 #include "auxsolvers.hpp"
 
-// Specify postprocessors that depend on one or more variables
+// Specify postprocessors that depend on one or more gridfunctions
 namespace hephaestus {
 
 void cross_product(mfem::Vector &va, mfem::Vector &vb, mfem::Vector &V);

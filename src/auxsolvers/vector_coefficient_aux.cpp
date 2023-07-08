@@ -8,9 +8,9 @@ VectorCoefficientAuxSolver::VectorCoefficientAuxSolver(
       vec_coef_name(params.GetParam<std::string>("VectorCoefficientName")) {}
 
 void VectorCoefficientAuxSolver::Init(
-    const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+    const hephaestus::GridFunctions &gridfunctions,
     hephaestus::Coefficients &coefficients) {
-  gf = variables.Get(var_name);
+  gf = gridfunctions.Get(var_name);
   if (gf == NULL) {
     MFEM_ABORT("GridFunction "
                << var_name

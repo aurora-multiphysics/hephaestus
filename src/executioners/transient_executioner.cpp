@@ -68,7 +68,7 @@ void TransientExecutioner::Solve() const {
 }
 
 void TransientExecutioner::Execute() const {
-  // Initialise time variables
+  // Initialise time gridfunctions
   t = t_initial;
   last_step = false;
   it = 0;

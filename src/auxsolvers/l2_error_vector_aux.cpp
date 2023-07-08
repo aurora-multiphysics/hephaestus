@@ -8,9 +8,9 @@ L2ErrorVectorPostprocessor::L2ErrorVectorPostprocessor(
       vec_coef_name(params.GetParam<std::string>("VectorCoefficientName")) {}
 
 void L2ErrorVectorPostprocessor::Init(
-    const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+    const hephaestus::GridFunctions &gridfunctions,
     hephaestus::Coefficients &coefficients) {
-  gf = variables.Get(var_name);
+  gf = gridfunctions.Get(var_name);
   vec_coeff = coefficients.vectors.Get(vec_coef_name);
 }
 

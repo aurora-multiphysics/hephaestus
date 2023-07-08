@@ -13,14 +13,14 @@ ComplexAFormulation::ComplexAFormulation() : ComplexMaxwellFormulation() {
 
 void ComplexAFormulation::RegisterAuxSolvers() {
   hephaestus::Coefficients &coefficients = this->GetProblem()->coefficients;
-  hephaestus::GridFunctions &variables = this->GetProblem()->gridfunctions;
+  hephaestus::GridFunctions &gridfunctions = this->GetProblem()->gridfunctions;
   hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
   std::vector<std::string> aux_var_names;
   std::string b_field_name = "magnetic_flux_density";
-  if (variables.Get(b_field_name + "_real") != NULL) {
+  if (gridfunctions.Get(b_field_name + "_real") != NULL) {
     // if (myid_ == 0) {
     std::cout << b_field_name + "_real"
-              << " found in variables: building auxvar " << std::endl;
+              << " found in gridfunctions: building auxvar " << std::endl;
     // }
     hephaestus::InputParameters b_field_aux_params;
     b_field_aux_params.SetParam("VariableName", h_curl_var_name + "_real");
@@ -38,10 +38,10 @@ void ComplexAFormulation::RegisterAuxSolvers() {
 
   // E = -iωA
   std::string e_field_name = std::string("electric_field");
-  if (variables.Get(e_field_name + "_real") != NULL) {
+  if (gridfunctions.Get(e_field_name + "_real") != NULL) {
     // if (myid_ == 0) {
     std::cout << e_field_name + "_real"
-              << " found in variables: building auxvar " << std::endl;
+              << " found in gridfunctions: building auxvar " << std::endl;
     // }
     hephaestus::InputParameters e_field_aux_params;
     e_field_aux_params.SetParam("CoefficientName",

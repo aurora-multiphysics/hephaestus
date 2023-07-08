@@ -16,7 +16,7 @@ void FrequencyDomainProblemBuilder::ConstructOperator() {
           this->problem->gridfunctions, this->problem->bc_map,
           this->problem->coefficients, this->problem->sources,
           this->problem->solver_options);
-  this->problem->fd_operator->SetVariables();
+  this->problem->fd_operator->Setgridfunctions();
 }
 
 void FrequencyDomainProblemBuilder::ConstructState() {

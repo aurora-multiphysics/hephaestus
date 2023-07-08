@@ -38,9 +38,9 @@ public:
     return std::move(this->problem);
   };
 
-  static std::vector<mfem::ParGridFunction *> RegisterTimeDerivatives(
-      std::vector<std::string> gridfunction_names,
-      mfem::NamedFieldsMap<mfem::ParGridFunction> &gridfunctions);
+  static std::vector<mfem::ParGridFunction *>
+  RegisterTimeDerivatives(std::vector<std::string> gridfunction_names,
+                          hephaestus::GridFunctions &gridfunctions);
 
   virtual void RegisterFESpaces() override{};
 

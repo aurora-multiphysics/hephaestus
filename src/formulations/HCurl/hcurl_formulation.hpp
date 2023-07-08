@@ -26,11 +26,10 @@ class CurlCurlEquationSystem : public TimeDependentEquationSystem {
 public:
   CurlCurlEquationSystem(const hephaestus::InputParameters &params);
 
-  virtual void
-  Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-       const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-       hephaestus::BCMap &bc_map,
-       hephaestus::Coefficients &coefficients) override;
+  virtual void Init(hephaestus::GridFunctions &gridfunctions,
+                    const hephaestus::FESpaces &fespaces,
+                    hephaestus::BCMap &bc_map,
+                    hephaestus::Coefficients &coefficients) override;
   virtual void addKernels() override;
 
   std::string h_curl_var_name, alpha_coef_name, beta_coef_name,
@@ -39,9 +38,8 @@ public:
 
 class HCurlOperator : public TimeDomainEquationSystemOperator {
 public:
-  HCurlOperator(mfem::ParMesh &pmesh,
-                mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-                mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+  HCurlOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
+                hephaestus::GridFunctions &gridfunctions,
                 hephaestus::BCMap &bc_map,
                 hephaestus::Coefficients &coefficients,
                 hephaestus::Sources &sources,

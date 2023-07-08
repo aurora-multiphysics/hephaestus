@@ -22,11 +22,11 @@ HFormulation::HFormulation() : HCurlFormulation() {
 }
 
 void HFormulation::RegisterAuxSolvers() {
-  hephaestus::GridFunctions &variables = this->GetProblem()->gridfunctions;
+  hephaestus::GridFunctions &gridfunctions = this->GetProblem()->gridfunctions;
   hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
   std::vector<std::string> aux_var_names;
   std::string j_field_name = "current_density";
-  if (variables.Get(j_field_name) != NULL) {
+  if (gridfunctions.Get(j_field_name) != NULL) {
     hephaestus::InputParameters j_field_aux_params;
     j_field_aux_params.SetParam("VariableName", std::string("magnetic_field"));
     j_field_aux_params.SetParam("CurlVariableName", j_field_name);

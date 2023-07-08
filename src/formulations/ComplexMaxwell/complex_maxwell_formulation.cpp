@@ -3,13 +3,12 @@
 namespace hephaestus {
 
 ComplexMaxwellOperator::ComplexMaxwellOperator(
-    mfem::ParMesh &pmesh,
-    mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients,
-    hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
-    : FrequencyDomainEquationSystemOperator(pmesh, fespaces, variables, bc_map,
-                                            coefficients, sources,
+    mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
+    hephaestus::GridFunctions &gridfunctions, hephaestus::BCMap &bc_map,
+    hephaestus::Coefficients &coefficients, hephaestus::Sources &sources,
+    hephaestus::InputParameters &solver_options)
+    : FrequencyDomainEquationSystemOperator(pmesh, fespaces, gridfunctions,
+                                            bc_map, coefficients, sources,
                                             solver_options),
       h_curl_var_name(solver_options.GetParam<std::string>("HCurlVarName")),
       stiffness_coef_name(
@@ -17,11 +16,11 @@ ComplexMaxwellOperator::ComplexMaxwellOperator(
       mass_coef_name(solver_options.GetParam<std::string>("MassCoefName")),
       loss_coef_name(solver_options.GetParam<std::string>("LossCoefName")) {}
 
-void ComplexMaxwellOperator::SetVariables() {
+void ComplexMaxwellOperator::Setgridfunctions() {
   state_var_names.push_back(h_curl_var_name + "_real");
   state_var_names.push_back(h_curl_var_name + "_imag");
 
-  FrequencyDomainEquationSystemOperator::SetVariables();
+  FrequencyDomainEquationSystemOperator::Setgridfunctions();
 
   u_ = new mfem::ParComplexGridFunction(local_test_vars.at(0)->ParFESpace());
   *u_ = std::complex(0.0, 0.0);
@@ -94,8 +93,8 @@ void ComplexMaxwellOperator::Solve(mfem::Vector &X) {
 
   a1_->RecoverFEMSolution(U, *b1_, *u_);
 
-  *_variables.Get(state_var_names.at(0)) = u_->real();
-  *_variables.Get(state_var_names.at(1)) = u_->imag();
+  *_gridfunctions.Get(state_var_names.at(0)) = u_->real();
+  *_gridfunctions.Get(state_var_names.at(1)) = u_->imag();
 }
 
 ComplexMaxwellFormulation::ComplexMaxwellFormulation()
@@ -123,20 +122,19 @@ void ComplexMaxwellFormulation::ConstructOperator() {
           this->problem->gridfunctions, this->problem->bc_map,
           this->problem->coefficients, this->problem->sources,
           this->problem->solver_options);
-  this->problem->fd_operator->SetVariables();
+  this->problem->fd_operator->Setgridfunctions();
 }
 
 void ComplexMaxwellFormulation::RegisterGridFunctions() {
   int &myid = this->GetProblem()->myid_;
-  hephaestus::GridFunctions &variables = this->GetProblem()->gridfunctions;
+  hephaestus::GridFunctions &gridfunctions = this->GetProblem()->gridfunctions;
   hephaestus::FESpaces &fespaces = this->GetProblem()->fespaces;
 
-  // Register default ParGridFunctions of state variables if not provided
-  if (!variables.Has(h_curl_var_name + "_real")) {
+  // Register default ParGridFunctions of state gridfunctions if not provided
+  if (!gridfunctions.Has(h_curl_var_name + "_real")) {
     if (myid == 0) {
-      MFEM_WARNING(
-          h_curl_var_name
-          << " not found in variables: building gridfunction from defaults");
+      MFEM_WARNING(h_curl_var_name << " not found in gridfunctions: building "
+                                      "gridfunction from defaults");
     }
     AddFESpace(std::string("_HCurlFESpace"), std::string("ND_3D_P1"));
     AddGridFunction(h_curl_var_name + "_real", std::string("_HCurlFESpace"));

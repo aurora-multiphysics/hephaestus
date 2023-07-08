@@ -5,7 +5,7 @@ namespace hephaestus {
 std::vector<mfem::ParGridFunction *>
 TimeDomainProblemBuilder::RegisterTimeDerivatives(
     std::vector<std::string> gridfunction_names,
-    mfem::NamedFieldsMap<mfem::ParGridFunction> &gridfunctions) {
+    hephaestus::GridFunctions &gridfunctions) {
   std::vector<mfem::ParGridFunction *> time_derivatives;
 
   for (auto &gridfunction_name : gridfunction_names) {
@@ -56,7 +56,7 @@ void TimeDomainProblemBuilder::ConstructOperator() {
           this->problem->solver_options);
   this->problem->td_operator->SetEquationSystem(
       this->problem->td_equation_system.get());
-  this->problem->td_operator->SetVariables();
+  this->problem->td_operator->Setgridfunctions();
 }
 
 void TimeDomainProblemBuilder::ConstructState() {

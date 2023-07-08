@@ -1,5 +1,5 @@
 #include "auxsolvers.hpp"
-#include "variables.hpp"
+#include "gridfunctions.hpp"
 #include <gtest/gtest.h>
 
 extern const char *DATA_DIR;
@@ -10,7 +10,7 @@ public:
   DummyAuxSolver(std::string &_string_to_append, std::string &_string_modified)
       : string_to_append(_string_to_append),
         string_modified(_string_modified){};
-  void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
+  void Init(const hephaestus::GridFunctions &gridfunctions,
             hephaestus::Coefficients &coefficients) override{};
 
   void Solve(double t = 0.0) override {

@@ -7,10 +7,9 @@ CoefficientAuxSolver::CoefficientAuxSolver(
     : AuxSolver(), var_name(params.GetParam<std::string>("VariableName")),
       coef_name(params.GetParam<std::string>("CoefficientName")) {}
 
-void CoefficientAuxSolver::Init(
-    const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::Coefficients &coefficients) {
-  gf = variables.Get(var_name);
+void CoefficientAuxSolver::Init(const hephaestus::GridFunctions &gridfunctions,
+                                hephaestus::Coefficients &coefficients) {
+  gf = gridfunctions.Get(var_name);
   if (gf == NULL) {
     MFEM_ABORT("GridFunction "
                << var_name
