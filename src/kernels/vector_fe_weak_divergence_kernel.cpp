@@ -10,9 +10,9 @@ VectorFEWeakDivergenceKernel::VectorFEWeakDivergenceKernel(
 void VectorFEWeakDivergenceKernel::Init(
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    hephaestus::BCMap &bc_map, hephaestus::Coefficients &domain_properties) {
+    hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients) {
 
-  coef = domain_properties.scalar_property_map.Get(coef_name);
+  coef = coefficients.scalars.Get(coef_name);
 }
 
 void VectorFEWeakDivergenceKernel::Apply(mfem::ParMixedBilinearForm *mblf) {

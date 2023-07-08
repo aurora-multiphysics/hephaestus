@@ -34,9 +34,9 @@ JouleHeatingAuxSolver::JouleHeatingAuxSolver(
 
 void JouleHeatingAuxSolver::Init(
     const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::Coefficients &domain_properties) {
+    hephaestus::Coefficients &coefficients) {
 
-  sigma = domain_properties.scalar_property_map.Get(conductivity_coef_name);
+  sigma = coefficients.scalars.Get(conductivity_coef_name);
   if (sigma == NULL) {
     MFEM_ABORT("Conductivity coefficient not found for Joule heating");
   }
@@ -57,10 +57,10 @@ void JouleHeatingAuxSolver::Init(
     }
   }
 
-  domain_properties.scalar_property_map.Register(
+  coefficients.scalars.Register(
       coef_name, new JouleHeatingCoefficient(sigma, E_gf_re, E_gf_im), true);
 
-  CoefficientAuxSolver::Init(variables, domain_properties);
+  CoefficientAuxSolver::Init(variables, coefficients);
 }
 
 } // namespace hephaestus

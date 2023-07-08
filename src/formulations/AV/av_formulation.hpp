@@ -29,7 +29,7 @@ public:
   virtual void
   Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
        const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-       hephaestus::BCMap &bc_map, hephaestus::Coefficients &domain_properties);
+       hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients);
   virtual void addKernels() override;
 
   std::string a_name, v_name, coupled_variable_name, alpha_coef_name,
@@ -42,8 +42,7 @@ public:
   AVOperator(mfem::ParMesh &pmesh,
              mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
              mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-             hephaestus::BCMap &bc_map,
-             hephaestus::Coefficients &domain_properties,
+             hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients,
              hephaestus::Sources &sources,
              hephaestus::InputParameters &solver_options);
 

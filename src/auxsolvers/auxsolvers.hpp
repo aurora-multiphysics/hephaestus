@@ -16,7 +16,7 @@ private:
 public:
   std::vector<hephaestus::AuxSolver *> aux_queue;
   void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-            hephaestus::Coefficients &domain_properties);
+            hephaestus::Coefficients &coefficients);
   void Solve(double t = 0.0);
 };
 

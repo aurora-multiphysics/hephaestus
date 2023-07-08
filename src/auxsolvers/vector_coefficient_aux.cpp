@@ -9,14 +9,14 @@ VectorCoefficientAuxSolver::VectorCoefficientAuxSolver(
 
 void VectorCoefficientAuxSolver::Init(
     const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::Coefficients &domain_properties) {
+    hephaestus::Coefficients &coefficients) {
   gf = variables.Get(var_name);
   if (gf == NULL) {
     MFEM_ABORT("GridFunction "
                << var_name
                << " not found when initializing CoefficientAuxSolver");
   }
-  vec_coeff = domain_properties.vector_property_map.Get(vec_coef_name);
+  vec_coeff = coefficients.vectors.Get(vec_coef_name);
   if (vec_coeff == NULL) {
     MFEM_ABORT("VectorCoefficient "
                << vec_coef_name

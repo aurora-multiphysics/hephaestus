@@ -50,18 +50,18 @@ protected:
 
   hephaestus::InputParameters test_params() {
     hephaestus::Subdomain wire("wire", 1);
-    wire.property_map.Register("electrical_conductivity",
-                               new mfem::ConstantCoefficient(1.0), true);
+    wire.scalar_coefficients.Register("electrical_conductivity",
+                                      new mfem::ConstantCoefficient(1.0), true);
     hephaestus::Subdomain air("air", 2);
-    air.property_map.Register("electrical_conductivity",
-                              new mfem::ConstantCoefficient(1.0), true);
+    air.scalar_coefficients.Register("electrical_conductivity",
+                                     new mfem::ConstantCoefficient(1.0), true);
 
-    hephaestus::Coefficients domain_properties(
+    hephaestus::Coefficients coefficients(
         std::vector<hephaestus::Subdomain>({wire, air}));
 
-    domain_properties.scalar_property_map.Register(
-        "electrical_conductivity", new mfem::FunctionCoefficient(sigma_expr),
-        true);
+    coefficients.scalars.Register("electrical_conductivity",
+                                  new mfem::FunctionCoefficient(sigma_expr),
+                                  true);
 
     hephaestus::BCMap bc_map;
     mfem::VectorFunctionCoefficient *hdotVecCoef =
@@ -71,19 +71,17 @@ protected:
                         std::string("dmagnetic_field_dt"),
                         mfem::Array<int>({1, 2, 3}), hdotVecCoef),
                     true);
-    domain_properties.vector_property_map.Register("surface_tangential_dHdt",
-                                                   hdotVecCoef, true);
-    domain_properties.scalar_property_map.Register(
-        "magnetic_permeability", new mfem::ConstantCoefficient(1.0), true);
+    coefficients.vectors.Register("surface_tangential_dHdt", hdotVecCoef, true);
+    coefficients.scalars.Register("magnetic_permeability",
+                                  new mfem::ConstantCoefficient(1.0), true);
 
     mfem::VectorFunctionCoefficient *dBdtSrcCoef =
         new mfem::VectorFunctionCoefficient(3, source_field);
-    domain_properties.vector_property_map.Register("source", dBdtSrcCoef, true);
+    coefficients.vectors.Register("source", dBdtSrcCoef, true);
 
     mfem::VectorFunctionCoefficient *H_exact =
         new mfem::VectorFunctionCoefficient(3, H_exact_expr);
-    domain_properties.vector_property_map.Register("h_exact_coeff", H_exact,
-                                                   true);
+    coefficients.vectors.Register("h_exact_coeff", H_exact, true);
 
     mfem::Mesh mesh(
         (std::string(DATA_DIR) + std::string("./beam-tet.mesh")).c_str(), 1, 1);
@@ -146,7 +144,7 @@ protected:
 
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("BoundaryConditions", bc_map);
-    params.SetParam("Coefficients", domain_properties);
+    params.SetParam("Coefficients", coefficients);
     params.SetParam("PreProcessors", preprocessors);
     params.SetParam("PostProcessors", postprocessors);
     params.SetParam("Sources", sources);
@@ -175,7 +173,7 @@ TEST_F(TestHFormSource, CheckRun) {
         new hephaestus::HFormulation();
     hephaestus::BCMap bc_map(
         params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-    hephaestus::Coefficients domain_properties(
+    hephaestus::Coefficients coefficients(
         params.GetParam<hephaestus::Coefficients>("Coefficients"));
     //   hephaestus::FESpaces fespaces(
     //       params.GetParam<hephaestus::FESpaces>("FESpaces"));
@@ -200,7 +198,7 @@ TEST_F(TestHFormSource, CheckRun) {
                                      std::string("HCurl"));
     problem_builder->SetBoundaryConditions(bc_map);
     problem_builder->SetAuxSolvers(preprocessors);
-    problem_builder->SetCoefficients(domain_properties);
+    problem_builder->SetCoefficients(coefficients);
     problem_builder->SetPostprocessors(postprocessors);
     problem_builder->SetSources(sources);
     problem_builder->SetOutputs(outputs);

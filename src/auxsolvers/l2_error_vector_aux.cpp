@@ -9,9 +9,9 @@ L2ErrorVectorPostprocessor::L2ErrorVectorPostprocessor(
 
 void L2ErrorVectorPostprocessor::Init(
     const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::Coefficients &domain_properties) {
+    hephaestus::Coefficients &coefficients) {
   gf = variables.Get(var_name);
-  vec_coeff = domain_properties.vector_property_map.Get(vec_coef_name);
+  vec_coeff = coefficients.vectors.Get(vec_coef_name);
 }
 
 void L2ErrorVectorPostprocessor::Solve(double t) {

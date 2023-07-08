@@ -11,7 +11,7 @@ public:
       : string_to_append(_string_to_append),
         string_modified(_string_modified){};
   void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-            hephaestus::Coefficients &domain_properties) override{};
+            hephaestus::Coefficients &coefficients) override{};
 
   void Solve(double t = 0.0) override {
     string_modified = string_modified + string_to_append;
@@ -50,8 +50,8 @@ TEST(AuxSolverTest, CheckQueue) {
   auxsolvers.Register("AFinalAuxSolver", auxsolver5, true);
 
   hephaestus::GridFunctions gridfunctions;
-  hephaestus::Coefficients domain_properties;
-  auxsolvers.Init(gridfunctions, domain_properties);
+  hephaestus::Coefficients coefficients;
+  auxsolvers.Init(gridfunctions, coefficients);
   auxsolvers.Solve();
 
   EXPECT_EQ(std::string("The order should be correct!!"), string_base);

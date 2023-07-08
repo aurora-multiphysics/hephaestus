@@ -50,19 +50,20 @@ protected:
         new CopperConductivityCoefficient(copper_conductivity_params);
 
     hephaestus::Subdomain wire("wire", 1);
-    wire.property_map.Register("electrical_conductivity", wireConductivity,
-                               true);
+    wire.scalar_coefficients.Register("electrical_conductivity",
+                                      wireConductivity, true);
 
     hephaestus::Subdomain air("air", 2);
-    air.property_map.Register("electrical_conductivity",
-                              new mfem::ConstantCoefficient(sigmaAir), true);
+    air.scalar_coefficients.Register("electrical_conductivity",
+                                     new mfem::ConstantCoefficient(sigmaAir),
+                                     true);
 
-    hephaestus::Coefficients domain_properties(
+    hephaestus::Coefficients coefficients(
         std::vector<hephaestus::Subdomain>({wire, air}));
 
-    // domain_properties.scalar_property_map.Register(
+    // coefficients.scalars.Register(
     //     "electrical_conductivity",
-    //     new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
+    //     new mfem::PWCoefficient(coefficients.getGlobalScalarProperty(
     //         std::string("electrical_conductivity"))),
     //     true);
 
@@ -77,10 +78,9 @@ protected:
                         std::string("electric_field"),
                         mfem::Array<int>({1, 2, 3}), edotVecCoef),
                     true);
-    domain_properties.scalar_property_map.Register(
-        "magnetic_permeability", new mfem::ConstantCoefficient(1.0), true);
-    domain_properties.vector_property_map.Register("surface_tangential_dEdt",
-                                                   edotVecCoef, true);
+    coefficients.scalars.Register("magnetic_permeability",
+                                  new mfem::ConstantCoefficient(1.0), true);
+    coefficients.vectors.Register("surface_tangential_dEdt", edotVecCoef, true);
 
     mfem::Array<int> high_terminal(1);
     high_terminal[0] = 1;
@@ -91,8 +91,7 @@ protected:
         new hephaestus::FunctionDirichletBC(std::string("electric_potential"),
                                             high_terminal, potential_src),
         true);
-    domain_properties.scalar_property_map.Register("source_potential",
-                                                   potential_src, true);
+    coefficients.scalars.Register("source_potential", potential_src, true);
 
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 2;
@@ -158,7 +157,7 @@ protected:
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("BoundaryConditions", bc_map);
-    params.SetParam("Coefficients", domain_properties);
+    params.SetParam("Coefficients", coefficients);
     params.SetParam("FESpaces", fespaces);
     params.SetParam("GridFunctions", gridfunctions);
     params.SetParam("PreProcessors", preprocessors);
@@ -177,7 +176,7 @@ TEST_F(TestEBFormCoupled, CheckRun) {
       new hephaestus::EBDualFormulation();
   hephaestus::BCMap bc_map(
       params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-  hephaestus::Coefficients domain_properties(
+  hephaestus::Coefficients coefficients(
       params.GetParam<hephaestus::Coefficients>("Coefficients"));
   hephaestus::AuxSolvers preprocessors(
       params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
@@ -203,7 +202,7 @@ TEST_F(TestEBFormCoupled, CheckRun) {
                                    std::string("H1"));
   problem_builder->SetBoundaryConditions(bc_map);
   problem_builder->SetAuxSolvers(preprocessors);
-  problem_builder->SetCoefficients(domain_properties);
+  problem_builder->SetCoefficients(coefficients);
   problem_builder->SetPostprocessors(postprocessors);
   problem_builder->SetSources(sources);
   problem_builder->SetOutputs(outputs);

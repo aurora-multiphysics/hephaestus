@@ -13,8 +13,7 @@ public:
   virtual void
   Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
        const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-       hephaestus::BCMap &bc_map,
-       hephaestus::Coefficients &domain_properties){};
+       hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients){};
   virtual void Apply(mfem::ParLinearForm *lf) override = 0;
   virtual void SubtractSource(mfem::ParGridFunction *gf) = 0;
 };

@@ -20,12 +20,11 @@ public:
       mfem::ParMesh &pmesh,
       mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
       mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-      hephaestus::BCMap &bc_map, hephaestus::Coefficients &domain_properties,
+      hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients,
       hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
       : myid_(0), num_procs_(1), pmesh_(&pmesh), _fespaces(fespaces),
         _variables(variables), _bc_map(bc_map), _sources(sources),
-        _domain_properties(domain_properties),
-        _solver_options(solver_options){};
+        _domain_properties(coefficients), _solver_options(solver_options){};
 
   ~TimeDomainEquationSystemOperator(){};
 

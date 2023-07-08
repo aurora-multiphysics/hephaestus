@@ -13,7 +13,7 @@ public:
   L2ErrorVectorPostprocessor(const hephaestus::InputParameters &params);
 
   void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-            hephaestus::Coefficients &domain_properties) override;
+            hephaestus::Coefficients &coefficients) override;
 
   virtual void Solve(double t = 0.0) override;
 

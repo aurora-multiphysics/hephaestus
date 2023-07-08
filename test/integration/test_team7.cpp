@@ -56,31 +56,31 @@ protected:
 
   hephaestus::InputParameters test_params() {
     hephaestus::Subdomain air("air", 1);
-    air.property_map.Register("electrical_conductivity",
-                              new mfem::ConstantCoefficient(1.0), true);
+    air.scalar_coefficients.Register("electrical_conductivity",
+                                     new mfem::ConstantCoefficient(1.0), true);
     hephaestus::Subdomain plate("plate", 2);
-    plate.property_map.Register("electrical_conductivity",
-                                new mfem::ConstantCoefficient(3.526e7), true);
+    plate.scalar_coefficients.Register("electrical_conductivity",
+                                       new mfem::ConstantCoefficient(3.526e7),
+                                       true);
     hephaestus::Subdomain coil1("coil1", 3);
-    coil1.property_map.Register("electrical_conductivity",
-                                new mfem::ConstantCoefficient(1.0), true);
+    coil1.scalar_coefficients.Register(
+        "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
     hephaestus::Subdomain coil2("coil2", 4);
-    coil2.property_map.Register("electrical_conductivity",
-                                new mfem::ConstantCoefficient(1.0), true);
+    coil2.scalar_coefficients.Register(
+        "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
     hephaestus::Subdomain coil3("coil3", 5);
-    coil3.property_map.Register("electrical_conductivity",
-                                new mfem::ConstantCoefficient(1.0), true);
+    coil3.scalar_coefficients.Register(
+        "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
     hephaestus::Subdomain coil4("coil4", 6);
-    coil4.property_map.Register("electrical_conductivity",
-                                new mfem::ConstantCoefficient(1.0), true);
+    coil4.scalar_coefficients.Register(
+        "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
 
-    hephaestus::Coefficients domain_properties(
-        std::vector<hephaestus::Subdomain>(
-            {air, plate, coil1, coil2, coil3, coil4}));
+    hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>(
+        {air, plate, coil1, coil2, coil3, coil4}));
 
-    domain_properties.scalar_property_map.Register(
-        "magnetic_permeability", new mfem::ConstantCoefficient(M_PI * 4.0e-7),
-        true);
+    coefficients.scalars.Register("magnetic_permeability",
+                                  new mfem::ConstantCoefficient(M_PI * 4.0e-7),
+                                  true);
 
     hephaestus::BCMap bc_map;
 
@@ -113,8 +113,7 @@ protected:
     coilsegments[3] = 6;
     mfem::PWVectorCoefficient *JSrcRestricted =
         new mfem::PWVectorCoefficient(3, coilsegments, sourcecoefs);
-    domain_properties.vector_property_map.Register("source", JSrcRestricted,
-                                                   true);
+    coefficients.vectors.Register("source", JSrcRestricted, true);
 
     hephaestus::InputParameters div_free_source_params;
     div_free_source_params.SetParam("SourceName", std::string("source"));
@@ -137,7 +136,7 @@ protected:
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("BoundaryConditions", bc_map);
-    params.SetParam("Coefficients", domain_properties);
+    params.SetParam("Coefficients", coefficients);
     params.SetParam("GridFunctions", gridfunctions);
     params.SetParam("PreProcessors", preprocessors);
     params.SetParam("PostProcessors", postprocessors);
@@ -156,7 +155,7 @@ TEST_F(TestTeam7, CheckRun) {
       new hephaestus::AFormulation();
   hephaestus::BCMap bc_map(
       params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-  hephaestus::Coefficients domain_properties(
+  hephaestus::Coefficients coefficients(
       params.GetParam<hephaestus::Coefficients>("Coefficients"));
   hephaestus::AuxSolvers preprocessors(
       params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
@@ -177,7 +176,7 @@ TEST_F(TestTeam7, CheckRun) {
                                    std::string("HDiv"));
   problem_builder->SetBoundaryConditions(bc_map);
   problem_builder->SetAuxSolvers(preprocessors);
-  problem_builder->SetCoefficients(domain_properties);
+  problem_builder->SetCoefficients(coefficients);
   problem_builder->SetPostprocessors(postprocessors);
   problem_builder->SetSources(sources);
   problem_builder->SetOutputs(outputs);

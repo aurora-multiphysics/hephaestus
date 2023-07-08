@@ -66,7 +66,7 @@ public:
   virtual void
   Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
        const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-       hephaestus::BCMap &bc_map, hephaestus::Coefficients &domain_properties);
+       hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients);
   virtual void buildLinearForms(hephaestus::BCMap &bc_map,
                                 hephaestus::Sources &sources);
   virtual void buildBilinearForms();

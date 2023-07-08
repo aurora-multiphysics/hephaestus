@@ -51,7 +51,7 @@ void AVFormulation::ConstructOperator() {
   this->problem->td_operator = std::make_unique<hephaestus::AVOperator>(
       *(this->problem->pmesh), this->problem->fespaces,
       this->problem->gridfunctions, this->problem->bc_map,
-      this->problem->domain_properties, this->problem->sources,
+      this->problem->coefficients, this->problem->sources,
       this->problem->solver_options);
   this->problem->td_operator->SetEquationSystem(
       this->problem->td_equation_system.get());
@@ -89,20 +89,18 @@ void AVFormulation::RegisterGridFunctions() {
 };
 
 void AVFormulation::RegisterCoefficients() {
-  hephaestus::Coefficients &domain_properties =
-      this->GetProblem()->domain_properties;
-  if (!domain_properties.scalar_property_map.Has("magnetic_permeability")) {
+  hephaestus::Coefficients &coefficients = this->GetProblem()->coefficients;
+  if (!coefficients.scalars.Has("magnetic_permeability")) {
     MFEM_ABORT("Magnetic permeability coefficient not found.");
   }
-  if (!domain_properties.scalar_property_map.Has(beta_coef_name)) {
+  if (!coefficients.scalars.Has(beta_coef_name)) {
     MFEM_ABORT(beta_coef_name + " coefficient not found.");
   }
 
-  domain_properties.scalar_property_map.Register(
+  coefficients.scalars.Register(
       alpha_coef_name,
       new mfem::TransformedCoefficient(
-          &oneCoef,
-          domain_properties.scalar_property_map.Get("magnetic_permeability"),
+          &oneCoef, coefficients.scalars.Get("magnetic_permeability"),
           fracFunc),
       true);
 }
@@ -120,23 +118,20 @@ AVEquationSystem::AVEquationSystem(const hephaestus::InputParameters &params)
 void AVEquationSystem::Init(
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    hephaestus::BCMap &bc_map, hephaestus::Coefficients &domain_properties) {
-  domain_properties.scalar_property_map.Register(
+    hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients) {
+  coefficients.scalars.Register(
       dtalpha_coef_name,
       new mfem::TransformedCoefficient(
-          &dtCoef, domain_properties.scalar_property_map.Get(alpha_coef_name),
-          prodFunc),
+          &dtCoef, coefficients.scalars.Get(alpha_coef_name), prodFunc),
       true);
 
-  domain_properties.scalar_property_map.Register(
+  coefficients.scalars.Register(
       neg_beta_coef_name,
       new mfem::TransformedCoefficient(
-          &negCoef, domain_properties.scalar_property_map.Get(beta_coef_name),
-          prodFunc),
+          &negCoef, coefficients.scalars.Get(beta_coef_name), prodFunc),
       true);
 
-  TimeDependentEquationSystem::Init(variables, fespaces, bc_map,
-                                    domain_properties);
+  TimeDependentEquationSystem::Init(variables, fespaces, bc_map, coefficients);
 }
 
 void AVEquationSystem::addKernels() {
@@ -185,11 +180,10 @@ AVOperator::AVOperator(
     mfem::ParMesh &pmesh,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::BCMap &bc_map, hephaestus::Coefficients &domain_properties,
+    hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients,
     hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
     : TimeDomainEquationSystemOperator(pmesh, fespaces, variables, bc_map,
-                                       domain_properties, sources,
-                                       solver_options) {
+                                       coefficients, sources, solver_options) {
   // Initialize MPI variables
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh.GetComm(), &myid_);

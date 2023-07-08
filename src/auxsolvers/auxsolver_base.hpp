@@ -14,7 +14,7 @@ public:
 
   virtual void
   Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-       hephaestus::Coefficients &domain_properties) = 0;
+       hephaestus::Coefficients &coefficients) = 0;
 
   virtual void Solve(double t = 0.0) = 0;
   // Set priority. Lower values are evaluated first.

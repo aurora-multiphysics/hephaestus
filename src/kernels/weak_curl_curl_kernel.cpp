@@ -17,10 +17,10 @@ WeakCurlCurlKernel::~WeakCurlCurlKernel() {
 void WeakCurlCurlKernel::Init(
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    hephaestus::BCMap &bc_map, hephaestus::Coefficients &domain_properties) {
+    hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients) {
 
   u_ = variables.Get(coupled_gf_name);
-  coef = domain_properties.scalar_property_map.Get(coef_name);
+  coef = coefficients.scalars.Get(coef_name);
 
   curlCurl = new mfem::ParBilinearForm(u_->ParFESpace());
   curlCurl->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*coef));

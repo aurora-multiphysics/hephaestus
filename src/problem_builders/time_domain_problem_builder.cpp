@@ -38,13 +38,13 @@ void TimeDomainProblemBuilder::ConstructEquationSystem() {
 void TimeDomainProblemBuilder::InitializeKernels() {
   this->problem->td_equation_system->Init(
       this->problem->gridfunctions, this->problem->fespaces,
-      this->problem->bc_map, this->problem->domain_properties);
+      this->problem->bc_map, this->problem->coefficients);
 
   this->problem->preprocessors.Init(this->problem->gridfunctions,
-                                    this->problem->domain_properties);
+                                    this->problem->coefficients);
   this->problem->sources.Init(this->problem->gridfunctions,
                               this->problem->fespaces, this->problem->bc_map,
-                              this->problem->domain_properties);
+                              this->problem->coefficients);
 }
 
 void TimeDomainProblemBuilder::ConstructOperator() {
@@ -52,7 +52,7 @@ void TimeDomainProblemBuilder::ConstructOperator() {
       std::make_unique<hephaestus::TimeDomainEquationSystemOperator>(
           *(this->problem->pmesh), this->problem->fespaces,
           this->problem->gridfunctions, this->problem->bc_map,
-          this->problem->domain_properties, this->problem->sources,
+          this->problem->coefficients, this->problem->sources,
           this->problem->solver_options);
   this->problem->td_operator->SetEquationSystem(
       this->problem->td_equation_system.get());

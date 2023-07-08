@@ -12,8 +12,7 @@ ComplexAFormulation::ComplexAFormulation() : ComplexMaxwellFormulation() {
 };
 
 void ComplexAFormulation::RegisterAuxSolvers() {
-  hephaestus::Coefficients &domain_properties =
-      this->GetProblem()->domain_properties;
+  hephaestus::Coefficients &coefficients = this->GetProblem()->coefficients;
   hephaestus::GridFunctions &variables = this->GetProblem()->gridfunctions;
   hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
   std::vector<std::string> aux_var_names;

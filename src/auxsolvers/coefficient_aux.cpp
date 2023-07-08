@@ -9,14 +9,14 @@ CoefficientAuxSolver::CoefficientAuxSolver(
 
 void CoefficientAuxSolver::Init(
     const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::Coefficients &domain_properties) {
+    hephaestus::Coefficients &coefficients) {
   gf = variables.Get(var_name);
   if (gf == NULL) {
     MFEM_ABORT("GridFunction "
                << var_name
                << " not found when initializing CoefficientAuxSolver");
   }
-  coeff = domain_properties.scalar_property_map.Get(coef_name);
+  coeff = coefficients.scalars.Get(coef_name);
   if (gf == NULL) {
     MFEM_ABORT("Coefficient "
                << coef_name

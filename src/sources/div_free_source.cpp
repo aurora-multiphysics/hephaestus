@@ -30,7 +30,7 @@ DivFreeSource::DivFreeSource(const hephaestus::InputParameters &params)
 void DivFreeSource::Init(
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    hephaestus::BCMap &bc_map, hephaestus::Coefficients &domain_properties) {
+    hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients) {
   H1FESpace_ = fespaces.Get(h1_fespace_name);
   if (H1FESpace_ == NULL) {
     const std::string error_message = h1_fespace_name +
@@ -45,8 +45,8 @@ void DivFreeSource::Init(
                                       "creating DivFreeSource\n";
     mfem::mfem_error(error_message.c_str());
   }
-  if (domain_properties.vector_property_map.Has(src_coef_name)) {
-    sourceVecCoef = domain_properties.vector_property_map.Get(src_coef_name);
+  if (coefficients.vectors.Has(src_coef_name)) {
+    sourceVecCoef = coefficients.vectors.Get(src_coef_name);
   } else {
     MFEM_ABORT("SOURCE NOT FOUND");
   }

@@ -65,7 +65,7 @@ void DualFormulation::ConstructOperator() {
   this->problem->td_operator = std::make_unique<hephaestus::DualOperator>(
       *(this->problem->pmesh), this->problem->fespaces,
       this->problem->gridfunctions, this->problem->bc_map,
-      this->problem->domain_properties, this->problem->sources,
+      this->problem->coefficients, this->problem->sources,
       this->problem->solver_options);
   this->problem->td_operator->SetEquationSystem(
       this->problem->td_equation_system.get());
@@ -103,13 +103,12 @@ void DualFormulation::RegisterGridFunctions() {
 };
 
 void DualFormulation::RegisterCoefficients() {
-  hephaestus::Coefficients &domain_properties =
-      this->GetProblem()->domain_properties;
+  hephaestus::Coefficients &coefficients = this->GetProblem()->coefficients;
 
-  if (!domain_properties.scalar_property_map.Has(alpha_coef_name)) {
+  if (!coefficients.scalars.Has(alpha_coef_name)) {
     MFEM_ABORT(alpha_coef_name + " coefficient not found.");
   }
-  if (!domain_properties.scalar_property_map.Has(beta_coef_name)) {
+  if (!coefficients.scalars.Has(beta_coef_name)) {
     MFEM_ABORT(beta_coef_name + " coefficient not found.");
   }
 }
@@ -126,15 +125,13 @@ WeakCurlEquationSystem::WeakCurlEquationSystem(
 void WeakCurlEquationSystem::Init(
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    hephaestus::BCMap &bc_map, hephaestus::Coefficients &domain_properties) {
-  domain_properties.scalar_property_map.Register(
+    hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients) {
+  coefficients.scalars.Register(
       dtalpha_coef_name,
       new mfem::TransformedCoefficient(
-          &dtCoef, domain_properties.scalar_property_map.Get(alpha_coef_name),
-          prodFunc),
+          &dtCoef, coefficients.scalars.Get(alpha_coef_name), prodFunc),
       true);
-  TimeDependentEquationSystem::Init(variables, fespaces, bc_map,
-                                    domain_properties);
+  TimeDependentEquationSystem::Init(variables, fespaces, bc_map, coefficients);
 }
 
 void WeakCurlEquationSystem::addKernels() {
@@ -165,11 +162,10 @@ DualOperator::DualOperator(
     mfem::ParMesh &pmesh,
     mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::BCMap &bc_map, hephaestus::Coefficients &domain_properties,
+    hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients,
     hephaestus::Sources &sources, hephaestus::InputParameters &solver_options)
     : TimeDomainEquationSystemOperator(pmesh, fespaces, variables, bc_map,
-                                       domain_properties, sources,
-                                       solver_options) {}
+                                       coefficients, sources, solver_options) {}
 
 void DualOperator::Init(mfem::Vector &X) {
   TimeDomainEquationSystemOperator::Init(X);

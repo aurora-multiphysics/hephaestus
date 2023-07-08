@@ -30,7 +30,7 @@ public:
       mfem::ParMesh &pmesh,
       mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
       mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-      hephaestus::BCMap &bc_map, hephaestus::Coefficients &domain_properties,
+      hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients,
       hephaestus::Sources &sources,
       hephaestus::InputParameters &solver_options);
 

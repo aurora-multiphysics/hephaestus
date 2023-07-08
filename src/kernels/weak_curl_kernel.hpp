@@ -14,7 +14,7 @@ public:
   Init(mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
        const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
        hephaestus::BCMap &bc_map,
-       hephaestus::Coefficients &domain_properties) override;
+       hephaestus::Coefficients &coefficients) override;
   virtual void Apply(mfem::ParLinearForm *lf) override;
 
   std::string hcurl_gf_name, hdiv_gf_name;

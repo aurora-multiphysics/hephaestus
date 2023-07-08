@@ -11,7 +11,7 @@ ScaledGridFunctionAuxSolver::ScaledGridFunctionAuxSolver(
 
 void ScaledGridFunctionAuxSolver::Init(
     const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::Coefficients &domain_properties) {
+    hephaestus::Coefficients &coefficients) {
   input_gf = variables.Get(input_gf_name);
   if (input_gf == NULL) {
     MFEM_ABORT("GridFunction "
@@ -25,7 +25,7 @@ void ScaledGridFunctionAuxSolver::Init(
                << " not found when initializing CoefficientAuxSolver");
   }
   coef = dynamic_cast<mfem::ConstantCoefficient *>(
-      domain_properties.scalar_property_map.Get(coef_name));
+      coefficients.scalars.Get(coef_name));
   if (coef == NULL) {
     MFEM_ABORT("ConstantCoefficient "
                << coef_name

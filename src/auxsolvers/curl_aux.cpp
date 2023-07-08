@@ -8,7 +8,7 @@ CurlAuxSolver::CurlAuxSolver(const hephaestus::InputParameters &params)
 
 void CurlAuxSolver::Init(
     const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::Coefficients &domain_properties) {
+    hephaestus::Coefficients &coefficients) {
   u_ = variables.Get(var_name);
   curl_u_ = variables.Get(curl_var_name);
 

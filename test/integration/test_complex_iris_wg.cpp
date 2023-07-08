@@ -24,31 +24,31 @@ protected:
   hephaestus::InputParameters test_params() {
     hephaestus::Subdomain air("air", 1);
 
-    air.property_map.Register("real_electrical_conductivity",
-                              new mfem::ConstantCoefficient(0.0), true);
-    air.property_map.Register("imag_electrical_conductivity",
-                              new mfem::ConstantCoefficient(0.0), true);
-    air.property_map.Register("real_rel_permittivity",
-                              new mfem::ConstantCoefficient(1.0), true);
-    air.property_map.Register("imag_rel_permittivity",
-                              new mfem::ConstantCoefficient(0.0), true);
-    air.property_map.Register("real_rel_permeability",
-                              new mfem::ConstantCoefficient(1.0), true);
-    air.property_map.Register("imag_rel_permeability",
-                              new mfem::ConstantCoefficient(0.0), true);
+    air.scalar_coefficients.Register("real_electrical_conductivity",
+                                     new mfem::ConstantCoefficient(0.0), true);
+    air.scalar_coefficients.Register("imag_electrical_conductivity",
+                                     new mfem::ConstantCoefficient(0.0), true);
+    air.scalar_coefficients.Register("real_rel_permittivity",
+                                     new mfem::ConstantCoefficient(1.0), true);
+    air.scalar_coefficients.Register("imag_rel_permittivity",
+                                     new mfem::ConstantCoefficient(0.0), true);
+    air.scalar_coefficients.Register("real_rel_permeability",
+                                     new mfem::ConstantCoefficient(1.0), true);
+    air.scalar_coefficients.Register("imag_rel_permeability",
+                                     new mfem::ConstantCoefficient(0.0), true);
 
-    hephaestus::Coefficients domain_properties(
+    hephaestus::Coefficients coefficients(
         std::vector<hephaestus::Subdomain>({air}));
 
-    domain_properties.scalar_property_map.Register(
-        "frequency", new mfem::ConstantCoefficient(freq_), true);
-    domain_properties.scalar_property_map.Register(
-        "magnetic_permeability", new mfem::ConstantCoefficient(mu0_), true);
-    domain_properties.scalar_property_map.Register(
-        "dielectric_permittivity", new mfem::ConstantCoefficient(epsilon0_),
-        true);
-    domain_properties.scalar_property_map.Register(
-        "electrical_conductivity", new mfem::ConstantCoefficient(0.0), true);
+    coefficients.scalars.Register("frequency",
+                                  new mfem::ConstantCoefficient(freq_), true);
+    coefficients.scalars.Register("magnetic_permeability",
+                                  new mfem::ConstantCoefficient(mu0_), true);
+    coefficients.scalars.Register("dielectric_permittivity",
+                                  new mfem::ConstantCoefficient(epsilon0_),
+                                  true);
+    coefficients.scalars.Register("electrical_conductivity",
+                                  new mfem::ConstantCoefficient(0.0), true);
 
     hephaestus::BCMap bc_map;
     mfem::Array<int> dirichlet_attr(1);
@@ -103,7 +103,7 @@ protected:
 
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("BoundaryConditions", bc_map);
-    params.SetParam("Coefficients", domain_properties);
+    params.SetParam("Coefficients", coefficients);
     params.SetParam("FESpaces", fespaces);
     params.SetParam("GridFunctions", gridfunctions);
     params.SetParam("PreProcessors", preprocessors);
@@ -126,7 +126,7 @@ TEST_F(TestComplexIrisWaveguide, CheckRun) {
       new hephaestus::ComplexEFormulation();
   hephaestus::BCMap bc_map(
       params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-  hephaestus::Coefficients domain_properties(
+  hephaestus::Coefficients coefficients(
       params.GetParam<hephaestus::Coefficients>("Coefficients"));
   hephaestus::AuxSolvers preprocessors(
       params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
@@ -141,7 +141,7 @@ TEST_F(TestComplexIrisWaveguide, CheckRun) {
   problem_builder->SetMesh(pmesh);
   problem_builder->SetBoundaryConditions(bc_map);
   problem_builder->SetAuxSolvers(preprocessors);
-  problem_builder->SetCoefficients(domain_properties);
+  problem_builder->SetCoefficients(coefficients);
   problem_builder->SetPostprocessors(postprocessors);
   problem_builder->SetSources(sources);
   problem_builder->SetOutputs(outputs);

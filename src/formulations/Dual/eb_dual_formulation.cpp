@@ -10,21 +10,19 @@ EBDualFormulation::EBDualFormulation() : DualFormulation() {
 }
 
 void EBDualFormulation::RegisterCoefficients() {
-  hephaestus::Coefficients &domain_properties =
-      this->GetProblem()->domain_properties;
+  hephaestus::Coefficients &coefficients = this->GetProblem()->coefficients;
 
-  if (!domain_properties.scalar_property_map.Has("magnetic_permeability")) {
+  if (!coefficients.scalars.Has("magnetic_permeability")) {
     MFEM_ABORT("magnetic_permeability coefficient not found.");
   }
-  if (!domain_properties.scalar_property_map.Has(beta_coef_name)) {
+  if (!coefficients.scalars.Has(beta_coef_name)) {
     MFEM_ABORT(beta_coef_name + " coefficient not found.");
   }
 
-  domain_properties.scalar_property_map.Register(
+  coefficients.scalars.Register(
       alpha_coef_name,
       new mfem::TransformedCoefficient(
-          &oneCoef,
-          domain_properties.scalar_property_map.Get("magnetic_permeability"),
+          &oneCoef, coefficients.scalars.Get("magnetic_permeability"),
           fracFunc),
       true);
 }

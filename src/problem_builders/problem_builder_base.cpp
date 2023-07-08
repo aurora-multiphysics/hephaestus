@@ -40,9 +40,8 @@ void ProblemBuilder::SetSolverOptions(
   this->GetProblem()->solver_options = solver_options;
 };
 
-void ProblemBuilder::SetCoefficients(
-    hephaestus::Coefficients &domain_properties) {
-  this->GetProblem()->domain_properties = domain_properties;
+void ProblemBuilder::SetCoefficients(hephaestus::Coefficients &coefficients) {
+  this->GetProblem()->coefficients = coefficients;
 };
 
 void ProblemBuilder::AddFESpace(std::string fespace_name, std::string fec_name,
@@ -87,8 +86,8 @@ void ProblemBuilder::AddGridFunction(std::string gridfunction_name,
 };
 
 void ProblemBuilder::InitializePostprocessors() {
-  this->GetProblem()->postprocessors.Init(
-      this->GetProblem()->gridfunctions, this->GetProblem()->domain_properties);
+  this->GetProblem()->postprocessors.Init(this->GetProblem()->gridfunctions,
+                                          this->GetProblem()->coefficients);
 };
 
 } // namespace hephaestus

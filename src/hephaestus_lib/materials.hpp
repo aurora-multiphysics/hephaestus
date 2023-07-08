@@ -16,13 +16,13 @@ public:
 
   std::string name;
   int id;
-  mfem::NamedFieldsMap<mfem::Coefficient> property_map;
+  mfem::NamedFieldsMap<mfem::Coefficient> scalar_coefficients;
 };
 
 // Coefficients - stores all scalar and vector coefficients
 //--SetTime
-//--scalar_property_map
-//--vector_property_map
+//--scalars
+//--vectors
 
 // Stores all coefficients defined over
 class Coefficients {
@@ -33,8 +33,8 @@ public:
   void SetTime(double t);
   void AddGlobalCoefficientsFromSubdomains();
 
-  mfem::NamedFieldsMap<mfem::Coefficient> scalar_property_map;
-  mfem::NamedFieldsMap<mfem::VectorCoefficient> vector_property_map;
+  mfem::NamedFieldsMap<mfem::Coefficient> scalars;
+  mfem::NamedFieldsMap<mfem::VectorCoefficient> vectors;
   std::vector<Subdomain> subdomains;
 };
 

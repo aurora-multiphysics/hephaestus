@@ -4,10 +4,10 @@ namespace hephaestus {
 
 void AuxSolvers::Init(
     const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-    hephaestus::Coefficients &domain_properties) {
+    hephaestus::Coefficients &coefficients) {
 
   for (const auto &[name, auxsolver] : GetMap()) {
-    auxsolver->Init(variables, domain_properties);
+    auxsolver->Init(variables, coefficients);
     aux_queue.push_back(auxsolver);
   }
   std::sort(aux_queue.begin(), aux_queue.end(), AuxCompare());

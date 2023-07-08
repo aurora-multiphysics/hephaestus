@@ -177,7 +177,7 @@ void EquationSystem::RecoverFEMSolution(
 void EquationSystem::Init(
     mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
     const mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> &fespaces,
-    hephaestus::BCMap &bc_map, hephaestus::Coefficients &domain_properties) {
+    hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients) {
 
   // Add optional kernels to the EquationSystem
   addKernels();
@@ -200,21 +200,21 @@ void EquationSystem::Init(
 
   for (const auto &[test_var_name, blf_kernels] : blf_kernels_map.GetMap()) {
     for (int i = 0; i < blf_kernels->Size(); i++) {
-      (*blf_kernels)[i]->Init(variables, fespaces, bc_map, domain_properties);
+      (*blf_kernels)[i]->Init(variables, fespaces, bc_map, coefficients);
     }
     blf_kernels->MakeDataOwner();
   }
   // Initialise linear form kernels
   for (const auto &[test_var_name, lf_kernels] : lf_kernels_map.GetMap()) {
     for (int i = 0; i < lf_kernels->Size(); i++) {
-      (*lf_kernels)[i]->Init(variables, fespaces, bc_map, domain_properties);
+      (*lf_kernels)[i]->Init(variables, fespaces, bc_map, coefficients);
     }
     lf_kernels->MakeDataOwner();
   }
   // Initialise nonlinear form kernels
   for (const auto &[test_var_name, nlf_kernels] : nlf_kernels_map.GetMap()) {
     for (int i = 0; i < nlf_kernels->Size(); i++) {
-      (*nlf_kernels)[i]->Init(variables, fespaces, bc_map, domain_properties);
+      (*nlf_kernels)[i]->Init(variables, fespaces, bc_map, coefficients);
     }
     nlf_kernels->MakeDataOwner();
   }
@@ -224,8 +224,7 @@ void EquationSystem::Init(
     for (const auto &[trial_var_name, mblf_kernels] :
          mblf_kernels_map->GetMap()) {
       for (int i = 0; i < mblf_kernels->Size(); i++) {
-        (*mblf_kernels)[i]->Init(variables, fespaces, bc_map,
-                                 domain_properties);
+        (*mblf_kernels)[i]->Init(variables, fespaces, bc_map, coefficients);
       }
       mblf_kernels->MakeDataOwner();
     }

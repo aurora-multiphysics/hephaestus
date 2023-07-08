@@ -16,10 +16,10 @@ Coefficients::Coefficients(std::vector<Subdomain> subdomains_)
 }
 
 void Coefficients::SetTime(double time) {
-  for (auto const &[name, coeff_] : scalar_property_map) {
+  for (auto const &[name, coeff_] : scalars) {
     coeff_->SetTime(time);
   }
-  for (auto const &[name, vec_coeff_] : vector_property_map) {
+  for (auto const &[name, vec_coeff_] : vectors) {
     vec_coeff_->SetTime(time);
   }
   t = time;
@@ -41,7 +41,7 @@ void Coefficients::AddGlobalCoefficientsFromSubdomains() {
   for (std::size_t i = 0; i < subdomains.size(); i++) {
     subdomain_ids.Append(subdomains[i].id);
     // accumulate property names on subdomains, ignoring duplicates
-    for (auto const &[name, coeff_] : subdomains[i].property_map) {
+    for (auto const &[name, coeff_] : subdomains[i].scalar_coefficients) {
       scalar_property_names.insert(name);
     }
   }
@@ -52,12 +52,12 @@ void Coefficients::AddGlobalCoefficientsFromSubdomains() {
     mfem::Array<mfem::Coefficient *> subdomain_coefs;
     for (std::size_t i = 0; i < subdomains.size(); i++) {
       subdomain_coefs.Append(
-          subdomains[i].property_map.Get(scalar_property_name));
+          subdomains[i].scalar_coefficients.Get(scalar_property_name));
     }
-    if (!scalar_property_map.Has(scalar_property_name)) {
-      scalar_property_map.Register(
-          scalar_property_name,
-          new mfem::PWCoefficient(subdomain_ids, subdomain_coefs), true);
+    if (!scalars.Has(scalar_property_name)) {
+      scalars.Register(scalar_property_name,
+                       new mfem::PWCoefficient(subdomain_ids, subdomain_coefs),
+                       true);
     }
   }
 }
