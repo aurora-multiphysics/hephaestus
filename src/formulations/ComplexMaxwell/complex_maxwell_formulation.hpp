@@ -35,7 +35,7 @@ public:
 
   ~ComplexMaxwellOperator(){};
 
-  virtual void Setgridfunctions() override;
+  virtual void SetGridFunctions() override;
   virtual void Init(mfem::Vector &X) override;
   virtual void Solve(mfem::Vector &X) override;
 

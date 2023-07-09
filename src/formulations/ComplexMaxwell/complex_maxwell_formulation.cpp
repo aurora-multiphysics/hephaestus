@@ -16,11 +16,11 @@ ComplexMaxwellOperator::ComplexMaxwellOperator(
       mass_coef_name(solver_options.GetParam<std::string>("MassCoefName")),
       loss_coef_name(solver_options.GetParam<std::string>("LossCoefName")) {}
 
-void ComplexMaxwellOperator::Setgridfunctions() {
+void ComplexMaxwellOperator::SetGridFunctions() {
   state_var_names.push_back(h_curl_var_name + "_real");
   state_var_names.push_back(h_curl_var_name + "_imag");
 
-  FrequencyDomainEquationSystemOperator::Setgridfunctions();
+  FrequencyDomainEquationSystemOperator::SetGridFunctions();
 
   u_ = new mfem::ParComplexGridFunction(local_test_vars.at(0)->ParFESpace());
   *u_ = std::complex(0.0, 0.0);
@@ -122,7 +122,7 @@ void ComplexMaxwellFormulation::ConstructOperator() {
           this->problem->gridfunctions, this->problem->bc_map,
           this->problem->coefficients, this->problem->sources,
           this->problem->solver_options);
-  this->problem->fd_operator->Setgridfunctions();
+  this->problem->fd_operator->SetGridFunctions();
 }
 
 void ComplexMaxwellFormulation::RegisterGridFunctions() {

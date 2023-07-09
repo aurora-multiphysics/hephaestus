@@ -69,7 +69,7 @@ void DualFormulation::ConstructOperator() {
       this->problem->solver_options);
   this->problem->td_operator->SetEquationSystem(
       this->problem->td_equation_system.get());
-  this->problem->td_operator->Setgridfunctions();
+  this->problem->td_operator->SetGridFunctions();
 };
 
 void DualFormulation::RegisterGridFunctions() {
@@ -214,8 +214,8 @@ void DualOperator::ImplicitSolve(const double dt, const mfem::Vector &X,
   *dv_ *= -1.0;
 }
 
-void DualOperator::Setgridfunctions() {
-  TimeDomainEquationSystemOperator::Setgridfunctions();
+void DualOperator::SetGridFunctions() {
+  TimeDomainEquationSystemOperator::SetGridFunctions();
   // Blocks for solution vector are smaller than the operator size
   // for DualOperator, as curl is stored separately.
   // Block operator only has the HCurl TrueVSize;

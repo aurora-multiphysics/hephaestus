@@ -29,7 +29,7 @@ public:
 
   ~TimeDomainEquationSystemOperator(){};
 
-  virtual void Setgridfunctions();
+  virtual void SetGridFunctions();
   virtual void Init(mfem::Vector &X);
   virtual void ImplicitSolve(const double dt, const mfem::Vector &X,
                              mfem::Vector &dX_dt) override;

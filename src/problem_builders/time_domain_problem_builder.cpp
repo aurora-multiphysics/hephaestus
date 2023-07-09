@@ -56,7 +56,7 @@ void TimeDomainProblemBuilder::ConstructOperator() {
           this->problem->solver_options);
   this->problem->td_operator->SetEquationSystem(
       this->problem->td_equation_system.get());
-  this->problem->td_operator->Setgridfunctions();
+  this->problem->td_operator->SetGridFunctions();
 }
 
 void TimeDomainProblemBuilder::ConstructState() {

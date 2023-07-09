@@ -2,7 +2,7 @@
 
 namespace hephaestus {
 
-void FrequencyDomainEquationSystemOperator::Setgridfunctions() {
+void FrequencyDomainEquationSystemOperator::SetGridFunctions() {
   local_test_vars = populateVectorFromNamedFieldsMap<mfem::ParGridFunction>(
       _gridfunctions, state_var_names);
 

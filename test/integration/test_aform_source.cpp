@@ -30,14 +30,14 @@ protected:
     A_exact(2) = 0;
   }
   static double mu_expr(const mfem::Vector &x) {
-    double variation_scale = 0.0;
+    double variation_scale = 0.5;
     double mu =
         1.0 / (1.0 + variation_scale * cos(M_PI * x(0)) * cos(M_PI * x(1)));
     return mu;
   }
   // Source field
   static void source_field(const mfem::Vector &x, double t, mfem::Vector &f) {
-    double variation_scale = 0.0;
+    double variation_scale = 0.5;
     f(0) = t * M_PI * M_PI * sin(M_PI * x(1)) * sin(M_PI * x(2)) *
                (3 * variation_scale * cos(M_PI * x(0)) * cos(M_PI * x(1)) + 2) +
            sin(M_PI * x(1)) * sin(M_PI * x(2));
@@ -69,8 +69,6 @@ protected:
                         mfem::Array<int>({1, 2, 3}), adotVecCoef),
                     true);
     coefficients.vectors.Register("surface_tangential_dAdt", adotVecCoef, true);
-    coefficients.scalars.Register("electrical_conductivity",
-                                  new mfem::ConstantCoefficient(1.0), true);
 
     mfem::VectorFunctionCoefficient *A_exact =
         new mfem::VectorFunctionCoefficient(3, A_exact_expr);

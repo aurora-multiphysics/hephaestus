@@ -50,7 +50,7 @@ public:
 
   void ImplicitSolve(const double dt, const mfem::Vector &X,
                      mfem::Vector &dX_dt) override;
-  virtual void Setgridfunctions() override;
+  virtual void SetGridFunctions() override;
   mfem::ParFiniteElementSpace *HCurlFESpace_;
   mfem::ParFiniteElementSpace *HDivFESpace_;
 

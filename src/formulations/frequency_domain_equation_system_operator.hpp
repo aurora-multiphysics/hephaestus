@@ -20,7 +20,7 @@ public:
 
   ~FrequencyDomainEquationSystemOperator(){};
 
-  virtual void Setgridfunctions();
+  virtual void SetGridFunctions();
   virtual void Init(mfem::Vector &X);
   virtual void Solve(mfem::Vector &X);
   void Mult(const mfem::Vector &x, mfem::Vector &y) const override{};
