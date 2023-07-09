@@ -29,9 +29,9 @@ void ComplexMaxwellOperator::Setgridfunctions() {
 void ComplexMaxwellOperator::Init(mfem::Vector &X) {
   FrequencyDomainEquationSystemOperator::Init(X);
 
-  stiffCoef_ = _domain_properties.scalars.Get(stiffness_coef_name);
-  massCoef_ = _domain_properties.scalars.Get(mass_coef_name);
-  lossCoef_ = _domain_properties.scalars.Get(loss_coef_name);
+  stiffCoef_ = _coefficients.scalars.Get(stiffness_coef_name);
+  massCoef_ = _coefficients.scalars.Get(mass_coef_name);
+  lossCoef_ = _coefficients.scalars.Get(loss_coef_name);
 }
 
 void ComplexMaxwellOperator::Solve(mfem::Vector &X) {

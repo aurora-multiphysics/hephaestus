@@ -191,7 +191,7 @@ void DualOperator::ImplicitSolve(const double dt, const mfem::Vector &X,
     local_trial_vars.at(ind)->MakeRef(local_trial_vars.at(ind)->ParFESpace(),
                                       dX_dt, true_offsets[ind]);
   }
-  _domain_properties.SetTime(this->GetTime());
+  _coefficients.SetTime(this->GetTime());
   _equation_system->setTimeStep(dt);
   _equation_system->updateEquationSystem(_bc_map, _sources);
 

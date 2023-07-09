@@ -16,7 +16,7 @@ public:
       hephaestus::InputParameters &solver_options)
       : myid_(0), num_procs_(1), pmesh_(&pmesh), _fespaces(fespaces),
         _gridfunctions(gridfunctions), _bc_map(bc_map), _sources(sources),
-        _domain_properties(coefficients), _solver_options(solver_options){};
+        _coefficients(coefficients), _solver_options(solver_options){};
 
   ~FrequencyDomainEquationSystemOperator(){};
 
@@ -45,7 +45,7 @@ public:
   hephaestus::GridFunctions &_gridfunctions;
   hephaestus::BCMap &_bc_map;
   hephaestus::Sources &_sources;
-  hephaestus::Coefficients &_domain_properties;
+  hephaestus::Coefficients &_coefficients;
   hephaestus::InputParameters &_solver_options;
 
   mfem::OperatorHandle blockA;
