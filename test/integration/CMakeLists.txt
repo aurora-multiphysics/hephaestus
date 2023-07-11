@@ -1,11 +1,21 @@
 file(GLOB_RECURSE src_integration "*.cpp")
 
+file(GLOB_RECURSE test_src_files "${PROJECT_SOURCE_DIR}/src/*.h" "${PROJECT_SOURCE_DIR}/src/*.hpp" "${PROJECT_SOURCE_DIR}/src/*.cpp")
+
+set (${PROJECT_NAME}_INCLUDE_DIRS "")
+foreach (_srcFile ${test_src_files})
+    get_filename_component(_dir ${_srcFile} PATH)
+    list (APPEND ${PROJECT_NAME}_INCLUDE_DIRS ${_dir})
+endforeach()
+list (REMOVE_DUPLICATES ${PROJECT_NAME}_INCLUDE_DIRS)
+
+
 add_executable(integration_tests ${src_integration})
 add_compile_options(integration_tests ${BUILD_TYPE_COMPILER_FLAGS})
 target_include_directories(integration_tests PRIVATE ${GTEST_INCLUDE_DIRS})
 target_include_directories(integration_tests PRIVATE ${GMOCK_INCLUDE_DIRS})
 target_include_directories(integration_tests PUBLIC ${MFEM_COMMON_INCLUDES} ${MFEM_INCLUDE_DIRS})
-target_include_directories(integration_tests PUBLIC ${PROJECT_SOURCE_DIR}/src/${PROJECT_NAME}_lib)
+target_include_directories(integration_tests PUBLIC ${${PROJECT_NAME}_INCLUDE_DIRS})
 set_property(TARGET integration_tests PROPERTY CXX_STANDARD 17)
 
 target_link_libraries(integration_tests ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY} pthread)

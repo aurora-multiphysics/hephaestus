@@ -1,4 +1,4 @@
-#include "hephaestus_transient.hpp"
+#include "hephaestus.hpp"
 #include <gtest/gtest.h>
 
 extern const char *DATA_DIR;
@@ -10,32 +10,6 @@ public:
   virtual double Eval(mfem::ElementTransformation &T,
                       const mfem::IntegrationPoint &ip) {
     return 2.0 * M_PI * 10 + 0.001 * (gf->GetValue(T, ip));
-  }
-};
-
-class JouleHeatingCoefficient : public hephaestus::CoupledCoefficient {
-private:
-  mfem::Coefficient *sigma;
-  std::string conductivity_coef_name;
-
-public:
-  JouleHeatingCoefficient(const hephaestus::InputParameters &params)
-      : hephaestus::CoupledCoefficient(params),
-        conductivity_coef_name(
-            params.GetParam<std::string>("ConductivityCoefName")){};
-
-  void Init(const mfem::NamedFieldsMap<mfem::ParGridFunction> &variables,
-            hephaestus::DomainProperties &domain_properties) {
-    hephaestus::CoupledCoefficient::Init(variables, domain_properties);
-    sigma = domain_properties.scalar_property_map[conductivity_coef_name];
-  }
-  virtual double Eval(mfem::ElementTransformation &T,
-                      const mfem::IntegrationPoint &ip) {
-    mfem::Vector E;
-    double thisSigma;
-    gf->GetVectorValue(T, ip, E);
-    thisSigma = sigma->Eval(T, ip);
-    return thisSigma * (E * E);
   }
 };
 
@@ -66,47 +40,9 @@ protected:
     hephaestus::FESpaces fespaces;
     hephaestus::GridFunctions gridfunctions;
 
-    hephaestus::InputParameters l2fespaceparams;
-    l2fespaceparams.SetParam("FESpaceName", std::string("L2"));
-    l2fespaceparams.SetParam("FESpaceType", std::string("L2"));
-    l2fespaceparams.SetParam("order", 1);
-    l2fespaceparams.SetParam("components", 3);
-    fespaces.StoreInput(l2fespaceparams);
-
-    hephaestus::InputParameters jouleheatinggfparams;
-    jouleheatinggfparams.SetParam("VariableName",
-                                  std::string("joule_heating_load"));
-    jouleheatinggfparams.SetParam("FESpaceName", std::string("L2"));
-    gridfunctions.StoreInput(jouleheatinggfparams);
-
-    hephaestus::InputParameters h1fespaceparams;
-    h1fespaceparams.SetParam("FESpaceName", std::string("H1"));
-    h1fespaceparams.SetParam("FESpaceType", std::string("H1"));
-    h1fespaceparams.SetParam("order", 1);
-    h1fespaceparams.SetParam("components", 3);
-    fespaces.StoreInput(h1fespaceparams);
-
-    hephaestus::InputParameters hcurlsourcefespaceparams;
-    hcurlsourcefespaceparams.SetParam("FESpaceName",
-                                      std::string("HCurlSource"));
-    hcurlsourcefespaceparams.SetParam("FESpaceType", std::string("ND"));
-    hcurlsourcefespaceparams.SetParam("order", 2);
-    hcurlsourcefespaceparams.SetParam("components", 3);
-    hephaestus::InputParameters h1sourcefespaceparams;
-    h1sourcefespaceparams.SetParam("FESpaceName", std::string("H1Source"));
-    h1sourcefespaceparams.SetParam("FESpaceType", std::string("H1"));
-    h1sourcefespaceparams.SetParam("order", 2);
-    h1sourcefespaceparams.SetParam("components", 3);
-    fespaces.StoreInput(hcurlsourcefespaceparams);
-    fespaces.StoreInput(h1sourcefespaceparams);
-
-    hephaestus::InputParameters temperaturegfparams;
-    temperaturegfparams.SetParam("VariableName", std::string("temperature"));
-    temperaturegfparams.SetParam("FESpaceName", std::string("H1"));
-    gridfunctions.StoreInput(temperaturegfparams);
-
-    // materialCopper instances and get property coefs? init can be for all...
-    // CoupledCoefficients must also be added to Auxkernels
+    // materialCopper instances and get property coefs? init can be for
+    // all...
+    // CoupledCoefficients must also be added to AuxSolvers
     hephaestus::InputParameters copper_conductivity_params;
     copper_conductivity_params.SetParam("CoupledVariableName",
                                         std::string("temperature"));
@@ -114,56 +50,56 @@ protected:
         new CopperConductivityCoefficient(copper_conductivity_params);
 
     hephaestus::Subdomain wire("wire", 1);
-    wire.property_map["electrical_conductivity"] = wireConductivity;
+    wire.scalar_coefficients.Register("electrical_conductivity",
+                                      wireConductivity, true);
 
     hephaestus::Subdomain air("air", 2);
-    air.property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(sigmaAir);
+    air.scalar_coefficients.Register("electrical_conductivity",
+                                     new mfem::ConstantCoefficient(sigmaAir),
+                                     true);
 
-    hephaestus::DomainProperties domain_properties(
+    hephaestus::Coefficients coefficients(
         std::vector<hephaestus::Subdomain>({wire, air}));
 
-    domain_properties.scalar_property_map["electrical_conductivity"] =
-        new mfem::PWCoefficient(domain_properties.getGlobalScalarProperty(
-            std::string("electrical_conductivity")));
+    // coefficients.scalars.Register(
+    //     "electrical_conductivity",
+    //     new mfem::PWCoefficient(coefficients.getGlobalScalarProperty(
+    //         std::string("electrical_conductivity"))),
+    //     true);
 
-    hephaestus::InputParameters joule_heating_params;
-    joule_heating_params.SetParam("CoupledVariableName",
-                                  std::string("electric_field"));
-    joule_heating_params.SetParam("ConductivityCoefName",
-                                  std::string("electrical_conductivity"));
-    JouleHeatingCoefficient *jouleHeating =
-        new JouleHeatingCoefficient(joule_heating_params);
-    domain_properties.scalar_property_map["JouleHeating"] = jouleHeating;
-
-    hephaestus::AuxKernels auxkernels;
-    auxkernels.Register("CoupledCoefficient", wireConductivity, false);
-    auxkernels.Register("JouleHeating", jouleHeating, false);
+    hephaestus::AuxSolvers preprocessors;
+    preprocessors.Register("CoupledCoefficient", wireConductivity, false);
 
     hephaestus::BCMap bc_map;
     mfem::VectorFunctionCoefficient *edotVecCoef =
         new mfem::VectorFunctionCoefficient(3, edot_bc);
-    bc_map["tangential_dEdt"] = new hephaestus::VectorFunctionDirichletBC(
-        std::string("electric_field"), mfem::Array<int>({1, 2, 3}),
-        edotVecCoef);
-    domain_properties.scalar_property_map["magnetic_permeability"] =
-        new mfem::ConstantCoefficient(1.0);
-    domain_properties.vector_property_map["surface_tangential_dEdt"] =
-        edotVecCoef;
+    bc_map.Register("tangential_dEdt",
+                    new hephaestus::VectorFunctionDirichletBC(
+                        std::string("electric_field"),
+                        mfem::Array<int>({1, 2, 3}), edotVecCoef),
+                    true);
+    coefficients.scalars.Register("magnetic_permeability",
+                                  new mfem::ConstantCoefficient(1.0), true);
+    coefficients.vectors.Register("surface_tangential_dEdt", edotVecCoef, true);
 
     mfem::Array<int> high_terminal(1);
     high_terminal[0] = 1;
     mfem::FunctionCoefficient *potential_src =
         new mfem::FunctionCoefficient(potential_high);
-    bc_map["high_potential"] = new hephaestus::FunctionDirichletBC(
-        std::string("electric_potential"), high_terminal, potential_src);
-    domain_properties.scalar_property_map["source_potential"] = potential_src;
+    bc_map.Register(
+        "high_potential",
+        new hephaestus::FunctionDirichletBC(std::string("electric_potential"),
+                                            high_terminal, potential_src),
+        true);
+    coefficients.scalars.Register("source_potential", potential_src, true);
 
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 2;
-    bc_map["ground_potential"] = new hephaestus::FunctionDirichletBC(
-        std::string("electric_potential"), ground_terminal,
-        new mfem::FunctionCoefficient(potential_ground));
+    bc_map.Register("ground_potential",
+                    new hephaestus::FunctionDirichletBC(
+                        std::string("electric_potential"), ground_terminal,
+                        new mfem::FunctionCoefficient(potential_ground)),
+                    true);
 
     mfem::Mesh mesh(
         (std::string(DATA_DIR) + std::string("./cylinder-hex-q2.gen")).c_str(),
@@ -176,16 +112,20 @@ protected:
         new mfem::ParaViewDataCollection("EBFormParaView");
     hephaestus::Outputs outputs(data_collections);
 
-    hephaestus::InputParameters jouleheatingauxparams;
-    jouleheatingauxparams.SetParam("VariableName",
-                                   std::string("joule_heating_load"));
-    jouleheatingauxparams.SetParam("CoefficientName",
-                                   std::string("JouleHeating"));
-    auxkernels.Register(
-        "CoefficientAuxKernel",
-        new hephaestus::CoefficientAuxKernel(jouleheatingauxparams), true);
+    hephaestus::AuxSolvers postprocessors;
+    hephaestus::InputParameters joule_heating_params;
+    joule_heating_params.SetParam("VariableName",
+                                  std::string("joule_heating_load"));
+    joule_heating_params.SetParam("CoefficientName",
+                                  std::string("JouleHeating"));
+    joule_heating_params.SetParam("ElectricFieldName",
+                                  std::string("electric_field"));
+    joule_heating_params.SetParam("ConductivityCoefName",
+                                  std::string("electrical_conductivity"));
+    postprocessors.Register(
+        "JouleHeatingAux",
+        new hephaestus::JouleHeatingAuxSolver(joule_heating_params), true);
 
-    hephaestus::Postprocessors postprocessors;
     hephaestus::Sources sources;
     hephaestus::InputParameters scalar_potential_source_params;
     scalar_potential_source_params.SetParam("SourceName",
@@ -214,27 +154,16 @@ protected:
     solver_options.SetParam("MaxIter", (unsigned int)1000);
     solver_options.SetParam("PrintLevel", 0);
 
-    hephaestus::TransientFormulation *formulation =
-        new hephaestus::EBDualFormulation();
-
     hephaestus::InputParameters params;
-    params.SetParam("TimeStep", float(0.5));
-    params.SetParam("StartTime", float(0.0));
-    params.SetParam("EndTime", float(2.5));
-    params.SetParam("VisualisationSteps", int(1));
-    params.SetParam("UseGLVis", true);
-
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
-    params.SetParam("Order", 2);
     params.SetParam("BoundaryConditions", bc_map);
-    params.SetParam("DomainProperties", domain_properties);
+    params.SetParam("Coefficients", coefficients);
     params.SetParam("FESpaces", fespaces);
     params.SetParam("GridFunctions", gridfunctions);
-    params.SetParam("AuxKernels", auxkernels);
-    params.SetParam("Postprocessors", postprocessors);
+    params.SetParam("PreProcessors", preprocessors);
+    params.SetParam("PostProcessors", postprocessors);
     params.SetParam("Sources", sources);
     params.SetParam("Outputs", outputs);
-    params.SetParam("Formulation", formulation);
     params.SetParam("SolverOptions", solver_options);
 
     return params;
@@ -243,8 +172,55 @@ protected:
 
 TEST_F(TestEBFormCoupled, CheckRun) {
   hephaestus::InputParameters params(test_params());
+  hephaestus::TimeDomainProblemBuilder *problem_builder =
+      new hephaestus::EBDualFormulation();
+  hephaestus::BCMap bc_map(
+      params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
+  hephaestus::Coefficients coefficients(
+      params.GetParam<hephaestus::Coefficients>("Coefficients"));
+  hephaestus::AuxSolvers preprocessors(
+      params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
+  hephaestus::AuxSolvers postprocessors(
+      params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
+  hephaestus::Sources sources(params.GetParam<hephaestus::Sources>("Sources"));
+  hephaestus::Outputs outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
+  hephaestus::InputParameters solver_options(
+      params.GetOptionalParam<hephaestus::InputParameters>(
+          "SolverOptions", hephaestus::InputParameters()));
+
+  std::shared_ptr<mfem::ParMesh> pmesh =
+      std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
+  problem_builder->SetMesh(pmesh);
+  problem_builder->AddFESpace(std::string("L2"), std::string("L2_3D_P1"));
+  problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P1"));
+  problem_builder->AddFESpace(std::string("H1Source"), std::string("H1_3D_P2"));
+  problem_builder->AddFESpace(std::string("HCurlSource"),
+                              std::string("ND_3D_P2"));
+  problem_builder->AddGridFunction(std::string("joule_heating_load"),
+                                   std::string("L2"));
+  problem_builder->AddGridFunction(std::string("temperature"),
+                                   std::string("H1"));
+  problem_builder->SetBoundaryConditions(bc_map);
+  problem_builder->SetAuxSolvers(preprocessors);
+  problem_builder->SetCoefficients(coefficients);
+  problem_builder->SetPostprocessors(postprocessors);
+  problem_builder->SetSources(sources);
+  problem_builder->SetOutputs(outputs);
+  problem_builder->SetSolverOptions(solver_options);
+
+  hephaestus::ProblemBuildSequencer sequencer(problem_builder);
+  sequencer.ConstructEquationSystemProblem();
+  std::unique_ptr<hephaestus::TimeDomainProblem> problem =
+      problem_builder->ReturnProblem();
+  hephaestus::InputParameters exec_params;
+  exec_params.SetParam("TimeStep", float(0.5));
+  exec_params.SetParam("StartTime", float(0.00));
+  exec_params.SetParam("EndTime", float(2.5));
+  exec_params.SetParam("VisualisationSteps", int(1));
+  exec_params.SetParam("UseGLVis", true);
+  exec_params.SetParam("Problem", problem.get());
   hephaestus::TransientExecutioner *executioner =
-      new hephaestus::TransientExecutioner(params);
+      new hephaestus::TransientExecutioner(exec_params);
   executioner->Init();
-  executioner->Solve();
+  executioner->Execute();
 }

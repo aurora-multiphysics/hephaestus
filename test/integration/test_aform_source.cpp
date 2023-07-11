@@ -1,5 +1,5 @@
 // Based on an H form MMS test provided by Joseph Dean
-#include "hephaestus_transient.hpp"
+#include "hephaestus.hpp"
 #include <gtest/gtest.h>
 
 extern const char *DATA_DIR;
@@ -17,10 +17,10 @@ protected:
     return 0.0;
   }
 
-  static void hdot_bc(const mfem::Vector &x, double t, mfem::Vector &H) {
-    H(0) = sin(x(1) * M_PI) * sin(x(2) * M_PI);
-    H(1) = 0;
-    H(2) = 0;
+  static void adot_bc(const mfem::Vector &x, double t, mfem::Vector &A) {
+    A(0) = sin(x(1) * M_PI) * sin(x(2) * M_PI);
+    A(1) = 0;
+    A(2) = 0;
   }
 
   static void A_exact_expr(const mfem::Vector &x, double t,
@@ -46,39 +46,33 @@ protected:
     f(2) = -0.5 * variation_scale * M_PI * M_PI * t * sin(M_PI * x(0)) *
            sin(2 * M_PI * x(1)) * cos(M_PI * x(2));
   }
-
   hephaestus::InputParameters test_params() {
     hephaestus::Subdomain wire("wire", 1);
-    wire.property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(1.0);
+    wire.scalar_coefficients.Register("electrical_conductivity",
+                                      new mfem::ConstantCoefficient(1.0), true);
     hephaestus::Subdomain air("air", 2);
-    air.property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(1.0);
+    air.scalar_coefficients.Register("electrical_conductivity",
+                                     new mfem::ConstantCoefficient(1.0), true);
 
-    hephaestus::DomainProperties domain_properties(
+    hephaestus::Coefficients coefficients(
         std::vector<hephaestus::Subdomain>({wire, air}));
 
-    domain_properties.scalar_property_map["magnetic_permeability"] =
-        new mfem::FunctionCoefficient(mu_expr);
+    coefficients.scalars.Register("magnetic_permeability",
+                                  new mfem::FunctionCoefficient(mu_expr), true);
 
     hephaestus::BCMap bc_map;
     mfem::VectorFunctionCoefficient *adotVecCoef =
-        new mfem::VectorFunctionCoefficient(3, hdot_bc);
-    bc_map["tangential_dAdt"] = new hephaestus::VectorFunctionDirichletBC(
-        std::string("dmagnetic_vector_potential_dt"),
-        mfem::Array<int>({1, 2, 3}), adotVecCoef);
-    domain_properties.vector_property_map["surface_tangential_dAdt"] =
-        adotVecCoef;
-    domain_properties.scalar_property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(1.0);
-
-    bc_map["ground_potential"] = new hephaestus::FunctionDirichletBC(
-        std::string("magnetic_potential"), mfem::Array<int>({1, 2, 3}),
-        new mfem::FunctionCoefficient(potential_ground));
+        new mfem::VectorFunctionCoefficient(3, adot_bc);
+    bc_map.Register("tangential_dAdt",
+                    new hephaestus::VectorFunctionDirichletBC(
+                        std::string("dmagnetic_vector_potential_dt"),
+                        mfem::Array<int>({1, 2, 3}), adotVecCoef),
+                    true);
+    coefficients.vectors.Register("surface_tangential_dAdt", adotVecCoef, true);
 
     mfem::VectorFunctionCoefficient *A_exact =
         new mfem::VectorFunctionCoefficient(3, A_exact_expr);
-    domain_properties.vector_property_map["a_exact_coeff"] = A_exact;
+    coefficients.vectors.Register("a_exact_coeff", A_exact, true);
 
     mfem::Mesh mesh(
         (std::string(DATA_DIR) + std::string("./beam-tet.mesh")).c_str(), 1, 1);
@@ -88,33 +82,12 @@ protected:
         new mfem::VisItDataCollection("AFormVisIt");
     hephaestus::Outputs outputs(data_collections);
 
-    hephaestus::InputParameters hcurlfespaceparams;
-    hcurlfespaceparams.SetParam("FESpaceName", std::string("HCurl"));
-    hcurlfespaceparams.SetParam("FESpaceType", std::string("ND"));
-    hcurlfespaceparams.SetParam("order", 2);
-    hcurlfespaceparams.SetParam("components", 3);
-    hephaestus::InputParameters h1fespaceparams;
-    h1fespaceparams.SetParam("FESpaceName", std::string("H1"));
-    h1fespaceparams.SetParam("FESpaceType", std::string("H1"));
-    h1fespaceparams.SetParam("order", 2);
-    h1fespaceparams.SetParam("components", 3);
-    hephaestus::FESpaces fespaces;
-    fespaces.StoreInput(hcurlfespaceparams);
-    fespaces.StoreInput(h1fespaceparams);
-
-    hephaestus::InputParameters analyicaparams;
-    analyicaparams.SetParam("VariableName",
-                            std::string("analytic_vector_potential"));
-    analyicaparams.SetParam("FESpaceName", std::string("HCurl"));
-    hephaestus::GridFunctions gridfunctions;
-    gridfunctions.StoreInput(analyicaparams);
-
     hephaestus::InputParameters l2errpostprocparams;
     l2errpostprocparams.SetParam("VariableName",
                                  std::string("magnetic_vector_potential"));
     l2errpostprocparams.SetParam("VectorCoefficientName",
                                  std::string("a_exact_coeff"));
-    hephaestus::Postprocessors postprocessors;
+    hephaestus::AuxSolvers postprocessors;
     postprocessors.Register(
         "L2ErrorPostprocessor",
         new hephaestus::L2ErrorVectorPostprocessor(l2errpostprocparams), true);
@@ -125,15 +98,15 @@ protected:
     vectorcoeffauxparams.SetParam("VectorCoefficientName",
                                   std::string("a_exact_coeff"));
 
-    hephaestus::AuxKernels auxkernels;
-    auxkernels.Register(
-        "VectorCoefficientAuxKernel",
-        new hephaestus::VectorCoefficientAuxKernel(vectorcoeffauxparams), true);
+    hephaestus::VectorCoefficientAuxSolver *vec_coef_aux =
+        new hephaestus::VectorCoefficientAuxSolver(vectorcoeffauxparams);
+    vec_coef_aux->SetPriority(-1);
+    postprocessors.Register("VectorCoefficientAuxSolver", vec_coef_aux, true);
 
     hephaestus::Sources sources;
     mfem::VectorFunctionCoefficient *JSrcCoef =
         new mfem::VectorFunctionCoefficient(3, source_field);
-    domain_properties.vector_property_map["source"] = JSrcCoef;
+    coefficients.vectors.Register("source", JSrcCoef, true);
     hephaestus::InputParameters div_free_source_params;
     div_free_source_params.SetParam("SourceName", std::string("source"));
     div_free_source_params.SetParam("HCurlFESpaceName",
@@ -144,9 +117,9 @@ protected:
     current_solver_options.SetParam("MaxIter", (unsigned int)200);
     current_solver_options.SetParam("PrintLevel", 0);
     div_free_source_params.SetParam("SolverOptions", current_solver_options);
+    div_free_source_params.SetParam("HelmholtzProjection", false);
     sources.Register(
-        "source",
-        new hephaestus::DivFreeVolumetricSource(div_free_source_params), true);
+        "source", new hephaestus::DivFreeSource(div_free_source_params), true);
 
     hephaestus::InputParameters solver_options;
     solver_options.SetParam("Tolerance", float(1.0e-16));
@@ -154,20 +127,10 @@ protected:
     solver_options.SetParam("PrintLevel", 0);
 
     hephaestus::InputParameters params;
-    params.SetParam("TimeStep", float(0.05));
-    params.SetParam("StartTime", float(0.00));
-    params.SetParam("EndTime", float(0.05));
-    params.SetParam("VisualisationSteps", int(1));
-    params.SetParam("UseGLVis", false);
-
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
-    params.SetParam("Order", 2);
     params.SetParam("BoundaryConditions", bc_map);
-    params.SetParam("DomainProperties", domain_properties);
-    params.SetParam("FESpaces", fespaces);
-    params.SetParam("GridFunctions", gridfunctions);
-    params.SetParam("AuxKernels", auxkernels);
-    params.SetParam("Postprocessors", postprocessors);
+    params.SetParam("Coefficients", coefficients);
+    params.SetParam("PostProcessors", postprocessors);
     params.SetParam("Outputs", outputs);
     params.SetParam("Sources", sources);
     params.SetParam("SolverOptions", solver_options);
@@ -184,26 +147,68 @@ TEST_F(TestAFormSource, CheckRun) {
   for (int par_ref_levels = 0; par_ref_levels < num_conv_refinements;
        ++par_ref_levels) {
 
-    mfem::ParMesh pmesh(unrefined_pmesh);
+    std::shared_ptr<mfem::ParMesh> pmesh =
+        std::make_shared<mfem::ParMesh>(unrefined_pmesh);
 
     for (int l = 0; l < par_ref_levels; l++) {
-      pmesh.UniformRefinement();
+      pmesh->UniformRefinement();
     }
-    params.SetParam("Mesh", pmesh);
-    hephaestus::TransientFormulation *formulation =
+    hephaestus::TimeDomainProblemBuilder *problem_builder =
         new hephaestus::AFormulation();
-    params.SetParam("Formulation", formulation);
+    hephaestus::BCMap bc_map(
+        params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
+    hephaestus::Coefficients coefficients(
+        params.GetParam<hephaestus::Coefficients>("Coefficients"));
+    //   hephaestus::FESpaces fespaces(
+    //       params.GetParam<hephaestus::FESpaces>("FESpaces"));
+    //   hephaestus::GridFunctions gridfunctions(
+    //       params.GetParam<hephaestus::GridFunctions>("GridFunctions"));
+    hephaestus::AuxSolvers postprocessors(
+        params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
+    hephaestus::Sources sources(
+        params.GetParam<hephaestus::Sources>("Sources"));
+    hephaestus::Outputs outputs(
+        params.GetParam<hephaestus::Outputs>("Outputs"));
+    hephaestus::InputParameters solver_options(
+        params.GetOptionalParam<hephaestus::InputParameters>(
+            "SolverOptions", hephaestus::InputParameters()));
+
+    problem_builder->SetMesh(pmesh);
+    problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P2"));
+    problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P2"));
+    problem_builder->AddGridFunction(std::string("analytic_vector_potential"),
+                                     std::string("HCurl"));
+    problem_builder->SetBoundaryConditions(bc_map);
+    problem_builder->SetCoefficients(coefficients);
+    problem_builder->SetPostprocessors(postprocessors);
+    problem_builder->SetSources(sources);
+    problem_builder->SetOutputs(outputs);
+    problem_builder->SetSolverOptions(solver_options);
+
+    hephaestus::ProblemBuildSequencer sequencer(problem_builder);
+    sequencer.ConstructEquationSystemProblem();
+    std::unique_ptr<hephaestus::TimeDomainProblem> problem =
+        problem_builder->ReturnProblem();
+
+    hephaestus::InputParameters exec_params;
+    exec_params.SetParam("TimeStep", float(0.05));
+    exec_params.SetParam("StartTime", float(0.00));
+    exec_params.SetParam("EndTime", float(0.05));
+    exec_params.SetParam("VisualisationSteps", int(1));
+    exec_params.SetParam("UseGLVis", true);
+    exec_params.SetParam("Problem", problem.get());
     hephaestus::TransientExecutioner *executioner =
-        new hephaestus::TransientExecutioner(params);
+        new hephaestus::TransientExecutioner(exec_params);
+
     executioner->Init();
-    executioner->Solve();
-    delete formulation;
+    executioner->Execute();
+
     delete executioner;
   }
 
   hephaestus::L2ErrorVectorPostprocessor l2errpostprocessor =
       *(dynamic_cast<hephaestus::L2ErrorVectorPostprocessor *>(
-          params.GetParam<hephaestus::Postprocessors>("Postprocessors")
+          params.GetParam<hephaestus::AuxSolvers>("PostProcessors")
               .Get("L2ErrorPostprocessor")));
 
   double r;
@@ -212,7 +217,7 @@ TEST_F(TestAFormSource, CheckRun) {
         l2errpostprocessor.ndofs[i], l2errpostprocessor.ndofs[i - 1],
         l2errpostprocessor.l2_errs[i], l2errpostprocessor.l2_errs[i - 1], 3);
     std::cout << r << std::endl;
-    ASSERT_TRUE(r > params.GetParam<int>("Order") - 0.15);
-    ASSERT_TRUE(r < params.GetParam<int>("Order") + 1.0);
+    ASSERT_TRUE(r > 2 - 0.15);
+    ASSERT_TRUE(r < 2 + 1.0);
   }
 }

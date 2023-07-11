@@ -1,7 +1,7 @@
-#include "auxkernels.hpp"
-#include "executioner.hpp"
+#include "auxsolvers.hpp"
+#include "transient_executioner.hpp"
 
-#include "hephaestus_transient.hpp"
+#include "hephaestus.hpp"
 #include "postprocessors.hpp"
 
 #include <gtest/gtest.h>
@@ -56,30 +56,31 @@ protected:
 
   hephaestus::InputParameters test_params() {
     hephaestus::Subdomain air("air", 1);
-    air.property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(1.0);
+    air.scalar_coefficients.Register("electrical_conductivity",
+                                     new mfem::ConstantCoefficient(1.0), true);
     hephaestus::Subdomain plate("plate", 2);
-    plate.property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(3.526e7);
+    plate.scalar_coefficients.Register("electrical_conductivity",
+                                       new mfem::ConstantCoefficient(3.526e7),
+                                       true);
     hephaestus::Subdomain coil1("coil1", 3);
-    coil1.property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(1.0);
+    coil1.scalar_coefficients.Register(
+        "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
     hephaestus::Subdomain coil2("coil2", 4);
-    coil2.property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(1.0);
+    coil2.scalar_coefficients.Register(
+        "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
     hephaestus::Subdomain coil3("coil3", 5);
-    coil3.property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(1.0);
+    coil3.scalar_coefficients.Register(
+        "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
     hephaestus::Subdomain coil4("coil4", 6);
-    coil4.property_map["electrical_conductivity"] =
-        new mfem::ConstantCoefficient(1.0);
+    coil4.scalar_coefficients.Register(
+        "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
 
-    hephaestus::DomainProperties domain_properties(
-        std::vector<hephaestus::Subdomain>(
-            {air, plate, coil1, coil2, coil3, coil4}));
+    hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>(
+        {air, plate, coil1, coil2, coil3, coil4}));
 
-    domain_properties.scalar_property_map["magnetic_permeability"] =
-        new mfem::ConstantCoefficient(M_PI * 4.0e-7);
+    coefficients.scalars.Register("magnetic_permeability",
+                                  new mfem::ConstantCoefficient(M_PI * 4.0e-7),
+                                  true);
 
     hephaestus::BCMap bc_map;
 
@@ -93,17 +94,9 @@ protected:
         new mfem::ParaViewDataCollection("Team7ParaView");
     hephaestus::Outputs outputs(data_collections);
 
-    hephaestus::InputParameters h1fespaceparams;
-    h1fespaceparams.SetParam("FESpaceName", std::string("H1"));
-    h1fespaceparams.SetParam("FESpaceType", std::string("H1"));
-    h1fespaceparams.SetParam("order", 2);
-    h1fespaceparams.SetParam("components", 3);
-    hephaestus::FESpaces fespaces;
-    fespaces.StoreInput(h1fespaceparams);
-
     hephaestus::GridFunctions gridfunctions;
-    hephaestus::Postprocessors postprocessors;
-    hephaestus::AuxKernels auxkernels;
+    hephaestus::AuxSolvers postprocessors;
+    hephaestus::AuxSolvers preprocessors;
 
     hephaestus::Sources sources;
     mfem::VectorFunctionCoefficient *JSrcCoef =
@@ -120,7 +113,7 @@ protected:
     coilsegments[3] = 6;
     mfem::PWVectorCoefficient *JSrcRestricted =
         new mfem::PWVectorCoefficient(3, coilsegments, sourcecoefs);
-    domain_properties.vector_property_map["source"] = JSrcRestricted;
+    coefficients.vectors.Register("source", JSrcRestricted, true);
 
     hephaestus::InputParameters div_free_source_params;
     div_free_source_params.SetParam("SourceName", std::string("source"));
@@ -133,35 +126,22 @@ protected:
     current_solver_options.SetParam("PrintLevel", 0);
     div_free_source_params.SetParam("SolverOptions", current_solver_options);
     sources.Register(
-        "source",
-        new hephaestus::DivFreeVolumetricSource(div_free_source_params), true);
+        "source", new hephaestus::DivFreeSource(div_free_source_params), true);
 
     hephaestus::InputParameters solver_options;
     solver_options.SetParam("Tolerance", float(1.0e-16));
     solver_options.SetParam("MaxIter", (unsigned int)1000);
     solver_options.SetParam("PrintLevel", 0);
 
-    hephaestus::TransientFormulation *formulation =
-        new hephaestus::AFormulation();
-
     hephaestus::InputParameters params;
-    params.SetParam("TimeStep", float(0.001));
-    params.SetParam("StartTime", float(0.00));
-    params.SetParam("EndTime", float(0.002));
-    params.SetParam("VisualisationSteps", int(1));
-    params.SetParam("UseGLVis", false);
-
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
-    params.SetParam("Order", 2);
     params.SetParam("BoundaryConditions", bc_map);
-    params.SetParam("DomainProperties", domain_properties);
-    params.SetParam("FESpaces", fespaces);
+    params.SetParam("Coefficients", coefficients);
     params.SetParam("GridFunctions", gridfunctions);
-    params.SetParam("AuxKernels", auxkernels);
-    params.SetParam("Postprocessors", postprocessors);
+    params.SetParam("PreProcessors", preprocessors);
+    params.SetParam("PostProcessors", postprocessors);
     params.SetParam("Outputs", outputs);
     params.SetParam("Sources", sources);
-    params.SetParam("Formulation", formulation);
     params.SetParam("SolverOptions", solver_options);
     std::cout << "Created params ";
     return params;
@@ -171,9 +151,52 @@ protected:
 TEST_F(TestTeam7, CheckRun) {
   hephaestus::InputParameters params(test_params());
 
+  hephaestus::TimeDomainProblemBuilder *problem_builder =
+      new hephaestus::AFormulation();
+  hephaestus::BCMap bc_map(
+      params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
+  hephaestus::Coefficients coefficients(
+      params.GetParam<hephaestus::Coefficients>("Coefficients"));
+  hephaestus::AuxSolvers preprocessors(
+      params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
+  hephaestus::AuxSolvers postprocessors(
+      params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
+  hephaestus::Sources sources(params.GetParam<hephaestus::Sources>("Sources"));
+  hephaestus::Outputs outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
+  hephaestus::InputParameters solver_options(
+      params.GetOptionalParam<hephaestus::InputParameters>(
+          "SolverOptions", hephaestus::InputParameters()));
+
+  std::shared_ptr<mfem::ParMesh> pmesh =
+      std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
+  problem_builder->SetMesh(pmesh);
+  problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P2"));
+  problem_builder->AddFESpace(std::string("HDiv"), std::string("RT_3D_P0"));
+  problem_builder->AddGridFunction(std::string("magnetic_flux_density"),
+                                   std::string("HDiv"));
+  problem_builder->SetBoundaryConditions(bc_map);
+  problem_builder->SetAuxSolvers(preprocessors);
+  problem_builder->SetCoefficients(coefficients);
+  problem_builder->SetPostprocessors(postprocessors);
+  problem_builder->SetSources(sources);
+  problem_builder->SetOutputs(outputs);
+  problem_builder->SetSolverOptions(solver_options);
+
+  hephaestus::ProblemBuildSequencer sequencer(problem_builder);
+  sequencer.ConstructEquationSystemProblem();
+  std::unique_ptr<hephaestus::TimeDomainProblem> problem =
+      problem_builder->ReturnProblem();
+  hephaestus::InputParameters exec_params;
+  exec_params.SetParam("TimeStep", float(0.001));
+  exec_params.SetParam("StartTime", float(0.00));
+  exec_params.SetParam("EndTime", float(0.002));
+  exec_params.SetParam("VisualisationSteps", int(1));
+  exec_params.SetParam("UseGLVis", true);
+  exec_params.SetParam("Problem", problem.get());
   hephaestus::TransientExecutioner *executioner =
-      new hephaestus::TransientExecutioner(params);
+      new hephaestus::TransientExecutioner(exec_params);
+
   std::cout << "Created exec ";
   executioner->Init();
-  executioner->Solve();
+  executioner->Execute();
 }

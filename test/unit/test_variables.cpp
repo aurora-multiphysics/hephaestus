@@ -1,4 +1,4 @@
-#include "variables.hpp"
+#include "problem_builder.hpp"
 #include <gtest/gtest.h>
 
 extern const char *DATA_DIR;
@@ -6,29 +6,21 @@ extern const char *DATA_DIR;
 TEST(VariablesTest, CheckSetup) {
   mfem::Mesh mesh(
       (std::string(DATA_DIR) + std::string("./beam-tet.mesh")).c_str(), 1, 1);
-  mfem::ParMesh pmesh = mfem::ParMesh(MPI_COMM_WORLD, mesh);
+  hephaestus::TimeDomainProblemBuilder *problem_builder =
+      new hephaestus::TimeDomainProblemBuilder();
 
-  hephaestus::FESpaces fespaces;
-  hephaestus::GridFunctions gridfunctions;
+  std::shared_ptr<mfem::ParMesh> pmesh =
+      std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mesh);
+  problem_builder->SetMesh(pmesh);
+  problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P2"));
+  problem_builder->AddGridFunction(std::string("vector_potential"),
+                                   std::string("HCurl"));
+  std::unique_ptr<hephaestus::TimeDomainProblem> problem =
+      problem_builder->ReturnProblem();
 
-  hephaestus::InputParameters hcurlfespaceparams;
-  hcurlfespaceparams.SetParam("FESpaceName", std::string("HCurl"));
-  hcurlfespaceparams.SetParam("FESpaceType", std::string("ND"));
-  hcurlfespaceparams.SetParam("order", 2);
-  hcurlfespaceparams.SetParam("components", 3);
-  fespaces.StoreInput(hcurlfespaceparams);
-
-  hephaestus::InputParameters vectorpotentialparams;
-  vectorpotentialparams.SetParam("VariableName",
-                                 std::string("vector_potential"));
-  vectorpotentialparams.SetParam("FESpaceName", std::string("HCurl"));
-  gridfunctions.StoreInput(vectorpotentialparams);
-
-  fespaces.Init(pmesh);
-  gridfunctions.Init(pmesh, fespaces);
-
-  mfem::ParGridFunction *stored_gf = gridfunctions.Get("vector_potential");
-  mfem::ParFiniteElementSpace *stored_fespace = fespaces.Get("HCurl");
+  mfem::ParGridFunction *stored_gf =
+      problem->gridfunctions.Get("vector_potential");
+  mfem::ParFiniteElementSpace *stored_fespace = problem->fespaces.Get("HCurl");
 
   EXPECT_EQ(stored_fespace->GetVSize(), stored_gf->ParFESpace()->GetVSize());
   ASSERT_TRUE(stored_fespace->GetVSize() > 0);
