@@ -1,6 +1,6 @@
 # Build image containing Hephaestus dependencies
 # Get base image
-FROM ubuntu:latest
+FROM ubuntu:20.04
 
 # By default one core is used to compile
 ARG compile_cores=4
