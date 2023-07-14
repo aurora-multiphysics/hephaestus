@@ -79,13 +79,31 @@ if(BUILD_DOCUMENTATION)
         message(FATAL_ERROR "Doxygen is needed to build the documentation.")
     endif()
 
-    set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
-    set(doxyfile ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
-    configure_file(${doxyfile_in} ${doxyfile} @ONLY)
+    set(DOXYGEN_INPUT_DIR ${PROJECT_SOURCE_DIR}/src)
+    set(DOXYGEN_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/docs/doxygen)
+    set(DOXYGEN_INDEX_FILE ${DOXYGEN_OUTPUT_DIR}/html/index.html)
+    set(DOXYFILE_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
+    set(DOXYFILE_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
-    add_custom_target(doc
-        COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMENT "Generating API documentation with Doxygen"
-        VERBATIM)
+    configure_file(${DOXYFILE_IN} ${DOXYFILE_OUT} @ONLY)
+    file(MAKE_DIRECTORY ${DOXYGEN_OUTPUT_DIR})
+    add_custom_command(OUTPUT ${DOXYGEN_INDEX_FILE}
+                       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                       COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE_OUT}
+                       MAIN_DEPENDENCY ${DOXYFILE_OUT} ${DOXYFILE_IN}
+                       COMMENT "Generating API documentation with Doxygen")
+    add_custom_target(Doxygen ALL DEPENDS ${DOXYGEN_INDEX_FILE})
+
+    set(SPHINX_EXECUTABLE python -m sphinx.cmd.build)
+    set(SPHINX_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/docs)
+    set(SPHINX_BUILD ${CMAKE_CURRENT_BINARY_DIR}/docs/sphinx)
+
+    add_custom_target(Sphinx ALL
+                      COMMAND ${SPHINX_EXECUTABLE} -b html
+                      # Tell Breathe where to find the Doxygen output
+                      -Dbreathe_projects.hephaestus=${DOXYGEN_OUTPUT_DIR}/xml
+                      ${SPHINX_SOURCE} ${SPHINX_BUILD}
+                      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                      COMMENT "Generating documentation with Sphinx")
+
 endif()

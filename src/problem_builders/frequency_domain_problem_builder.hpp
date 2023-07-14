@@ -3,6 +3,8 @@
 #include "problem_builder_base.hpp"
 namespace hephaestus {
 
+/** Class that store objects associated with a set of PDEs to be solved in the
+ * frequency domain. */
 class FrequencyDomainProblem : public hephaestus::Problem {
 public:
   std::unique_ptr<hephaestus::EquationSystem> eq_sys;

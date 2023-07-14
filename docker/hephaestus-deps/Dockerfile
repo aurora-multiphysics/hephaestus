@@ -17,6 +17,9 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install 
     curl \
     doxygen \
     git \
+    graphviz \
+    locales \
+    locales-all \
     ninja-build \
     python3 \
     python3-dev \
@@ -40,7 +43,8 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install 
 RUN pip install packaging && \
     pip install pyyaml && \
     pip install setuptools && \
-    pip install jinja2
+    pip install jinja2 && \
+    pip install sphinx
 
 # Install CMake
 RUN cd /$WORKDIR && \
