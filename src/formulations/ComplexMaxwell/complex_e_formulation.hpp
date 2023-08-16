@@ -26,6 +26,10 @@ should be performed on J꜀ᵉ before use in this operator.
 */
 class ComplexEFormulation : public hephaestus::ComplexMaxwellFormulation {
 public:
-  ComplexEFormulation();
+  ComplexEFormulation(const std::string &magnetic_reluctivity_name,
+                      const std::string &electric_conductivity_name,
+                      const std::string &dielectric_permittivity_name,
+                      const std::string &frequency_coef_name,
+                      const std::string &e_field_name);
 };
 } // namespace hephaestus

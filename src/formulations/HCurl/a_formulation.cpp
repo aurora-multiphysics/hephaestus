@@ -17,11 +17,13 @@
 
 namespace hephaestus {
 
-AFormulation::AFormulation() : HCurlFormulation() {
-  alpha_coef_name = std::string("magnetic_reluctivity");
-  beta_coef_name = std::string("electrical_conductivity");
-  h_curl_var_name = std::string("magnetic_vector_potential");
-}
+AFormulation::AFormulation(const std::string &magnetic_reluctivity_name,
+                           const std::string &magnetic_permeability_name,
+                           const std::string &electric_conductivity_name,
+                           const std::string &magnetic_vector_potential_name)
+    : HCurlFormulation(magnetic_reluctivity_name, electric_conductivity_name,
+                       magnetic_vector_potential_name),
+      _magnetic_permeability_name(magnetic_permeability_name) {}
 
 void AFormulation::RegisterAuxSolvers() {
   hephaestus::GridFunctions &gridfunctions = this->GetProblem()->gridfunctions;
@@ -30,7 +32,7 @@ void AFormulation::RegisterAuxSolvers() {
   std::string b_field_name = "magnetic_flux_density";
   if (gridfunctions.Get(b_field_name) != NULL) {
     hephaestus::InputParameters b_field_aux_params;
-    b_field_aux_params.SetParam("VariableName", h_curl_var_name);
+    b_field_aux_params.SetParam("VariableName", _h_curl_var_name);
     b_field_aux_params.SetParam("CurlVariableName", b_field_name);
     auxsolvers.Register("_magnetic_flux_density_aux",
                         new hephaestus::CurlAuxSolver(b_field_aux_params),
@@ -40,16 +42,16 @@ void AFormulation::RegisterAuxSolvers() {
 
 void AFormulation::RegisterCoefficients() {
   hephaestus::Coefficients &coefficients = this->GetProblem()->coefficients;
-  if (!coefficients.scalars.Has("magnetic_permeability")) {
-    MFEM_ABORT("magnetic_permeability coefficient not found.");
+  if (!coefficients.scalars.Has(_magnetic_permeability_name)) {
+    MFEM_ABORT(_magnetic_permeability_name + " coefficient not found.");
   }
-  if (!coefficients.scalars.Has("electrical_conductivity")) {
-    MFEM_ABORT("electrical_conductivity coefficient not found.");
+  if (!coefficients.scalars.Has(_electric_conductivity_name)) {
+    MFEM_ABORT(_electric_conductivity_name + " coefficient not found.");
   }
   coefficients.scalars.Register(
-      alpha_coef_name,
+      _magnetic_reluctivity_name,
       new mfem::TransformedCoefficient(
-          &oneCoef, coefficients.scalars.Get("magnetic_permeability"),
+          &oneCoef, coefficients.scalars.Get(_magnetic_permeability_name),
           fracFunc),
       true);
 }

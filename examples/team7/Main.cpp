@@ -120,7 +120,9 @@ int main(int argc, char *argv[]) {
 
   // Create Formulation
   hephaestus::TimeDomainProblemBuilder *problem_builder =
-      new hephaestus::AFormulation();
+      new hephaestus::AFormulation(
+          "magnetic_reluctivity", "magnetic_permeability",
+          "electrical_conductivity", "magnetic_vector_potential");
   // Set Mesh
   mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team7.g")).c_str(), 1,
                   1);

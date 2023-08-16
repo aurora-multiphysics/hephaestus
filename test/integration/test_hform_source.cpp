@@ -170,7 +170,9 @@ TEST_F(TestHFormSource, CheckRun) {
       pmesh->UniformRefinement();
     }
     hephaestus::TimeDomainProblemBuilder *problem_builder =
-        new hephaestus::HFormulation();
+        new hephaestus::HFormulation("electrical_resistivity",
+                                     "electrical_conductivity",
+                                     "magnetic_permeability", "magnetic_field");
     hephaestus::BCMap bc_map(
         params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
     hephaestus::Coefficients coefficients(

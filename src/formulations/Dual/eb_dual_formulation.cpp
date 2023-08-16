@@ -2,29 +2,27 @@
 
 namespace hephaestus {
 
-EBDualFormulation::EBDualFormulation() : DualFormulation() {
-  alpha_coef_name = std::string("magnetic_reluctivity");
-  beta_coef_name = std::string("electrical_conductivity");
-  h_curl_var_name = std::string("electric_field");
-  h_div_var_name = std::string("magnetic_flux_density");
-}
+EBDualFormulation::EBDualFormulation(
+    const std::string &magnetic_reluctivity_name,
+    const std::string &magnetic_permeability_name,
+    const std::string &electric_conductivity_name,
+    const std::string &e_field_name, const std::string &b_field_name)
+    : DualFormulation(magnetic_reluctivity_name, electric_conductivity_name,
+                      e_field_name, b_field_name),
+      _magnetic_permeability_name(magnetic_permeability_name) {}
 
 void EBDualFormulation::RegisterCoefficients() {
   hephaestus::Coefficients &coefficients = this->GetProblem()->coefficients;
-
-  if (!coefficients.scalars.Has("magnetic_permeability")) {
-    MFEM_ABORT("magnetic_permeability coefficient not found.");
+  if (!coefficients.scalars.Has(_magnetic_permeability_name)) {
+    MFEM_ABORT(_magnetic_permeability_name + " coefficient not found.");
   }
-  if (!coefficients.scalars.Has(beta_coef_name)) {
-    MFEM_ABORT(beta_coef_name + " coefficient not found.");
-  }
-
   coefficients.scalars.Register(
-      alpha_coef_name,
+      _magnetic_reluctivity_name,
       new mfem::TransformedCoefficient(
-          &oneCoef, coefficients.scalars.Get("magnetic_permeability"),
+          &oneCoef, coefficients.scalars.Get(_magnetic_permeability_name),
           fracFunc),
       true);
+  DualFormulation::RegisterCoefficients();
 }
 
 } // namespace hephaestus

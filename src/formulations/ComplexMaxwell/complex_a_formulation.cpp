@@ -2,14 +2,16 @@
 
 namespace hephaestus {
 
-ComplexAFormulation::ComplexAFormulation() : ComplexMaxwellFormulation() {
-  frequency_coef_name = std::string("frequency");
-  h_curl_var_name = std::string("magnetic_vector_potential");
-
-  alpha_coef_name = std::string("magnetic_reluctivity");
-  beta_coef_name = std::string("electrical_conductivity");
-  zeta_coef_name = std::string("dielectric_permittivity");
-};
+ComplexAFormulation::ComplexAFormulation(
+    const std::string &magnetic_reluctivity_name,
+    const std::string &electric_conductivity_name,
+    const std::string &dielectric_permittivity_name,
+    const std::string &frequency_coef_name,
+    const std::string &magnetic_vector_potential_name)
+    : ComplexMaxwellFormulation(
+          magnetic_reluctivity_name, electric_conductivity_name,
+          dielectric_permittivity_name, frequency_coef_name,
+          magnetic_vector_potential_name){};
 
 void ComplexAFormulation::RegisterAuxSolvers() {
   hephaestus::Coefficients &coefficients = this->GetProblem()->coefficients;
@@ -23,13 +25,13 @@ void ComplexAFormulation::RegisterAuxSolvers() {
               << " found in gridfunctions: building auxvar " << std::endl;
     // }
     hephaestus::InputParameters b_field_aux_params;
-    b_field_aux_params.SetParam("VariableName", h_curl_var_name + "_real");
+    b_field_aux_params.SetParam("VariableName", _h_curl_var_name + "_real");
     b_field_aux_params.SetParam("CurlVariableName", b_field_name + "_real");
     auxsolvers.Register("_magnetic_flux_density_re_aux",
                         new hephaestus::CurlAuxSolver(b_field_aux_params),
                         true);
 
-    b_field_aux_params.SetParam("VariableName", h_curl_var_name + "_imag");
+    b_field_aux_params.SetParam("VariableName", _h_curl_var_name + "_imag");
     b_field_aux_params.SetParam("CurlVariableName", b_field_name + "_imag");
     auxsolvers.Register("_magnetic_flux_density_im_aux",
                         new hephaestus::CurlAuxSolver(b_field_aux_params),
@@ -46,14 +48,16 @@ void ComplexAFormulation::RegisterAuxSolvers() {
     hephaestus::InputParameters e_field_aux_params;
     e_field_aux_params.SetParam("CoefficientName",
                                 std::string("_neg_angular_frequency"));
-    e_field_aux_params.SetParam("InputVariableName", h_curl_var_name + "_real");
+    e_field_aux_params.SetParam("InputVariableName",
+                                _h_curl_var_name + "_real");
     e_field_aux_params.SetParam("ScaledVariableName", e_field_name + "_imag");
     auxsolvers.Register(
         "_electric_field_re_aux",
         new hephaestus::ScaledGridFunctionAuxSolver(e_field_aux_params), true);
     e_field_aux_params.SetParam("CoefficientName",
                                 std::string("_angular_frequency"));
-    e_field_aux_params.SetParam("InputVariableName", h_curl_var_name + "_imag");
+    e_field_aux_params.SetParam("InputVariableName",
+                                _h_curl_var_name + "_imag");
     e_field_aux_params.SetParam("ScaledVariableName", e_field_name + "_real");
     auxsolvers.Register(
         "_electric_field_im_aux",

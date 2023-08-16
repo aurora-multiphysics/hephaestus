@@ -62,11 +62,20 @@ class ComplexMaxwellFormulation
     : public hephaestus::FrequencyDomainFormulation {
   // std::vector<mfem::ParGridFunction *> local_trial_vars, local_test_vars;
 protected:
-  std::string frequency_coef_name, h_curl_var_name, alpha_coef_name,
-      beta_coef_name, zeta_coef_name, mass_coef_name, loss_coef_name;
+  const std::string _alpha_coef_name;
+  const std::string _beta_coef_name;
+  const std::string _zeta_coef_name;
+  const std::string _frequency_coef_name;
+  const std::string _h_curl_var_name;
+  const std::string _mass_coef_name;
+  const std::string _loss_coef_name;
 
 public:
-  ComplexMaxwellFormulation();
+  ComplexMaxwellFormulation(const std::string &frequency_coef_name,
+                            const std::string &alpha_coef_name,
+                            const std::string &beta_coef_name,
+                            const std::string &zeta_coef_name,
+                            const std::string &h_curl_var_name);
 
   virtual void ConstructOperator() override;
 

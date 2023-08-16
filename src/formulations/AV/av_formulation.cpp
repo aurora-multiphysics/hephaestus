@@ -30,19 +30,23 @@
 
 namespace hephaestus {
 
-AVFormulation::AVFormulation() : TimeDomainFormulation() {
-  alpha_coef_name = std::string("magnetic_reluctivity");
-  beta_coef_name = std::string("electrical_conductivity");
-  vector_potential_name = std::string("magnetic_vector_potential");
-  scalar_potential_name = std::string("electric_potential");
-}
+AVFormulation::AVFormulation(const std::string &alpha_coef_name,
+                             const std::string &inv_alpha_coef_name,
+                             const std::string &beta_coef_name,
+                             const std::string &vector_potential_name,
+                             const std::string &scalar_potential_name)
+    : TimeDomainFormulation(), _alpha_coef_name(alpha_coef_name),
+      _inv_alpha_coef_name(inv_alpha_coef_name),
+      _beta_coef_name(beta_coef_name),
+      _vector_potential_name(vector_potential_name),
+      _scalar_potential_name(scalar_potential_name) {}
 
 void AVFormulation::ConstructEquationSystem() {
   hephaestus::InputParameters av_system_params;
-  av_system_params.SetParam("VectorPotentialName", vector_potential_name);
-  av_system_params.SetParam("ScalarPotentialName", scalar_potential_name);
-  av_system_params.SetParam("AlphaCoefName", alpha_coef_name);
-  av_system_params.SetParam("BetaCoefName", beta_coef_name);
+  av_system_params.SetParam("VectorPotentialName", _vector_potential_name);
+  av_system_params.SetParam("ScalarPotentialName", _scalar_potential_name);
+  av_system_params.SetParam("AlphaCoefName", _alpha_coef_name);
+  av_system_params.SetParam("BetaCoefName", _beta_coef_name);
   this->GetProblem()->td_equation_system =
       std::make_unique<hephaestus::AVEquationSystem>(av_system_params);
 }
@@ -63,25 +67,25 @@ void AVFormulation::RegisterGridFunctions() {
   hephaestus::GridFunctions &gridfunctions = this->GetProblem()->gridfunctions;
 
   // Register default ParGridFunctions of state gridfunctions if not provided
-  if (!gridfunctions.Has(vector_potential_name)) {
+  if (!gridfunctions.Has(_vector_potential_name)) {
     if (myid == 0) {
-      MFEM_WARNING(vector_potential_name
+      MFEM_WARNING(_vector_potential_name
                    << " not found in gridfunctions: building gridfunction from "
                       "defaults");
     }
     AddFESpace(std::string("_HCurlFESpace"), std::string("ND_3D_P2"));
-    AddGridFunction(vector_potential_name, std::string("_HCurlFESpace"));
+    AddGridFunction(_vector_potential_name, std::string("_HCurlFESpace"));
   }
 
   // Register default ParGridFunctions of state gridfunctions if not provided
-  if (!gridfunctions.Has(scalar_potential_name)) {
+  if (!gridfunctions.Has(_scalar_potential_name)) {
     if (myid == 0) {
-      MFEM_WARNING(scalar_potential_name
+      MFEM_WARNING(_scalar_potential_name
                    << " not found in gridfunctions: building gridfunction from "
                       "defaults");
     }
     AddFESpace(std::string("_H1FESpace"), std::string("H1_3D_P2"));
-    AddGridFunction(scalar_potential_name, std::string("_H1FESpace"));
+    AddGridFunction(_scalar_potential_name, std::string("_H1FESpace"));
   }
 
   // Register time derivatives
@@ -90,18 +94,17 @@ void AVFormulation::RegisterGridFunctions() {
 
 void AVFormulation::RegisterCoefficients() {
   hephaestus::Coefficients &coefficients = this->GetProblem()->coefficients;
-  if (!coefficients.scalars.Has("magnetic_permeability")) {
-    MFEM_ABORT("Magnetic permeability coefficient not found.");
+  if (!coefficients.scalars.Has(_inv_alpha_coef_name)) {
+    MFEM_ABORT(_inv_alpha_coef_name + " coefficient not found.");
   }
-  if (!coefficients.scalars.Has(beta_coef_name)) {
-    MFEM_ABORT(beta_coef_name + " coefficient not found.");
+  if (!coefficients.scalars.Has(_beta_coef_name)) {
+    MFEM_ABORT(_beta_coef_name + " coefficient not found.");
   }
 
   coefficients.scalars.Register(
-      alpha_coef_name,
+      _alpha_coef_name,
       new mfem::TransformedCoefficient(
-          &oneCoef, coefficients.scalars.Get("magnetic_permeability"),
-          fracFunc),
+          &oneCoef, coefficients.scalars.Get(_inv_alpha_coef_name), fracFunc),
       true);
 }
 
