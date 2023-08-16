@@ -7,7 +7,10 @@ namespace hephaestus {
 
 class DualFormulation : public TimeDomainFormulation {
 public:
-  DualFormulation();
+  DualFormulation(const std::string &alpha_coef_name,
+                  const std::string &beta_coef_name,
+                  const std::string &h_curl_var_name,
+                  const std::string &h_div_var_name);
 
   virtual void ConstructEquationSystem() override;
 
@@ -18,7 +21,10 @@ public:
   virtual void RegisterCoefficients() override;
 
 protected:
-  std::string h_curl_var_name, h_div_var_name, alpha_coef_name, beta_coef_name;
+  const std::string _alpha_coef_name;
+  const std::string _beta_coef_name;
+  const std::string _h_curl_var_name;
+  const std::string _h_div_var_name;
 };
 
 class WeakCurlEquationSystem : public TimeDependentEquationSystem {
@@ -31,8 +37,8 @@ public:
                     hephaestus::Coefficients &coefficients) override;
   virtual void addKernels() override;
 
-  std::string h_curl_var_name, h_div_var_name, alpha_coef_name, beta_coef_name,
-      dtalpha_coef_name;
+  std::string _h_curl_var_name, _h_div_var_name, _alpha_coef_name,
+      _beta_coef_name, _dtalpha_coef_name;
 };
 
 class DualOperator : public TimeDomainEquationSystemOperator {
@@ -54,7 +60,7 @@ public:
   mfem::ParFiniteElementSpace *HCurlFESpace_;
   mfem::ParFiniteElementSpace *HDivFESpace_;
 
-  std::string h_curl_var_name, h_div_var_name;
+  std::string _h_curl_var_name, _h_div_var_name;
 
   mfem::ParGridFunction *u_;  // HCurl vector field
   mfem::ParGridFunction *dv_; // HDiv vector field

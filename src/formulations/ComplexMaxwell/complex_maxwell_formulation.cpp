@@ -97,25 +97,24 @@ void ComplexMaxwellOperator::Solve(mfem::Vector &X) {
   *_gridfunctions.Get(state_var_names.at(1)) = u_->imag();
 }
 
-ComplexMaxwellFormulation::ComplexMaxwellFormulation()
-    : FrequencyDomainFormulation() {
-  frequency_coef_name = std::string("frequency");
-  h_curl_var_name = std::string("h_curl_var");
-  mass_coef_name = std::string("maxwell_mass");
-  loss_coef_name = std::string("maxwell_loss");
-
-  zeta_coef_name = std::string("zeta");
-  alpha_coef_name = std::string("alpha");
-  beta_coef_name = std::string("beta");
-}
+ComplexMaxwellFormulation::ComplexMaxwellFormulation(
+    const std::string &alpha_coef_name, const std::string &beta_coef_name,
+    const std::string &zeta_coef_name, const std::string &frequency_coef_name,
+    const std::string &h_curl_var_name)
+    : FrequencyDomainFormulation(), _alpha_coef_name(alpha_coef_name),
+      _beta_coef_name(beta_coef_name), _zeta_coef_name(zeta_coef_name),
+      _frequency_coef_name(frequency_coef_name),
+      _h_curl_var_name(h_curl_var_name),
+      _mass_coef_name(std::string("maxwell_mass")),
+      _loss_coef_name(std::string("maxwell_loss")) {}
 
 void ComplexMaxwellFormulation::ConstructOperator() {
   hephaestus::InputParameters &solver_options =
       this->GetProblem()->solver_options;
-  solver_options.SetParam("HCurlVarName", h_curl_var_name);
-  solver_options.SetParam("StiffnessCoefName", alpha_coef_name);
-  solver_options.SetParam("MassCoefName", mass_coef_name);
-  solver_options.SetParam("LossCoefName", loss_coef_name);
+  solver_options.SetParam("HCurlVarName", _h_curl_var_name);
+  solver_options.SetParam("StiffnessCoefName", _alpha_coef_name);
+  solver_options.SetParam("MassCoefName", _mass_coef_name);
+  solver_options.SetParam("LossCoefName", _loss_coef_name);
   this->problem->fd_operator =
       std::make_unique<hephaestus::ComplexMaxwellOperator>(
           *(this->problem->pmesh), this->problem->fespaces,
@@ -131,35 +130,35 @@ void ComplexMaxwellFormulation::RegisterGridFunctions() {
   hephaestus::FESpaces &fespaces = this->GetProblem()->fespaces;
 
   // Register default ParGridFunctions of state gridfunctions if not provided
-  if (!gridfunctions.Has(h_curl_var_name + "_real")) {
+  if (!gridfunctions.Has(_h_curl_var_name + "_real")) {
     if (myid == 0) {
-      MFEM_WARNING(h_curl_var_name << " not found in gridfunctions: building "
-                                      "gridfunction from defaults");
+      MFEM_WARNING(_h_curl_var_name << " not found in gridfunctions: building "
+                                       "gridfunction from defaults");
     }
     AddFESpace(std::string("_HCurlFESpace"), std::string("ND_3D_P1"));
-    AddGridFunction(h_curl_var_name + "_real", std::string("_HCurlFESpace"));
-    AddGridFunction(h_curl_var_name + "_imag", std::string("_HCurlFESpace"));
+    AddGridFunction(_h_curl_var_name + "_real", std::string("_HCurlFESpace"));
+    AddGridFunction(_h_curl_var_name + "_imag", std::string("_HCurlFESpace"));
   };
 }
 
 void ComplexMaxwellFormulation::RegisterCoefficients() {
   hephaestus::Coefficients &coefficients = this->GetProblem()->coefficients;
 
-  if (!coefficients.scalars.Has(frequency_coef_name)) {
-    MFEM_ABORT(frequency_coef_name + " coefficient not found.");
+  if (!coefficients.scalars.Has(_frequency_coef_name)) {
+    MFEM_ABORT(_frequency_coef_name + " coefficient not found.");
   }
   if (!coefficients.scalars.Has("magnetic_permeability")) {
     MFEM_ABORT("Magnetic permeability coefficient not found.");
   }
-  if (!coefficients.scalars.Has(beta_coef_name)) {
-    MFEM_ABORT(beta_coef_name + " coefficient not found.");
+  if (!coefficients.scalars.Has(_beta_coef_name)) {
+    MFEM_ABORT(_beta_coef_name + " coefficient not found.");
   }
-  if (!coefficients.scalars.Has(zeta_coef_name)) {
-    MFEM_ABORT(zeta_coef_name + " coefficient not found.");
+  if (!coefficients.scalars.Has(_zeta_coef_name)) {
+    MFEM_ABORT(_zeta_coef_name + " coefficient not found.");
   }
 
   freqCoef = dynamic_cast<mfem::ConstantCoefficient *>(
-      coefficients.scalars.Get(frequency_coef_name));
+      coefficients.scalars.Get(_frequency_coef_name));
 
   // define transformed
   coefficients.scalars.Register(
@@ -178,21 +177,21 @@ void ComplexMaxwellFormulation::RegisterCoefficients() {
       true);
 
   coefficients.scalars.Register(
-      mass_coef_name,
+      _mass_coef_name,
       new mfem::TransformedCoefficient(
           coefficients.scalars.Get("_neg_angular_frequency_sq"),
-          coefficients.scalars.Get(zeta_coef_name), prodFunc),
+          coefficients.scalars.Get(_zeta_coef_name), prodFunc),
       true);
 
   coefficients.scalars.Register(
-      loss_coef_name,
+      _loss_coef_name,
       new mfem::TransformedCoefficient(
           coefficients.scalars.Get("_angular_frequency"),
-          coefficients.scalars.Get(beta_coef_name), prodFunc),
+          coefficients.scalars.Get(_beta_coef_name), prodFunc),
       true);
 
   coefficients.scalars.Register(
-      alpha_coef_name,
+      _alpha_coef_name,
       new mfem::TransformedCoefficient(
           &oneCoef, coefficients.scalars.Get("magnetic_permeability"),
           fracFunc),

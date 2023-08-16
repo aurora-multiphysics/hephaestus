@@ -93,7 +93,9 @@ protected:
     hephaestus::Sources sources;
 
     hephaestus::FrequencyDomainFormulation *formulation =
-        new hephaestus::ComplexEFormulation();
+        new hephaestus::ComplexEFormulation(
+            "magnetic_reluctivity", "electrical_conductivity",
+            "dielectric_permittivity", "frequency", "electric_field");
 
     hephaestus::InputParameters solver_options;
     solver_options.SetParam("Tolerance", float(1.0e-16));
@@ -113,7 +115,6 @@ protected:
     params.SetParam("Outputs", outputs);
     params.SetParam("Sources", sources);
     params.SetParam("SolverOptions", solver_options);
-    params.SetParam("Formulation", formulation);
 
     return params;
   }
@@ -125,7 +126,9 @@ TEST_F(TestComplexERMESMouse, CheckRun) {
       std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
 
   hephaestus::FrequencyDomainProblemBuilder *problem_builder =
-      new hephaestus::ComplexEFormulation();
+      new hephaestus::ComplexEFormulation(
+          "magnetic_reluctivity", "electrical_conductivity",
+          "dielectric_permittivity", "frequency", "electric_field");
   hephaestus::BCMap bc_map(
       params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
   hephaestus::Coefficients coefficients(

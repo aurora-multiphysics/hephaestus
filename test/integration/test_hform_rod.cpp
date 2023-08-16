@@ -135,7 +135,9 @@ TEST_F(TestHFormRod, CheckRun) {
       std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
 
   hephaestus::TimeDomainProblemBuilder *problem_builder =
-      new hephaestus::HFormulation();
+      new hephaestus::HFormulation("electrical_resistivity",
+                                   "electrical_conductivity",
+                                   "magnetic_permeability", "magnetic_field");
   hephaestus::BCMap bc_map(
       params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
   hephaestus::Coefficients coefficients(

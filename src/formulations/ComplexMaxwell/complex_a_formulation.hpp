@@ -27,7 +27,11 @@ should be performed on J before use in this operator.
 class ComplexAFormulation : public hephaestus::ComplexMaxwellFormulation {
 
 public:
-  ComplexAFormulation();
+  ComplexAFormulation(const std::string &magnetic_reluctivity_name,
+                      const std::string &electric_conductivity_name,
+                      const std::string &dielectric_permittivity_name,
+                      const std::string &frequency_coef_name,
+                      const std::string &magnetic_vector_potential_name);
 
   virtual void RegisterAuxSolvers() override;
 };

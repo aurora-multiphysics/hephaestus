@@ -15,11 +15,13 @@
 
 namespace hephaestus {
 
-HFormulation::HFormulation() : HCurlFormulation() {
-  alpha_coef_name = std::string("electrical_resistivity");
-  beta_coef_name = std::string("magnetic_permeability");
-  h_curl_var_name = std::string("magnetic_field");
-}
+HFormulation::HFormulation(const std::string &electric_resistivity_name,
+                           const std::string &electric_conductivity_name,
+                           const std::string &magnetic_permeability_name,
+                           const std::string &h_field_name)
+    : HCurlFormulation(electric_resistivity_name, magnetic_permeability_name,
+                       h_field_name),
+      _electric_conductivity_name(electric_conductivity_name) {}
 
 void HFormulation::RegisterAuxSolvers() {
   hephaestus::GridFunctions &gridfunctions = this->GetProblem()->gridfunctions;
@@ -38,19 +40,16 @@ void HFormulation::RegisterAuxSolvers() {
 
 void HFormulation::RegisterCoefficients() {
   hephaestus::Coefficients &coefficients = this->GetProblem()->coefficients;
-  if (!coefficients.scalars.Has("magnetic_permeability")) {
-    MFEM_ABORT("magnetic_permeability coefficient not found.");
+  if (!coefficients.scalars.Has(_electric_conductivity_name)) {
+    MFEM_ABORT(_electric_conductivity_name + " coefficient not found.");
   }
-  if (!coefficients.scalars.Has("electrical_conductivity")) {
-    MFEM_ABORT("electrical_conductivity coefficient not found.");
-  }
-
   coefficients.scalars.Register(
-      alpha_coef_name,
+      _electric_resistivity_name,
       new mfem::TransformedCoefficient(
-          &oneCoef, coefficients.scalars.Get("electrical_conductivity"),
+          &oneCoef, coefficients.scalars.Get(_electric_conductivity_name),
           fracFunc),
       true);
+  HCurlFormulation::RegisterCoefficients();
 }
 
 } // namespace hephaestus

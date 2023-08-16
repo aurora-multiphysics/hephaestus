@@ -89,9 +89,6 @@ protected:
     hephaestus::AuxSolvers preprocessors;
     hephaestus::Sources sources;
 
-    hephaestus::TimeDomainFormulation *formulation =
-        new hephaestus::AVFormulation();
-
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("BoundaryConditions", bc_map);
@@ -102,7 +99,6 @@ protected:
     params.SetParam("PostProcessors", postprocessors);
     params.SetParam("Outputs", outputs);
     params.SetParam("Sources", sources);
-    params.SetParam("Formulation", formulation);
 
     return params;
   }
@@ -114,7 +110,10 @@ TEST_F(TestAVFormRod, CheckRun) {
       std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
 
   hephaestus::TimeDomainProblemBuilder *problem_builder =
-      new hephaestus::AVFormulation();
+      new hephaestus::AVFormulation(
+          "magnetic_reluctivity", "magnetic_permeability",
+          "electrical_conductivity", "magnetic_vector_potential",
+          "electric_potential");
   hephaestus::BCMap bc_map(
       params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
   hephaestus::Coefficients coefficients(

@@ -40,17 +40,17 @@
 
 namespace hephaestus {
 
-HCurlFormulation::HCurlFormulation() : TimeDomainFormulation() {
-  alpha_coef_name = std::string("alpha");
-  beta_coef_name = std::string("beta");
-  h_curl_var_name = std::string("h_curl_var");
-}
+HCurlFormulation::HCurlFormulation(const std::string &alpha_coef_name,
+                                   const std::string &beta_coef_name,
+                                   const std::string &h_curl_var_name)
+    : TimeDomainFormulation(), _alpha_coef_name(alpha_coef_name),
+      _beta_coef_name(beta_coef_name), _h_curl_var_name(h_curl_var_name) {}
 
 void HCurlFormulation::ConstructEquationSystem() {
   hephaestus::InputParameters weak_form_params;
-  weak_form_params.SetParam("HCurlVarName", h_curl_var_name);
-  weak_form_params.SetParam("AlphaCoefName", alpha_coef_name);
-  weak_form_params.SetParam("BetaCoefName", beta_coef_name);
+  weak_form_params.SetParam("HCurlVarName", _h_curl_var_name);
+  weak_form_params.SetParam("AlphaCoefName", _alpha_coef_name);
+  weak_form_params.SetParam("BetaCoefName", _beta_coef_name);
   this->GetProblem()->td_equation_system =
       std::make_unique<hephaestus::CurlCurlEquationSystem>(weak_form_params);
 }
@@ -72,13 +72,13 @@ void HCurlFormulation::RegisterGridFunctions() {
   hephaestus::FESpaces &fespaces = this->GetProblem()->fespaces;
 
   // Register default ParGridFunctions of state gridfunctions if not provided
-  if (!gridfunctions.Has(h_curl_var_name)) {
+  if (!gridfunctions.Has(_h_curl_var_name)) {
     if (myid == 0) {
-      MFEM_WARNING(h_curl_var_name << " not found in gridfunctions: building "
-                                      "gridfunction from defaults");
+      MFEM_WARNING(_h_curl_var_name << " not found in gridfunctions: building "
+                                       "gridfunction from defaults");
     }
     AddFESpace(std::string("_HCurlFESpace"), std::string("ND_3D_P2"));
-    AddGridFunction(h_curl_var_name, std::string("_HCurlFESpace"));
+    AddGridFunction(_h_curl_var_name, std::string("_HCurlFESpace"));
   };
   // Register time derivatives
   TimeDomainProblemBuilder::RegisterGridFunctions();
@@ -130,11 +130,11 @@ void CurlCurlEquationSystem::addKernels() {
 
 void HCurlFormulation::RegisterCoefficients() {
   hephaestus::Coefficients &coefficients = this->GetProblem()->coefficients;
-  if (!coefficients.scalars.Has(alpha_coef_name)) {
-    MFEM_ABORT(alpha_coef_name + " coefficient not found.");
+  if (!coefficients.scalars.Has(_alpha_coef_name)) {
+    MFEM_ABORT(_alpha_coef_name + " coefficient not found.");
   }
-  if (!coefficients.scalars.Has(beta_coef_name)) {
-    MFEM_ABORT(beta_coef_name + " coefficient not found.");
+  if (!coefficients.scalars.Has(_beta_coef_name)) {
+    MFEM_ABORT(_beta_coef_name + " coefficient not found.");
   }
 }
 

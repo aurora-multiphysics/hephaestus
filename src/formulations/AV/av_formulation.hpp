@@ -7,11 +7,12 @@
 namespace hephaestus {
 
 class AVFormulation : public TimeDomainFormulation {
-  std::string vector_potential_name, scalar_potential_name, alpha_coef_name,
-      beta_coef_name;
-
 public:
-  AVFormulation();
+  AVFormulation(const std::string &alpha_coef_name,
+                const std::string &inv_alpha_coef_name,
+                const std::string &beta_coef_name,
+                const std::string &vector_potential_name,
+                const std::string &scalar_potential_name);
 
   virtual void ConstructEquationSystem() override;
 
@@ -20,6 +21,13 @@ public:
   virtual void RegisterGridFunctions() override;
 
   virtual void RegisterCoefficients() override;
+
+protected:
+  const std::string _alpha_coef_name;
+  const std::string _inv_alpha_coef_name;
+  const std::string _beta_coef_name;
+  const std::string _vector_potential_name;
+  const std::string _scalar_potential_name;
 };
 
 class AVEquationSystem : public TimeDependentEquationSystem {

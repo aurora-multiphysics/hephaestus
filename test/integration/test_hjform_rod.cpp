@@ -135,7 +135,9 @@ protected:
 TEST_F(TestHJFormRod, CheckRun) {
   hephaestus::InputParameters params(test_params());
   hephaestus::TimeDomainProblemBuilder *problem_builder =
-      new hephaestus::HJDualFormulation();
+      new hephaestus::HJDualFormulation(
+          "electrical_resistivity", "electrical_conductivity",
+          "magnetic_permeability", "magnetic_field", "current_density");
   hephaestus::BCMap bc_map(
       params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
   hephaestus::Coefficients coefficients(

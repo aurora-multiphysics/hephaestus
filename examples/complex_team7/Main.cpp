@@ -122,7 +122,9 @@ int main(int argc, char *argv[]) {
 
   // Create Formulation
   hephaestus::FrequencyDomainProblemBuilder *problem_builder =
-      new hephaestus::ComplexAFormulation();
+      new hephaestus::ComplexAFormulation(
+          "magnetic_reluctivity", "electrical_conductivity",
+          "dielectric_permittivity", "frequency", "magnetic_vector_potential");
   // Set Mesh
   mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team7.g")).c_str(), 1,
                   1);

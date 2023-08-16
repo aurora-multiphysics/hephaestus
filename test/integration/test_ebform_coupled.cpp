@@ -173,7 +173,9 @@ protected:
 TEST_F(TestEBFormCoupled, CheckRun) {
   hephaestus::InputParameters params(test_params());
   hephaestus::TimeDomainProblemBuilder *problem_builder =
-      new hephaestus::EBDualFormulation();
+      new hephaestus::EBDualFormulation(
+          "magnetic_reluctivity", "magnetic_permeability",
+          "electrical_conductivity", "electric_field", "magnetic_flux_density");
   hephaestus::BCMap bc_map(
       params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
   hephaestus::Coefficients coefficients(

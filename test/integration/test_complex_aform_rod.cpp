@@ -139,7 +139,9 @@ TEST_F(TestComplexAFormRod, CheckRun) {
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
   hephaestus::FrequencyDomainProblemBuilder *problem_builder =
-      new hephaestus::ComplexAFormulation();
+      new hephaestus::ComplexAFormulation(
+          "magnetic_reluctivity", "electrical_conductivity",
+          "dielectric_permittivity", "frequency", "magnetic_vector_potential");
   hephaestus::BCMap bc_map(
       params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
   hephaestus::Coefficients coefficients(

@@ -8,7 +8,9 @@ namespace hephaestus {
 
 class HCurlFormulation : public TimeDomainFormulation {
 public:
-  HCurlFormulation();
+  HCurlFormulation(const std::string &alpha_coef_name,
+                   const std::string &beta_coef_name,
+                   const std::string &h_curl_var_name);
 
   virtual void ConstructEquationSystem() override;
 
@@ -19,7 +21,9 @@ public:
   virtual void RegisterCoefficients() override;
 
 protected:
-  std::string h_curl_var_name, alpha_coef_name, beta_coef_name;
+  const std::string _alpha_coef_name;
+  const std::string _beta_coef_name;
+  const std::string _h_curl_var_name;
 };
 
 class CurlCurlEquationSystem : public TimeDependentEquationSystem {
