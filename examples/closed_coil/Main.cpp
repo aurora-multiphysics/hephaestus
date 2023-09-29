@@ -14,10 +14,10 @@ int main(int argc, char *argv[]) {
     double Jtotal = 10;
 
     // Attribute that defines the internal face over which we apply the potential difference
-    int electrode_attr = 7;
+    int electrode_attr = 1;
 
     // Mesh file
-    std::string mesh_filename = "team7.g";
+    std::string mesh_filename = "torus.exo";
 
 
     mfem::OptionsParser args(argc, argv);
@@ -43,13 +43,11 @@ int main(int argc, char *argv[]) {
     for (int l=0; l<par_ref_lvl; ++l) pmesh->UniformRefinement();
     
     // Defining the subdomains
-    hephaestus::Subdomain coil1("coil1", 3);
-    hephaestus::Subdomain coil2("coil2", 4);
-    hephaestus::Subdomain coil3("coil3", 5);
-    hephaestus::Subdomain coil4("coil4", 6);
+    hephaestus::Subdomain coil1("coil1", 1);
+    hephaestus::Subdomain coil2("coil2", 2);
 
     // This vector of subomains will form the coil that we pass to ClosedCoilSolver
-    std::vector<hephaestus::Subdomain> coil_domains{coil1, coil2, coil3, coil4};
+    std::vector<hephaestus::Subdomain> coil_domains{coil1, coil2};
     
     // FES and GridFunctions
     mfem::ND_FECollection HCurl_Col(order, pmesh.get()->Dimension());
@@ -66,12 +64,16 @@ int main(int argc, char *argv[]) {
 
     hephaestus::InputParameters coilsolver_pars;
     coilsolver_pars.SetParam("HCurlFESpaceName", std::string("HCurl"));
+    coilsolver_pars.SetParam("JGridFunctionName", std::string("J"));
 
-    hephaestus::ClosedCoilSolver coil(coilsolver_pars, coil_domains, Jtotal, electrode_attr);
+    hephaestus::ClosedCoilSolver coil(coilsolver_pars, coil_domains, Jtotal, electrode_attr, order);
     coil.Init(gfs,fes,bcs,coefs);
+    mfem::ParLinearForm dummy;
+    coil.Apply(&dummy);
 
-
-
+    mfem::VisItDataCollection* visit_DC = new mfem::VisItDataCollection("results", pmesh.get());
+    visit_DC->RegisterField("J_new", &J);
+    visit_DC->Save();
 
     MPI_Finalize();
 
