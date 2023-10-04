@@ -1,5 +1,6 @@
 #pragma once
 #include "source_base.hpp"
+#include "scalar_potential_source.hpp"
 
 namespace hephaestus {
 
@@ -51,10 +52,14 @@ public:
 
     // Solves for the divergence-free current based on Dirichlet BCs
     void solveCurrent();
+    void SPSCurrent();
 
     // Calculates the flux of J through the face with attribute face_attr within the child submesh
     // with index idx
     double calcJFlux(int face_attr, int idx);
+
+    // Finds the coordinates for the "centre of mass" of the vertices of an element
+    mfem::Vector elementCentre(int el, mfem::ParMesh* pm);
 
     private:
 
@@ -116,6 +121,26 @@ public:
     std::vector<mfem::HypreParVector*> rhs_hypre_;
     std::vector<mfem::HypreBoomerAMG*> amg_;
     std::vector<mfem::HyprePCG*>       pcg_;
+
+};
+
+
+class Plane3D {
+
+    public:
+
+    // Constructs a mathematical 3D plane from a mesh face
+    Plane3D(const mfem::ParMesh* pm, const int face); 
+    ~Plane3D(){};
+
+    // Calculates on which side of the infinite 3D plane a point is.
+    // Returns 1, -1, or 0, the latter meaning the point is on the plane
+    int side(const mfem::Vector v);
+
+    private:
+
+    mfem::Vector* u;
+    double d;
 
 };
 

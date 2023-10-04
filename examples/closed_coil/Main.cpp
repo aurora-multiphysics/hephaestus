@@ -4,8 +4,6 @@ const char *DATA_DIR = "../../data/";
 
 int main(int argc, char *argv[]) {
 
-    MPI_Init(&argc, &argv);
-
     // Refinement and order
     int par_ref_lvl = 1;
     int order = 2;
@@ -14,10 +12,10 @@ int main(int argc, char *argv[]) {
     double Jtotal = 10;
 
     // Attribute that defines the internal face over which we apply the potential difference
-    int electrode_attr = 1;
+    int electrode_attr = 7;
 
     // Mesh file
-    std::string mesh_filename = "torus.exo";
+    std::string mesh_filename = "team7.g";
 
 
     mfem::OptionsParser args(argc, argv);
@@ -36,6 +34,9 @@ int main(int argc, char *argv[]) {
 
     args.Parse();
 
+    MPI_Init(&argc, &argv);
+
+
 
     // Set Mesh
     mfem::Mesh mesh((std::string(DATA_DIR) + mesh_filename).c_str(), 1, 1);
@@ -43,11 +44,15 @@ int main(int argc, char *argv[]) {
     for (int l=0; l<par_ref_lvl; ++l) pmesh->UniformRefinement();
     
     // Defining the subdomains
-    hephaestus::Subdomain coil1("coil1", 1);
-    hephaestus::Subdomain coil2("coil2", 2);
+    // THIS IS HARDCODED. NEED TO CHANGE!
+    hephaestus::Subdomain coil1("coil1", 3);
+    hephaestus::Subdomain coil2("coil2", 4);
+    hephaestus::Subdomain coil3("coil3", 5);
+    hephaestus::Subdomain coil4("coil4", 6);
+
 
     // This vector of subomains will form the coil that we pass to ClosedCoilSolver
-    std::vector<hephaestus::Subdomain> coil_domains{coil1, coil2};
+    std::vector<hephaestus::Subdomain> coil_domains{coil1, coil2, coil3, coil4};
     
     // FES and GridFunctions
     mfem::ND_FECollection HCurl_Col(order, pmesh.get()->Dimension());
@@ -72,7 +77,7 @@ int main(int argc, char *argv[]) {
     coil.Apply(&dummy);
 
     mfem::VisItDataCollection* visit_DC = new mfem::VisItDataCollection("results", pmesh.get());
-    visit_DC->RegisterField("J_new", &J);
+    visit_DC->RegisterField("J", &J);
     visit_DC->Save();
 
     MPI_Finalize();
