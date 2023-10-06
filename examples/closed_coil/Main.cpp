@@ -36,8 +36,6 @@ int main(int argc, char *argv[]) {
 
     MPI_Init(&argc, &argv);
 
-
-
     // Set Mesh
     mfem::Mesh mesh((std::string(DATA_DIR) + mesh_filename).c_str(), 1, 1);
     std::shared_ptr<mfem::ParMesh> pmesh = std::make_shared<mfem::ParMesh>(mfem::ParMesh(MPI_COMM_WORLD, mesh));
@@ -73,8 +71,8 @@ int main(int argc, char *argv[]) {
 
     hephaestus::ClosedCoilSolver coil(coilsolver_pars, coil_domains, Jtotal, electrode_attr, order);
     coil.Init(gfs,fes,bcs,coefs);
-    mfem::ParLinearForm dummy;
-    coil.Apply(&dummy);
+    mfem::ParLinearForm ccs_rhs;
+    coil.Apply(&ccs_rhs);
 
     mfem::VisItDataCollection* visit_DC = new mfem::VisItDataCollection("results", pmesh.get());
     visit_DC->RegisterField("J", &J);

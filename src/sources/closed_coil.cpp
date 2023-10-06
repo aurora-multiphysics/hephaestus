@@ -42,17 +42,17 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
     coef1_ = new mfem::ConstantCoefficient(1.0);
     coef0_ = new mfem::ConstantCoefficient(0.0);
 
-    // Retrieving the grandparent FE space and mesh
-    HCurlFESpace_grandparent_ = fespaces.Get(hcurl_fespace_name);
-    if (HCurlFESpace_grandparent_ == NULL) {
+    // Retrieving the parent FE space and mesh
+    HCurlFESpace_parent_ = fespaces.Get(hcurl_fespace_name);
+    if (HCurlFESpace_parent_ == NULL) {
         const std::string error_message = hcurl_fespace_name +
                                         " not found in fespaces when "
                                         "creating ClosedCoilSolver\n";
         mfem::mfem_error(error_message.c_str());
     }
 
-    J_grandparent_ = gridfunctions.Get(J_gf_name);
-    if (J_grandparent_ == NULL) {
+    J_parent_ = gridfunctions.Get(J_gf_name);
+    if (J_parent_ == NULL) {
         const std::string error_message = J_gf_name +
                                         " not found in gridfunctions when "
                                         "creating ClosedCoilSolver\n";
@@ -60,47 +60,37 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
     }
 
 
-    mesh_grandparent_ = HCurlFESpace_grandparent_->GetParMesh();
+    mesh_parent_ = HCurlFESpace_parent_->GetParMesh();
 
-    // Extracting parent submesh and setting FE spaces and grid functions
-    mfem::Array<int> doms_array;
-    SubdomainToArray(coil_domains_, doms_array);
-
-    mesh_parent_ = new mfem::ParSubMesh(mfem::ParSubMesh::CreateFromDomain(*mesh_grandparent_,doms_array));
-    inheritBdrAttributes(mesh_grandparent_, mesh_parent_);
-
-    HCurl_Collection_parent_ = new mfem::ND_FECollection(order_, mesh_parent_->Dimension());
-    HCurlFESpace_parent_ = new mfem::ParFiniteElementSpace(mesh_parent_, HCurl_Collection_parent_);
-    J_ref_parent_ = new mfem::ParGridFunction(HCurlFESpace_parent_);
-    *J_ref_parent_ = 0.0;
-
-    mesh_parent_->Save("test_parent_team7.mesh");
-
-    // Now we extract the child submeshes
+    resizeChildVectors();
     makeWedge();
-    std::cout << "Made wedge!" << std::endl;
     initChildMeshes();
-    std::cout << "Made child meshes!" << std::endl;
-    solveCurrent();
-    //SPSCurrent();
-
-    for (int i=0; i<2; ++i) mesh_[i]->Transfer(*J_[i], *J_ref_parent_); 
-
-    //////////////////
-
+    makeFESpaces();
+    makeGridFunctions();
+    setBCs();
+    buildGrad();
+    buildLaplace();
+    solveLaplace();
+    calcCurrent();
     
-
-    mfem::VisItDataCollection* visit_DC_test_child = new mfem::VisItDataCollection("results_child", mesh_[0]);
-    visit_DC_test_child->RegisterField("J", J_[0]);
-    visit_DC_test_child->RegisterField("V", V_[0]);
-    visit_DC_test_child->Save();
- 
+    //SPSCurrent();
+    
+    for (int i=0; i<2; ++i){
+        mfem::VisItDataCollection* visit_DC_test_child = new mfem::VisItDataCollection("results_child_" + std::to_string(i), mesh_[i]);
+        visit_DC_test_child->RegisterField("J", J_[i]);
+        visit_DC_test_child->Save();
+    }
+    
 }
 
 void ClosedCoilSolver::Apply(mfem::ParLinearForm *lf) {
 
-    mesh_parent_->Transfer(*J_ref_parent_, *J_grandparent_);
-    *J_grandparent_ *= Jtotal_;
+    *J_[1] *= -1.0;
+    for (int i=0; i<2; ++i) {
+        mesh_[i]->Transfer(*J_[i], *J_parent_); 
+    }
+
+    *J_parent_ *= Jtotal_;
 }
 
 void ClosedCoilSolver::SubtractSource(mfem::ParGridFunction *gf) {}
@@ -139,10 +129,32 @@ void ClosedCoilSolver::inheritBdrAttributes(const mfem::ParMesh* parent_mesh, mf
     child_mesh->SetAttributes();
 }
 
+bool ClosedCoilSolver::isInDomain(const int el, const std::vector<hephaestus::Subdomain> &dom, const mfem::ParMesh* mesh) {
+
+    // This is for ghost elements
+    if (el < 0) return false;
+
+    bool verify = false;
+
+    for (auto sd:dom) {
+        if (mesh->GetAttribute(el) == sd.id) verify = true;
+    }
+
+    return verify;
+}
+
+bool ClosedCoilSolver::isInDomain(const int el, const hephaestus::Subdomain &sd, const mfem::ParMesh* mesh) {
+
+    // This is for ghost elements
+    if (el < 0) return false;
+
+    return mesh->GetAttribute(el) == sd.id;
+}
+
 void ClosedCoilSolver::makeWedge(){
 
     std::vector<int> bdr_els;
-    int new_domain_attr = 2;
+    new_domain_attr_ = mesh_parent_->attributes.Max()+1;;
     elec_attrs_.first = elec_;
     elec_attrs_.second = mesh_parent_->bdr_attributes.Max()+1;
 
@@ -153,18 +165,12 @@ void ClosedCoilSolver::makeWedge(){
         }
     }
 
-    for (int e=0; e<mesh_parent_->GetNE(); ++e) mesh_parent_->SetAttribute(e, new_domain_attr-1);
+    Plane3D plane;
 
-    // For the ranks not containing the wedge
-    if (bdr_els.size() == 0) {
-        mesh_parent_->FinalizeTopology();
-        mesh_parent_->Finalize();
-        mesh_parent_->SetAttributes();
-        return;
+    if (bdr_els.size() > 0){
+        plane.make3DPlane(mesh_parent_, mesh_parent_->GetBdrFace(bdr_els[0]));
     }
-
-    Plane3D plane(mesh_parent_, mesh_parent_->GetBdrFace(bdr_els[0]));
-
+    
     std::vector<int> elec_vtx;
     // Create a vector containing all of the vertices on the electrode
     for (auto b_fc:bdr_els) {
@@ -175,28 +181,32 @@ void ClosedCoilSolver::makeWedge(){
         for (auto v:face_vtx) pushIfUnique(elec_vtx, v);
     }
 
+
     // Now we need to find all elements in the mesh that touch, on at least one vertex, the electrode face
-    // if they do touch the vertex and are on one side of the electrode, we add them to our wedge
+    // if they do touch the vertex, are on one side of the electrode, and belong to the coil domain, 
+    // we add them to our wedge
 
     std::vector<int> wedge_els;
 
     for (int e=0; e<mesh_parent_->GetNE(); ++e) {
+
+        if (!isInDomain(e,coil_domains_,mesh_parent_) || 
+            plane.side(elementCentre(e,mesh_parent_)) == 1) continue;
 
         mfem::Array<int> elem_vtx;
         mesh_parent_->GetElementVertices(e,elem_vtx);
 
         for (auto v1:elem_vtx) {
             for (auto v2:elec_vtx){
-                if (v1 == v2 && plane.side(elementCentre(e,mesh_parent_)) == 1) {
-                        mesh_parent_->SetAttribute(e, new_domain_attr);
+                if (v1 == v2) {
                         pushIfUnique(wedge_els,e);
                 }
             }
         }
     }
 
-    // Lastly, we set the second electrode boundary attribute. Start with a list of all the 
-    // faces of the wedge elements and eliminate external boundaries, the first electrode
+    // Now we set the second electrode boundary attribute. Start with a list of all the 
+    // faces of the wedge elements and eliminate mesh and coil boundaries, the first electrode,
     // and faces between wedge elements
 
     std::vector<int> wedge_faces;
@@ -212,6 +222,12 @@ void ClosedCoilSolver::makeWedge(){
 
         int e1,e2;
         mesh_parent_->GetFaceElements(wf, &e1, &e2);
+
+        // If the face is a coil boundary
+        if (!(isInDomain(e1, coil_domains_, mesh_parent_) &&
+              isInDomain(e2, coil_domains_, mesh_parent_))){
+            continue;
+        }
 
         // If the face is not true interior
         if (!(mesh_parent_->FaceIsInterior(wf) || 
@@ -246,163 +262,25 @@ void ClosedCoilSolver::makeWedge(){
         mesh_parent_->AddBdrElement(new_elem);
     }
 
-    
+    // Only after this we set the domain attributes
+    for (auto e:wedge_els) mesh_parent_->SetAttribute(e, new_domain_attr_);
+
     mesh_parent_->FinalizeTopology();
     mesh_parent_->Finalize();
     mesh_parent_->SetAttributes();
 }
 
-/*
-void ClosedCoilSolver::makeWedge() {
-
-    std::vector<int> bdr_els;
-    int new_domain_attr = 2;
-    elec_attrs_.first = elec_;
-    elec_attrs_.second = mesh_parent_->bdr_attributes.Max()+1;
-
-    // First we need to find the electrode boundary
-    for (int i = 0; i<mesh_parent_->GetNBE(); ++i){
-        if (mesh_parent_->GetBdrAttribute(i) == elec_attrs_.first){
-            bdr_els.push_back(i);
-            //mesh_parent_->SetBdrAttribute(i, elec_attrs_.first);
-        }
-    }
-
-    std::cout << "boundary elements = " << bdr_els.size() << std::endl;
-
-    // Now we find all MPI ranks that are adjacent to some of the electrode and choose only the highest rank to contain the element-wide
-    // transition region. This is important particularly for the case where the rank distribution cuts right through the electrode
-    int bdr_thisrank = bdr_els.size();
-    int *bdr_allranks = (int *)malloc(sizeof(int) * mfem::Mpi::WorldSize());
-    MPI_Allgather(&bdr_thisrank, 1, MPI_INT, bdr_allranks, 1, MPI_INT, MPI_COMM_WORLD);
-
-    int e_rank = 0;
-    bool verify = false;
-    for (int r=0; r<mfem::Mpi::WorldSize(); ++r) {
-        if (bdr_allranks[r]) {
-            e_rank = r;
-            verify = true;
-        }
-    }
-
-    if (!verify) MFEM_ABORT("Could not find electrode in any of the ranks!");
-    free(bdr_allranks);
-
-    for (int e=0; e<mesh_parent_->GetNE(); ++e) mesh_parent_->SetAttribute(e, new_domain_attr-1);
-
-    if (mfem::Mpi::WorldRank() == e_rank){
-
-        int e1, e2, e3, e4;
-        mfem::Array<int> e1_faces, ori;
-        // These vector will hold intermediate faces between the two
-        // element layers in a tet or pyramid mesh
-        std::vector<int> temp_faces;
-        std::vector<int> temp_els;
-
-        for (auto fc:bdr_els) {
-
-            std::cout << "Bdr el = " << fc << std::endl;
-
-            mesh_parent_->GetFaceElements(mesh_parent_->GetBdrFace(fc), &e1, &e2);
-            mesh_parent_->SetAttribute(e1,new_domain_attr);
-
-            // For tetrahedral or pyramidal geometries, we need to add another layer of elements
-            if (mesh_parent_->GetElementBaseGeometry(0) == mfem::Geometry::Type::TETRAHEDRON 
-             || mesh_parent_->GetElementBaseGeometry(0) == mfem::Geometry::Type::PYRAMID) {
-            
-                mesh_parent_->GetElementFaces(e1, e1_faces, ori);
-
-                for (auto e1_fc:e1_faces) {
-
-                    // Ideally, this test should be done with FaceIsTrueInterior(fc), but that is private in mfem::ParMesh
-                    // create our own function?
-                    if (e1_fc != mesh_parent_->GetBdrFace(fc) && mesh_parent_->FaceIsInterior(fc)){
-
-                        temp_faces.push_back(e1_fc);
-                        mesh_parent_->GetFaceElements(e1_fc, &e3, &e4);
-
-                        if (e3 != e1) {
-                            //mesh_parent_->SetAttribute(e3,new_domain_attr);
-                            pushIfUnique(temp_els, e3);
-                        }
-                        else if (e4 >= 0 && e4 != e1){
-                            //mesh_parent_->SetAttribute(e4,new_domain_attr);
-                            pushIfUnique(temp_els, e4);
-                        }
-                        else{
-                            continue;
-                        }
-
-                        std::cout << "Done with this face!" << std::endl;
-                        
-                    }
-                }
-            }
-            else{
-                std::cout << "cube or prism mesh!" << std::endl;
-                // We need to find a face one element over and set its boundary attribute
-                mesh_parent_->GetElementFaces(e1, e1_faces, ori);
-                for (auto e1_fc:e1_faces) {
-                    if (e1_fc != mesh_parent_->GetBdrFace(fc) && !isAdjacent(e1_fc, mesh_parent_->GetBdrFace(fc), mesh_parent_)) {
-                        auto* new_elem = mesh_parent_->GetFace(e1_fc)->Duplicate(mesh_parent_);
-                        new_elem->SetAttribute(elec_attrs_.second);
-                        mesh_parent_->AddBdrElement(new_elem);
-                    }
-                }
-            }
-
-
-        }
-    
-
-
-        // Now we finish adding the second element layer in the tet or pyramid case
-        if (mesh_parent_->GetElementBaseGeometry(0) == mfem::Geometry::Type::TETRAHEDRON 
-         || mesh_parent_->GetElementBaseGeometry(0) == mfem::Geometry::Type::PYRAMID) {
-
-            std::vector<int> new_bdr;
-
-            for (auto e:temp_els){
-                e1_faces.DeleteAll();
-                mesh_parent_->GetElementFaces(e, e1_faces, ori);
-
-                for (auto fc:e1_faces) {
-                    // If the face is not in the intermediary boundary between the two tet element layers and is interior
-                    // then we set it to be our new electrode
-                    // Again ideally this should be FaceIsTrueInterior(fc)
-                    if (std::find(temp_faces.begin(), temp_faces.end(),fc) == temp_faces.end() && mesh_parent_->FaceIsInterior(fc)) {
-                        pushIfUnique(new_bdr, fc);
-                    }
-                }
-
-            }
-
-            for (auto fc:new_bdr) {
-                auto* new_elem = mesh_parent_->GetFace(fc)->Duplicate(mesh_parent_);
-                new_elem->SetAttribute(elec_attrs_.second);
-                mesh_parent_->AddBdrElement(new_elem);
-            }
-        }
-
-
-
-    }
-
-    mesh_parent_->FinalizeTopology();
-    mesh_parent_->Finalize();
-    mesh_parent_->SetAttributes();
-
-}
-*/
 void ClosedCoilSolver::initChildMeshes() {
 
     mfem::Array<int> doms_array;
+    SubdomainToArray(coil_domains_, doms_array);
+    mesh_[0] = new mfem::ParSubMesh(mfem::ParSubMesh::CreateFromDomain(*mesh_parent_,doms_array));
 
-    mesh_.resize(2);
+    hephaestus::Subdomain wedge("wedge", new_domain_attr_);
+    SubdomainToArray(wedge, doms_array);
+    mesh_[1] = new mfem::ParSubMesh(mfem::ParSubMesh::CreateFromDomain(*mesh_parent_,doms_array));    
+    
     for (int i=0; i<2; ++i){
-        hephaestus::Subdomain wedge("wedge", i+1);
-        SubdomainToArray(wedge, doms_array);
-        mesh_[i] = new mfem::ParSubMesh(mfem::ParSubMesh::CreateFromDomain(*mesh_parent_,doms_array));
         inheritBdrAttributes(mesh_parent_, mesh_[i]);
     }
 
@@ -441,10 +319,8 @@ void ClosedCoilSolver::markerUnion(const mfem::Array<int> &m1, const mfem::Array
     }
 }
 
-void ClosedCoilSolver::solveCurrent(){
+void ClosedCoilSolver::resizeChildVectors(){
 
-    // THIS IS MORE OF A TEMPORARY FUNCTION
-    // IN THE FUTURE, IMPLEMENT THIS AS A ScalarPotentialSource
     H1_Collection_.resize(2);
     HCurl_Collection_.resize(2);
     H1FESpace_.resize(2);
@@ -470,18 +346,26 @@ void ClosedCoilSolver::solveCurrent(){
     rhs_hypre_.resize(2);
     amg_.resize(2);
     pcg_.resize(2);
-    
-    for (int i=0; i<2; ++i){
 
-        std::cout << "Submesh " << i << ", FE Spaces" << std::endl;
+    mesh_.resize(2);
+
+}
+
+void ClosedCoilSolver::makeFESpaces(){
+
+    for (int i=0; i<2; ++i){
 
         // FE spaces and grid functions
         H1_Collection_[i] = new mfem::H1_FECollection(order_, mesh_[i]->Dimension());
         HCurl_Collection_[i] = new mfem::ND_FECollection(order_, mesh_[i]->Dimension());
         H1FESpace_[i] = new mfem::ParFiniteElementSpace(mesh_[i], H1_Collection_[i]);
         HCurlFESpace_[i] = new mfem::ParFiniteElementSpace(mesh_[i], HCurl_Collection_[i]);
+    }
+}
 
-        std::cout << "Submesh " << i << ", GridFunctions" << std::endl;
+void ClosedCoilSolver::makeGridFunctions(){
+
+    for (int i=0; i<2; ++i){
 
         V_[i] = new mfem::ParGridFunction(H1FESpace_[i]);
         Jr_[i] = new mfem::ParGridFunction(HCurlFESpace_[i]);
@@ -496,8 +380,12 @@ void ClosedCoilSolver::solveCurrent(){
             geom_[i] = H1FESpace_[i]->GetFE(0)->GetGeomType();
             intrule_[i] = mfem::IntRules.Get(geom_[i],irOrder_[i]);
         }
+    }
+}
 
-        std::cout << "Submesh " << i << ", BCs" << std::endl;
+void ClosedCoilSolver::setBCs(){
+
+    for (int i=0; i<2; ++i){
 
         // Dirichlet BCs
         mfem::Array<int> bdr_array_V1(mesh_[i]->bdr_attributes.Max());
@@ -511,32 +399,40 @@ void ClosedCoilSolver::solveCurrent(){
 
         markerUnion(bdr_array_V0, bdr_array_V1, ess_bdr_[i]);
         H1FESpace_[i]->GetEssentialTrueDofs(ess_bdr_[i], ess_bdr_tdofs_[i]);
-        
-        std::cout << "Submesh " << i << ", Ops" << std::endl;
-
-        // Setting up ops
-        grad_[i] = new mfem::common::ParDiscreteGradOperator(H1FESpace_[i],HCurlFESpace_[i]);
-        laplace_[i] = new mfem::ParBilinearForm(H1FESpace_[i]);
-        rhod_[i] = new mfem::ParLinearForm(H1FESpace_[i]);
-
-        *rhod_[i] = 0.0;
-
-        std::cout << "Submesh " << i << ", Add integrators" << std::endl;
+    }
 
 
-        laplace_[i]->AddDomainIntegrator(new mfem::DiffusionIntegrator(*coef1_));
-        rhod_[i]->AddDomainIntegrator(new mfem::DomainLFIntegrator(*coef0_));
+}
 
-        std::cout << "Submesh " << i << ", Assemble" << std::endl;
+void ClosedCoilSolver::buildGrad(){
 
-        // Assembling everything
-        rhod_[i]->Assemble();
+    for (int i=0; i<2; ++i){
+
+        grad_[i] = new mfem::ParDiscreteLinearOperator(H1FESpace_[i], HCurlFESpace_[i]);
+        grad_[i]->AddDomainInterpolator(new mfem::GradientInterpolator());
         grad_[i]->Assemble();
-        grad_[i]->Finalize();
-        laplace_[i]->Assemble();
-        laplace_[i]->Finalize();
+    }
+}
 
-        std::cout << "Submesh " << i << ", Solve" << std::endl;
+void ClosedCoilSolver::buildLaplace(){
+
+    for (int i=0; i<2; ++i){
+
+        laplace_[i] = new mfem::ParBilinearForm(H1FESpace_[i]);
+        laplace_[i]->AddDomainIntegrator(new mfem::DiffusionIntegrator(*coef1_));
+        laplace_[i]->Assemble();
+
+        rhod_[i] = new mfem::ParLinearForm(H1FESpace_[i]);
+        rhod_[i]->AddDomainIntegrator(new mfem::DomainLFIntegrator(*coef0_));
+        rhod_[i]->Assemble();
+    }
+
+
+}
+
+void ClosedCoilSolver::solveLaplace(){
+
+    for (int i=0; i<2; ++i){
 
         // At last, we solve the system using PCG
         laplace_hypre_[i] = new mfem::HypreParMatrix;
@@ -551,18 +447,27 @@ void ClosedCoilSolver::solveCurrent(){
         pcg_[i]->SetPrintLevel(2);
         pcg_[i]->SetPreconditioner(*amg_[i]);
         pcg_[i]->Mult(*rhs_hypre_[i], *V_hypre_[i]);
-        laplace_[i]->RecoverFEMSolution(*V_hypre_[i],*rhod_[i],*V_[i]);     
-        grad_[i]->Mult(*V_[i],*Jr_[i]);
-
-        // THIS NEEDS TO BE MADE INTO A DIVERGENCELESS CURRENT
-        *J_[i] = *Jr_[i];
-
-        double flux = calcJFlux(elec_attrs_.first, i);
-
-        *J_[i] /= abs(flux);
+        laplace_[i]->RecoverFEMSolution(*V_hypre_[i],*rhod_[i],*V_[i]);  
     }
 
-    *J_[1] *= -1.0;
+}
+
+void ClosedCoilSolver::calcCurrent(){
+
+    for (int i=0; i<2; ++i){
+
+        grad_[i]->Mult(*V_[i],*Jr_[i]);
+        *Jr_[i] *= -1.0;
+        removeJDivergence(Jr_[i], J_[i]);   
+        double flux = calcJFlux(elec_attrs_.first, i);
+        *J_[i] /= abs(flux);
+    }
+}
+
+void ClosedCoilSolver::removeJDivergence(mfem::ParGridFunction* Jraw, mfem::ParGridFunction* J){
+
+    // Need to implement this function!!
+    *J = *Jraw;
 
 }
 
@@ -663,9 +568,16 @@ mfem::Vector ClosedCoilSolver::elementCentre(int el, mfem::ParMesh* pm){
     return com;
 }
 
-Plane3D::Plane3D(const mfem::ParMesh* pm, const int face) {
+Plane3D::Plane3D():d(0) {
 
     u = new mfem::Vector(3);
+    *u = 0.0;
+}
+
+void Plane3D::make3DPlane(const mfem::ParMesh* pm, const int face) {
+
+    MFEM_ASSERT(pm->Dimension() == 3, "Plane3D only works in 3-dimensional meshes!");
+
     mfem::Array<int> face_vtx;
     std::vector<mfem::Vector> v;
     pm->GetFaceVertices(face,face_vtx);

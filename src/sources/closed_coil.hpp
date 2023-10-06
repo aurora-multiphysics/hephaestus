@@ -51,8 +51,14 @@ public:
     void inheritBdrAttributes(const mfem::ParMesh* parent_mesh, mfem::ParSubMesh* child_mesh);
 
     // Solves for the divergence-free current based on Dirichlet BCs
-    void solveCurrent();
+    void solveLaplace();
     void SPSCurrent();
+
+    // Creates the grad operator to calculate the current from the potential
+    void buildGrad();
+
+    // Creates the relevant Bilinear operators on the child submeshes
+    void buildLaplace();
 
     // Calculates the flux of J through the face with attribute face_attr within the child submesh
     // with index idx
@@ -60,6 +66,30 @@ public:
 
     // Finds the coordinates for the "centre of mass" of the vertices of an element
     mfem::Vector elementCentre(int el, mfem::ParMesh* pm);
+
+    // Resizes all of the vectors to the number of children submeshes (2, in this case)
+    void resizeChildVectors();
+
+    // Creates the relevant FE Collections and Spaces for the children submeshes
+    void makeFESpaces();
+
+    // Creates the relevant Grid Functions for the children submeshes
+    void makeGridFunctions();
+
+    // Sets the markers and DoFs for the Dirichlet BCs in the children submeshes 
+    void setBCs();
+
+    // Applies the gradient operator to the children submesh potentials, and performs a helmholz projection
+    // to obtain divergence-free currents. Finally, normalises the current such that the total current
+    // going through the electrode face is 1.
+    void calcCurrent();
+
+    // Applies a Helmholtz projection to a current to remove any divergences
+    void removeJDivergence(mfem::ParGridFunction* Jraw, mfem::ParGridFunction* J);
+
+    // Checks whether a given element is within a certain set of domains
+    bool isInDomain(const int el, const std::vector<hephaestus::Subdomain> &dom, const mfem::ParMesh* mesh);
+    bool isInDomain(const int el, const hephaestus::Subdomain &sd, const mfem::ParMesh* mesh);
 
     private:
 
@@ -69,25 +99,18 @@ public:
     int order_;
     std::pair<int,int> elec_attrs_;
     std::vector<hephaestus::Subdomain> coil_domains_;
+    int new_domain_attr_;
     mfem::ConstantCoefficient* coef1_;
     mfem::ConstantCoefficient* coef0_;
 
-    // Grandparent FE space, mesh, and J GridFunction
+    // FE space, mesh, and J GridFunction
     std::string hcurl_fespace_name;
     std::string J_gf_name;
 
-    mfem::ParMesh* mesh_grandparent_;
-    mfem::ParFiniteElementSpace* HCurlFESpace_grandparent_;
-    mfem::ParGridFunction* J_grandparent_;
-
     // Parent mesh, FE space, and current
-    mfem::ParSubMesh* mesh_parent_;
-    mfem::ND_FECollection* HCurl_Collection_parent_;
+    mfem::ParMesh* mesh_parent_;
     mfem::ParFiniteElementSpace* HCurlFESpace_parent_;
-    mfem::ParGridFunction* J_ref_parent_;
-
-    // Parent VisIt Data Collection
-    mfem::VisItDataCollection*    visit_DC_parent_;
+    mfem::ParGridFunction* J_parent_;
 
     // Children mesh and FE spaces
     std::vector<mfem::ParSubMesh*> mesh_;
@@ -111,7 +134,7 @@ public:
     std::vector<mfem::Array<int>> ess_bdr_tdofs_;
 
     // Children Ops
-    std::vector<mfem::common::ParDiscreteGradOperator*> grad_;
+    std::vector<mfem::ParDiscreteLinearOperator*> grad_;
     std::vector<mfem::ParBilinearForm*> laplace_;
     std::vector<mfem::ParLinearForm*> rhod_;
 
@@ -129,9 +152,12 @@ class Plane3D {
 
     public:
 
-    // Constructs a mathematical 3D plane from a mesh face
-    Plane3D(const mfem::ParMesh* pm, const int face); 
+    
+    Plane3D(); 
     ~Plane3D(){};
+
+    // Constructs a mathematical 3D plane from a mesh face
+    void make3DPlane(const mfem::ParMesh* pm, const int face);
 
     // Calculates on which side of the infinite 3D plane a point is.
     // Returns 1, -1, or 0, the latter meaning the point is on the plane
