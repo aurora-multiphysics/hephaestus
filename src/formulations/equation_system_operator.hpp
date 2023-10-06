@@ -7,9 +7,9 @@
 #include "sources.hpp"
 
 namespace hephaestus {
-class FrequencyDomainEquationSystemOperator : public mfem::Operator {
+class EquationSystemOperator : public mfem::Operator {
 public:
-  FrequencyDomainEquationSystemOperator(
+  EquationSystemOperator(
       mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
       hephaestus::GridFunctions &gridfunctions, hephaestus::BCMap &bc_map,
       hephaestus::Coefficients &coefficients, hephaestus::Sources &sources,
@@ -18,7 +18,7 @@ public:
         _gridfunctions(gridfunctions), _bc_map(bc_map), _sources(sources),
         _coefficients(coefficients), _solver_options(solver_options){};
 
-  ~FrequencyDomainEquationSystemOperator(){};
+  ~EquationSystemOperator(){};
 
   virtual void SetGridFunctions();
   virtual void Init(mfem::Vector &X);

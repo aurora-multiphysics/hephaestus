@@ -7,7 +7,7 @@ ComplexMaxwellOperator::ComplexMaxwellOperator(
     hephaestus::GridFunctions &gridfunctions, hephaestus::BCMap &bc_map,
     hephaestus::Coefficients &coefficients, hephaestus::Sources &sources,
     hephaestus::InputParameters &solver_options)
-    : FrequencyDomainEquationSystemOperator(pmesh, fespaces, gridfunctions,
+    : EquationSystemOperator(pmesh, fespaces, gridfunctions,
                                             bc_map, coefficients, sources,
                                             solver_options),
       h_curl_var_name(solver_options.GetParam<std::string>("HCurlVarName")),
@@ -20,14 +20,14 @@ void ComplexMaxwellOperator::SetGridFunctions() {
   state_var_names.push_back(h_curl_var_name + "_real");
   state_var_names.push_back(h_curl_var_name + "_imag");
 
-  FrequencyDomainEquationSystemOperator::SetGridFunctions();
+  EquationSystemOperator::SetGridFunctions();
 
   u_ = new mfem::ParComplexGridFunction(local_test_vars.at(0)->ParFESpace());
   *u_ = std::complex(0.0, 0.0);
 };
 
 void ComplexMaxwellOperator::Init(mfem::Vector &X) {
-  FrequencyDomainEquationSystemOperator::Init(X);
+  EquationSystemOperator::Init(X);
 
   stiffCoef_ = _coefficients.scalars.Get(stiffness_coef_name);
   massCoef_ = _coefficients.scalars.Get(mass_coef_name);
@@ -115,13 +115,13 @@ void ComplexMaxwellFormulation::ConstructOperator() {
   solver_options.SetParam("StiffnessCoefName", _alpha_coef_name);
   solver_options.SetParam("MassCoefName", _mass_coef_name);
   solver_options.SetParam("LossCoefName", _loss_coef_name);
-  this->problem->fd_operator =
+  this->problem->eq_sys_operator =
       std::make_unique<hephaestus::ComplexMaxwellOperator>(
           *(this->problem->pmesh), this->problem->fespaces,
           this->problem->gridfunctions, this->problem->bc_map,
           this->problem->coefficients, this->problem->sources,
           this->problem->solver_options);
-  this->problem->fd_operator->SetGridFunctions();
+  this->problem->GetOperator()->SetGridFunctions();
 }
 
 void ComplexMaxwellFormulation::RegisterGridFunctions() {
