@@ -1,6 +1,6 @@
 #pragma once
 #include "executioner_base.hpp"
-#include "frequency_domain_problem_builder.hpp"
+#include "steady_state_problem_builder.hpp"
 
 namespace hephaestus {
 
@@ -15,7 +15,7 @@ public:
 
   void Execute() const override;
 
-  hephaestus::FrequencyDomainProblem *problem;
+  hephaestus::SteadyStateProblem *problem;
 };
 
 } // namespace hephaestus
