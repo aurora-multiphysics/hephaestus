@@ -1,6 +1,7 @@
 #pragma once
 #include "source_base.hpp"
 #include "scalar_potential_source.hpp"
+#include "div_free_source.hpp"
 
 namespace hephaestus {
 
@@ -32,33 +33,17 @@ public:
     // electrode face.
     void initChildMeshes();
 
-    // Checks if two faces share an edge.
-    bool isAdjacent(const int f1, const int f2, const mfem::ParMesh* _par_mesh);
-
     // Takes in either a Subdomain or a vector of subdomains, and aranges them in an array for
     // creating submeshes
     void SubdomainToArray(const std::vector<hephaestus::Subdomain> &sd, mfem::Array<int> &arr);
     void SubdomainToArray(const hephaestus::Subdomain &sd, mfem::Array<int> &arr);
-
-    // Takes in a boundary attribute and puts it into the kind of marker array used by MFEM
-    void toMarkerArray(const int bdr_att, mfem::Array <int> &marker_array);
-
-    // Takes in two marker arrays and returns the union of those
-    void markerUnion(const mfem::Array<int> &m1, const mfem::Array<int> &m2, mfem::Array<int> &u);
 
     // Extracting a submesh often erases boundary attribute information. This method
     // ensures that boundary attributes are carried over from parent to child mesh
     void inheritBdrAttributes(const mfem::ParMesh* parent_mesh, mfem::ParSubMesh* child_mesh);
 
     // Solves for the divergence-free current based on Dirichlet BCs
-    void solveLaplace();
     void SPSCurrent();
-
-    // Creates the grad operator to calculate the current from the potential
-    void buildGrad();
-
-    // Creates the relevant Bilinear operators on the child submeshes
-    void buildLaplace();
 
     // Calculates the flux of J through the face with attribute face_attr within the child submesh
     // with index idx
@@ -76,30 +61,29 @@ public:
     // Creates the relevant Grid Functions for the children submeshes
     void makeGridFunctions();
 
-    // Sets the markers and DoFs for the Dirichlet BCs in the children submeshes 
-    void setBCs();
-
     // Applies the gradient operator to the children submesh potentials, and performs a helmholz projection
     // to obtain divergence-free currents. Finally, normalises the current such that the total current
     // going through the electrode face is 1.
     void calcCurrent();
 
-    // Applies a Helmholtz projection to a current to remove any divergences
-    void removeJDivergence(mfem::ParGridFunction* Jraw, mfem::ParGridFunction* J);
-
     // Checks whether a given element is within a certain set of domains
     bool isInDomain(const int el, const std::vector<hephaestus::Subdomain> &dom, const mfem::ParMesh* mesh);
     bool isInDomain(const int el, const hephaestus::Subdomain &sd, const mfem::ParMesh* mesh);
+
+    // Initialises the pointers for SPS parameters and current solver options
+    void initSPSOptions();
+
+    // Sets up the boundary conditions to be used in the ScalarPotentialSource calculation
+    void SetBCs();
 
     private:
 
     // Parameters
     double Jtotal_;
-    int elec_;
     int order_;
+    int new_domain_attr_;
     std::pair<int,int> elec_attrs_;
     std::vector<hephaestus::Subdomain> coil_domains_;
-    int new_domain_attr_;
     mfem::ConstantCoefficient* coef1_;
     mfem::ConstantCoefficient* coef0_;
 
@@ -111,6 +95,7 @@ public:
     mfem::ParMesh* mesh_parent_;
     mfem::ParFiniteElementSpace* HCurlFESpace_parent_;
     mfem::ParGridFunction* J_parent_;
+    mfem::ParGridFunction* Jr_parent_;
 
     // Children mesh and FE spaces
     std::vector<mfem::ParSubMesh*> mesh_;
@@ -120,30 +105,25 @@ public:
     std::vector<mfem::ParFiniteElementSpace*> HCurlFESpace_;
 
     // Children GridFunctions
-    std::vector<mfem::ParGridFunction*> Jr_;
     std::vector<mfem::ParGridFunction*> J_;
     std::vector<mfem::ParGridFunction*> V_;
 
-    // Children IR Order and geometry
-    std::vector<int> irOrder_;
-    std::vector<int> geom_;
-    std::vector<mfem::IntegrationRule> intrule_;
+    // Children ScalarPotentialSource objects
+    std::vector<hephaestus::InputParameters*> sps_params_;
+    std::vector<hephaestus::InputParameters*> current_solver_options_;
+    std::vector<hephaestus::ScalarPotentialSource*> sps_;
+    std::vector<hephaestus::GridFunctions*> gridfunctions_;
+    std::vector<hephaestus::FESpaces*> fespaces_;
+    std::vector<hephaestus::BCMap*> bc_maps_;
+    std::vector<hephaestus::Coefficients*> coefs_;
+    std::vector<hephaestus::FunctionDirichletBC*> high_DBC_;
+    std::vector<hephaestus::FunctionDirichletBC*> low_DBC_;
 
-    // Children boundaries and TDOFs
-    std::vector<mfem::Array<int>> ess_bdr_;
-    std::vector<mfem::Array<int>> ess_bdr_tdofs_;
+    mfem::FunctionCoefficient* high_src_;
+    mfem::FunctionCoefficient* low_src_;
+    mfem::Array<int> high_terminal_;
+    mfem::Array<int> low_terminal_;
 
-    // Children Ops
-    std::vector<mfem::ParDiscreteLinearOperator*> grad_;
-    std::vector<mfem::ParBilinearForm*> laplace_;
-    std::vector<mfem::ParLinearForm*> rhod_;
-
-    // Children PCG objects
-    std::vector<mfem::HypreParMatrix*> laplace_hypre_;
-    std::vector<mfem::HypreParVector*> V_hypre_;
-    std::vector<mfem::HypreParVector*> rhs_hypre_;
-    std::vector<mfem::HypreBoomerAMG*> amg_;
-    std::vector<mfem::HyprePCG*>       pcg_;
 
 };
 

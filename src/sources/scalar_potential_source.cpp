@@ -36,9 +36,25 @@ void ScalarPotentialSource::Init(hephaestus::GridFunctions &gridfunctions,
     mfem::mfem_error(error_message.c_str());
   }
 
-  p_ = new mfem::ParGridFunction(H1FESpace_);
-  gridfunctions.Register(potential_gf_name, p_, false);
   p_ = gridfunctions.Get(potential_gf_name);
+  if (p_ == NULL) {
+    std::cout << potential_gf_name +
+                                      " not found in gridfunctions when "
+                                      "creating ScalarPotentialSource. "
+                                      "Creating new ParGridFunction\n";
+    p_ = new mfem::ParGridFunction(H1FESpace_);
+    gridfunctions.Register(potential_gf_name, p_, false);
+  }
+
+  grad_p_ = gridfunctions.Get(src_gf_name);
+  if (grad_p_ == NULL) {
+    std::cout << potential_gf_name +
+                                      " not found in gridfunctions when "
+                                      "creating ScalarPotentialSource. "
+                                      "Creating new ParGridFunction\n";
+    grad_p_ = new mfem::ParGridFunction(HCurlFESpace_);
+    gridfunctions.Register(src_gf_name, grad_p_, false);
+  }
 
   _bc_map = &bc_map;
 
@@ -56,8 +72,6 @@ void ScalarPotentialSource::Init(hephaestus::GridFunctions &gridfunctions,
   X0 = new mfem::Vector;
   B0 = new mfem::Vector;
 
-  grad_p_ = new mfem::ParGridFunction(HCurlFESpace_);
-  gridfunctions.Register(src_gf_name, grad_p_, false);
 }
 
 void ScalarPotentialSource::buildM1(mfem::Coefficient *Sigma) {
@@ -99,6 +113,12 @@ void ScalarPotentialSource::Apply(mfem::ParLinearForm *lf) {
                               (H1FESpace_->GetParMesh()));
   b0->Assemble();
 
+  ///////////////////////////
+
+  std::cout << "Tdofs = " << poisson_ess_tdof_list.Size() << std::endl;
+  ///////////////////////////
+
+
   a0->Update();
   a0->Assemble();
   a0->FormLinearSystem(poisson_ess_tdof_list, Phi_gf, *b0, *A0, *X0, *B0);
@@ -117,6 +137,7 @@ void ScalarPotentialSource::Apply(mfem::ParLinearForm *lf) {
   m1->Update();
   m1->Assemble();
   m1->AddMult(*grad_p_, *lf, 1.0);
+
 }
 
 void ScalarPotentialSource::SubtractSource(mfem::ParGridFunction *gf) {
