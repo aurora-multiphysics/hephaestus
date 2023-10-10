@@ -54,7 +54,6 @@ int main(int argc, char *argv[]) {
     while(ss >> att)
         coil_domains.push_back(hephaestus::Subdomain("coil"+std::to_string(att), att));
     
-    std::cout << "coil size = " << coil_domains.size() << std::endl;;
     // FES and GridFunctions
     mfem::ND_FECollection HCurl_Col(order, pmesh.get()->Dimension());
     mfem::ParFiniteElementSpace FES_HCurl(pmesh.get(), &HCurl_Col);

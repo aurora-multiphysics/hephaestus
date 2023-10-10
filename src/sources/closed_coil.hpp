@@ -68,6 +68,9 @@ public:
     // Sets up the boundary conditions to be used in the ScalarPotentialSource calculation.
     void SetBCs();
 
+    // Resets the domain attributes on the parent mesh to what they were initially
+    void restoreAttributes();
+
     private:
 
     // Parameters
@@ -78,6 +81,7 @@ public:
     std::vector<hephaestus::Subdomain> coil_domains_;
     mfem::ConstantCoefficient* coef1_;
     mfem::ConstantCoefficient* coef0_;
+    std::vector<int> old_dom_attrs;
 
     // FE space, mesh, and J GridFunction
     std::string hcurl_fespace_name;

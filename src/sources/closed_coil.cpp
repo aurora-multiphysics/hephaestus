@@ -27,6 +27,8 @@ void deleteAndClear(std::vector<T*> v){
 double highV(const mfem::Vector &x, double t) { return 1.0; }
 double lowV(const mfem::Vector &x, double t) { return 0.0; }
 
+// Base class methods
+
 ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters &params, 
                                    const std::vector<hephaestus::Subdomain> &coil_dom,
                                    const double Jtotal,
@@ -106,16 +108,7 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
     makeGridFunctions();
     SetBCs();
     SPSCurrent();
-
-    // Normalise the current through the wedges and use them as a reference
-    // The MPI allreduce is to take into account the MPI partitioning
-    for (int i=0; i<2; ++i) {
-
-        double flux = calcJFlux(elec_attrs_.first, i);
-        double total_flux;
-        MPI_Allreduce(&flux, &total_flux, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-        *J_[i] /= abs(total_flux);
-    }
+    restoreAttributes();
         
 }
 
@@ -127,10 +120,12 @@ void ClosedCoilSolver::Apply(mfem::ParLinearForm *lf) {
 
     *J_parent_ *= Jtotal_;
 
-   lf->Add(1.0,*J_parent_);
+    lf->Add(1.0,*J_parent_);
 }
 
 void ClosedCoilSolver::SubtractSource(mfem::ParGridFunction *gf) {}
+
+// ClosedCoilSolver main methods
 
 void ClosedCoilSolver::resizeChildVectors(){
 
@@ -160,10 +155,14 @@ void ClosedCoilSolver::resizeChildVectors(){
 void ClosedCoilSolver::makeWedge(){
 
     std::vector<int> bdr_els;
+
+    // First we save the current domain attributes so they may be restored later
+    for (int e = 0; e<mesh_parent_->GetNE(); ++e) old_dom_attrs.push_back(mesh_parent_->GetAttribute(e));
+
     new_domain_attr_ = mesh_parent_->attributes.Max()+1;;
     elec_attrs_.second = mesh_parent_->bdr_attributes.Max()+1;
 
-    // First we need to find the electrode boundary
+    // Now we need to find the electrode boundary
     for (int i = 0; i<mesh_parent_->GetNBE(); ++i){
         if (mesh_parent_->GetBdrAttribute(i) == elec_attrs_.first){
             bdr_els.push_back(i);
@@ -267,7 +266,7 @@ void ClosedCoilSolver::makeWedge(){
         mesh_parent_->AddBdrElement(new_elem);
     }
 
-    // Only after this we set the domain attributes
+    // Only after this do we set the domain attributes
     for (auto e:wedge_els) mesh_parent_->SetAttribute(e, new_domain_attr_);
 
     mesh_parent_->FinalizeTopology();
@@ -359,13 +358,37 @@ void ClosedCoilSolver::SPSCurrent(){
 
         sps_[i] = new hephaestus::ScalarPotentialSource(*sps_params_[i]);
         sps_[i]->Init(*gridfunctions_[i], *fespaces_[i], *bc_maps_[i], *coefs_[i]);
-        mfem::ParLinearForm dummy(HCurlFESpace_[i]);
 
+        mfem::ParLinearForm dummy(HCurlFESpace_[i]);
         sps_[i]->Apply(&dummy);
+
+        // Normalise the current through the wedges and use them as a reference
+        // The MPI allreduce is to take into account the MPI partitioning
+        double flux = calcJFlux(elec_attrs_.first, i);
+        double total_flux;
+        MPI_Allreduce(&flux, &total_flux, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        *J_[i] /= abs(total_flux);
+
     }
 
     *J_[0] *= -1.0;
+
 }
+
+void ClosedCoilSolver::restoreAttributes() {
+
+    // Domain attributes
+    for (int e = 0; e<mesh_parent_->GetNE(); ++e) {
+        mesh_parent_->SetAttribute(e, old_dom_attrs[e]);
+    }
+
+    mesh_parent_->FinalizeTopology();
+    mesh_parent_->Finalize();
+    mesh_parent_->SetAttributes();
+
+}
+
+// Auxiliary methods
 
 double ClosedCoilSolver::calcJFlux(int face_attr, int idx){
 
