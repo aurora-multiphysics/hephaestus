@@ -113,12 +113,6 @@ void ScalarPotentialSource::Apply(mfem::ParLinearForm *lf) {
                               (H1FESpace_->GetParMesh()));
   b0->Assemble();
 
-  ///////////////////////////
-
-  std::cout << "Tdofs = " << poisson_ess_tdof_list.Size() << std::endl;
-  ///////////////////////////
-
-
   a0->Update();
   a0->Assemble();
   a0->FormLinearSystem(poisson_ess_tdof_list, Phi_gf, *b0, *A0, *X0, *B0);

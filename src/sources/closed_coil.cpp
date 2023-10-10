@@ -41,7 +41,6 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
                            hephaestus::BCMap &bc_map,
                            hephaestus::Coefficients &coefficients) {
 
-    std::cout << "Init" << std::endl;
     coef1_ = new mfem::ConstantCoefficient(1.0);
     coef0_ = new mfem::ConstantCoefficient(0.0);
 
@@ -82,9 +81,6 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
         MPI_Allreduce(&flux, &total_flux, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
         *J_[i] /= abs(total_flux);
     }
-    
-     
-    
         
 }
 
@@ -96,7 +92,7 @@ void ClosedCoilSolver::Apply(mfem::ParLinearForm *lf) {
 
     *J_parent_ *= Jtotal_;
 
-   // lf->AddMult(*J_parent_, *lf, 1.0);
+   lf->Add(1.0,*J_parent_);
 }
 
 void ClosedCoilSolver::SubtractSource(mfem::ParGridFunction *gf) {}
@@ -388,9 +384,6 @@ double ClosedCoilSolver::calcJFlux(int face_attr, int idx){
         }
       
     }
-
-    std::cout << "Flux integration area = " << area << std::endl;
-    std::cout << "Obtained flux = " << flux << std::endl;
 
     return flux;
 }
