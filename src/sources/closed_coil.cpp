@@ -74,7 +74,17 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
     SPSCurrent();
 
     // Normalise the current through the wedges and use them as a reference
-    for (int i=0; i<2; ++i) *J_[i] /= abs(calcJFlux(elec_attrs_.first, i));
+    // The MPI allreduce is to take into account the MPI partitioning
+    for (int i=0; i<2; ++i) {
+
+        double flux = calcJFlux(elec_attrs_.first, i);
+        double total_flux;
+        MPI_Allreduce(&flux, &total_flux, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        *J_[i] /= abs(total_flux);
+    }
+    
+     
+    
         
 }
 
