@@ -25,55 +25,47 @@ public:
     void SubtractSource(mfem::ParGridFunction *gf) override;
 
     // Finds the electrode face and applies a single domain attribute to a 1-element layer adjacent to it.
-    // Applies a different domain attribute to all other elements.
+    // Applies a different domain attribute to other elements in the coil.
     // Also applies different boundary attributes on the two opposing faces of the layer, to act as Dirichlet BCs.
     void makeWedge();
 
     // Splits a full parallel mesh into two parallel submeshes by extracting a 1-element wide layer adjacent to the
-    // electrode face.
+    // electrode face as one submesh and the rest of the coil as the second submesh.
     void initChildMeshes();
 
-    // Takes in either a Subdomain or a vector of subdomains, and aranges them in an array for
-    // creating submeshes
+    // Takes in either a Subdomain or a vector of subdomains, and arranges them in an array for
+    // creating submeshes.
     void SubdomainToArray(const std::vector<hephaestus::Subdomain> &sd, mfem::Array<int> &arr);
     void SubdomainToArray(const hephaestus::Subdomain &sd, mfem::Array<int> &arr);
 
-    // Extracting a submesh often erases boundary attribute information. This method
-    // ensures that boundary attributes are carried over from parent to child mesh
+    // Extracting a submesh sometimes erases boundary attribute information. This method
+    // ensures that boundary attributes are carried over from parent to child mesh.
     void inheritBdrAttributes(const mfem::ParMesh* parent_mesh, mfem::ParSubMesh* child_mesh);
 
-    // Solves for the divergence-free current based on Dirichlet BCs
+    // Solves for the divergence-free current based on Dirichlet BCs.
     void SPSCurrent();
 
-    // Calculates the flux of J through the face with attribute face_attr within the child submesh
-    // with index idx
+    // Calculates the flux of J through the face with boundary attribute face_attr within the child submesh
+    // with index idx.
     double calcJFlux(int face_attr, int idx);
 
-    // Finds the coordinates for the "centre of mass" of the vertices of an element
+    // Finds the coordinates for the "centre of mass" of the vertices of an element.
     mfem::Vector elementCentre(int el, mfem::ParMesh* pm);
 
-    // Resizes all of the vectors to the number of children submeshes (2, in this case)
+    // Resizes all of the vectors to the number of children submeshes (2, in this case).
     void resizeChildVectors();
 
-    // Creates the relevant FE Collections and Spaces for the children submeshes
+    // Creates the relevant FE Collections and Spaces for the child submeshes.
     void makeFESpaces();
 
-    // Creates the relevant Grid Functions for the children submeshes
+    // Creates the relevant Grid Functions for the children submeshes.
     void makeGridFunctions();
 
-    // Applies the gradient operator to the children submesh potentials, and performs a helmholz projection
-    // to obtain divergence-free currents. Finally, normalises the current such that the total current
-    // going through the electrode face is 1.
-    void calcCurrent();
-
-    // Checks whether a given element is within a certain set of domains
+    // Checks whether a given element is within a certain domain or vector of domains.
     bool isInDomain(const int el, const std::vector<hephaestus::Subdomain> &dom, const mfem::ParMesh* mesh);
     bool isInDomain(const int el, const hephaestus::Subdomain &sd, const mfem::ParMesh* mesh);
 
-    // Initialises the pointers for SPS parameters and current solver options
-    void initSPSOptions();
-
-    // Sets up the boundary conditions to be used in the ScalarPotentialSource calculation
+    // Sets up the boundary conditions to be used in the ScalarPotentialSource calculation.
     void SetBCs();
 
     private:
@@ -93,10 +85,9 @@ public:
 
     // Parent mesh, FE space, and current
     mfem::ParMesh* mesh_parent_;
-    mfem::ParFiniteElementSpace* HCurlFESpace_parent_;
     mfem::ParGridFunction* J_parent_;
-    mfem::ParGridFunction* Jr_parent_;
-
+    mfem::ParFiniteElementSpace* HCurlFESpace_parent_;
+    
     // Children mesh and FE spaces
     std::vector<mfem::ParSubMesh*> mesh_;
     std::vector<mfem::H1_FECollection*> H1_Collection_;
@@ -119,11 +110,11 @@ public:
     std::vector<hephaestus::FunctionDirichletBC*> high_DBC_;
     std::vector<hephaestus::FunctionDirichletBC*> low_DBC_;
 
+    // Children boundary condition objects
     mfem::FunctionCoefficient* high_src_;
     mfem::FunctionCoefficient* low_src_;
     mfem::Array<int> high_terminal_;
     mfem::Array<int> low_terminal_;
-
 
 };
 

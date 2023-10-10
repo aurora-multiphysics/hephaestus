@@ -2,6 +2,7 @@
 
 namespace hephaestus {
 
+// Pushes an element into a vector if the vector does not yet contain that same element
 template<typename T> 
 void pushIfUnique(std::vector<T> &vec, const T el){
 
@@ -13,6 +14,14 @@ void pushIfUnique(std::vector<T> &vec, const T el){
 
     if (verify == true) vec.push_back(el);
 
+}
+
+// Deletes and clears a vector of pointers
+template <typename T>
+void deleteAndClear(std::vector<T*> v){
+
+    for (auto p:v) delete p;
+    v.clear();
 }
 
 double highV(const mfem::Vector &x, double t) { return 1.0; }
@@ -27,14 +36,40 @@ ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters &params,
                                      J_gf_name(params.GetParam<std::string>("JGridFunctionName")),
                                      coil_domains_(coil_dom),
                                      Jtotal_(Jtotal),
-                                     order_(order) {
+                                     order_(order),
+                                     coef1_(nullptr),
+                                     coef0_(nullptr),
+                                     mesh_parent_(nullptr),
+                                     J_parent_(nullptr),
+                                     HCurlFESpace_parent_(nullptr) {
 
     elec_attrs_.first = electrode_face;
 
 }
-// REMEMBER TO SET ALL POINTERS TO NULL
 
-ClosedCoilSolver::~ClosedCoilSolver() {}
+ClosedCoilSolver::~ClosedCoilSolver() {
+
+    delete coef1_;
+    delete coef0_;
+    delete high_src_;
+    delete low_src_;
+
+    deleteAndClear(mesh_);
+    deleteAndClear(H1FESpace_);
+    deleteAndClear(HCurlFESpace_);
+    deleteAndClear(H1_Collection_);
+    deleteAndClear(HCurl_Collection_);
+    deleteAndClear(V_);
+    deleteAndClear(sps_);
+    deleteAndClear(sps_params_);
+    deleteAndClear(current_solver_options_);
+    deleteAndClear(gridfunctions_);
+    deleteAndClear(fespaces_);
+    deleteAndClear(bc_maps_);
+    deleteAndClear(coefs_);
+    deleteAndClear(high_DBC_);
+    deleteAndClear(low_DBC_);
+}
 
 void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
                            const hephaestus::FESpaces &fespaces, 
@@ -267,9 +302,6 @@ void ClosedCoilSolver::makeFESpaces(){
 }
 
 void ClosedCoilSolver::makeGridFunctions(){
-
-    Jr_parent_ = new mfem::ParGridFunction(HCurlFESpace_parent_);
-    *Jr_parent_ = 0.0;
 
     for (int i=0; i<2; ++i){
         V_[i] = new mfem::ParGridFunction(H1FESpace_[i]);

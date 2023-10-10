@@ -17,6 +17,8 @@ int main(int argc, char *argv[]) {
     // Mesh file
     std::string mesh_filename = "team7.g";
 
+    // Domain attributes of the coil to be solved
+    std::string coil_attr = "3 4 5 6";
 
     mfem::OptionsParser args(argc, argv);
     args.AddOption(&DATA_DIR, "-dataDir", "--data_directory",
@@ -31,6 +33,8 @@ int main(int argc, char *argv[]) {
                    "Mesh file name");
     args.AddOption(&electrode_attr, "-e", "--electrode",
                    "Boundary attribute of mesh face where potential difference is applied.");
+    args.AddOption(&coil_attr, "-cd", "--coil-domains",
+                   "List of coil domain attributes separated by spaces, e.g. \'1 3 4\'");
 
     args.Parse();
 
@@ -41,17 +45,16 @@ int main(int argc, char *argv[]) {
     std::shared_ptr<mfem::ParMesh> pmesh = std::make_shared<mfem::ParMesh>(mfem::ParMesh(MPI_COMM_WORLD, mesh));
     for (int l=0; l<par_ref_lvl; ++l) pmesh->UniformRefinement();
     
-    // Defining the subdomains
-    // THIS IS HARDCODED. NEED TO CHANGE!
-    hephaestus::Subdomain coil1("coil1", 3);
-    hephaestus::Subdomain coil2("coil2", 4);
-    hephaestus::Subdomain coil3("coil3", 5);
-    hephaestus::Subdomain coil4("coil4", 6);
-
-
     // This vector of subomains will form the coil that we pass to ClosedCoilSolver
-    std::vector<hephaestus::Subdomain> coil_domains{coil1, coil2, coil3, coil4};
+    std::vector<hephaestus::Subdomain> coil_domains;
+
+    // Parsing the string of attributes
+    std::stringstream ss(coil_attr);
+    int att;
+    while(ss >> att)
+        coil_domains.push_back(hephaestus::Subdomain("coil"+std::to_string(att), att));
     
+    std::cout << "coil size = " << coil_domains.size() << std::endl;;
     // FES and GridFunctions
     mfem::ND_FECollection HCurl_Col(order, pmesh.get()->Dimension());
     mfem::ParFiniteElementSpace FES_HCurl(pmesh.get(), &HCurl_Col);
@@ -73,8 +76,8 @@ int main(int argc, char *argv[]) {
     coil.Init(gfs,fes,bcs,coefs);
     mfem::ParLinearForm ccs_rhs;
     coil.Apply(&ccs_rhs);
-
-    mfem::VisItDataCollection* visit_DC = new mfem::VisItDataCollection("results", pmesh.get());
+    
+    mfem::VisItDataCollection* visit_DC = new mfem::VisItDataCollection("ClosedCoil_Results", pmesh.get());
     visit_DC->RegisterField("J", &J);
     visit_DC->Save();
 
