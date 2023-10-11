@@ -12,4 +12,4 @@ target_link_libraries(regression_tests ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lib${PR
 target_link_libraries(regression_tests ${MFEM_LIBRARIES} ${MFEM_COMMON_LIBRARY} -lrt)
 
 include(GoogleTest)
-gtest_discover_tests(regression_tests)
+gtest_discover_tests(regression_tests PROPERTIES DISCOVERY_TIMEOUT 30)
