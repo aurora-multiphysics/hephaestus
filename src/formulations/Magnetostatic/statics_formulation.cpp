@@ -105,7 +105,7 @@ Fully discretised equations
 (α∇×u, ∇×u') - (s0, u') - <(α∇×u) × n, u'> = 0
 */
 void StaticsOperator::Solve(mfem::Vector &X) {
-  mfem::ParGridFunction a_(local_test_vars.at(0)->ParFESpace());
+  mfem::ParGridFunction &a_(*local_test_vars.at(0));
   a_ = 0.0;
   mfem::ParLinearForm b1_(a_.ParFESpace());
   b1_ = 0.0;
@@ -120,14 +120,14 @@ void StaticsOperator::Solve(mfem::Vector &X) {
   a1_.Assemble();
 
   mfem::HypreParMatrix CurlMuInvCurl;
-  mfem::HypreParVector A(a_.ParFESpace());
-  mfem::HypreParVector RHS(a_.ParFESpace());
+  mfem::Vector &A(trueX.GetBlock(0));
+  mfem::Vector &RHS(trueRhs.GetBlock(0));
   a1_.FormLinearSystem(ess_bdr_tdofs_, a_, b1_, CurlMuInvCurl, A, RHS);
 
   hephaestus::DefaultHCurlPCGSolver a1_solver(_solver_options, CurlMuInvCurl,
                                               a_.ParFESpace());
   a1_solver.Mult(RHS, A);
-  a1_.RecoverFEMSolution(A, b1_, *_gridfunctions.Get(state_var_names.at(0)));
+  a1_.RecoverFEMSolution(A, b1_, a_);
 }
 
 } // namespace hephaestus
