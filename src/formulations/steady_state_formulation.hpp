@@ -4,8 +4,7 @@
 namespace hephaestus {
 
 // Specifies output interfaces of a time-independent problem formulation.
-class SteadyStateFormulation
-    : public hephaestus::SteadyStateProblemBuilder {
+class SteadyStateFormulation : public hephaestus::SteadyStateProblemBuilder {
 public:
   SteadyStateFormulation();
 };

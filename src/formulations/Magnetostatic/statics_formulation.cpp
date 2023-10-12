@@ -30,7 +30,7 @@
 namespace hephaestus {
 
 StaticsFormulation::StaticsFormulation(const std::string &alpha_coef_name,
-                                   const std::string &h_curl_var_name)
+                                       const std::string &h_curl_var_name)
     : SteadyStateFormulation(), _alpha_coef_name(alpha_coef_name),
       _h_curl_var_name(h_curl_var_name) {}
 
@@ -39,11 +39,12 @@ void StaticsFormulation::ConstructOperator() {
       this->GetProblem()->solver_options;
   solver_options.SetParam("HCurlVarName", _h_curl_var_name);
   solver_options.SetParam("StiffnessCoefName", _alpha_coef_name);
-  this->problem->eq_sys_operator = std::make_unique<hephaestus::StaticsOperator>(
-      *(this->problem->pmesh), this->problem->fespaces,
-      this->problem->gridfunctions, this->problem->bc_map,
-      this->problem->coefficients, this->problem->sources,
-      this->problem->solver_options);
+  this->problem->eq_sys_operator =
+      std::make_unique<hephaestus::StaticsOperator>(
+          *(this->problem->pmesh), this->problem->fespaces,
+          this->problem->gridfunctions, this->problem->bc_map,
+          this->problem->coefficients, this->problem->sources,
+          this->problem->solver_options);
   this->problem->GetOperator()->SetGridFunctions();
 };
 
@@ -71,15 +72,15 @@ void StaticsFormulation::RegisterCoefficients() {
 }
 
 StaticsOperator::StaticsOperator(mfem::ParMesh &pmesh,
-                             hephaestus::FESpaces &fespaces,
-                             hephaestus::GridFunctions &gridfunctions,
-                             hephaestus::BCMap &bc_map,
-                             hephaestus::Coefficients &coefficients,
-                             hephaestus::Sources &sources,
-                             hephaestus::InputParameters &solver_options)
+                                 hephaestus::FESpaces &fespaces,
+                                 hephaestus::GridFunctions &gridfunctions,
+                                 hephaestus::BCMap &bc_map,
+                                 hephaestus::Coefficients &coefficients,
+                                 hephaestus::Sources &sources,
+                                 hephaestus::InputParameters &solver_options)
     : EquationSystemOperator(pmesh, fespaces, gridfunctions, bc_map,
-                                       coefficients, sources, solver_options),      
-                                       h_curl_var_name(solver_options.GetParam<std::string>("HCurlVarName")),
+                             coefficients, sources, solver_options),
+      h_curl_var_name(solver_options.GetParam<std::string>("HCurlVarName")),
       stiffness_coef_name(
           solver_options.GetParam<std::string>("StiffnessCoefName")) {}
 
@@ -104,7 +105,7 @@ Fully discretised equations
 (α∇×u, ∇×u') - (s0, u') - <(α∇×u) × n, u'> = 0
 */
 void StaticsOperator::Solve(mfem::Vector &X) {
-  mfem::ParGridFunction a_ (local_test_vars.at(0)->ParFESpace());
+  mfem::ParGridFunction a_(local_test_vars.at(0)->ParFESpace());
   a_ = 0.0;
   mfem::ParLinearForm b1_(a_.ParFESpace());
   b1_ = 0.0;
@@ -123,7 +124,8 @@ void StaticsOperator::Solve(mfem::Vector &X) {
   mfem::HypreParVector RHS(a_.ParFESpace());
   a1_.FormLinearSystem(ess_bdr_tdofs_, a_, b1_, CurlMuInvCurl, A, RHS);
 
-  hephaestus::DefaultHCurlPCGSolver a1_solver(_solver_options, CurlMuInvCurl, a_.ParFESpace());
+  hephaestus::DefaultHCurlPCGSolver a1_solver(_solver_options, CurlMuInvCurl,
+                                              a_.ParFESpace());
   a1_solver.Mult(RHS, A);
   a1_.RecoverFEMSolution(A, b1_, *_gridfunctions.Get(state_var_names.at(0)));
 }

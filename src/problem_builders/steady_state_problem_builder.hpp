@@ -6,8 +6,7 @@ namespace hephaestus {
 class SteadyStateProblem : public hephaestus::Problem {
 public:
   std::unique_ptr<hephaestus::EquationSystem> eq_sys;
-  std::unique_ptr<hephaestus::EquationSystemOperator>
-      eq_sys_operator;
+  std::unique_ptr<hephaestus::EquationSystemOperator> eq_sys_operator;
 
   SteadyStateProblem() = default;
 
