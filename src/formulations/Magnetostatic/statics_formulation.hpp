@@ -9,7 +9,7 @@ namespace hephaestus {
 class StaticsFormulation : public SteadyStateFormulation {
 public:
   StaticsFormulation(const std::string &alpha_coef_name,
-                   const std::string &h_curl_var_name);
+                     const std::string &h_curl_var_name);
 
   virtual void ConstructOperator() override;
 
@@ -25,11 +25,11 @@ protected:
 class StaticsOperator : public EquationSystemOperator {
 public:
   StaticsOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
-                hephaestus::GridFunctions &gridfunctions,
-                hephaestus::BCMap &bc_map,
-                hephaestus::Coefficients &coefficients,
-                hephaestus::Sources &sources,
-                hephaestus::InputParameters &solver_options);
+                  hephaestus::GridFunctions &gridfunctions,
+                  hephaestus::BCMap &bc_map,
+                  hephaestus::Coefficients &coefficients,
+                  hephaestus::Sources &sources,
+                  hephaestus::InputParameters &solver_options);
 
   ~StaticsOperator(){};
 

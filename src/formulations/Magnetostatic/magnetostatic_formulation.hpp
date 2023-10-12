@@ -1,15 +1,15 @@
 #pragma once
 #include "../common/pfem_extras.hpp"
-#include "statics_formulation.hpp"
 #include "inputs.hpp"
+#include "statics_formulation.hpp"
 
 namespace hephaestus {
 
 class MagnetostaticFormulation : public hephaestus::StaticsFormulation {
 public:
   MagnetostaticFormulation(const std::string &magnetic_reluctivity_name,
-               const std::string &magnetic_permeability_name,
-               const std::string &magnetic_vector_potential_name);
+                           const std::string &magnetic_permeability_name,
+                           const std::string &magnetic_vector_potential_name);
 
   ~MagnetostaticFormulation(){};
 

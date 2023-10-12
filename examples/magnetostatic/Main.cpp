@@ -3,11 +3,11 @@
 const char *DATA_DIR = "../../data/";
 
 static void source_current(const mfem::Vector &xv, double t, mfem::Vector &J) {
-  double x0(194e-3);  // Coil centre x coordinate
-  double y0(100e-3);  // Coil centre y coordinate
-  double a(50e-3);    // Coil thickness
-  double I0(2742);    // Coil current in Ampere-turns
-  double S(2.5e-3);   // Coil cross sectional area
+  double x0(194e-3); // Coil centre x coordinate
+  double y0(100e-3); // Coil centre y coordinate
+  double a(50e-3);   // Coil thickness
+  double I0(2742);   // Coil current in Ampere-turns
+  double S(2.5e-3);  // Coil cross sectional area
 
   double x = xv(0);
   double y = xv(1);
@@ -119,8 +119,9 @@ int main(int argc, char *argv[]) {
 
   // Create Formulation
   hephaestus::SteadyStateProblemBuilder *problem_builder =
-      new hephaestus::MagnetostaticFormulation(
-          "magnetic_reluctivity", "magnetic_permeability", "magnetic_vector_potential");
+      new hephaestus::MagnetostaticFormulation("magnetic_reluctivity",
+                                               "magnetic_permeability",
+                                               "magnetic_vector_potential");
   // Set Mesh
   mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team7.g")).c_str(), 1,
                   1);
