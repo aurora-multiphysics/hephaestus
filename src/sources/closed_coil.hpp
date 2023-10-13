@@ -6,7 +6,7 @@
 namespace hephaestus {
 
 // Calculates the flux of a vector field v_field through the face with boundary
-// attribute face_attr within the child submesh with index idx.
+// attribute face_attr.
 double calcFlux(mfem::GridFunction *v_field, int face_attr);
 
 class ClosedCoilSolver : public hephaestus::Source {

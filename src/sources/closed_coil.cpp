@@ -413,7 +413,6 @@ double calcFlux(mfem::GridFunction *v_field, int face_attr) {
   mfem::FiniteElementSpace *FES = v_field->FESpace();
   mfem::Mesh *mesh = FES->GetMesh();
 
-  MFEM_ASSERT(FES[idx]->GetVDim() == 1, "");
   mfem::Vector local_dofs, normal_vec;
   mfem::DenseMatrix dshape;
   mfem::Array<int> dof_ids;
@@ -423,7 +422,8 @@ double calcFlux(mfem::GridFunction *v_field, int face_attr) {
     if (mesh->GetBdrAttribute(i) != face_attr)
       continue;
 
-    mfem::FaceElementTransformations *FTr = mesh->GetBdrFaceTransformations(i);
+    mfem::FaceElementTransformations *FTr =
+        mesh->GetFaceElementTransformations(mesh->GetBdrFace(i));
     if (FTr == nullptr)
       continue;
 
