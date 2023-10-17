@@ -32,13 +32,13 @@ double lowV(const mfem::Vector &x, double t) { return 0.0; }
 
 ClosedCoilSolver::ClosedCoilSolver(
     const hephaestus::InputParameters &params,
-    const std::vector<hephaestus::Subdomain> &coil_dom, const double Itotal,
+    const std::vector<hephaestus::Subdomain> &coil_dom,
     const int electrode_face, const int order)
-    : hcurl_fespace_name(params.GetParam<std::string>("HCurlFESpaceName")),
-      J_gf_name(params.GetParam<std::string>("JGridFunctionName")),
-      coil_domains_(coil_dom), Itotal_(Itotal), order_(order), coef1_(nullptr),
-      coef0_(nullptr), mesh_parent_(nullptr), J_parent_(nullptr),
-      HCurlFESpace_parent_(nullptr) {
+    : hcurl_fespace_name_(params.GetParam<std::string>("HCurlFESpaceName")),
+      J_gf_name_(params.GetParam<std::string>("JGridFunctionName")),
+      I_coef_name_(params.GetParam<std::string>("IFuncCoefName")),
+      coil_domains_(coil_dom), order_(order), coef1_(nullptr), coef0_(nullptr),
+      mesh_parent_(nullptr), J_parent_(nullptr), HCurlFESpace_parent_(nullptr) {
 
   elec_attrs_.first = electrode_face;
 }
@@ -76,18 +76,26 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
   coef0_ = new mfem::ConstantCoefficient(0.0);
 
   // Retrieving the parent FE space and mesh
-  HCurlFESpace_parent_ = fespaces.Get(hcurl_fespace_name);
+  HCurlFESpace_parent_ = fespaces.Get(hcurl_fespace_name_);
   if (HCurlFESpace_parent_ == NULL) {
-    const std::string error_message = hcurl_fespace_name +
+    const std::string error_message = hcurl_fespace_name_ +
                                       " not found in fespaces when "
                                       "creating ClosedCoilSolver\n";
     mfem::mfem_error(error_message.c_str());
   }
 
-  J_parent_ = gridfunctions.Get(J_gf_name);
+  J_parent_ = gridfunctions.Get(J_gf_name_);
   if (J_parent_ == NULL) {
-    const std::string error_message = J_gf_name +
+    const std::string error_message = J_gf_name_ +
                                       " not found in gridfunctions when "
+                                      "creating ClosedCoilSolver\n";
+    mfem::mfem_error(error_message.c_str());
+  }
+
+  Itotal_ = coefficients.scalars.Get(I_coef_name_);
+  if (Itotal_ == NULL) {
+    const std::string error_message = I_coef_name_ +
+                                      " not found in coefficients when "
                                       "creating ClosedCoilSolver\n";
     mfem::mfem_error(error_message.c_str());
   }
@@ -110,7 +118,14 @@ void ClosedCoilSolver::Apply(mfem::ParLinearForm *lf) {
     mesh_[i]->Transfer(*J_[i], *J_parent_);
   }
 
-  *J_parent_ *= Itotal_;
+  // The transformation and integration points themselves are not relevant, it's
+  // just so we can call Eval
+  mfem::ElementTransformation *Tr = mesh_parent_->GetElementTransformation(0);
+  const mfem::IntegrationPoint &ip =
+      mfem::IntRules.Get(HCurlFESpace_parent_->GetFE(0)->GetGeomType(), 1)
+          .IntPoint(0);
+
+  *J_parent_ *= Itotal_->Eval(*Tr, ip);
 
   lf->Add(1.0, *J_parent_);
 }

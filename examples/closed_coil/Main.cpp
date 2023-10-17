@@ -2,6 +2,8 @@
 
 const char *DATA_DIR = "../../data/";
 
+double current(const mfem::Vector &x, double t) { return 10.; }
+
 int main(int argc, char *argv[]) {
 
   // Refinement and order
@@ -64,6 +66,9 @@ int main(int argc, char *argv[]) {
   mfem::ParFiniteElementSpace FES_HCurl(pmesh.get(), &HCurl_Col);
   mfem::ParGridFunction J(&FES_HCurl);
 
+  // Time-dependent current
+  mfem::FunctionCoefficient I_val(current);
+
   // Input parameters and maps
   hephaestus::GridFunctions gfs;
   gfs.Register("J", &J, false);
@@ -71,12 +76,14 @@ int main(int argc, char *argv[]) {
   fes.Register("HCurl", &FES_HCurl, false);
   hephaestus::BCMap bcs;
   hephaestus::Coefficients coefs;
+  coefs.scalars.Register("I", &I_val, false);
 
   hephaestus::InputParameters coilsolver_pars;
   coilsolver_pars.SetParam("HCurlFESpaceName", std::string("HCurl"));
   coilsolver_pars.SetParam("JGridFunctionName", std::string("J"));
+  coilsolver_pars.SetParam("IFuncCoefName", std::string("I"));
 
-  hephaestus::ClosedCoilSolver coil(coilsolver_pars, coil_domains, Jtotal,
+  hephaestus::ClosedCoilSolver coil(coilsolver_pars, coil_domains,
                                     electrode_attr, order);
   coil.Init(gfs, fes, bcs, coefs);
   mfem::ParLinearForm ccs_rhs;

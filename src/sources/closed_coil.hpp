@@ -14,8 +14,7 @@ class ClosedCoilSolver : public hephaestus::Source {
 public:
   ClosedCoilSolver(const hephaestus::InputParameters &params,
                    const std::vector<hephaestus::Subdomain> &coil_dom,
-                   const double I_total, const int electrode_face,
-                   const int order);
+                   const int electrode_face, const int order);
 
   ~ClosedCoilSolver();
 
@@ -81,18 +80,19 @@ public:
 
 private:
   // Parameters
-  double Itotal_;
   int order_;
   int new_domain_attr_;
   std::pair<int, int> elec_attrs_;
   std::vector<hephaestus::Subdomain> coil_domains_;
   mfem::ConstantCoefficient *coef1_;
   mfem::ConstantCoefficient *coef0_;
+  mfem::Coefficient *Itotal_;
   std::vector<int> old_dom_attrs;
 
   // FE space, mesh, and J GridFunction
-  std::string hcurl_fespace_name;
-  std::string J_gf_name;
+  std::string hcurl_fespace_name_;
+  std::string J_gf_name_;
+  std::string I_coef_name_;
 
   // Parent mesh, FE space, and current
   mfem::ParMesh *mesh_parent_;
