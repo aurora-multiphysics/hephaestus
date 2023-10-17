@@ -1,6 +1,7 @@
 #pragma once
 #include "coefficients.hpp"
 #include "gridfunctions.hpp"
+#include "hephaestus_solvers.hpp"
 #include "inputs.hpp"
 #include "mfem.hpp"
 
