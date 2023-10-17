@@ -7,18 +7,19 @@
 #include "sources.hpp"
 
 namespace hephaestus {
-class FrequencyDomainEquationSystemOperator : public mfem::Operator {
+class EquationSystemOperator : public mfem::Operator {
 public:
-  FrequencyDomainEquationSystemOperator(
-      mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
-      hephaestus::GridFunctions &gridfunctions, hephaestus::BCMap &bc_map,
-      hephaestus::Coefficients &coefficients, hephaestus::Sources &sources,
-      hephaestus::InputParameters &solver_options)
+  EquationSystemOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
+                         hephaestus::GridFunctions &gridfunctions,
+                         hephaestus::BCMap &bc_map,
+                         hephaestus::Coefficients &coefficients,
+                         hephaestus::Sources &sources,
+                         hephaestus::InputParameters &solver_options)
       : myid_(0), num_procs_(1), pmesh_(&pmesh), _fespaces(fespaces),
         _gridfunctions(gridfunctions), _bc_map(bc_map), _sources(sources),
         _coefficients(coefficients), _solver_options(solver_options){};
 
-  ~FrequencyDomainEquationSystemOperator(){};
+  ~EquationSystemOperator(){};
 
   virtual void SetGridFunctions();
   virtual void Init(mfem::Vector &X);
@@ -36,7 +37,7 @@ public:
   // in formulation,
   std::vector<std::string> active_aux_var_names;
 
-  std::vector<mfem::ParGridFunction *> local_trial_vars, local_test_vars;
+  std::vector<mfem::ParGridFunction *> local_test_vars;
 
   int myid_;
   int num_procs_;

@@ -118,7 +118,7 @@ TEST_F(TestComplexIrisWaveguide, CheckRun) {
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
 
-  hephaestus::FrequencyDomainProblemBuilder *problem_builder =
+  hephaestus::SteadyStateProblemBuilder *problem_builder =
       new hephaestus::ComplexEFormulation(
           "magnetic_reluctivity", "electrical_conductivity",
           "dielectric_permittivity", "frequency", "electric_field");
@@ -147,7 +147,7 @@ TEST_F(TestComplexIrisWaveguide, CheckRun) {
 
   hephaestus::ProblemBuildSequencer sequencer(problem_builder);
   sequencer.ConstructOperatorProblem();
-  std::unique_ptr<hephaestus::FrequencyDomainProblem> problem =
+  std::unique_ptr<hephaestus::SteadyStateProblem> problem =
       problem_builder->ReturnProblem();
 
   hephaestus::InputParameters exec_params;

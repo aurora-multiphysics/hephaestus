@@ -173,7 +173,7 @@ TEST_F(TestComplexTeam7, CheckRun) {
       params.GetOptionalParam<hephaestus::InputParameters>(
           "SolverOptions", hephaestus::InputParameters()));
 
-  hephaestus::FrequencyDomainProblemBuilder *problem_builder =
+  hephaestus::SteadyStateProblemBuilder *problem_builder =
       new hephaestus::ComplexAFormulation(
           "magnetic_reluctivity", "electrical_conductivity",
           "dielectric_permittivity", "frequency", "magnetic_vector_potential");
@@ -199,7 +199,7 @@ TEST_F(TestComplexTeam7, CheckRun) {
 
   hephaestus::ProblemBuildSequencer sequencer(problem_builder);
   sequencer.ConstructOperatorProblem();
-  std::unique_ptr<hephaestus::FrequencyDomainProblem> problem =
+  std::unique_ptr<hephaestus::SteadyStateProblem> problem =
       problem_builder->ReturnProblem();
 
   hephaestus::InputParameters exec_params;

@@ -9,6 +9,7 @@
 #include "h_formulation.hpp"
 #include "hj_dual_formulation.hpp"
 #include "inputs.hpp"
+#include "magnetostatic_formulation.hpp"
 
 namespace hephaestus {
 
