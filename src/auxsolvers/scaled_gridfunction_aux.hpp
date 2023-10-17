@@ -1,10 +1,8 @@
 #pragma once
 #include "auxsolvers.hpp"
 
-// Specify postprocessors that depend on one or more gridfunctions
 namespace hephaestus {
 
-// Multiply a GridFunction by a scalar Coefficient GridFunction
 class ScaledGridFunctionAuxSolver : public AuxSolver {
 private:
   // ConstantCoefficient to scale input gridfunction by
@@ -26,6 +24,8 @@ public:
             hephaestus::Coefficients &coefficients) override;
 
   void Solve(double t = 0.0) override;
+  void buildHCurlMass();
+  void buildWeakDiv();
 };
 
 } // namespace hephaestus
