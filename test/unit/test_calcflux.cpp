@@ -3,14 +3,14 @@
 
 static void JExact(const mfem::Vector &x, mfem::Vector &J);
 
+extern const char *DATA_DIR;
+
 TEST(CalcFluxTest, CheckData) {
 
-  const char *DATA_DIR = "../data/";
-  std::string mesh_filename = "team7.g";
   int par_ref_lvl = -1;
   int order = 1;
 
-  mfem::Mesh mesh((std::string(DATA_DIR) + mesh_filename).c_str(), 1, 1);
+  mfem::Mesh mesh((std::string(DATA_DIR) + "team7.g").c_str(), 1, 1);
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(mfem::ParMesh(MPI_COMM_WORLD, mesh));
 
