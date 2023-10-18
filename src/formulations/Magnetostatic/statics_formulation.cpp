@@ -31,7 +31,7 @@ namespace hephaestus {
 
 StaticsFormulation::StaticsFormulation(const std::string &alpha_coef_name,
                                        const std::string &h_curl_var_name)
-    : SteadyStateFormulation(), _alpha_coef_name(alpha_coef_name),
+    : SteadyStateEMFormulation(), _alpha_coef_name(alpha_coef_name),
       _h_curl_var_name(h_curl_var_name) {}
 
 void StaticsFormulation::ConstructOperator() {

@@ -5,7 +5,7 @@
 
 namespace hephaestus {
 
-class DualFormulation : public TimeDomainFormulation {
+class DualFormulation : public TimeDomainEMFormulation {
 public:
   DualFormulation(const std::string &alpha_coef_name,
                   const std::string &beta_coef_name,

@@ -1,14 +1,17 @@
 #pragma once
+#include "em_formulation_interface.hpp"
 #include "steady_state_problem_builder.hpp"
 
 namespace hephaestus {
 
 // Specifies output interfaces of a frequency-domain EM formulation.
-class FrequencyDomainFormulation
-    : public hephaestus::SteadyStateProblemBuilder {
+class FrequencyDomainEMFormulation
+    : public hephaestus::SteadyStateProblemBuilder,
+      public hephaestus::EMFormulationInterface {
 protected:
   mfem::ConstantCoefficient *freqCoef;
+
 public:
-  FrequencyDomainFormulation();
+  FrequencyDomainEMFormulation();
 };
 } // namespace hephaestus

@@ -7,9 +7,8 @@ ComplexMaxwellOperator::ComplexMaxwellOperator(
     hephaestus::GridFunctions &gridfunctions, hephaestus::BCMap &bc_map,
     hephaestus::Coefficients &coefficients, hephaestus::Sources &sources,
     hephaestus::InputParameters &solver_options)
-    : EquationSystemOperator(pmesh, fespaces, gridfunctions,
-                                            bc_map, coefficients, sources,
-                                            solver_options),
+    : EquationSystemOperator(pmesh, fespaces, gridfunctions, bc_map,
+                             coefficients, sources, solver_options),
       h_curl_var_name(solver_options.GetParam<std::string>("HCurlVarName")),
       stiffness_coef_name(
           solver_options.GetParam<std::string>("StiffnessCoefName")),
@@ -101,7 +100,7 @@ ComplexMaxwellFormulation::ComplexMaxwellFormulation(
     const std::string &alpha_coef_name, const std::string &beta_coef_name,
     const std::string &zeta_coef_name, const std::string &frequency_coef_name,
     const std::string &h_curl_var_name)
-    : FrequencyDomainFormulation(), _alpha_coef_name(alpha_coef_name),
+    : FrequencyDomainEMFormulation(), _alpha_coef_name(alpha_coef_name),
       _beta_coef_name(beta_coef_name), _zeta_coef_name(zeta_coef_name),
       _frequency_coef_name(frequency_coef_name),
       _h_curl_var_name(h_curl_var_name),
