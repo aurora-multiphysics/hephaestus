@@ -1,8 +1,8 @@
-#include "frequency_domain_equation_system_operator.hpp"
+#include "equation_system_operator.hpp"
 
 namespace hephaestus {
 
-void FrequencyDomainEquationSystemOperator::SetGridFunctions() {
+void EquationSystemOperator::SetGridFunctions() {
   local_test_vars = populateVectorFromNamedFieldsMap<mfem::ParGridFunction>(
       _gridfunctions, state_var_names);
 
@@ -36,7 +36,7 @@ void FrequencyDomainEquationSystemOperator::SetGridFunctions() {
   }
 };
 
-void FrequencyDomainEquationSystemOperator::Init(mfem::Vector &X) {
+void EquationSystemOperator::Init(mfem::Vector &X) {
   // Define material property coefficients
   for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
     local_test_vars.at(ind)->MakeRef(local_test_vars.at(ind)->ParFESpace(),
@@ -45,6 +45,6 @@ void FrequencyDomainEquationSystemOperator::Init(mfem::Vector &X) {
   }
 }
 
-void FrequencyDomainEquationSystemOperator::Solve(mfem::Vector &X) {}
+void EquationSystemOperator::Solve(mfem::Vector &X) {}
 
 } // namespace hephaestus

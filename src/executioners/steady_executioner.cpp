@@ -5,7 +5,7 @@ namespace hephaestus {
 SteadyExecutioner::SteadyExecutioner(const hephaestus::InputParameters &params)
     : Executioner(params),
       problem(
-          params.GetParam<hephaestus::FrequencyDomainProblem *>("Problem")) {}
+          params.GetParam<hephaestus::SteadyStateProblem *>("Problem")) {}
 
 void SteadyExecutioner::Init() {
   // Set up DataCollections to track fields of interest.
@@ -27,7 +27,7 @@ void SteadyExecutioner::Init() {
 void SteadyExecutioner::Solve() const {
   // Advance time step.
   problem->preprocessors.Solve();
-  problem->fd_operator.get()->Solve(*(problem->F));
+  problem->GetOperator()->Solve(*(problem->F));
   problem->postprocessors.Solve();
 
   // Output data
