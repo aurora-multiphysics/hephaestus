@@ -92,7 +92,7 @@ protected:
     hephaestus::AuxSolvers preprocessors;
     hephaestus::Sources sources;
 
-    hephaestus::FrequencyDomainFormulation *formulation =
+    hephaestus::FrequencyDomainEMFormulation *formulation =
         new hephaestus::ComplexEFormulation(
             "magnetic_reluctivity", "electrical_conductivity",
             "dielectric_permittivity", "frequency", "electric_field");

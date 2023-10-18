@@ -18,11 +18,11 @@ public:
   static hephaestus::ProblemBuilder *
   createProblemBuilder(std::string &formulation_name);
 
-  static hephaestus::TimeDomainFormulation *
-  createTimeDomainFormulation(std::string &formulation);
+  static hephaestus::TimeDomainEMFormulation *
+  createTimeDomainEMFormulation(std::string &formulation);
 
-  static hephaestus::FrequencyDomainFormulation *
-  createFrequencyDomainFormulation(std::string &formulation);
+  static hephaestus::FrequencyDomainEMFormulation *
+  createFrequencyDomainEMFormulation(std::string &formulation);
 
   static mfem::ParFiniteElementSpace *
   createParFESpace(const hephaestus::InputParameters params,

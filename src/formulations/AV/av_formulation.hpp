@@ -6,7 +6,7 @@
 
 namespace hephaestus {
 
-class AVFormulation : public TimeDomainFormulation {
+class AVFormulation : public TimeDomainEMFormulation {
 public:
   AVFormulation(const std::string &alpha_coef_name,
                 const std::string &inv_alpha_coef_name,

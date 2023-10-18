@@ -1,5 +1,5 @@
 #pragma once
-#include "frequency_domain_formulation.hpp"
+#include "frequency_domain_em_formulation.hpp"
 
 namespace hephaestus {
 /*
@@ -59,7 +59,7 @@ public:
 //
 // Specifies output interfaces of a time-domain EM formulation.
 class ComplexMaxwellFormulation
-    : public hephaestus::FrequencyDomainFormulation {
+    : public hephaestus::FrequencyDomainEMFormulation {
   // std::vector<mfem::ParGridFunction *> local_trial_vars, local_test_vars;
 protected:
   const std::string _alpha_coef_name;

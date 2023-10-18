@@ -35,7 +35,7 @@ AVFormulation::AVFormulation(const std::string &alpha_coef_name,
                              const std::string &beta_coef_name,
                              const std::string &vector_potential_name,
                              const std::string &scalar_potential_name)
-    : TimeDomainFormulation(), _alpha_coef_name(alpha_coef_name),
+    : TimeDomainEMFormulation(), _alpha_coef_name(alpha_coef_name),
       _inv_alpha_coef_name(inv_alpha_coef_name),
       _beta_coef_name(beta_coef_name),
       _vector_potential_name(vector_potential_name),
