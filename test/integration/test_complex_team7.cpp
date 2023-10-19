@@ -2,7 +2,6 @@
 #include "steady_executioner.hpp"
 
 #include "hephaestus.hpp"
-#include "postprocessors.hpp"
 
 #include <gtest/gtest.h>
 

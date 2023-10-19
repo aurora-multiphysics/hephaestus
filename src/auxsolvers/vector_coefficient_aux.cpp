@@ -2,31 +2,29 @@
 
 namespace hephaestus {
 
-VectorCoefficientAuxSolver::VectorCoefficientAuxSolver(
-    const hephaestus::InputParameters &params)
-    : AuxSolver(), var_name(params.GetParam<std::string>("VariableName")),
-      vec_coef_name(params.GetParam<std::string>("VectorCoefficientName")) {}
+VectorCoefficientAux::VectorCoefficientAux(const std::string &gf_name,
+                                           const std::string &vec_coef_name)
+    : AuxSolver(), _gf_name(gf_name), _vec_coef_name(vec_coef_name) {}
 
-void VectorCoefficientAuxSolver::Init(
-    const hephaestus::GridFunctions &gridfunctions,
-    hephaestus::Coefficients &coefficients) {
-  gf = gridfunctions.Get(var_name);
+void VectorCoefficientAux::Init(const hephaestus::GridFunctions &gridfunctions,
+                                hephaestus::Coefficients &coefficients) {
+  gf = gridfunctions.Get(_gf_name);
   if (gf == NULL) {
     MFEM_ABORT("GridFunction "
-               << var_name
-               << " not found when initializing CoefficientAuxSolver");
+               << _gf_name
+               << " not found when initializing VectorCoefficientAux");
   }
-  vec_coeff = coefficients.vectors.Get(vec_coef_name);
-  if (vec_coeff == NULL) {
+  vec_coef = coefficients.vectors.Get(_vec_coef_name);
+  if (vec_coef == NULL) {
     MFEM_ABORT("VectorCoefficient "
-               << vec_coef_name
-               << " not found when initializing VectorCoefficientAuxSolver");
+               << _vec_coef_name
+               << " not found when initializing VectorCoefficientAux");
   }
 }
 
-void VectorCoefficientAuxSolver::Solve(double t) {
-  vec_coeff->SetTime(t);
-  gf->ProjectCoefficient(*vec_coeff);
+void VectorCoefficientAux::Solve(double t) {
+  vec_coef->SetTime(t);
+  gf->ProjectCoefficient(*vec_coef);
 }
 
 } // namespace hephaestus

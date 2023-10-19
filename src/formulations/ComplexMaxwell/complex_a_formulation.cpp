@@ -36,29 +36,31 @@ void ComplexAFormulation::RegisterAuxSolvers() {
 
   // E = -iωA
   std::string e_field_name = std::string("electric_field");
-  if (gridfunctions.Get(e_field_name + "_real") != NULL) {
-    // if (myid_ == 0) {
-    std::cout << e_field_name + "_real"
-              << " found in gridfunctions: building auxvar " << std::endl;
-    // }
-    hephaestus::InputParameters e_field_aux_params;
-    e_field_aux_params.SetParam("CoefficientName",
-                                std::string("_neg_angular_frequency"));
-    e_field_aux_params.SetParam("InputVariableName",
-                                _h_curl_var_name + "_real");
-    e_field_aux_params.SetParam("ScaledVariableName", e_field_name + "_imag");
-    auxsolvers.Register(
-        "_electric_field_re_aux",
-        new hephaestus::ScaledGridFunctionAuxSolver(e_field_aux_params), true);
-    e_field_aux_params.SetParam("CoefficientName",
-                                std::string("_angular_frequency"));
-    e_field_aux_params.SetParam("InputVariableName",
-                                _h_curl_var_name + "_imag");
-    e_field_aux_params.SetParam("ScaledVariableName", e_field_name + "_real");
-    auxsolvers.Register(
-        "_electric_field_im_aux",
-        new hephaestus::ScaledGridFunctionAuxSolver(e_field_aux_params), true);
-  }
+  // if (gridfunctions.Get(e_field_name + "_real") != NULL) {
+  //   // if (myid_ == 0) {
+  //   std::cout << e_field_name + "_real"
+  //             << " found in gridfunctions: building auxvar " << std::endl;
+  //   // }
+  //   hephaestus::InputParameters e_field_aux_params;
+  //   e_field_aux_params.SetParam("CoefficientName",
+  //                               std::string("_neg_angular_frequency"));
+  //   e_field_aux_params.SetParam("InputVariableName",
+  //                               _h_curl_var_name + "_real");
+  //   e_field_aux_params.SetParam("ScaledVariableName", e_field_name +
+  //   "_imag"); auxsolvers.Register(
+  //       "_electric_field_re_aux",
+  //       new hephaestus::ScaledGridFunctionAuxSolver(e_field_aux_params),
+  //       true);
+  //   e_field_aux_params.SetParam("CoefficientName",
+  //                               std::string("_angular_frequency"));
+  //   e_field_aux_params.SetParam("InputVariableName",
+  //                               _h_curl_var_name + "_imag");
+  //   e_field_aux_params.SetParam("ScaledVariableName", e_field_name +
+  //   "_real"); auxsolvers.Register(
+  //       "_electric_field_im_aux",
+  //       new hephaestus::ScaledGridFunctionAuxSolver(e_field_aux_params),
+  //       true);
+  // }
 }
 
 } // namespace hephaestus

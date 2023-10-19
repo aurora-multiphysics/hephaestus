@@ -30,12 +30,17 @@ public:
   };
 
   // Enable auxiliary calculation of F ∈ L2
-  virtual void registerLorentzForceDensityAux(const std::string &f_field_name) {
+  virtual void registerLorentzForceDensityAux(const std::string &f_field_name,
+                                              const std::string &b_field_name,
+                                              const std::string &j_field_name) {
     MFEM_ABORT("Lorentz force auxsolver not available for this formulation");
   };
 
   // Enable auxiliary calculation of P ∈ L2
-  virtual void registerJouleHeatingDensityAux(const std::string &p_field_name) {
+  virtual void
+  registerJouleHeatingDensityAux(const std::string &p_field_name,
+                                 const std::string &e_field_name,
+                                 const std::string &conductivity_coef_name) {
     MFEM_ABORT("Joule heating auxsolver not available for this formulation");
   };
 };
