@@ -119,10 +119,9 @@ int main(int argc, char *argv[]) {
   MPI_Init(&argc, &argv);
 
   // Create Formulation
-  hephaestus::TimeDomainProblemBuilder *problem_builder =
-      new hephaestus::AFormulation(
-          "magnetic_reluctivity", "magnetic_permeability",
-          "electrical_conductivity", "magnetic_vector_potential");
+  hephaestus::AFormulation *problem_builder = new hephaestus::AFormulation(
+      "magnetic_reluctivity", "magnetic_permeability",
+      "electrical_conductivity", "magnetic_vector_potential");
   // Set Mesh
   mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team7.g")).c_str(), 1,
                   1);
@@ -136,6 +135,14 @@ int main(int argc, char *argv[]) {
                                    std::string("HCurl"));
   problem_builder->AddGridFunction(std::string("magnetic_flux_density"),
                                    std::string("HDiv"));
+  problem_builder->registerMagneticFluxDensityAux(
+      std::string("magnetic_flux_density"));
+  problem_builder->AddGridFunction(std::string("current_density"),
+                                   std::string("HDiv"));
+  problem_builder->registerCurrentDensityAux(std::string("current_density"));
+  problem_builder->AddGridFunction(std::string("electric_field"),
+                                   std::string("HCurl"));
+  problem_builder->registerElectricFieldAux(std::string("electric_field"));
   hephaestus::Coefficients coefficients = defineCoefficients();
   problem_builder->SetCoefficients(coefficients);
 
