@@ -74,13 +74,29 @@ void AFormulation::registerMagneticFieldAux(const std::string &h_field_name) {
 }
 
 void AFormulation::registerLorentzForceDensityAux(
-    const std::string &f_field_name) {
+    const std::string &f_field_name, const std::string &b_field_name,
+    const std::string &j_field_name) {
   //* Lorentz force density = J x B
+  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  auxsolvers.Register(
+      f_field_name,
+      new hephaestus::LorentzForceDensityAux(f_field_name, f_field_name,
+                                             b_field_name, j_field_name),
+      true);
+  auxsolvers.Get(f_field_name)->SetPriority(2);
 }
 
 void AFormulation::registerJouleHeatingDensityAux(
-    const std::string &p_field_name) {
+    const std::string &p_field_name, const std::string &e_field_name,
+    const std::string &conductivity_coef_name) {
   //* Joule heating density = E.J
+  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  auxsolvers.Register(p_field_name,
+                      new hephaestus::JouleHeatingDensityAux(
+                          p_field_name, p_field_name, e_field_name,
+                          _electric_conductivity_name),
+                      true);
+  auxsolvers.Get(p_field_name)->SetPriority(2);
 }
 
 void AFormulation::RegisterCoefficients() {

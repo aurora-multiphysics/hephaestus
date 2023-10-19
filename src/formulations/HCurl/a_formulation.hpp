@@ -34,11 +34,14 @@ public:
 
   // Enable auxiliary calculation of F ∈ L2
   virtual void
-  registerLorentzForceDensityAux(const std::string &f_field_name) override;
+  registerLorentzForceDensityAux(const std::string &f_field_name,
+                                 const std::string &b_field_name,
+                                 const std::string &j_field_name) override;
 
   // Enable auxiliary calculation of P ∈ L2
-  virtual void
-  registerJouleHeatingDensityAux(const std::string &p_field_name) override;
+  virtual void registerJouleHeatingDensityAux(
+      const std::string &p_field_name, const std::string &e_field_name,
+      const std::string &conductivity_coef_name) override;
 
   virtual void RegisterCoefficients() override;
 

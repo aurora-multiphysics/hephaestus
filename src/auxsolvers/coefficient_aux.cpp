@@ -2,30 +2,24 @@
 
 namespace hephaestus {
 
-CoefficientAuxSolver::CoefficientAuxSolver(
-    const hephaestus::InputParameters &params)
-    : AuxSolver(), var_name(params.GetParam<std::string>("VariableName")),
-      coef_name(params.GetParam<std::string>("CoefficientName")) {}
+CoefficientAux::CoefficientAux(const std::string &gf_name,
+                               const std::string &coef_name)
+    : AuxSolver(), _gf_name(gf_name), _coef_name(coef_name) {}
 
-void CoefficientAuxSolver::Init(const hephaestus::GridFunctions &gridfunctions,
-                                hephaestus::Coefficients &coefficients) {
-  gf = gridfunctions.Get(var_name);
+void CoefficientAux::Init(const hephaestus::GridFunctions &gridfunctions,
+                          hephaestus::Coefficients &coefficients) {
+  gf = gridfunctions.Get(_gf_name);
   if (gf == NULL) {
     MFEM_ABORT("GridFunction "
-               << var_name
-               << " not found when initializing CoefficientAuxSolver");
+               << _gf_name << " not found when initializing CoefficientAux");
   }
-  coeff = coefficients.scalars.Get(coef_name);
-  if (gf == NULL) {
-    MFEM_ABORT("Coefficient "
-               << coef_name
-               << " not found when initializing CoefficientAuxSolver");
+  coef = coefficients.scalars.Get(_coef_name);
+  if (coef == NULL) {
+    MFEM_ABORT("Coefficient " << _coef_name
+                              << " not found when initializing CoefficientAux");
   }
 }
 
-void CoefficientAuxSolver::Solve(double t) {
-  coeff->SetTime(t);
-  gf->ProjectCoefficient(*coeff);
-}
+void CoefficientAux::Solve(double t) { gf->ProjectCoefficient(*coef); }
 
 } // namespace hephaestus

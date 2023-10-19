@@ -113,18 +113,11 @@ protected:
     hephaestus::Outputs outputs(data_collections);
 
     hephaestus::AuxSolvers postprocessors;
-    hephaestus::InputParameters joule_heating_params;
-    joule_heating_params.SetParam("VariableName",
-                                  std::string("joule_heating_load"));
-    joule_heating_params.SetParam("CoefficientName",
-                                  std::string("JouleHeating"));
-    joule_heating_params.SetParam("ElectricFieldName",
-                                  std::string("electric_field"));
-    joule_heating_params.SetParam("ConductivityCoefName",
-                                  std::string("electrical_conductivity"));
-    postprocessors.Register(
-        "JouleHeatingAux",
-        new hephaestus::JouleHeatingAuxSolver(joule_heating_params), true);
+    postprocessors.Register("JouleHeatingAux",
+                            new hephaestus::JouleHeatingDensityAux(
+                                "joule_heating_load", "JouleHeating",
+                                "electric_field", "electrical_conductivity"),
+                            true);
 
     hephaestus::Sources sources;
     hephaestus::InputParameters scalar_potential_source_params;
