@@ -29,12 +29,9 @@ void HFormulation::RegisterAuxSolvers() {
   std::vector<std::string> aux_var_names;
   std::string j_field_name = "current_density";
   if (gridfunctions.Get(j_field_name) != NULL) {
-    hephaestus::InputParameters j_field_aux_params;
-    j_field_aux_params.SetParam("VariableName", std::string("magnetic_field"));
-    j_field_aux_params.SetParam("CurlVariableName", j_field_name);
-    auxsolvers.Register("_magnetic_flux_density_aux",
-                        new hephaestus::CurlAuxSolver(j_field_aux_params),
-                        true);
+    auxsolvers.Register(
+        "_current_density_aux",
+        new hephaestus::CurlAuxSolver(_h_curl_var_name, j_field_name), true);
   }
 }
 

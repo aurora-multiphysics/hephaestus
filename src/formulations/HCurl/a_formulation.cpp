@@ -26,18 +26,61 @@ AFormulation::AFormulation(const std::string &magnetic_reluctivity_name,
       _magnetic_permeability_name(magnetic_permeability_name) {}
 
 void AFormulation::RegisterAuxSolvers() {
-  hephaestus::GridFunctions &gridfunctions = this->GetProblem()->gridfunctions;
+  // registerCurrentDensityAux("current_density");
+  // registerMagneticFluxDensityAux("magnetic_flux_density");
+  // registerElectricFieldAux("electric_field");
+  // registerMagneticFieldAux("magnetic_field");
+}
+
+void AFormulation::registerCurrentDensityAux(const std::string &j_field_name) {
+  //* Current density J = Jᵉ -σdA/dt
+  //* Induced electric field, Jind = -σdA/dt
   hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
-  std::vector<std::string> aux_var_names;
-  std::string b_field_name = "magnetic_flux_density";
-  if (gridfunctions.Get(b_field_name) != NULL) {
-    hephaestus::InputParameters b_field_aux_params;
-    b_field_aux_params.SetParam("VariableName", _h_curl_var_name);
-    b_field_aux_params.SetParam("CurlVariableName", b_field_name);
-    auxsolvers.Register("_magnetic_flux_density_aux",
-                        new hephaestus::CurlAuxSolver(b_field_aux_params),
-                        true);
-  }
+  auxsolvers.Register(j_field_name,
+                      new hephaestus::ScaledVectorGridFunctionAux(
+                          GetTimeDerivativeName(_h_curl_var_name), j_field_name,
+                          _electric_conductivity_name, -1.0),
+                      true);
+}
+
+void AFormulation::registerMagneticFluxDensityAux(
+    const std::string &b_field_name) {
+  //* Magnetic flux density, B = ∇×A
+  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  auxsolvers.Register(
+      b_field_name,
+      new hephaestus::CurlAuxSolver(_h_curl_var_name, b_field_name), true);
+}
+
+void AFormulation::registerElectricFieldAux(const std::string &e_field_name) {
+  //* Total electric field, E = ρJᵉ -dA/dt
+  //* Induced electric field, Eind = -dA/dt
+  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  auxsolvers.Register(
+      e_field_name,
+      new hephaestus::ScaledVectorGridFunctionAux(
+          GetTimeDerivativeName(_h_curl_var_name), e_field_name, "_one", -1.0),
+      true);
+}
+
+void AFormulation::registerMagneticFieldAux(const std::string &h_field_name) {
+  //* Magnetic field H = ν∇×A
+  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  auxsolvers.Register(
+      h_field_name,
+      new hephaestus::ScaledCurlVectorGridFunctionAux(
+          _h_curl_var_name, h_field_name, _magnetic_reluctivity_name),
+      true);
+}
+
+void AFormulation::registerLorentzForceDensityAux(
+    const std::string &f_field_name) {
+  //* Lorentz force density = J x B
+}
+
+void AFormulation::registerJouleHeatingDensityAux(
+    const std::string &p_field_name) {
+  //* Joule heating density = E.J
 }
 
 void AFormulation::RegisterCoefficients() {

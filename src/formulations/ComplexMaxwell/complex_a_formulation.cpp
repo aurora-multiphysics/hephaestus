@@ -24,17 +24,13 @@ void ComplexAFormulation::RegisterAuxSolvers() {
     std::cout << b_field_name + "_real"
               << " found in gridfunctions: building auxvar " << std::endl;
     // }
-    hephaestus::InputParameters b_field_aux_params;
-    b_field_aux_params.SetParam("VariableName", _h_curl_var_name + "_real");
-    b_field_aux_params.SetParam("CurlVariableName", b_field_name + "_real");
     auxsolvers.Register("_magnetic_flux_density_re_aux",
-                        new hephaestus::CurlAuxSolver(b_field_aux_params),
+                        new hephaestus::CurlAuxSolver(
+                            _h_curl_var_name + "_real", b_field_name + "_real"),
                         true);
-
-    b_field_aux_params.SetParam("VariableName", _h_curl_var_name + "_imag");
-    b_field_aux_params.SetParam("CurlVariableName", b_field_name + "_imag");
     auxsolvers.Register("_magnetic_flux_density_im_aux",
-                        new hephaestus::CurlAuxSolver(b_field_aux_params),
+                        new hephaestus::CurlAuxSolver(
+                            _h_curl_var_name + "_imag", b_field_name + "_imag"),
                         true);
   }
 

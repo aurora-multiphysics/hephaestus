@@ -32,6 +32,7 @@ public:
   Coefficients(std::vector<Subdomain> subdomains_);
   void SetTime(double t);
   void AddGlobalCoefficientsFromSubdomains();
+  void registerDefaultCoefficients();
 
   mfem::NamedFieldsMap<mfem::Coefficient> scalars;
   mfem::NamedFieldsMap<mfem::VectorCoefficient> vectors;
