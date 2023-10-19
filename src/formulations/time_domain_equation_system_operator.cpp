@@ -2,7 +2,7 @@
 
 namespace hephaestus {
 
-std::string GetTimeDerivativeName(std::string name) {
+std::string GetTimeDerivativeName(const std::string &name) {
   return std::string("d") + name + std::string("_dt");
 }
 

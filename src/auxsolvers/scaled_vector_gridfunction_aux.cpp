@@ -3,35 +3,35 @@
 namespace hephaestus {
 
 ScaledVectorGridFunctionAux::ScaledVectorGridFunctionAux(
-    const hephaestus::InputParameters &params)
-    : AuxSolver(), coef(nullptr), input_gf(nullptr), scaled_gf(nullptr),
-      coef_name(params.GetParam<std::string>("CoefficientName")),
-      input_gf_name(params.GetParam<std::string>("InputVariableName")),
-      scaled_gf_name(params.GetParam<std::string>("ScaledVariableName")),
-      solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
-          "SolverOptions", hephaestus::InputParameters())),
-      test_fes(nullptr), trial_fes(nullptr), a(nullptr), a_mixed(nullptr),
-      a_mat(nullptr), mixed_mat(nullptr), solver(nullptr) {}
+    const std::string &input_gf_name, const std::string &scaled_gf_name,
+    const std::string &coef_name, const double &aConst,
+    const hephaestus::InputParameters &solver_options)
+    : AuxSolver(), _input_gf_name(input_gf_name),
+      _scaled_gf_name(scaled_gf_name), _coef_name(coef_name), _aConst(aConst),
+      _solver_options(solver_options), coef(nullptr), input_gf(nullptr),
+      scaled_gf(nullptr), test_fes(nullptr), trial_fes(nullptr), a(nullptr),
+      a_mixed(nullptr), a_mat(nullptr), mixed_mat(nullptr), solver(nullptr) {}
 
 void ScaledVectorGridFunctionAux::Init(
     const hephaestus::GridFunctions &gridfunctions,
     hephaestus::Coefficients &coefficients) {
-  input_gf = gridfunctions.Get(input_gf_name);
+  input_gf = gridfunctions.Get(_input_gf_name);
   if (input_gf == NULL) {
     MFEM_ABORT("GridFunction "
-               << input_gf_name
+               << _input_gf_name
                << " not found when initializing ScaledVectorGridFunctionAux");
   }
-  scaled_gf = gridfunctions.Get(scaled_gf_name);
+  scaled_gf = gridfunctions.Get(_scaled_gf_name);
   if (scaled_gf == NULL) {
     MFEM_ABORT("GridFunction "
-               << scaled_gf_name
+               << _scaled_gf_name
                << " not found when initializing ScaledVectorGridFunctionAux");
   }
-  coef = dynamic_cast<mfem::Coefficient *>(coefficients.scalars.Get(coef_name));
+  coef =
+      dynamic_cast<mfem::Coefficient *>(coefficients.scalars.Get(_coef_name));
   if (coef == NULL) {
     MFEM_ABORT("Coefficient "
-               << coef_name
+               << _coef_name
                << " not found when initializing ScaledVectorGridFunctionAux");
   }
 
@@ -39,7 +39,7 @@ void ScaledVectorGridFunctionAux::Init(
   trial_fes = input_gf->ParFESpace();
   mixed_mat = a_mixed->ParallelAssemble();
   a_mat = a->ParallelAssemble();
-  solver = new hephaestus::DefaultH1PCGSolver(solver_options, *a_mat);
+  solver = new hephaestus::DefaultH1PCGSolver(_solver_options, *a_mat);
 }
 
 void ScaledVectorGridFunctionAux::buildBilinearForm() {
@@ -53,13 +53,14 @@ void ScaledVectorGridFunctionAux::buildMixedBilinearForm() {
   a_mixed->AddDomainIntegrator(new mfem::MixedVectorMassIntegrator(*coef));
   a_mixed->Assemble();
 }
-
+// J = σE
 void ScaledVectorGridFunctionAux::Solve(double t) {
   mfem::Vector B(test_fes->GetTrueVSize());  // Linear form true DOFs
   mfem::Vector X(test_fes->GetTrueVSize());  // H(Div) gridfunction true DOFs
   mfem::Vector P(trial_fes->GetTrueVSize()); // H(Curl) gridfunction true DOFs
+  B = 0.0;
   input_gf->GetTrueDofs(P);
-  mixed_mat->Mult(P, B);
+  mixed_mat->AddMult(P, B, _aConst);
   solver->Mult(B, X);
   scaled_gf->SetFromTrueDofs(X);
 }

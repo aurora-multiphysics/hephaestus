@@ -8,7 +8,7 @@
 
 namespace hephaestus {
 
-std::string GetTimeDerivativeName(std::string name);
+std::string GetTimeDerivativeName(const std::string &name);
 
 std::vector<std::string>
 GetTimeDerivativeNames(std::vector<std::string> gridfunction_names);

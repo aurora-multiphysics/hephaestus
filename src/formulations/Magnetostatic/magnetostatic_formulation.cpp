@@ -30,12 +30,9 @@ void MagnetostaticFormulation::RegisterAuxSolvers() {
   std::vector<std::string> aux_var_names;
   std::string b_field_name = "magnetic_flux_density";
   if (gridfunctions.Get(b_field_name) != NULL) {
-    hephaestus::InputParameters b_field_aux_params;
-    b_field_aux_params.SetParam("VariableName", _h_curl_var_name);
-    b_field_aux_params.SetParam("CurlVariableName", b_field_name);
-    auxsolvers.Register("_magnetic_flux_density_aux",
-                        new hephaestus::CurlAuxSolver(b_field_aux_params),
-                        true);
+    auxsolvers.Register(
+        "_magnetic_flux_density_aux",
+        new hephaestus::CurlAuxSolver(_h_curl_var_name, b_field_name), true);
   }
 }
 

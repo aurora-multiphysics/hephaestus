@@ -3,8 +3,11 @@
 namespace hephaestus {
 
 ScaledCurlVectorGridFunctionAux::ScaledCurlVectorGridFunctionAux(
-    const hephaestus::InputParameters &params)
-    : ScaledVectorGridFunctionAux(params) {}
+    const std::string &input_gf_name, const std::string &scaled_gf_name,
+    const std::string &coef_name, const double &aConst,
+    const hephaestus::InputParameters &solver_options)
+    : ScaledVectorGridFunctionAux(input_gf_name, scaled_gf_name, coef_name,
+                                  aConst, solver_options) {}
 
 void ScaledCurlVectorGridFunctionAux::buildMixedBilinearForm() {
   a_mixed = new mfem::ParMixedBilinearForm(trial_fes, test_fes);

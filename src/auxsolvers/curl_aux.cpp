@@ -2,15 +2,22 @@
 
 namespace hephaestus {
 
-CurlAuxSolver::CurlAuxSolver(const hephaestus::InputParameters &params)
-    : AuxSolver(), var_name(params.GetParam<std::string>("VariableName")),
-      curl_var_name(params.GetParam<std::string>("CurlVariableName")) {}
+CurlAuxSolver::CurlAuxSolver(const std::string &input_gf_name,
+                             const std::string &curl_gf_name)
+    : AuxSolver(), _input_gf_name(input_gf_name), _curl_gf_name(curl_gf_name) {}
 
 void CurlAuxSolver::Init(const hephaestus::GridFunctions &gridfunctions,
                          hephaestus::Coefficients &coefficients) {
-  u_ = gridfunctions.Get(var_name);
-  curl_u_ = gridfunctions.Get(curl_var_name);
-
+  u_ = gridfunctions.Get(_input_gf_name);
+  if (u_ == NULL) {
+    MFEM_ABORT("GridFunction " << _input_gf_name
+                               << " not found when initializing CurlAuxSolver");
+  }
+  curl_u_ = gridfunctions.Get(_curl_gf_name);
+  if (curl_u_ == NULL) {
+    MFEM_ABORT("GridFunction " << _curl_gf_name
+                               << " not found when initializing CurlAuxSolver");
+  }
   curl = new mfem::ParDiscreteLinearOperator(u_->ParFESpace(),
                                              curl_u_->ParFESpace());
   curl->AddDomainInterpolator(new mfem::CurlInterpolator());

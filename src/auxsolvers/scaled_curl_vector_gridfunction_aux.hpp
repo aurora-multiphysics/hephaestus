@@ -8,7 +8,11 @@ namespace hephaestus {
 // fields for expressions like E = ρ∇×H
 class ScaledCurlVectorGridFunctionAux : public ScaledVectorGridFunctionAux {
 public:
-  ScaledCurlVectorGridFunctionAux(const hephaestus::InputParameters &params);
+  ScaledCurlVectorGridFunctionAux(
+      const std::string &input_gf_name, const std::string &scaled_gf_name,
+      const std::string &coef_name, const double &aConst = 1.0,
+      const hephaestus::InputParameters &solver_options =
+          hephaestus::InputParameters());
   virtual void buildMixedBilinearForm() override;
 };
 } // namespace hephaestus
