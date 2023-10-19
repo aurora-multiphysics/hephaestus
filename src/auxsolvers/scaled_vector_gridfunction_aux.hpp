@@ -51,6 +51,6 @@ private:
   mfem::HypreParMatrix *mixed_mat;
 
   // Solver
-  hephaestus::DefaultH1PCGSolver *solver;
+  hephaestus::DefaultJacobiPCGSolver *solver;
 };
 } // namespace hephaestus

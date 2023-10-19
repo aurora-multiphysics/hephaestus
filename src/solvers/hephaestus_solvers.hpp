@@ -11,7 +11,7 @@ public:
       : mfem::HyprePCG(M), amg(M),
         tol(params.GetOptionalParam<float>("Tolerance", 1.0e-9)),
         max_iter(params.GetOptionalParam<unsigned int>("MaxIter", 1000)),
-        print_level(params.GetOptionalParam<int>("PrintLevel", -1)) {
+        print_level(params.GetOptionalParam<int>("PrintLevel", 2)) {
 
     amg.SetPrintLevel(print_level);
     SetTol(tol);
@@ -20,6 +20,26 @@ public:
     SetPreconditioner(amg);
   }
   mfem::HypreBoomerAMG amg;
+  double tol;
+  int max_iter;
+  int print_level;
+};
+
+class DefaultJacobiPCGSolver : public mfem::HyprePCG {
+public:
+  DefaultJacobiPCGSolver(const hephaestus::InputParameters &params,
+                         const mfem::HypreParMatrix &M)
+      : mfem::HyprePCG(M), jacobi(M),
+        tol(params.GetOptionalParam<float>("Tolerance", 1.0e-9)),
+        max_iter(params.GetOptionalParam<unsigned int>("MaxIter", 1000)),
+        print_level(params.GetOptionalParam<int>("PrintLevel", 2)) {
+
+    SetTol(tol);
+    SetMaxIter(max_iter);
+    SetPrintLevel(print_level);
+    SetPreconditioner(jacobi);
+  }
+  mfem::HypreDiagScale jacobi;
   double tol;
   int max_iter;
   int print_level;
