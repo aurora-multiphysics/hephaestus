@@ -80,8 +80,8 @@ void AFormulation::registerLorentzForceDensityAux(
   hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
   auxsolvers.Register(
       f_field_name,
-      new hephaestus::LorentzForceDensityAux(f_field_name, f_field_name,
-                                             b_field_name, j_field_name),
+      new hephaestus::VectorGridFunctionCrossProductAux(
+          f_field_name, f_field_name, j_field_name, b_field_name),
       true);
   auxsolvers.Get(f_field_name)->SetPriority(2);
 }
@@ -92,9 +92,9 @@ void AFormulation::registerJouleHeatingDensityAux(
   //* Joule heating density = E.J
   hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
   auxsolvers.Register(p_field_name,
-                      new hephaestus::JouleHeatingDensityAux(
+                      new hephaestus::VectorGridFunctionDotProductAux(
                           p_field_name, p_field_name, e_field_name,
-                          _electric_conductivity_name),
+                          e_field_name, _electric_conductivity_name),
                       true);
   auxsolvers.Get(p_field_name)->SetPriority(2);
 }

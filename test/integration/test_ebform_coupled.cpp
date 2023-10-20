@@ -114,9 +114,10 @@ protected:
 
     hephaestus::AuxSolvers postprocessors;
     postprocessors.Register("JouleHeatingAux",
-                            new hephaestus::JouleHeatingDensityAux(
+                            new hephaestus::VectorGridFunctionDotProductAux(
                                 "joule_heating_load", "JouleHeating",
-                                "electric_field", "electrical_conductivity"),
+                                "electric_field", "electric_field",
+                                "electrical_conductivity"),
                             true);
 
     hephaestus::Sources sources;
