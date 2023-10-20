@@ -25,8 +25,7 @@ DivFreeSource::DivFreeSource(const hephaestus::InputParameters &params)
           "SolverOptions", hephaestus::InputParameters())),
       perform_helmholtz_projection(
           params.GetOptionalParam<bool>("HelmholtzProjection", true)),
-      a0(NULL), h_curl_mass(NULL), weakDiv_(NULL), grad(NULL), a0_solver(NULL) {
-}
+      h_curl_mass(NULL) {}
 
 void DivFreeSource::Init(hephaestus::GridFunctions &gridfunctions,
                          const hephaestus::FESpaces &fespaces,
@@ -63,26 +62,7 @@ void DivFreeSource::Init(hephaestus::GridFunctions &gridfunctions,
   gridfunctions_ = &gridfunctions;
   fespaces_ = &fespaces;
 
-  this->buildH1Diffusion();
   this->buildHCurlMass();
-  this->buildWeakDiv();
-  this->buildGrad();
-
-  // a0(p, p') = (β ∇ p, ∇ p')
-  gDiv_ = new mfem::ParLinearForm(H1FESpace_);
-  A0 = new mfem::HypreParMatrix;
-  X0 = new mfem::Vector;
-  B0 = new mfem::Vector;
-}
-
-void DivFreeSource::buildH1Diffusion() {
-  if (a0 != NULL) {
-    delete a0;
-  }
-  a0 = new mfem::ParBilinearForm(H1FESpace_);
-  a0->AddDomainIntegrator(new mfem::DiffusionIntegrator);
-  a0->Assemble();
-  a0->Finalize();
 }
 
 void DivFreeSource::buildHCurlMass() {
@@ -93,26 +73,6 @@ void DivFreeSource::buildHCurlMass() {
   h_curl_mass->AddDomainIntegrator(new mfem::VectorFEMassIntegrator);
   h_curl_mass->Assemble();
   h_curl_mass->Finalize();
-}
-
-void DivFreeSource::buildWeakDiv() {
-  if (weakDiv_ != NULL) {
-    delete weakDiv_;
-  }
-  weakDiv_ = new mfem::ParMixedBilinearForm(HCurlFESpace_, H1FESpace_);
-  weakDiv_->AddDomainIntegrator(new mfem::VectorFEWeakDivergenceIntegrator);
-  weakDiv_->Assemble();
-  weakDiv_->Finalize();
-}
-
-void DivFreeSource::buildGrad() {
-  if (grad != NULL) {
-    delete grad;
-  }
-  grad = new mfem::ParDiscreteLinearOperator(H1FESpace_, HCurlFESpace_);
-  grad->AddDomainInterpolator(new mfem::GradientInterpolator());
-  grad->Assemble();
-  grad->Finalize();
 }
 
 void DivFreeSource::Apply(mfem::ParLinearForm *lf) {
@@ -138,14 +98,10 @@ void DivFreeSource::Apply(mfem::ParLinearForm *lf) {
   if (perform_helmholtz_projection) {
 
     hephaestus::InputParameters projector_pars;
-    projector_pars.SetParam("VectorGridFunctionName",
-                             src_gf_name);
-    projector_pars.SetParam("ScalarGridFunctionName",
-                             potential_gf_name);
-    projector_pars.SetParam("H1FESpaceName",
-                             h1_fespace_name);
-    projector_pars.SetParam("HCurlFESpaceName",
-                             hcurl_fespace_name);
+    projector_pars.SetParam("VectorGridFunctionName", src_gf_name);
+    projector_pars.SetParam("ScalarGridFunctionName", potential_gf_name);
+    projector_pars.SetParam("H1FESpaceName", h1_fespace_name);
+    projector_pars.SetParam("HCurlFESpaceName", hcurl_fespace_name);
 
     hephaestus::HelmholtzProjector projector(projector_pars);
     projector.Project(*gridfunctions_, *fespaces_, *bc_map_);
