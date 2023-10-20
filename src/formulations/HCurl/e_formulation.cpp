@@ -39,4 +39,29 @@ void EFormulation::RegisterCoefficients() {
           fracFunc),
       true);
 }
+
+void EFormulation::registerCurrentDensityAux(const std::string &j_field_name) {
+  //* Current density J = Jᵉ + σE
+  //* Induced electric field, Jind = σE
+  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  auxsolvers.Register(
+      j_field_name,
+      new hephaestus::ScaledVectorGridFunctionAux(
+          _h_curl_var_name, j_field_name, _electric_conductivity_name),
+      true);
+}
+
+void EFormulation::registerJouleHeatingDensityAux(
+    const std::string &p_field_name, const std::string &e_field_name,
+    const std::string &conductivity_coef_name) {
+  //* Joule heating density = E.J
+  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  auxsolvers.Register(p_field_name,
+                      new hephaestus::VectorGridFunctionDotProductAux(
+                          p_field_name, p_field_name, e_field_name,
+                          e_field_name, _electric_conductivity_name),
+                      true);
+  auxsolvers.Get(p_field_name)->SetPriority(2);
+}
+
 } // namespace hephaestus
