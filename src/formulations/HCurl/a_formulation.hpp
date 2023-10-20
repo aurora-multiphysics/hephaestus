@@ -14,8 +14,6 @@ public:
 
   ~AFormulation(){};
 
-  virtual void RegisterAuxSolvers() override;
-
   // Enable auxiliary calculation of J ∈ H(div)
   virtual void
   registerCurrentDensityAux(const std::string &j_field_name) override;

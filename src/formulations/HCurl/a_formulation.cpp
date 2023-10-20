@@ -25,13 +25,6 @@ AFormulation::AFormulation(const std::string &magnetic_reluctivity_name,
                        magnetic_vector_potential_name),
       _magnetic_permeability_name(magnetic_permeability_name) {}
 
-void AFormulation::RegisterAuxSolvers() {
-  // registerCurrentDensityAux("current_density");
-  // registerMagneticFluxDensityAux("magnetic_flux_density");
-  // registerElectricFieldAux("electric_field");
-  // registerMagneticFieldAux("magnetic_field");
-}
-
 void AFormulation::registerCurrentDensityAux(const std::string &j_field_name) {
   //* Current density J = Jᵉ -σdA/dt
   //* Induced electric field, Jind = -σdA/dt
