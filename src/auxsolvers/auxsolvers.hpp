@@ -6,6 +6,7 @@
 #include "l2_error_vector_aux.hpp"
 #include "scaled_gridfunction_aux.hpp"
 #include "vector_coefficient_aux.hpp"
+#include "helmholtz_projector.hpp"
 
 // Specify classes that perform auxiliary calculations on GridFunctions or
 // Coefficients.
