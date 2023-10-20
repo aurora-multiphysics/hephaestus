@@ -395,6 +395,19 @@ void ClosedCoilSolver::SPSCurrent() {
     mfem::ParLinearForm dummy(HCurlFESpace_[i]);
     sps_[i]->Apply(&dummy);
 
+    if (i == 1){
+      src_J_ = new mfem::VectorGridFunctionCoefficient(J_[0]);
+      high_DBC_J_ = new hephaestus::VectorFunctionDirichletBC(
+          std::string("source_" + std::to_string(i)), high_terminal_, src_J_);
+      low_DBC_J_ = new hephaestus::VectorFunctionDirichletBC(
+          std::string("source_" + std::to_string(i)), low_terminal_, src_J_);
+      bc_maps_[i]->Register("high_current", high_DBC_J_, true);
+      bc_maps_[i]->Register("low_current", low_DBC_J_, true);
+    }
+
+    // Clean the divergence of the two J fields
+    cleanDivergence(gridfunctions_[i], std::string("source_" + std::to_string(i)), std::string("V_" + std::to_string(i)), bc_maps_[i]);
+
     // Normalise the current through the wedges and use them as a reference
     // The MPI allreduce is to take into account the MPI partitioning
     double flux = calcFlux(J_[i], elec_attrs_.first);
@@ -404,6 +417,20 @@ void ClosedCoilSolver::SPSCurrent() {
   }
 
   *J_[0] *= -1.0;
+}
+
+void ClosedCoilSolver::cleanDivergence(hephaestus::GridFunctions* gridfunctions, std::string J_name, std::string V_name, hephaestus::BCMap* bc_map){
+
+  hephaestus::InputParameters pars;
+  hephaestus::FESpaces fes;
+
+  pars.SetParam("VectorGridFunctionName",
+                             J_name);
+  pars.SetParam("ScalarGridFunctionName",
+                             V_name);
+  hephaestus::HelmholtzProjector projector(pars);
+  projector.Project(*gridfunctions, fes, *bc_map);
+
 }
 
 void ClosedCoilSolver::restoreAttributes() {

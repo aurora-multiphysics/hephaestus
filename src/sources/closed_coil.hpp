@@ -1,4 +1,5 @@
 #pragma once
+#include "helmholtz_projector.hpp"
 #include "div_free_source.hpp"
 #include "scalar_potential_source.hpp"
 #include "source_base.hpp"
@@ -78,6 +79,9 @@ public:
   // Resets the domain attributes on the parent mesh to what they were initially
   void restoreAttributes();
 
+  // Applies the HelmholtzProjector onto the J GridFunction to clean it of any divergences 
+  void cleanDivergence(hephaestus::GridFunctions* gridfunctions, std::string J_name, std::string V_name, hephaestus::BCMap* bc_map);
+
 private:
   // Parameters
   int order_;
@@ -120,10 +124,14 @@ private:
   std::vector<hephaestus::Coefficients *> coefs_;
   std::vector<hephaestus::FunctionDirichletBC *> high_DBC_;
   std::vector<hephaestus::FunctionDirichletBC *> low_DBC_;
+  hephaestus::VectorFunctionDirichletBC *high_DBC_J_;
+  hephaestus::VectorFunctionDirichletBC *low_DBC_J_;
 
   // Children boundary condition objects
   mfem::FunctionCoefficient *high_src_;
   mfem::FunctionCoefficient *low_src_;
+  mfem::VectorGridFunctionCoefficient *src_J_;
+
   mfem::Array<int> high_terminal_;
   mfem::Array<int> low_terminal_;
 };
