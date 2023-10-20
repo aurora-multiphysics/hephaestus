@@ -26,9 +26,11 @@ public:
 
   mfem::ParFiniteElementSpace *H1FESpace_;
   mfem::ParFiniteElementSpace *HCurlFESpace_;
-  mfem::ParGridFunction *q_, *grad_q; // Potential
-  hephaestus::BCMap *_bc_map;
+  mfem::ParGridFunction *q_; // Potential
+  hephaestus::BCMap *bc_map_;
   mfem::Coefficient *betaCoef;
+  hephaestus::GridFunctions *gridfunctions_;
+  const hephaestus::FESpaces *fespaces_; 
 
   mfem::ParBilinearForm *a0, *s0_;
   mfem::ParBilinearForm *h_curl_mass;
@@ -41,7 +43,6 @@ public:
   mutable hephaestus::DefaultH1PCGSolver *a0_solver;
 
   mfem::ParLinearForm *gDiv_;
-  mfem::ParGridFunction *grad_p_;
 
   mfem::VectorCoefficient *sourceVecCoef;
   mfem::ParGridFunction *g; // H(Curl) projection of user specified source

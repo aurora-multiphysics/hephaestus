@@ -1,4 +1,5 @@
 #include "div_free_source.hpp"
+#include "helmholtz_projector.hpp"
 
 namespace hephaestus {
 
@@ -58,7 +59,9 @@ void DivFreeSource::Init(hephaestus::GridFunctions &gridfunctions,
   q_ = new mfem::ParGridFunction(H1FESpace_);
   gridfunctions.Register(potential_gf_name, q_, false);
 
-  _bc_map = &bc_map;
+  bc_map_ = &bc_map;
+  gridfunctions_ = &gridfunctions;
+  fespaces_ = &fespaces;
 
   this->buildH1Diffusion();
   this->buildHCurlMass();
@@ -130,63 +133,23 @@ void DivFreeSource::Apply(mfem::ParLinearForm *lf) {
     h_curl_mass->RecoverFEMSolution(X, J, *g);
   }
 
-  // Begin Divergence free projection
-  // (g, ∇q) - (∇Q, ∇q) - <P(g).n, q> = 0
+  *div_free_src_gf = *g;
+
   if (perform_helmholtz_projection) {
 
-    *q_ = 0.0;
-    int myid = H1FESpace_->GetMyRank();
-    mfem::Array<int> ess_bdr_;
-    mfem::Array<int> ess_bdr_tdofs_;
-    mfem::ParGridFunction Phi_gf(H1FESpace_);
+    hephaestus::InputParameters projector_pars;
+    projector_pars.SetParam("VectorGridFunctionName",
+                             src_gf_name);
+    projector_pars.SetParam("ScalarGridFunctionName",
+                             potential_gf_name);
+    projector_pars.SetParam("H1FESpaceName",
+                             h1_fespace_name);
+    projector_pars.SetParam("HCurlFESpaceName",
+                             hcurl_fespace_name);
 
-    // <P(g).n, q>
-    _bc_map->applyEssentialBCs(potential_gf_name, ess_bdr_tdofs_, Phi_gf,
-                               (H1FESpace_->GetParMesh()));
-    _bc_map->applyIntegratedBCs(potential_gf_name, *gDiv_,
-                                (H1FESpace_->GetParMesh()));
-    gDiv_->Assemble();
-
-    // Compute the divergence of g
-    // (g, ∇q)
-    weakDiv_->AddMult(*g, *gDiv_, -1.0);
-
-    // Apply essential BC. Necessary to ensure potential at least one point is
-    // fixed.
-    ess_bdr_.SetSize(H1FESpace_->GetParMesh()->bdr_attributes.Max());
-    ess_bdr_ = 0;
-    ess_bdr_tdofs_.SetSize((myid == 0) ? 1 : 0);
-    if (myid == 0) {
-      ess_bdr_tdofs_[0] = 0;
-    }
-
-    // Form linear system
-    // (g, ∇q) - (∇Q, ∇q) - <P(g).n, q> = 0
-    // (∇Q, ∇q) = (g, ∇q) - <P(g).n, q>
-    a0->FormLinearSystem(ess_bdr_tdofs_, *q_, *gDiv_, *A0, *X0, *B0);
-
-    // Solve the linear system for Q
-    mfem::HypreBoomerAMG *amg_ = new mfem::HypreBoomerAMG(*A0);
-    amg_->SetPrintLevel(0);
-    mfem::HyprePCG *pcg_ = new mfem::HyprePCG(*A0);
-    pcg_->SetTol(1e-14);
-    pcg_->SetMaxIter(200);
-    pcg_->SetPrintLevel(0);
-    pcg_->SetPreconditioner(*amg_);
-    pcg_->Mult(*B0, *X0);
-    delete amg_;
-    delete pcg_;
-
-    a0->RecoverFEMSolution(*X0, *gDiv_, *q_);
-    // Compute the irrotational component of g
-    // P(g) = g - ∇Q
-    grad->Mult(*q_, *div_free_src_gf);
-    *div_free_src_gf -= *g;
-    *div_free_src_gf *= -1.0;
-  } else {
-    *div_free_src_gf = *g;
+    hephaestus::HelmholtzProjector projector(projector_pars);
+    projector.Project(*gridfunctions_, *fespaces_, *bc_map_);
   }
-  // End of divergence free projection
 
   // Add divergence free source to target linear form
   h_curl_mass->Update();
