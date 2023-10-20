@@ -17,8 +17,8 @@ protected:
   const std::string _gf_name;   // name of the variable
   const std::string _coef_name; // name of the coefficient
 
-  mfem::ParGridFunction *gf;
-  mfem::Coefficient *coef;
+  mfem::ParGridFunction *_gf;
+  mfem::Coefficient *_coef;
 };
 
 } // namespace hephaestus

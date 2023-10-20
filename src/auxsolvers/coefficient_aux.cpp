@@ -8,18 +8,18 @@ CoefficientAux::CoefficientAux(const std::string &gf_name,
 
 void CoefficientAux::Init(const hephaestus::GridFunctions &gridfunctions,
                           hephaestus::Coefficients &coefficients) {
-  gf = gridfunctions.Get(_gf_name);
-  if (gf == NULL) {
+  _gf = gridfunctions.Get(_gf_name);
+  if (_gf == NULL) {
     MFEM_ABORT("GridFunction "
                << _gf_name << " not found when initializing CoefficientAux");
   }
-  coef = coefficients.scalars.Get(_coef_name);
-  if (coef == NULL) {
+  _coef = coefficients.scalars.Get(_coef_name);
+  if (_coef == NULL) {
     MFEM_ABORT("Coefficient " << _coef_name
                               << " not found when initializing CoefficientAux");
   }
 }
 
-void CoefficientAux::Solve(double t) { gf->ProjectCoefficient(*coef); }
+void CoefficientAux::Solve(double t) { _gf->ProjectCoefficient(*_coef); }
 
 } // namespace hephaestus
