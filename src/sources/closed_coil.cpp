@@ -43,7 +43,6 @@ ClosedCoilSolver::ClosedCoilSolver(
   elec_attrs_.first = electrode_face;
   coef1_ = new mfem::ConstantCoefficient(1.0);
   coef0_ = new mfem::ConstantCoefficient(0.0);
-
 }
 
 ClosedCoilSolver::~ClosedCoilSolver() {
@@ -326,8 +325,12 @@ void ClosedCoilSolver::makeFESpaces() {
 void ClosedCoilSolver::makeGridFunctions() {
 
   for (int i = 0; i < 2; ++i) {
-    V_[i] = new mfem::ParGridFunction(H1FESpace_[i]);
-    J_[i] = new mfem::ParGridFunction(HCurlFESpace_[i]);
+
+    if (V_[i] == nullptr)
+      V_[i] = new mfem::ParGridFunction(H1FESpace_[i]);
+    if (J_[i] == nullptr)
+      J_[i] = new mfem::ParGridFunction(HCurlFESpace_[i]);
+
     *V_[i] = 0.0;
     *J_[i] = 0.0;
   }
@@ -395,7 +398,7 @@ void ClosedCoilSolver::SPSCurrent() {
     mfem::ParLinearForm dummy(HCurlFESpace_[i]);
     sps_[i]->Apply(&dummy);
 
-    if (i == 1){
+    if (i == 1) {
       src_J_ = new mfem::VectorGridFunctionCoefficient(J_[0]);
       high_DBC_J_ = new hephaestus::VectorFunctionDirichletBC(
           std::string("source_" + std::to_string(i)), high_terminal_, src_J_);
@@ -406,7 +409,9 @@ void ClosedCoilSolver::SPSCurrent() {
     }
 
     // Clean the divergence of the two J fields
-    cleanDivergence(gridfunctions_[i], std::string("source_" + std::to_string(i)), std::string("V_" + std::to_string(i)), bc_maps_[i]);
+    cleanDivergence(gridfunctions_[i],
+                    std::string("source_" + std::to_string(i)),
+                    std::string("V_" + std::to_string(i)), bc_maps_[i]);
 
     // Normalise the current through the wedges and use them as a reference
     // The MPI allreduce is to take into account the MPI partitioning
@@ -417,18 +422,17 @@ void ClosedCoilSolver::SPSCurrent() {
   *J_[0] *= -1.0;
 }
 
-void ClosedCoilSolver::cleanDivergence(hephaestus::GridFunctions* gridfunctions, std::string J_name, std::string V_name, hephaestus::BCMap* bc_map){
+void ClosedCoilSolver::cleanDivergence(hephaestus::GridFunctions *gridfunctions,
+                                       std::string J_name, std::string V_name,
+                                       hephaestus::BCMap *bc_map) {
 
   hephaestus::InputParameters pars;
   hephaestus::FESpaces fes;
 
-  pars.SetParam("VectorGridFunctionName",
-                             J_name);
-  pars.SetParam("ScalarGridFunctionName",
-                             V_name);
+  pars.SetParam("VectorGridFunctionName", J_name);
+  pars.SetParam("ScalarGridFunctionName", V_name);
   hephaestus::HelmholtzProjector projector(pars);
   projector.Project(*gridfunctions, fes, *bc_map);
-
 }
 
 void ClosedCoilSolver::restoreAttributes() {
