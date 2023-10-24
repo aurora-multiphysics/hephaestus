@@ -502,7 +502,7 @@ double calcFlux(mfem::GridFunction *v_field, int face_attr) {
   double total_flux;
   MPI_Allreduce(&flux, &total_flux, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
-  return flux;
+  return total_flux;
 }
 
 void ClosedCoilSolver::SubdomainToArray(
