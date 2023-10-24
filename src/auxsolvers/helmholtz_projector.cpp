@@ -7,8 +7,36 @@ HelmholtzProjector::HelmholtzProjector(
     : h1_fespace_name_(params.GetOptionalParam<std::string>("H1FESpaceName", "H1FES_Name")),
       hcurl_fespace_name_(params.GetOptionalParam<std::string>("HCurlFESpaceName", "HCurlFES_Name")),
       gf_grad_name_(params.GetParam<std::string>("VectorGridFunctionName")),
-      gf_name_(params.GetOptionalParam<std::string>("ScalarGridFunctionName", "ScalarGF_Name")) {
+      gf_name_(params.GetOptionalParam<std::string>("ScalarGridFunctionName", "ScalarGF_Name")),
+      H1FESpace_(nullptr),
+      HCurlFESpace_(nullptr),
+      q_(nullptr),
+      g(nullptr),
+      div_free_src_gf_(nullptr),
+      gDiv_(nullptr),
+      weakDiv_(nullptr),
+      grad_(nullptr),
+      a0_(nullptr),
+      A0_(nullptr),
+      X0_(nullptr),
+      B0_(nullptr),
+      ess_bdr_tdofs_(nullptr) {
 
+}
+
+HelmholtzProjector::~HelmholtzProjector(){
+
+  if (gDiv_ != nullptr) delete gDiv_;
+  if (weakDiv_ != nullptr) delete weakDiv_;
+  if (grad_ != nullptr) delete grad_;
+  if (a0_ != nullptr) delete a0_;
+  
+  if (A0_ != nullptr) delete A0_;
+  if (X0_ != nullptr) delete X0_;
+  if (B0_ != nullptr) delete B0_;
+
+  if (ess_bdr_tdofs_ != nullptr) delete ess_bdr_tdofs_;
+  
 }
 
 void HelmholtzProjector::Project(hephaestus::GridFunctions &gridfunctions,
@@ -17,7 +45,7 @@ void HelmholtzProjector::Project(hephaestus::GridFunctions &gridfunctions,
 
   // Retrieving vector GridFunction. This is the only mandatory one
   div_free_src_gf_ = gridfunctions.Get(gf_grad_name_);
-  if (div_free_src_gf_ == NULL) {
+  if (div_free_src_gf_ == nullptr) {
     const std::string error_message = gf_grad_name_ +
                                       " not found in gridfunctions when "
                                       "creating HelmholtzProjector\n";
@@ -25,7 +53,7 @@ void HelmholtzProjector::Project(hephaestus::GridFunctions &gridfunctions,
   }
 
   HCurlFESpace_ = fespaces.Get(hcurl_fespace_name_);
-  if (HCurlFESpace_ == NULL) {
+  if (HCurlFESpace_ == nullptr) {
     std::cout << hcurl_fespace_name_ + " not found in fespaces when "
                                       "creating HelmholtzProjector. "
                                       "Obtaining from vector GridFunction.\n";
@@ -33,7 +61,7 @@ void HelmholtzProjector::Project(hephaestus::GridFunctions &gridfunctions,
   }
 
   H1FESpace_ = fespaces.Get(h1_fespace_name_);
-  if (H1FESpace_ == NULL) {
+  if (H1FESpace_ == nullptr) {
     std::cout << h1_fespace_name_ + " not found in fespaces when "
                                    "creating HelmholtzProjector. "
                                    " Extracting from GridFunction\n";
@@ -46,7 +74,7 @@ void HelmholtzProjector::Project(hephaestus::GridFunctions &gridfunctions,
   }
 
   q_ = gridfunctions.Get(gf_name_);
-  if (q_ == NULL) {
+  if (q_ == nullptr) {
     std::cout << gf_name_ + " not found in gridfunctions when "
                             "creating HelmholtzProjector. "
                             "Creating new GridFunction\n";
@@ -69,7 +97,14 @@ void HelmholtzProjector::Project(hephaestus::GridFunctions &gridfunctions,
   grad_->Mult(*q_, *div_free_src_gf_);
   *div_free_src_gf_ -= *g;
   *div_free_src_gf_ *= -1.0;
+
+  delete g;
+  if (!gridfunctions.Has(gf_name_)) delete q_;
+  if (!fespaces.Has(h1_fespace_name_)) delete H1FESpace_;
+ 
 }
+
+
 
 void HelmholtzProjector::setForms(){
 

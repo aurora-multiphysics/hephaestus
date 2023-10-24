@@ -7,7 +7,7 @@ class HelmholtzProjector {
     public:
 
         HelmholtzProjector(const hephaestus::InputParameters &params);
-        ~HelmholtzProjector() = default;
+        ~HelmholtzProjector();
 
         void Project(hephaestus::GridFunctions &gridfunctions,
                                  const hephaestus::FESpaces &fespaces,
