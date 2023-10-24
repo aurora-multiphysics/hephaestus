@@ -9,8 +9,8 @@ public:
                             mfem::Array<int> bdr_attributes_);
   VectorFunctionDirichletBC(
       const std::string &name_, mfem::Array<int> bdr_attributes_,
-      mfem::VectorCoefficient *vec_coeff_,
-      mfem::VectorCoefficient *vec_coeff_im_ = nullptr);
+      mfem::VectorFunctionCoefficient *vec_coeff_,
+      mfem::VectorFunctionCoefficient *vec_coeff_im_ = nullptr);
 
   virtual void applyBC(mfem::GridFunction &gridfunc,
                        mfem::Mesh *mesh_) override;

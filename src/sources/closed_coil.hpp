@@ -124,8 +124,6 @@ private:
   std::vector<hephaestus::Coefficients *> coefs_;
   std::vector<hephaestus::FunctionDirichletBC *> high_DBC_;
   std::vector<hephaestus::FunctionDirichletBC *> low_DBC_;
-  hephaestus::VectorFunctionDirichletBC *high_DBC_J_;
-  hephaestus::VectorFunctionDirichletBC *low_DBC_J_;
 
   // Children boundary condition objects
   mfem::FunctionCoefficient *high_src_;

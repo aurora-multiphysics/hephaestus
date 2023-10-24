@@ -398,16 +398,6 @@ void ClosedCoilSolver::SPSCurrent() {
     mfem::ParLinearForm dummy(HCurlFESpace_[i]);
     sps_[i]->Apply(&dummy);
 
-    if (i == 1) {
-      src_J_ = new mfem::VectorGridFunctionCoefficient(J_[0]);
-      high_DBC_J_ = new hephaestus::VectorFunctionDirichletBC(
-          std::string("source_" + std::to_string(i)), high_terminal_, src_J_);
-      low_DBC_J_ = new hephaestus::VectorFunctionDirichletBC(
-          std::string("source_" + std::to_string(i)), low_terminal_, src_J_);
-      bc_maps_[i]->Register("high_current", high_DBC_J_, true);
-      bc_maps_[i]->Register("low_current", low_DBC_J_, true);
-    }
-
     // Clean the divergence of the two J fields
     cleanDivergence(gridfunctions_[i],
                     std::string("source_" + std::to_string(i)),

@@ -8,8 +8,8 @@ VectorFunctionDirichletBC::VectorFunctionDirichletBC(
 
 VectorFunctionDirichletBC::VectorFunctionDirichletBC(
     const std::string &name_, mfem::Array<int> bdr_attributes_,
-    mfem::VectorCoefficient *vec_coeff_,
-    mfem::VectorCoefficient *vec_coeff_im_)
+    mfem::VectorFunctionCoefficient *vec_coeff_,
+    mfem::VectorFunctionCoefficient *vec_coeff_im_)
     : EssentialBC(name_, bdr_attributes_), vec_coeff(vec_coeff_),
       vec_coeff_im(vec_coeff_im_) {}
 
