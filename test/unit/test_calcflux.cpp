@@ -28,10 +28,8 @@ TEST(CalcFluxTest, CheckData) {
   double theta = M_PI / 4.;
 
   double flux = hephaestus::calcFlux(&j, 7);
-  double total_flux;
-  MPI_Allreduce(&flux, &total_flux, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
-  EXPECT_FLOAT_EQ(total_flux, area * cos(theta));
+  EXPECT_FLOAT_EQ(flux, area * cos(theta));
 }
 
 static void JExact(const mfem::Vector &x, mfem::Vector &J) {

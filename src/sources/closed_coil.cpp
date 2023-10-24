@@ -41,6 +41,9 @@ ClosedCoilSolver::ClosedCoilSolver(
       mesh_parent_(nullptr), J_parent_(nullptr), HCurlFESpace_parent_(nullptr) {
 
   elec_attrs_.first = electrode_face;
+  coef1_ = new mfem::ConstantCoefficient(1.0);
+  coef0_ = new mfem::ConstantCoefficient(0.0);
+
 }
 
 ClosedCoilSolver::~ClosedCoilSolver() {
@@ -71,9 +74,6 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
                             const hephaestus::FESpaces &fespaces,
                             hephaestus::BCMap &bc_map,
                             hephaestus::Coefficients &coefficients) {
-
-  coef1_ = new mfem::ConstantCoefficient(1.0);
-  coef0_ = new mfem::ConstantCoefficient(0.0);
 
   // Retrieving the parent FE space and mesh
   HCurlFESpace_parent_ = fespaces.Get(hcurl_fespace_name_);
@@ -411,9 +411,7 @@ void ClosedCoilSolver::SPSCurrent() {
     // Normalise the current through the wedges and use them as a reference
     // The MPI allreduce is to take into account the MPI partitioning
     double flux = calcFlux(J_[i], elec_attrs_.first);
-    double total_flux;
-    MPI_Allreduce(&flux, &total_flux, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    *J_[i] /= abs(total_flux);
+    *J_[i] /= abs(flux);
   }
 
   *J_[0] *= -1.0;
@@ -500,6 +498,9 @@ double calcFlux(mfem::GridFunction *v_field, int face_attr) {
       flux += val * ip.weight * face_weight;
     }
   }
+
+  double total_flux;
+  MPI_Allreduce(&flux, &total_flux, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
   return flux;
 }
