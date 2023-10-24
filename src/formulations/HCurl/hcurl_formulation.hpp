@@ -6,7 +6,7 @@
 
 namespace hephaestus {
 
-class HCurlFormulation : public TimeDomainFormulation {
+class HCurlFormulation : public TimeDomainEMFormulation {
 public:
   HCurlFormulation(const std::string &alpha_coef_name,
                    const std::string &beta_coef_name,

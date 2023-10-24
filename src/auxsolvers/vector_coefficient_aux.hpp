@@ -4,20 +4,22 @@
 namespace hephaestus {
 
 // Project a stored vector Coefficient onto a (vector) GridFunction
-class VectorCoefficientAuxSolver : public AuxSolver {
+class VectorCoefficientAux : public AuxSolver {
 public:
-  VectorCoefficientAuxSolver(const hephaestus::InputParameters &params);
+  VectorCoefficientAux(const std::string &gf_name,
+                       const std::string &vec_coef_name);
 
   void Init(const hephaestus::GridFunctions &gridfunctions,
             hephaestus::Coefficients &coefficients) override;
 
   void Solve(double t = 0.0) override;
 
-  std::string var_name;      // name of the variable
-  std::string vec_coef_name; // name of the vector coefficient
+protected:
+  const std::string _gf_name;       // name of the variable
+  const std::string _vec_coef_name; // name of the vector coefficient
 
   mfem::ParGridFunction *gf;
-  mfem::VectorCoefficient *vec_coeff;
+  mfem::VectorCoefficient *vec_coef;
 };
 
 } // namespace hephaestus

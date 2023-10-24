@@ -8,10 +8,6 @@ Factory::createProblemBuilder(std::string &formulation_name) {
     return new hephaestus::EBDualFormulation(
         "magnetic_reluctivity", "magnetic_permeability",
         "electrical_conductivity", "electric_field", "magnetic_flux_density");
-  } else if (formulation_name == "HJForm") {
-    return new hephaestus::HJDualFormulation(
-        "electrical_resistivity", "electrical_conductivity",
-        "magnetic_permeability", "magnetic_field", "current_density");
   } else if (formulation_name == "HForm") {
     return new hephaestus::HFormulation(
         "electrical_resistivity", "electrical_conductivity",
@@ -38,15 +34,15 @@ Factory::createProblemBuilder(std::string &formulation_name) {
         "magnetic_reluctivity", "electrical_conductivity",
         "dielectric_permittivity", "frequency", "magnetic_vector_potential");
   } else if (formulation_name == "Custom") {
-    return new hephaestus::TimeDomainFormulation();
+    return new hephaestus::TimeDomainEMFormulation();
   } else {
     MFEM_WARNING("Formulation name " << formulation_name << " not recognised.");
     return nullptr;
   }
 };
 
-hephaestus::FrequencyDomainFormulation *
-Factory::createFrequencyDomainFormulation(std::string &formulation) {
+hephaestus::FrequencyDomainEMFormulation *
+Factory::createFrequencyDomainEMFormulation(std::string &formulation) {
   if (formulation == "ComplexEForm") {
     return new hephaestus::ComplexEFormulation(
         "magnetic_reluctivity", "electrical_conductivity",
@@ -62,16 +58,12 @@ Factory::createFrequencyDomainFormulation(std::string &formulation) {
   return nullptr;
 }
 
-hephaestus::TimeDomainFormulation *
-Factory::createTimeDomainFormulation(std::string &formulation) {
+hephaestus::TimeDomainEMFormulation *
+Factory::createTimeDomainEMFormulation(std::string &formulation) {
   if (formulation == "EBForm") {
     return new hephaestus::EBDualFormulation(
         "magnetic_reluctivity", "magnetic_permeability",
         "electrical_conductivity", "electric_field", "magnetic_flux_density");
-  } else if (formulation == "HJForm") {
-    return new hephaestus::HJDualFormulation(
-        "electrical_resistivity", "electrical_conductivity",
-        "magnetic_permeability", "magnetic_field", "current_density");
   } else if (formulation == "HForm") {
     return new hephaestus::HFormulation(
         "electrical_resistivity", "electrical_conductivity",
@@ -90,7 +82,7 @@ Factory::createTimeDomainFormulation(std::string &formulation) {
         "electrical_conductivity", "magnetic_vector_potential",
         "electric_potential");
   } else if (formulation == "Custom") {
-    return new hephaestus::TimeDomainFormulation();
+    return new hephaestus::TimeDomainEMFormulation();
   } else {
     MFEM_WARNING("Formulation name " << formulation << " not recognised.");
   }

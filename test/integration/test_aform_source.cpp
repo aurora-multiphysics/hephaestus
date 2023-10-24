@@ -92,16 +92,11 @@ protected:
         "L2ErrorPostprocessor",
         new hephaestus::L2ErrorVectorPostprocessor(l2errpostprocparams), true);
 
-    hephaestus::InputParameters vectorcoeffauxparams;
-    vectorcoeffauxparams.SetParam("VariableName",
-                                  std::string("analytic_vector_potential"));
-    vectorcoeffauxparams.SetParam("VectorCoefficientName",
-                                  std::string("a_exact_coeff"));
-
-    hephaestus::VectorCoefficientAuxSolver *vec_coef_aux =
-        new hephaestus::VectorCoefficientAuxSolver(vectorcoeffauxparams);
+    hephaestus::VectorCoefficientAux *vec_coef_aux =
+        new hephaestus::VectorCoefficientAux("analytic_vector_potential",
+                                             "a_exact_coeff");
     vec_coef_aux->SetPriority(-1);
-    postprocessors.Register("VectorCoefficientAuxSolver", vec_coef_aux, true);
+    postprocessors.Register("VectorCoefficientAux", vec_coef_aux, true);
 
     hephaestus::Sources sources;
     mfem::VectorFunctionCoefficient *JSrcCoef =

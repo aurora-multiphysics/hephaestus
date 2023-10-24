@@ -1,4 +1,4 @@
-#include "time_domain_formulation.hpp"
+#include "time_domain_em_formulation.hpp"
 
 namespace hephaestus {
 
@@ -51,6 +51,7 @@ namespace hephaestus {
 //   }
 // }
 
-TimeDomainFormulation::TimeDomainFormulation() : TimeDomainProblemBuilder(){};
+TimeDomainEMFormulation::TimeDomainEMFormulation()
+    : TimeDomainProblemBuilder(){};
 
 } // namespace hephaestus

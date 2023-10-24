@@ -119,23 +119,39 @@ int main(int argc, char *argv[]) {
   MPI_Init(&argc, &argv);
 
   // Create Formulation
-  hephaestus::TimeDomainProblemBuilder *problem_builder =
-      new hephaestus::AFormulation(
-          "magnetic_reluctivity", "magnetic_permeability",
-          "electrical_conductivity", "magnetic_vector_potential");
+  hephaestus::AFormulation *problem_builder = new hephaestus::AFormulation(
+      "magnetic_reluctivity", "magnetic_permeability",
+      "electrical_conductivity", "magnetic_vector_potential");
   // Set Mesh
   mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team7.g")).c_str(), 1,
                   1);
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(mfem::ParMesh(MPI_COMM_WORLD, mesh));
   problem_builder->SetMesh(pmesh);
-  problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P1"));
-  problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P1"));
-  problem_builder->AddFESpace(std::string("HDiv"), std::string("RT_3D_P0"));
-  problem_builder->AddGridFunction(std::string("magnetic_vector_potential"),
-                                   std::string("HCurl"));
-  problem_builder->AddGridFunction(std::string("magnetic_flux_density"),
-                                   std::string("HDiv"));
+  problem_builder->AddFESpace("H1", "H1_3D_P1");
+  problem_builder->AddFESpace("HCurl", "ND_3D_P1");
+  problem_builder->AddFESpace("HDiv", "RT_3D_P0");
+  problem_builder->AddFESpace("Scalar_L2", "L2Int_3D_P0");
+  problem_builder->AddFESpace("Vector_L2", "L2Int_3D_P0", 3);
+  problem_builder->AddGridFunction("magnetic_vector_potential", "HCurl");
+
+  problem_builder->AddGridFunction("magnetic_flux_density", "HDiv");
+  problem_builder->registerMagneticFluxDensityAux("magnetic_flux_density");
+
+  problem_builder->AddGridFunction("current_density", "HDiv");
+  problem_builder->registerCurrentDensityAux("current_density");
+
+  problem_builder->AddGridFunction("electric_field", "HCurl");
+  problem_builder->registerElectricFieldAux("electric_field");
+
+  problem_builder->AddGridFunction("lorentz_force_density", "Vector_L2");
+  problem_builder->registerLorentzForceDensityAux(
+      "lorentz_force_density", "magnetic_flux_density", "current_density");
+
+  problem_builder->AddGridFunction("joule_heating_density", "Scalar_L2");
+  problem_builder->registerJouleHeatingDensityAux(
+      "joule_heating_density", "electric_field", "current_density");
+
   hephaestus::Coefficients coefficients = defineCoefficients();
   problem_builder->SetCoefficients(coefficients);
 

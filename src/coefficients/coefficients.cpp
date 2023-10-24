@@ -8,11 +8,16 @@ double fracFunc(double a, double b) { return a / b; }
 Subdomain::Subdomain(const std::string &name_, int id_)
     : name(name_), id(id_) {}
 
-Coefficients::Coefficients() {}
+Coefficients::Coefficients() { registerDefaultCoefficients(); }
 
 Coefficients::Coefficients(std::vector<Subdomain> subdomains_)
     : subdomains(subdomains_) {
   AddGlobalCoefficientsFromSubdomains();
+  registerDefaultCoefficients();
+}
+
+void Coefficients::registerDefaultCoefficients() {
+  scalars.Register("_one", new mfem::ConstantCoefficient(1.0), true);
 }
 
 void Coefficients::SetTime(double time) {

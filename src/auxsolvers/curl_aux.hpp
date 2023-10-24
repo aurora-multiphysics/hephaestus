@@ -6,15 +6,17 @@ namespace hephaestus {
 // Calculate the curl of a gridfunction.
 class CurlAuxSolver : public AuxSolver {
 public:
-  CurlAuxSolver(const hephaestus::InputParameters &params);
+  CurlAuxSolver(const std::string &input_gf_name,
+                const std::string &curl_gf_name);
 
   void Init(const hephaestus::GridFunctions &gridfunctions,
             hephaestus::Coefficients &coefficients) override;
 
   void Solve(double t = 0.0) override;
 
-  std::string var_name;      // name of the variable
-  std::string curl_var_name; // Variable in which to store curl
+private:
+  const std::string _input_gf_name; // name of the variable
+  const std::string _curl_gf_name;  // Variable in which to store curl
 
   mfem::ParGridFunction *u_, *curl_u_;
   mfem::ParDiscreteLinearOperator *curl;

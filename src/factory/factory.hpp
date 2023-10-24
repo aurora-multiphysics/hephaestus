@@ -7,7 +7,6 @@
 #include "e_formulation.hpp"
 #include "eb_dual_formulation.hpp"
 #include "h_formulation.hpp"
-#include "hj_dual_formulation.hpp"
 #include "inputs.hpp"
 #include "magnetostatic_formulation.hpp"
 
@@ -18,11 +17,11 @@ public:
   static hephaestus::ProblemBuilder *
   createProblemBuilder(std::string &formulation_name);
 
-  static hephaestus::TimeDomainFormulation *
-  createTimeDomainFormulation(std::string &formulation);
+  static hephaestus::TimeDomainEMFormulation *
+  createTimeDomainEMFormulation(std::string &formulation);
 
-  static hephaestus::FrequencyDomainFormulation *
-  createFrequencyDomainFormulation(std::string &formulation);
+  static hephaestus::FrequencyDomainEMFormulation *
+  createFrequencyDomainEMFormulation(std::string &formulation);
 
   static mfem::ParFiniteElementSpace *
   createParFESpace(const hephaestus::InputParameters params,

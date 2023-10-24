@@ -100,16 +100,11 @@ protected:
         "L2ErrorPostprocessor",
         new hephaestus::L2ErrorVectorPostprocessor(l2errpostprocparams), true);
 
-    hephaestus::InputParameters vectorcoeffauxparams;
-    vectorcoeffauxparams.SetParam("VariableName",
-                                  std::string("analytic_magnetic_field"));
-    vectorcoeffauxparams.SetParam("VectorCoefficientName",
-                                  std::string("h_exact_coeff"));
-
     hephaestus::AuxSolvers preprocessors;
-    preprocessors.Register(
-        "VectorCoefficientAuxSolver",
-        new hephaestus::VectorCoefficientAuxSolver(vectorcoeffauxparams), true);
+    preprocessors.Register("VectorCoefficientAux",
+                           new hephaestus::VectorCoefficientAux(
+                               "analytic_magnetic_field", "h_exact_coeff"),
+                           true);
 
     hephaestus::Sources sources;
     hephaestus::InputParameters div_free_source_params;

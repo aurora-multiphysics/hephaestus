@@ -158,21 +158,6 @@ int main(int argc, char *argv[]) {
   hephaestus::Outputs outputs = defineOutputs();
   problem_builder->SetOutputs(outputs);
 
-  hephaestus::AuxSolvers postprocessors;
-  hephaestus::InputParameters joule_heating_params;
-  joule_heating_params.SetParam("VariableName",
-                                std::string("joule_heating_load"));
-  joule_heating_params.SetParam("CoefficientName", std::string("JouleHeating"));
-  joule_heating_params.SetParam("ElectricFieldName",
-                                std::string("magnetic_vector_potential"));
-  joule_heating_params.SetParam("ConductivityCoefName",
-                                std::string("electrical_conductivity"));
-  joule_heating_params.SetParam("ComplexField", true);
-  postprocessors.Register(
-      "JouleHeatingAux",
-      new hephaestus::JouleHeatingAuxSolver(joule_heating_params), true);
-  problem_builder->SetPostprocessors(postprocessors);
-
   hephaestus::InputParameters solver_options;
   solver_options.SetParam("Tolerance", float(1.0e-16));
   solver_options.SetParam("MaxIter", (unsigned int)1000);

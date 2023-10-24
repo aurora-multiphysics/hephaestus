@@ -2,11 +2,13 @@
 #include "coefficient_aux.hpp"
 #include "coupled_coefficient_aux.hpp"
 #include "curl_aux.hpp"
-#include "joule_heating_aux.hpp"
 #include "l2_error_vector_aux.hpp"
-#include "scaled_gridfunction_aux.hpp"
+#include "scaled_curl_vector_gridfunction_aux.hpp"
+#include "scaled_vector_gridfunction_aux.hpp"
 #include "vector_coefficient_aux.hpp"
 #include "helmholtz_projector.hpp"
+#include "vector_gridfunction_cross_product_aux.hpp"
+#include "vector_gridfunction_dot_product_aux.hpp"
 
 // Specify classes that perform auxiliary calculations on GridFunctions or
 // Coefficients.
