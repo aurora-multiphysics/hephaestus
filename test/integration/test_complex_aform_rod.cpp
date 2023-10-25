@@ -51,7 +51,7 @@ protected:
     hephaestus::BCMap bc_map;
 
     bc_map.Register("tangential_A",
-                    new hephaestus::VectorFunctionDirichletBC(
+                    new hephaestus::VectorDirichletBC(
                         std::string("magnetic_vector_potential"),
                         mfem::Array<int>({1, 2, 3}),
                         new mfem::VectorFunctionCoefficient(3, a_bc_r),

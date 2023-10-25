@@ -67,7 +67,7 @@ protected:
     mfem::VectorFunctionCoefficient *hdotVecCoef =
         new mfem::VectorFunctionCoefficient(3, hdot_bc);
     bc_map.Register("tangential_dHdt",
-                    new hephaestus::VectorFunctionDirichletBC(
+                    new hephaestus::VectorDirichletBC(
                         std::string("dmagnetic_field_dt"),
                         mfem::Array<int>({1, 2, 3}), hdotVecCoef),
                     true);
