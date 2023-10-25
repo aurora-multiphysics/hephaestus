@@ -11,10 +11,7 @@ public:
             hephaestus::Coefficients &coefficients) override;
   void Apply(mfem::ParLinearForm *lf) override;
   void SubtractSource(mfem::ParGridFunction *gf) override;
-  void buildH1Diffusion();
   void buildHCurlMass();
-  void buildWeakDiv();
-  void buildGrad();
 
   std::string src_gf_name;
   std::string src_coef_name;
@@ -26,22 +23,12 @@ public:
 
   mfem::ParFiniteElementSpace *H1FESpace_;
   mfem::ParFiniteElementSpace *HCurlFESpace_;
-  mfem::ParGridFunction *q_, *grad_q; // Potential
-  hephaestus::BCMap *_bc_map;
-  mfem::Coefficient *betaCoef;
+  mfem::ParGridFunction *q_; // Potential
+  hephaestus::BCMap *bc_map_;
+  hephaestus::GridFunctions *gridfunctions_;
+  const hephaestus::FESpaces *fespaces_;
 
-  mfem::ParBilinearForm *a0, *s0_;
   mfem::ParBilinearForm *h_curl_mass;
-  mfem::ParMixedBilinearForm *weakDiv_;
-  mfem::ParDiscreteLinearOperator *grad, *grad_;
-
-  mfem::HypreParMatrix *A0, *S0_;
-  mfem::Vector *X0, *B0;
-  mutable mfem::HypreSolver *amg_a0;
-  mutable hephaestus::DefaultH1PCGSolver *a0_solver;
-
-  mfem::ParLinearForm *gDiv_;
-  mfem::ParGridFunction *grad_p_;
 
   mfem::VectorCoefficient *sourceVecCoef;
   mfem::ParGridFunction *g; // H(Curl) projection of user specified source

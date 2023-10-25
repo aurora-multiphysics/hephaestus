@@ -18,8 +18,8 @@ public:
   virtual void applyBC(mfem::ParComplexGridFunction &gridfunc,
                        mfem::Mesh *mesh_) override;
 
-  mfem::VectorFunctionCoefficient *vec_coeff;
-  mfem::VectorFunctionCoefficient *vec_coeff_im;
+  mfem::VectorCoefficient *vec_coeff;
+  mfem::VectorCoefficient *vec_coeff_im;
 };
 
 } // namespace hephaestus

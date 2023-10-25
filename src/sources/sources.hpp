@@ -1,6 +1,7 @@
 #pragma once
 #include "div_free_source.hpp"
 #include "scalar_potential_source.hpp"
+#include "closed_coil.hpp"
 
 namespace hephaestus {
 

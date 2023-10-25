@@ -36,9 +36,23 @@ void ScalarPotentialSource::Init(hephaestus::GridFunctions &gridfunctions,
     mfem::mfem_error(error_message.c_str());
   }
 
-  p_ = new mfem::ParGridFunction(H1FESpace_);
-  gridfunctions.Register(potential_gf_name, p_, false);
   p_ = gridfunctions.Get(potential_gf_name);
+  if (p_ == NULL) {
+    std::cout << potential_gf_name + " not found in gridfunctions when "
+                                     "creating ScalarPotentialSource. "
+                                     "Creating new ParGridFunction\n";
+    p_ = new mfem::ParGridFunction(H1FESpace_);
+    gridfunctions.Register(potential_gf_name, p_, false);
+  }
+
+  grad_p_ = gridfunctions.Get(src_gf_name);
+  if (grad_p_ == NULL) {
+    std::cout << potential_gf_name + " not found in gridfunctions when "
+                                     "creating ScalarPotentialSource. "
+                                     "Creating new ParGridFunction\n";
+    grad_p_ = new mfem::ParGridFunction(HCurlFESpace_);
+    gridfunctions.Register(src_gf_name, grad_p_, false);
+  }
 
   _bc_map = &bc_map;
 
@@ -55,9 +69,6 @@ void ScalarPotentialSource::Init(hephaestus::GridFunctions &gridfunctions,
   A0 = new mfem::HypreParMatrix;
   X0 = new mfem::Vector;
   B0 = new mfem::Vector;
-
-  grad_p_ = new mfem::ParGridFunction(HCurlFESpace_);
-  gridfunctions.Register(src_gf_name, grad_p_, false);
 }
 
 void ScalarPotentialSource::buildM1(mfem::Coefficient *Sigma) {

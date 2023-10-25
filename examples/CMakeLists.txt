@@ -1,4 +1,5 @@
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/examples/bin)
 add_subdirectory(team7)
 add_subdirectory(complex_team7)
+add_subdirectory(closed_coil)
 add_subdirectory(magnetostatic)
