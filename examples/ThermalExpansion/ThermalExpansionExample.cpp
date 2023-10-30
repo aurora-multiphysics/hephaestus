@@ -4,9 +4,7 @@ const char *DATA_DIR = "../../data/";
 
 hephaestus::BCMap defineBCs(){
 
-  hephaestus::BCMap boundaries;
-
-  boundaries.Register("temperature", new hephaestus::EssentialBC("thermal_boundary_one", {1}, ), );
+  
 }
 
 
@@ -74,6 +72,15 @@ int main(int argc, char *argv[]) {
   hephaestus::Outputs outputs = defineOutputs();
   problem_builder->SetOutputs(outputs);
 
+  hephaestus::BCMap boundaries;
+  boundaries.Register("temperature", new hephaestus::DirichletBC("thermal_boundary_one", {1}, ), );
+  boundaries.Register("temperature", new hephaestus::DirichletBC("thermal_boundary_two", {2}, ), );
+  
+  boundaries.Register("temperature", new hephaestus::DirichletBC("thermal_boundary_one", {1}, ), );
+
+  problem_builder->SetBoundaryConditions(boundaries);
+  
+
 
   hephaestus::InputParameters solver_options;
   solver_options.SetParam("Tolerance", float(1.0e-5));
@@ -87,8 +94,8 @@ int main(int argc, char *argv[]) {
       problem_builder->ReturnProblem();
   hephaestus::InputParameters exec_params;
   exec_params.SetParam("Problem", problem.get());
-  hephaestus::SteadyStateExecutioner *executioner =
-      new hephaestus::SteadyStateExecutioner(exec_params);
+  hephaestus::SteadyExecutioner *executioner =
+      new hephaestus::SteadyExecutioner(exec_params);
 
   mfem::out << "Created executioner";
   executioner->Init();
