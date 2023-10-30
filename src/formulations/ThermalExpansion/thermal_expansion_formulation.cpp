@@ -63,14 +63,14 @@ void ThermalExpansionFormulation::ConstructOperator() {
   solver_options.SetParam("ThermalConductivityCoefName", thermal_conductivity_coef_name);
   solver_options.SetParam("StressFreeTempCoefName", stress_free_temp_coef_name);
 
-  this->problem->ss_operator = std::make_unique<hephaestus::ThermalExpansionOperator>(
+  this->problem->eq_sys_operator = std::make_unique<hephaestus::ThermalExpansionOperator>(
       *(this->problem->pmesh), this->problem->fespaces,
       this->problem->gridfunctions, this->problem->bc_map,
       this->problem->coefficients, this->problem->sources,
       this->problem->solver_options);
-  // this->problem->ss_operator->SetEquationSystem(
-  //     this->problem->ss_equation_system.get());
-  this->problem->ss_operator->SetGridFunctions();
+  // this->problem->eq_sys_operator->SetEquationSystem(
+  //     this->problem->eq_sys.get());
+  this->problem->eq_sys_operator->SetGridFunctions();
 };
 
 void ThermalExpansionFormulation::RegisterGridFunctions() {
@@ -107,7 +107,7 @@ ThermalExpansionOperator::ThermalExpansionOperator(
     hephaestus::GridFunctions &gridfunctions, hephaestus::BCMap &bc_map,
     hephaestus::Coefficients &coefficients, hephaestus::Sources &sources,
     hephaestus::InputParameters &solver_options)    
-    : SteadyStateEquationSystemOperator(pmesh, fespaces, gridfunctions,
+    : EquationSystemOperator(pmesh, fespaces, gridfunctions,
                                             bc_map, coefficients, sources,
                                             solver_options),
       temp_var_name(solver_options.GetParam<std::string>("TempVarName")),
@@ -123,14 +123,14 @@ void ThermalExpansionOperator::SetGridFunctions() {
   state_var_names.push_back(temp_var_name);
   state_var_names.push_back(displacement_var_name);
   
-  SteadyStateEquationSystemOperator::SetGridFunctions();
+  EquationSystemOperator::SetGridFunctions();
 
   t_ = new mfem::ParGridFunction(local_test_vars.at(0)->ParFESpace());
   u_ = new mfem::ParGridFunction(local_test_vars.at(1)->ParFESpace());
 };
 
 void ThermalExpansionOperator::Init(mfem::Vector &X) {
-  SteadyStateEquationSystemOperator::Init(X);
+  EquationSystemOperator::Init(X);
 
   lameCoef_ = _coefficients.scalars.Get(lame_coef_name);
   shearModulusCoef_ = _coefficients.scalars.Get(shear_modulus_coef_name);

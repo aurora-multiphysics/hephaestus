@@ -11,7 +11,7 @@ class ThermalExpansionFormulation : public SteadyStateFormulation {
 public:
   ThermalExpansionFormulation();
 
-  virtual void ConstructEquationSystem() override {};
+  // virtual void ConstructEquationSystem() override {};
 
   virtual void ConstructOperator() override;
 
@@ -40,7 +40,7 @@ protected:
 //                 stress_free_temp_coef_name, lame_param_coef_name, shear_modulus_coef_name;
 // };
 
-class ThermalExpansionOperator : public SteadyStateEquationSystemOperator {
+class ThermalExpansionOperator : public EquationSystemOperator {
 public:
   ThermalExpansionOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
                 hephaestus::GridFunctions &gridfunctions,
