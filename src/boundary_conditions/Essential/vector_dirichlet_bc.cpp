@@ -1,19 +1,19 @@
-#include "vector_function_dirichlet_bc.hpp"
+#include "vector_dirichlet_bc.hpp"
 
 namespace hephaestus {
 
-VectorFunctionDirichletBC::VectorFunctionDirichletBC(
+VectorDirichletBC::VectorDirichletBC(
     const std::string &name_, mfem::Array<int> bdr_attributes_)
     : EssentialBC(name_, bdr_attributes_) {}
 
-VectorFunctionDirichletBC::VectorFunctionDirichletBC(
+VectorDirichletBC::VectorDirichletBC(
     const std::string &name_, mfem::Array<int> bdr_attributes_,
-    mfem::VectorFunctionCoefficient *vec_coeff_,
-    mfem::VectorFunctionCoefficient *vec_coeff_im_)
+    mfem::VectorCoefficient *vec_coeff_,
+    mfem::VectorCoefficient *vec_coeff_im_)
     : EssentialBC(name_, bdr_attributes_), vec_coeff(vec_coeff_),
       vec_coeff_im(vec_coeff_im_) {}
 
-void VectorFunctionDirichletBC::applyBC(mfem::GridFunction &gridfunc,
+void VectorDirichletBC::applyBC(mfem::GridFunction &gridfunc,
                                         mfem::Mesh *mesh_) {
   mfem::Array<int> ess_bdrs(mesh_->bdr_attributes.Max());
   ess_bdrs = this->getMarkers(*mesh_);
@@ -25,7 +25,7 @@ void VectorFunctionDirichletBC::applyBC(mfem::GridFunction &gridfunc,
   gridfunc.ProjectBdrCoefficientTangent(*(this->vec_coeff), ess_bdrs);
 }
 
-void VectorFunctionDirichletBC::applyBC(mfem::ParComplexGridFunction &gridfunc,
+void VectorDirichletBC::applyBC(mfem::ParComplexGridFunction &gridfunc,
                                         mfem::Mesh *mesh_) {
   mfem::Array<int> ess_bdrs(mesh_->bdr_attributes.Max());
   ess_bdrs = this->getMarkers(*mesh_);

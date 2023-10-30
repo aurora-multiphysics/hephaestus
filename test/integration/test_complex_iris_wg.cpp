@@ -54,7 +54,7 @@ protected:
     mfem::Array<int> dirichlet_attr(1);
     dirichlet_attr[0] = 1;
     bc_map.Register("tangential_E",
-                    new hephaestus::VectorFunctionDirichletBC(
+                    new hephaestus::VectorDirichletBC(
                         std::string("electric_field"), dirichlet_attr,
                         new mfem::VectorFunctionCoefficient(3, e_bc_r),
                         new mfem::VectorFunctionCoefficient(3, e_bc_i)),

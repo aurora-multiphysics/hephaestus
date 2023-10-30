@@ -74,7 +74,7 @@ protected:
     mfem::VectorFunctionCoefficient *edotVecCoef =
         new mfem::VectorFunctionCoefficient(3, edot_bc);
     bc_map.Register("tangential_dEdt",
-                    new hephaestus::VectorFunctionDirichletBC(
+                    new hephaestus::VectorDirichletBC(
                         std::string("electric_field"),
                         mfem::Array<int>({1, 2, 3}), edotVecCoef),
                     true);

@@ -3,14 +3,14 @@
 
 namespace hephaestus {
 
-class VectorFunctionDirichletBC : public EssentialBC {
+class VectorDirichletBC : public EssentialBC {
 public:
-  VectorFunctionDirichletBC(const std::string &name_,
+  VectorDirichletBC(const std::string &name_,
                             mfem::Array<int> bdr_attributes_);
-  VectorFunctionDirichletBC(
+  VectorDirichletBC(
       const std::string &name_, mfem::Array<int> bdr_attributes_,
-      mfem::VectorFunctionCoefficient *vec_coeff_,
-      mfem::VectorFunctionCoefficient *vec_coeff_im_ = nullptr);
+      mfem::VectorCoefficient *vec_coeff_,
+      mfem::VectorCoefficient *vec_coeff_im_ = nullptr);
 
   virtual void applyBC(mfem::GridFunction &gridfunc,
                        mfem::Mesh *mesh_) override;
