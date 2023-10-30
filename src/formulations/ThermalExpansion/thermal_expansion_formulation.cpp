@@ -4,13 +4,13 @@ namespace hephaestus {
 
 ThermalExpansionFormulation::ThermalExpansionFormulation() : SteadyStateFormulation() {
 
-  temp_var_name = std::string("temp_var");
-  displacement_var_name = std::string("displacement_var");
-  stress_free_temp_coef_name = std::string("stress_free_temp");
+  temp_var_name = std::string("temperature");
+  displacement_var_name = std::string("displacement");
   lame_param_coef_name = std::string("lame_param");
   shear_modulus_coef_name = std::string("shear_modulus");
-  thermal_expansion_coef_name = std::string("thermal_expansion");
-  thermal_expansion_coef_name = std::string("thermal_conductivity");
+  thermal_expansion_coef_name = std::string("thermal_expansion_coef");
+  thermal_conductivity_coef_name = std::string("thermal_conductivity");
+  stress_free_temp_coef_name = std::string("stress_free_temp");
 }
 
 void ThermalExpansionFormulation::RegisterCoefficients() {
@@ -50,7 +50,19 @@ void ThermalExpansionFormulation::RegisterCoefficients() {
 //       std::make_unique<hephaestus::CurlCurlEquationSystem>(weak_form_params);
 // }
 
+
 void ThermalExpansionFormulation::ConstructOperator() {
+  hephaestus::InputParameters &solver_options =
+
+      this->GetProblem()->solver_options;
+  solver_options.SetParam("TempVarName", temp_var_name);
+  solver_options.SetParam("DisplacementVarName", displacement_var_name);
+  solver_options.SetParam("LameCoefName", lame_param_coef_name);
+  solver_options.SetParam("ShearModulusCoefName", shear_modulus_coef_name);
+  solver_options.SetParam("ThermalExpansionCoefName", thermal_expansion_coef_name);
+  solver_options.SetParam("ThermalConductivityCoefName", thermal_conductivity_coef_name);
+  solver_options.SetParam("StressFreeTempCoefName", stress_free_temp_coef_name);
+
   this->problem->ss_operator = std::make_unique<hephaestus::ThermalExpansionOperator>(
       *(this->problem->pmesh), this->problem->fespaces,
       this->problem->gridfunctions, this->problem->bc_map,
@@ -103,7 +115,8 @@ ThermalExpansionOperator::ThermalExpansionOperator(
       lame_coef_name(solver_options.GetParam<std::string>("LameCoefName")),
       shear_modulus_coef_name(solver_options.GetParam<std::string>("ShearModulusCoefName")),
       thermal_expansion_coef_name(solver_options.GetParam<std::string>("ThermalExpansionCoefName")), 
-      stress_free_temp_coef_name(solver_options.GetParam<std::string>("StressFreeTemp")) {}
+      thermal_conductivity_coef_name(solver_options.GetParam<std::string>("ThermalConductivityCoefName")),
+      stress_free_temp_coef_name(solver_options.GetParam<std::string>("StressFreeTempCoefName")) {}
 
 
 void ThermalExpansionOperator::SetGridFunctions() {
