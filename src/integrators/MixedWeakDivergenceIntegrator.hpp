@@ -1,7 +1,6 @@
 #pragma once
 #include "mfem.hpp"
 
-
 namespace mfem {
 
 class MixedWeakDivergenceIntegrator : public mfem::BilinearFormIntegrator
@@ -24,10 +23,10 @@ private:
 public:
 
     MixedWeakDivergenceIntegrator(mfem::Coefficient &a) :
-        a(&a), l(&l), m(&m), trial_maps(NULL), test_maps(NULL), geom(NULL) 
-        {}        
+        a(&a), trial_maps(NULL), test_maps(NULL), geom(NULL) 
+        {;}        
 
-    ~MixedWeakDivergenceIntegrator() { }
+    ~MixedWeakDivergenceIntegrator() {;}
 
     void AssembleElementMatrix2(const mfem::FiniteElement &trial_fe,
                                 const mfem::FiniteElement &test_fe,

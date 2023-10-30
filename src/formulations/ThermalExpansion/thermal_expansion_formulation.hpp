@@ -3,6 +3,7 @@
 #include "formulation.hpp"
 #include "inputs.hpp"
 #include "sources.hpp"
+#include "MixedWeakDivergenceIntegrator.hpp"
 
 namespace hephaestus {
 
@@ -10,7 +11,7 @@ class ThermalExpansionFormulation : public SteadyStateFormulation {
 public:
   ThermalExpansionFormulation();
 
-  virtual void ConstructEquationSystem() override;
+  virtual void ConstructEquationSystem() override {};
 
   virtual void ConstructOperator() override;
 
@@ -67,7 +68,7 @@ public:
   mfem::Coefficient *thermalExpansionCoef_;  // Thermal expansion coefficient
   mfem::Coefficient *stressFreeTempCoef_;  // Stress free temperature
 
-  mfem::Array<int> ess_temp_bdr_tdofs, ess_disp_bdr_tdofs_;  
+  mfem::Array<int> ess_temp_bdr_tdofs_, ess_disp_bdr_tdofs_;  
 };
 
 } // namespace hephaestus

@@ -6,3 +6,4 @@
 #include "vector_fe_weak_divergence_kernel.hpp"
 #include "weak_curl_curl_kernel.hpp"
 #include "weak_curl_kernel.hpp"
+#include "mixed_weak_divergence_kernel.hpp"

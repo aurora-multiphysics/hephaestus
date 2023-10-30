@@ -1,9 +1,11 @@
-#include "integrators.hpp"
+#include "MixedWeakDivergenceIntegrator.hpp"
 
+
+namespace mfem{
 void MixedWeakDivergenceIntegrator::AssembleElementMatrix2(const mfem::FiniteElement &trial_fe,
-                                const mfem::FiniteElement &test_fe,
-                                mfem::ElementTransformation &Trans,
-                                mfem::DenseMatrix &elmat)
+                                                            const mfem::FiniteElement &test_fe,
+                                                            mfem::ElementTransformation &Trans,
+                                                            mfem::DenseMatrix &elmat)
 {
     //  Get number of dofs/ basis functions
     dim = trial_fe.GetDim();
@@ -55,7 +57,7 @@ void MixedWeakDivergenceIntegrator::AssembleElementMatrix2(const mfem::FiniteEle
     }
 }
 
-const mfem::IntegrationRule& MixedWeakDivergenceIntegrator::GetIntRule(const mfem::FiniteElement &trial_fe,
+const IntegrationRule& mfem::MixedWeakDivergenceIntegrator::GetIntRule(const mfem::FiniteElement &trial_fe,
                                    const mfem::FiniteElement &test_fe,
                                    mfem::ElementTransformation &Trans)
 {
@@ -66,13 +68,4 @@ const mfem::IntegrationRule& MixedWeakDivergenceIntegrator::GetIntRule(const mfe
     return mfem::IntRules.Get(trial_fe.GetGeomType(), order);
 } 
 
-const mfem::IntegrationRule& MixedWeakDivergenceIntegrator::GetIntRule(const mfem::FiniteElement &trial_fe,
-                                   const mfem::FiniteElement &test_fe,
-                                   mfem::ElementTransformation &Trans)
-{
-    int order = trial_fe.GetOrder()
-                + Trans.OrderGrad(&test_fe)
-                + Trans.OrderJ();
-    
-    return mfem::IntRules.Get(trial_fe.GetGeomType(), order);
-}
+} //namespace mfem

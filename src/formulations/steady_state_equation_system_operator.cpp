@@ -4,10 +4,10 @@ namespace hephaestus {
 
 void SteadyStateEquationSystemOperator::SetGridFunctions() {
     local_test_vars = populateVectorFromNamedFieldsMap<mfem::ParGridFunction>(
-        _gridfunctions, state_var_names)
+        _gridfunctions, state_var_names);
     
     // Set operator size and block structure
-    block_trueOffsets.SetSize(local_test_vars.size() + 1)
+    block_trueOffsets.SetSize(local_test_vars.size() + 1);
     block_trueOffsets[0] = 0;
     for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
         block_trueOffsets[ind + 1] =

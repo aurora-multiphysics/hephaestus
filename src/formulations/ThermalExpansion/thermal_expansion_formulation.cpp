@@ -2,7 +2,7 @@
 
 namespace hephaestus {
 
-ThermalExpansionFormulation::ThermalExpansionFormulation() : TimeDomainFormulation() {
+ThermalExpansionFormulation::ThermalExpansionFormulation() : SteadyStateFormulation() {
 
   temp_var_name = std::string("temp_var");
   displacement_var_name = std::string("displacement_var");
@@ -56,8 +56,8 @@ void ThermalExpansionFormulation::ConstructOperator() {
       this->problem->gridfunctions, this->problem->bc_map,
       this->problem->coefficients, this->problem->sources,
       this->problem->solver_options);
-  this->problem->ss_operator->SetEquationSystem(
-      this->problem->ss_equation_system.get());
+  // this->problem->ss_operator->SetEquationSystem(
+  //     this->problem->ss_equation_system.get());
   this->problem->ss_operator->SetGridFunctions();
 };
 
@@ -81,7 +81,7 @@ void ThermalExpansionFormulation::RegisterGridFunctions() {
         MFEM_WARNING(displacement_var_name << " not found in gridfunctions: building "
                                         "gridfunction from defaults");
       }
-      AddFESpace(std::string("_DisplacementFESpace"), std::string("H1_"), 3, mfem::ordering::byVdim);
+      AddFESpace(std::string("_DisplacementFESpace"), std::string("H1_"), 3, mfem::Ordering::byVDIM);
       AddGridFunction(displacement_var_name, std::string("_DisplacementFESpace"));
     };
     // Register time derivatives
@@ -101,8 +101,8 @@ ThermalExpansionOperator::ThermalExpansionOperator(
       temp_var_name(solver_options.GetParam<std::string>("TempVarName")),
       displacement_var_name(solver_options.GetParam<std::string>("DisplacementVarName")),
       lame_coef_name(solver_options.GetParam<std::string>("LameCoefName")),
-      shear_modulus_coef_name(solver_options.GetParam<std::string>("ShearModulusCoefName"))
-      thermal_expansion_coef_name(solver_options.GetParam<std::string>("ThermalExpansionCoefName")) 
+      shear_modulus_coef_name(solver_options.GetParam<std::string>("ShearModulusCoefName")),
+      thermal_expansion_coef_name(solver_options.GetParam<std::string>("ThermalExpansionCoefName")), 
       stress_free_temp_coef_name(solver_options.GetParam<std::string>("StressFreeTemp")) {}
 
 
@@ -117,7 +117,7 @@ void ThermalExpansionOperator::SetGridFunctions() {
 };
 
 void ThermalExpansionOperator::Init(mfem::Vector &X) {
-   ::Init(X);
+  SteadyStateEquationSystemOperator::Init(X);
 
   lameCoef_ = _coefficients.scalars.Get(lame_coef_name);
   shearModulusCoef_ = _coefficients.scalars.Get(shear_modulus_coef_name);
@@ -128,17 +128,17 @@ void ThermalExpansionOperator::Init(mfem::Vector &X) {
 }
 
 void ThermalExpansionOperator::Solve(mfem::Vector &X) {
-  mfem::OperatorHandle A1;
-  mfem::Array2D<mfem::HypreParMatrix *> hBlocks;
-  hBlocks.DeleteAll();
-  hBlocks.SetSize(2,2);
-  hBlocks(0, 0) = new mfem::HypreParMatrix;
-  hBlocks(1, 1) = new mfem::HypreParMatrix;
-  hBlocks(1, 0) = new mfem::HypreParMatrix;
-  hBlocks(0, 1) = nullptr;
+  
+  mfem::Array2D<mfem::HypreParMatrix *> OpBlocks;
+  OpBlocks.DeleteAll();
+  OpBlocks.SetSize(2,2);
+  OpBlocks(0, 0) = new mfem::HypreParMatrix;
+  OpBlocks(1, 1) = new mfem::HypreParMatrix;
+  OpBlocks(1, 0) = new mfem::HypreParMatrix;
+  OpBlocks(0, 1) = nullptr;
 
-  mfem::Array<int> offsets({0, t_->ParFESpace().TrueVSize(), 
-                           t_->ParFESpace().TrueVSize() + u_->ParFESpace().TrueVSize()});
+  mfem::Array<int> offsets({0, t_->ParFESpace()->TrueVSize(), 
+                           t_->ParFESpace()->TrueVSize() + u_->ParFESpace()->TrueVSize()});
 
   mfem::BlockVector trueX(offsets);
   mfem::BlockVector trueRHS(offsets);
@@ -147,14 +147,18 @@ void ThermalExpansionOperator::Solve(mfem::Vector &X) {
   aMixed_ = new mfem::ParMixedBilinearForm(t_->ParFESpace(), u_->ParFESpace());
   a1_ = new mfem::ParBilinearForm(t_->ParFESpace());
   a2_ = new mfem::ParBilinearForm(u_->ParFESpace());
+    // Set up linear forms
+  b1_ = new mfem::ParLinearForm(t_->ParFESpace());
+  b2_ = new mfem::ParLinearForm(u_->ParFESpace());
+
 
   if(thermalExpansionCoef_) {
-    aMixed_->AddDomainIntegrator(new mfem::MixedWeakDivIntegrator(lameCoef_));
+    aMixed_->AddDomainIntegrator(new mfem::MixedWeakDivergenceIntegrator(*lameCoef_));
   }
 
   // 
-  a1_->AddDomainIntegrator(new mfem::DiffusionIntegrator(thermalConductivityCoef_));
-  a2_->AddDomainIntegrator(new mfem::ElasticityIntegrator(lameCoef_, shearModulusCoef_));
+  a1_->AddDomainIntegrator(new mfem::DiffusionIntegrator(*thermalConductivityCoef_));
+  a2_->AddDomainIntegrator(new mfem::ElasticityIntegrator(*lameCoef_, *shearModulusCoef_));
 
   _bc_map.applyEssentialBCs(std::string(temp_var_name), ess_temp_bdr_tdofs_, *t_,
                             pmesh_);
@@ -163,8 +167,8 @@ void ThermalExpansionOperator::Solve(mfem::Vector &X) {
                             pmesh_);
 
 
-  _bc_map.applyIntegratedBCs(std::string(temp_var_name), *a1_, pmesh_);
-  _bc_map.applyIntegratedBCs(std::string(displacement_var_name), *a2_, pmesh_);
+  _bc_map.applyIntegratedBCs(std::string(temp_var_name), *b1_, pmesh_);
+  _bc_map.applyIntegratedBCs(std::string(displacement_var_name), *b2_, pmesh_);
   
 
   a1_->Assemble();
@@ -176,22 +180,22 @@ void ThermalExpansionOperator::Solve(mfem::Vector &X) {
   aMixed_->Assemble();
   aMixed_->Finalize();
 
-  // Set up linear forms
-  b1_ = new mfem::ParLinearForm(t_->ParFESpace());
-  b2_ = new mfem::ParLinearForm(u_->ParFESpace());
-
   b1_->Assemble();
   b2_->Assemble();
   
-  a1_->FormLinearSystem(ess_temp_bdr_tdofs, *t_, *b1_, *hBlocks(0, 0), trueX.GetBlock(0) trueRHS.GetBlock(0));
-  a2_->FormLinearSystem(ess_disp_bdr_tdofs_, *u_, *b1_, *hBlocks(1, 1), trueX.GetBlock(1), trueRHS.GetBlock(1));
-  aMixed_->FormRectangularLinearSystem(ess_temp_bdr_tdofs, ess_disp_bdr_tdofs_, t_, b2_, *hBlocks(1, 0), trueX.GetBlock(0), trueB.GetBlock(1));
-  A1 = mfem::HypreParMatrixFromBlocks(hBlocks);
-  mfem::HypreBoomerAMG *amg = new mfem::HypreBoomerAMG(A1);
+  a1_->FormLinearSystem(ess_temp_bdr_tdofs_, *t_, *b1_, *OpBlocks(0, 0), trueX.GetBlock(0), trueRHS.GetBlock(0));
+  a2_->FormLinearSystem(ess_disp_bdr_tdofs_, *u_, *b1_, *OpBlocks(1, 1), trueX.GetBlock(1), trueRHS.GetBlock(1));
+  aMixed_->FormRectangularLinearSystem(ess_temp_bdr_tdofs_, ess_disp_bdr_tdofs_, *t_, *b2_, *OpBlocks(1, 0), trueX.GetBlock(0), trueRHS.GetBlock(1));
+
+  mfem::HypreParMatrix *A1 = mfem::HypreParMatrixFromBlocks(OpBlocks);
+  mfem::HypreBoomerAMG *amg = new mfem::HypreBoomerAMG(*A1);
   mfem::HyprePCG solver(MPI_COMM_WORLD);
-  solver.SetOperator(A1);
+  solver.SetOperator(*A1);
   solver.Mult(trueRHS, trueX);
-  delete A1;
+
+  delete(amg);
+  delete(A1);
+  OpBlocks.DeleteAll();
 
   a1_->RecoverFEMSolution(trueX.GetBlock(0), *b1_, *u_);
   a2_->RecoverFEMSolution(trueX.GetBlock(1), *b2_, *t_);

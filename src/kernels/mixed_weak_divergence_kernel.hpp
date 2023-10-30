@@ -1,5 +1,5 @@
 #pragma once
-#include "integrators.hpp"
+#include "kernel_base.hpp"
 
 namespace hephaestus {
 
