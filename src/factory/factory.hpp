@@ -7,6 +7,8 @@
 #include "e_formulation.hpp"
 #include "eb_dual_formulation.hpp"
 #include "h_formulation.hpp"
+#include "hj_dual_formulation.hpp"
+#include "thermal_expansion_formulation.hpp"
 #include "inputs.hpp"
 #include "magnetostatic_formulation.hpp"
 
