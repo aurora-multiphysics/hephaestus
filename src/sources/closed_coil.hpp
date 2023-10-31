@@ -93,7 +93,7 @@ private:
   mfem::Coefficient *Itotal_;
   std::vector<int> old_dom_attrs;
 
-  // FE space, mesh, and J GridFunction
+  // Names
   std::string hcurl_fespace_name_;
   std::string J_gf_name_;
   std::string I_coef_name_;
