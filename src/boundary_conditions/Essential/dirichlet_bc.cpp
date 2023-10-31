@@ -8,8 +8,8 @@ DirichletBC::DirichletBC(const std::string &name_,
 
 DirichletBC::DirichletBC(const std::string &name_,
                                          mfem::Array<int> bdr_attributes_,
-                                         mfem::FunctionCoefficient *coeff_,
-                                         mfem::FunctionCoefficient *coeff_im_)
+                                         mfem::ConstantCoefficient *coeff_,
+                                         mfem::ConstantCoefficient *coeff_im_)
     : EssentialBC(name_, bdr_attributes_), coeff(coeff_), coeff_im(coeff_im_) {}
 
 void DirichletBC::applyBC(mfem::GridFunction &gridfunc,

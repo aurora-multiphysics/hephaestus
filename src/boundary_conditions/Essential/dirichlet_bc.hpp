@@ -4,7 +4,7 @@
 namespace hephaestus{
 
 class DirichletBC : public EssentialBC{
-
+public:
   DirichletBC(const std::string &name_,
                       mfem::Array<int> bdr_attributes_);
                       
