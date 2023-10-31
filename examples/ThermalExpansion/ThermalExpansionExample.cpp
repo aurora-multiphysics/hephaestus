@@ -2,12 +2,6 @@
 
 const char *DATA_DIR = "../../data/";
 
-hephaestus::BCMap defineBCs(){
-
-  
-}
-
-
 hephaestus::Coefficients defineCoefficients(){
     
   hephaestus::Coefficients coefficients;
@@ -30,7 +24,8 @@ hephaestus::Coefficients defineCoefficients(){
 
   coefficients.scalars.Register("stress_free_temp",
                                 new mfem::ConstantCoefficient(0.02),
-                                true);                                                      
+                                true);
+                                                                            
 
   return coefficients;
 }
@@ -42,6 +37,32 @@ hephaestus::Outputs defineOutputs() {
   hephaestus::Outputs outputs(data_collections);
   return outputs;
 }
+
+
+hephaestus::BCMap defineBoundaries(mfem::ParMesh *pmesh) {
+
+  hephaestus::BCMap boundaries;
+
+  mfem::ConstantCoefficient *cold = new mfem::ConstantCoefficient(300.00);
+  mfem::ConstantCoefficient *hot = new mfem::ConstantCoefficient(500.00);
+  mfem::ConstantCoefficient *zero = new mfem::ConstantCoefficient(0.000);
+  mfem::Array<int> therm_bound_one_arr(pmesh->bdr_attributes.Max());
+  mfem::Array<int> therm_bound_two_arr(pmesh->bdr_attributes.Max());
+  mfem::Array<int> fixed_disp_arr(pmesh->bdr_attributes.Max());
+
+  therm_bound_one_arr = 0;
+  therm_bound_two_arr = 0;
+  fixed_disp_arr = 0;
+
+  therm_bound_one_arr[0] = 1;
+  therm_bound_two_arr[1] = 1;
+  fixed_disp_arr[0] = 1;
+
+  boundaries.Register("thermal_boundary_one", new hephaestus::DirichletBC("thermal_boundary_one", therm_bound_one_arr, cold), true);
+  boundaries.Register("thermal_boundary_two", new hephaestus::DirichletBC("thermal_boundary_two", therm_bound_two_arr, hot), true);
+  boundaries.Register("fixed_displacement", new hephaestus::DirichletBC("fixed_displacement", fixed_disp_arr, zero), true);
+}
+
 
 int main(int argc, char *argv[]) {
   mfem::OptionsParser args(argc, argv);
@@ -72,16 +93,10 @@ int main(int argc, char *argv[]) {
   hephaestus::Outputs outputs = defineOutputs();
   problem_builder->SetOutputs(outputs);
 
-  hephaestus::BCMap boundaries;
-  boundaries.Register("temperature", new hephaestus::DirichletBC("thermal_boundary_one", {1}, ), );
-  boundaries.Register("temperature", new hephaestus::DirichletBC("thermal_boundary_two", {2}, ), );
-  
-  boundaries.Register("temperature", new hephaestus::DirichletBC("thermal_boundary_one", {1}, ), );
+  hephaestus::BCMap boundaries = defineBoundaries(pmesh.get());
 
   problem_builder->SetBoundaryConditions(boundaries);
   
-
-
   hephaestus::InputParameters solver_options;
   solver_options.SetParam("Tolerance", float(1.0e-5));
   solver_options.SetParam("MaxIter", (unsigned int)1000);
