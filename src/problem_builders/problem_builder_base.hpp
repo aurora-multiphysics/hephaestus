@@ -58,7 +58,10 @@ public:
                   int ordering = mfem::Ordering::byNODES);
   void AddGridFunction(std::string gridfunction_name, std::string fespace_name);
   template <class T>
-  void AddKernel(std::string var_name, hephaestus::Kernel<T> *kernel);
+  void AddKernel(std::string var_name, hephaestus::Kernel<T> *kernel) {
+    this->GetProblem()->GetEquationSystem()->addVariableNameIfMissing(var_name);
+    this->GetProblem()->GetEquationSystem()->addKernel(var_name, kernel);
+  };
   void AddBoundaryCondition(std::string bc_name,
                             hephaestus::BoundaryCondition *bc, bool own_data);
   void AddAuxSolver(std::string auxsolver_name, hephaestus::AuxSolver *aux,
