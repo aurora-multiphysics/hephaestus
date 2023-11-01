@@ -107,7 +107,9 @@ void ProblemBuilder::AddSource(std::string source_name,
   this->GetProblem()->sources.Register(source_name, source, own_data);
 }
 
-void ProblemBuilder::InitializePostprocessors() {
+void ProblemBuilder::InitializeAuxSolvers() {
+  this->GetProblem()->preprocessors.Init(this->GetProblem()->gridfunctions,
+                                         this->GetProblem()->coefficients);
   this->GetProblem()->postprocessors.Init(this->GetProblem()->gridfunctions,
                                           this->GetProblem()->coefficients);
 }

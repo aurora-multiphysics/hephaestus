@@ -82,7 +82,7 @@ public:
   virtual void ConstructState() = 0;
   virtual void ConstructSolver() = 0;
 
-  void InitializePostprocessors();
+  void InitializeAuxSolvers();
 };
 
 class ProblemBuildSequencer {
@@ -114,7 +114,7 @@ public:
     this->problem_builder->InitializeKernels();
     this->problem_builder->ConstructOperator();
     this->problem_builder->ConstructState();
-    this->problem_builder->InitializePostprocessors();
+    this->problem_builder->InitializeAuxSolvers();
   }
   void ConstructEquationSystemProblem() {
     this->problem_builder->RegisterFESpaces();
@@ -126,7 +126,7 @@ public:
     this->problem_builder->ConstructOperator();
     this->problem_builder->ConstructState();
     this->problem_builder->ConstructSolver();
-    this->problem_builder->InitializePostprocessors();
+    this->problem_builder->InitializeAuxSolvers();
   }
 };
 
