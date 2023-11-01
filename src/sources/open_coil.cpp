@@ -283,6 +283,7 @@ void OpenCoilSolver::SPSCurrent() {
   // Normalise the current through the wedges and use them as a reference
   double flux = calcFlux(J_, ref_face_);
   *J_ /= abs(flux);
+  if (V_) *V_ /= abs(flux);
 }
 
 void OpenCoilSolver::cleanDivergence(hephaestus::GridFunctions *gridfunctions,
