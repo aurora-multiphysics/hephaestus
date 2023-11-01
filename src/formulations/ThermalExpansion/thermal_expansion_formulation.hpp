@@ -3,7 +3,7 @@
 #include "formulation.hpp"
 #include "inputs.hpp"
 #include "sources.hpp"
-#include "MixedWeakDivergenceIntegrator.hpp"
+#include "integrators.hpp"
 
 namespace hephaestus {
 
@@ -55,20 +55,25 @@ public:
   virtual void Init(mfem::Vector &X) override;
   virtual void Solve(mfem::Vector &X) override;
 
+  // Method for manipulating existing coefficients to get the terms needed for the thermal expansion solve
+  void MakeCoefficients();
+
   std::string temp_var_name, displacement_var_name, 
             stress_free_temp_coef_name, lame_coef_name, shear_modulus_coef_name, thermal_expansion_coef_name, thermal_conductivity_coef_name;
   mfem::ParGridFunction *u_, *t_;
   mfem::ParLinearForm *b1_, *b2_;
   mfem::ParBilinearForm *a1_, *a2_;
-  mfem::ParMixedBilinearForm *aMixed_;
+  mfem::ParMixedBilinearForm *aMixed_; //  
  
   mfem::Coefficient *thermalConductivityCoef_;
   mfem::Coefficient *lameCoef_;  // Lame's first parameter
   mfem::Coefficient *shearModulusCoef_;  // Shear modulus 
   mfem::Coefficient *thermalExpansionCoef_;  // Thermal expansion coefficient
   mfem::Coefficient *stressFreeTempCoef_;  // Stress free temperature
+  mfem::Coefficient *bilinearFormCoef_; //
+  mfem::Coefficient *linearFormCoef_; //
 
-  mfem::Array<int> ess_temp_bdr_tdofs_, ess_disp_bdr_tdofs_;  
-};
+  mfem::Array<int> ess_temp_tdofs_, ess_disp_tdofs_;  
+}; //
 
 } // namespace hephaestus
