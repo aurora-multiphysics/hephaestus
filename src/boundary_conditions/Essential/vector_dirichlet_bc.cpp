@@ -24,19 +24,16 @@ void VectorDirichletBC::applyBC(mfem::GridFunction &gridfunc,
         "components of the vector at the Dirichlet boundary.");
   }
 
-  if(boundary_apply_type == STANDARD)
+  switch (boundary_apply_type)
   {
+  case STANDARD:
     gridfunc.ProjectBdrCoefficient(*(this->vec_coeff), ess_bdrs);
-  }
-
-  if(boundary_apply_type == TANGENTIAL)
-  {
-    gridfunc.ProjectBdrCoefficientTangent(*(this->vec_coeff), ess_bdrs);
-  }
-
-  if(boundary_apply_type == NORMAL)
-  {
+    break;
+  case NORMAL:
     gridfunc.ProjectBdrCoefficientNormal(*(this->vec_coeff), ess_bdrs);
+    break;
+  case TANGENTIAL:
+    gridfunc.ProjectBdrCoefficientTangent(*(this->vec_coeff), ess_bdrs);
   }
 }
 
