@@ -39,28 +39,26 @@ hephaestus::Outputs defineOutputs() {
 }
 
 
-hephaestus::BCMap defineBoundaries(mfem::ParMesh *pmesh) {
+hephaestus::BCMap defineBoundaries() {
 
   hephaestus::BCMap boundaries;
-
+;
   mfem::ConstantCoefficient *cold = new mfem::ConstantCoefficient(300.00);
   mfem::ConstantCoefficient *hot = new mfem::ConstantCoefficient(500.00);
-  mfem::ConstantCoefficient *zero = new mfem::ConstantCoefficient(0.000);
-  mfem::Array<int> therm_bound_one_arr(pmesh->bdr_attributes.Max());
-  mfem::Array<int> therm_bound_two_arr(pmesh->bdr_attributes.Max());
-  mfem::Array<int> fixed_disp_arr(pmesh->bdr_attributes.Max());
+  // mfem::VectorConstantCoefficient *zero = new mfem::VectorConstantCoefficient(mfem::Vector({0, 0, 0}));
+  mfem::Array<int> therm_bound_one_arr(1);
+  mfem::Array<int> therm_bound_two_arr(1);
+  mfem::Array<int> fixed_disp_arr(1);
 
-  therm_bound_one_arr = 0;
-  therm_bound_two_arr = 0;
-  fixed_disp_arr = 0;
+  therm_bound_one_arr = 1;
+  therm_bound_two_arr = 2;
+  fixed_disp_arr = 1;
 
-  therm_bound_one_arr[0] = 1;
-  therm_bound_two_arr[1] = 1;
-  fixed_disp_arr[0] = 1;
+  boundaries.Register("thermal_boundary_one", new hephaestus::DirichletBC("temperature", therm_bound_one_arr, cold), true);
+  boundaries.Register("thermal_boundary_two", new hephaestus::DirichletBC("temperature", therm_bound_two_arr, hot), true);
+  boundaries.Register("fixed_displacement", new hephaestus::VectorDirichletBC("displacement", fixed_disp_arr,  new mfem::VectorConstantCoefficient(mfem::Vector({0, 0, 0}))), true);
 
-  boundaries.Register("thermal_boundary_one", new hephaestus::DirichletBC("thermal_boundary_one", therm_bound_one_arr, cold), true);
-  boundaries.Register("thermal_boundary_two", new hephaestus::DirichletBC("thermal_boundary_two", therm_bound_two_arr, hot), true);
-  boundaries.Register("fixed_displacement", new hephaestus::DirichletBC("fixed_displacement", fixed_disp_arr, zero), true);
+  return boundaries;
 }
 
 
@@ -93,8 +91,7 @@ int main(int argc, char *argv[]) {
   hephaestus::Outputs outputs = defineOutputs();
   problem_builder->SetOutputs(outputs);
 
-  hephaestus::BCMap boundaries = defineBoundaries(pmesh.get());
-
+  hephaestus::BCMap boundaries = defineBoundaries();
   problem_builder->SetBoundaryConditions(boundaries);
   
   hephaestus::InputParameters solver_options;
