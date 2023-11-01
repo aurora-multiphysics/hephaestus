@@ -25,9 +25,6 @@ template <typename T> void deleteAndClear(std::vector<T *> v) {
   v.clear();
 }
 
-double highV(const mfem::Vector &x, double t) { return 1.0; }
-double lowV(const mfem::Vector &x, double t) { return 0.0; }
-
 // Base class methods
 
 ClosedCoilSolver::ClosedCoilSolver(
@@ -49,24 +46,12 @@ ClosedCoilSolver::~ClosedCoilSolver() {
 
   delete coef1_;
   delete coef0_;
-  delete high_src_;
-  delete low_src_;
 
-  deleteAndClear(mesh_);
-  deleteAndClear(H1FESpace_);
-  deleteAndClear(HCurlFESpace_);
-  deleteAndClear(H1_Collection_);
-  deleteAndClear(HCurl_Collection_);
-  deleteAndClear(V_);
-  deleteAndClear(sps_);
-  deleteAndClear(sps_params_);
-  deleteAndClear(current_solver_options_);
-  deleteAndClear(gridfunctions_);
   deleteAndClear(fespaces_);
   deleteAndClear(bc_maps_);
   deleteAndClear(coefs_);
-  deleteAndClear(high_DBC_);
-  deleteAndClear(low_DBC_);
+  deleteAndClear(ocs_params_);
+  deleteAndClear(opencoil_);
 }
 
 void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
@@ -76,7 +61,7 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
 
   // Retrieving the parent FE space and mesh
   HCurlFESpace_parent_ = fespaces.Get(hcurl_fespace_name_);
-  if (HCurlFESpace_parent_ == NULL) {
+  if (HCurlFESpace_parent_ == nullptr) {
     const std::string error_message = hcurl_fespace_name_ +
                                       " not found in fespaces when "
                                       "creating ClosedCoilSolver\n";
@@ -84,7 +69,7 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
   }
 
   J_parent_ = gridfunctions.Get(J_gf_name_);
-  if (J_parent_ == NULL) {
+  if (J_parent_ == nullptr) {
     const std::string error_message = J_gf_name_ +
                                       " not found in gridfunctions when "
                                       "creating ClosedCoilSolver\n";
@@ -92,7 +77,7 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
   }
 
   Itotal_ = coefficients.scalars.Get(I_coef_name_);
-  if (Itotal_ == NULL) {
+  if (Itotal_ == nullptr) {
     const std::string error_message = I_coef_name_ +
                                       " not found in coefficients when "
                                       "creating ClosedCoilSolver\n";
@@ -103,29 +88,19 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
 
   resizeChildVectors();
   makeWedge();
-  initChildMeshes();
-  makeFESpaces();
-  makeGridFunctions();
-  SetBCs();
-  SPSCurrent();
+  solveOpenCoils(gridfunctions, coefficients);
   restoreAttributes();
 }
 
 void ClosedCoilSolver::Apply(mfem::ParLinearForm *lf) {
 
-  for (int i = 0; i < 2; ++i) {
-    mesh_[i]->Transfer(*J_[i], *J_parent_);
-  }
+  for (int i = 0; i < 2; ++i)
+    opencoil_[i]->Apply(lf);
 
-  // The transformation and integration points themselves are not relevant, it's
-  // just so we can call Eval
-  mfem::ElementTransformation *Tr = mesh_parent_->GetElementTransformation(0);
-  const mfem::IntegrationPoint &ip =
-      mfem::IntRules.Get(HCurlFESpace_parent_->GetFE(0)->GetGeomType(), 1)
-          .IntPoint(0);
-
-  *J_parent_ *= Itotal_->Eval(*Tr, ip);
-
+  // This is just because the loop above causes double counting at the
+  // interfaces This structure is temporary, will change it for the Dular
+  // representation
+  *lf = 0.0;
   lf->Add(1.0, *J_parent_);
 }
 
@@ -135,26 +110,11 @@ void ClosedCoilSolver::SubtractSource(mfem::ParGridFunction *gf) {}
 
 void ClosedCoilSolver::resizeChildVectors() {
 
-  H1_Collection_.resize(2);
-  HCurl_Collection_.resize(2);
-  H1FESpace_.resize(2);
-  HCurlFESpace_.resize(2);
-
-  J_.resize(2);
-  V_.resize(2);
-
-  mesh_.resize(2);
-
-  sps_params_.resize(2);
-  current_solver_options_.resize(2);
-  sps_.resize(2);
-  gridfunctions_.resize(2);
   fespaces_.resize(2);
   bc_maps_.resize(2);
   coefs_.resize(2);
-
-  high_DBC_.resize(2);
-  low_DBC_.resize(2);
+  opencoil_.resize(2);
+  ocs_params_.resize(2);
 }
 
 void ClosedCoilSolver::makeWedge() {
@@ -286,130 +246,14 @@ void ClosedCoilSolver::makeWedge() {
   for (auto e : wedge_els)
     mesh_parent_->SetAttribute(e, new_domain_attr_);
 
+  std::vector<hephaestus::Subdomain> v;
+  v.emplace_back(hephaestus::Subdomain("wedge", new_domain_attr_));
+  submesh_domains_.push_back(coil_domains_);
+  submesh_domains_.push_back(v);
+
   mesh_parent_->FinalizeTopology();
   mesh_parent_->Finalize();
   mesh_parent_->SetAttributes();
-}
-
-void ClosedCoilSolver::initChildMeshes() {
-
-  mfem::Array<int> doms_array;
-  SubdomainToArray(coil_domains_, doms_array);
-  mesh_[0] = new mfem::ParSubMesh(
-      mfem::ParSubMesh::CreateFromDomain(*mesh_parent_, doms_array));
-
-  hephaestus::Subdomain wedge("wedge", new_domain_attr_);
-  SubdomainToArray(wedge, doms_array);
-  mesh_[1] = new mfem::ParSubMesh(
-      mfem::ParSubMesh::CreateFromDomain(*mesh_parent_, doms_array));
-
-  for (int i = 0; i < 2; ++i) {
-    inheritBdrAttributes(mesh_parent_, mesh_[i]);
-  }
-}
-
-void ClosedCoilSolver::makeFESpaces() {
-
-  for (int i = 0; i < 2; ++i) {
-    H1_Collection_[i] =
-        new mfem::H1_FECollection(order_, mesh_[i]->Dimension());
-    HCurl_Collection_[i] =
-        new mfem::ND_FECollection(order_, mesh_[i]->Dimension());
-    H1FESpace_[i] =
-        new mfem::ParFiniteElementSpace(mesh_[i], H1_Collection_[i]);
-    HCurlFESpace_[i] =
-        new mfem::ParFiniteElementSpace(mesh_[i], HCurl_Collection_[i]);
-  }
-}
-
-void ClosedCoilSolver::makeGridFunctions() {
-
-  for (int i = 0; i < 2; ++i) {
-
-    if (V_[i] == nullptr)
-      V_[i] = new mfem::ParGridFunction(H1FESpace_[i]);
-    if (J_[i] == nullptr)
-      J_[i] = new mfem::ParGridFunction(HCurlFESpace_[i]);
-
-    *V_[i] = 0.0;
-    *J_[i] = 0.0;
-  }
-}
-
-void ClosedCoilSolver::SetBCs() {
-
-  high_terminal_.Append(elec_attrs_.first);
-  low_terminal_.Append(elec_attrs_.second);
-  high_src_ = new mfem::FunctionCoefficient(highV);
-  low_src_ = new mfem::FunctionCoefficient(lowV);
-
-  for (int i = 0; i < 2; ++i) {
-
-    high_DBC_[i] = new hephaestus::FunctionDirichletBC(
-        std::string("V_" + std::to_string(i)), high_terminal_, high_src_);
-    low_DBC_[i] = new hephaestus::FunctionDirichletBC(
-        std::string("V_" + std::to_string(i)), low_terminal_, low_src_);
-    bc_maps_[i] = new hephaestus::BCMap;
-    bc_maps_[i]->Register("high_potential", high_DBC_[i], true);
-    bc_maps_[i]->Register("low_potential", low_DBC_[i], true);
-  }
-}
-
-void ClosedCoilSolver::SPSCurrent() {
-
-  for (int i = 0; i < 2; ++i) {
-
-    fespaces_[i] = new hephaestus::FESpaces;
-    fespaces_[i]->Register(std::string("HCurl_" + std::to_string(i)),
-                           HCurlFESpace_[i], false);
-    fespaces_[i]->Register(std::string("H1_" + std::to_string(i)),
-                           H1FESpace_[i], false);
-
-    gridfunctions_[i] = new hephaestus::GridFunctions;
-    gridfunctions_[i]->Register(std::string("source_" + std::to_string(i)),
-                                J_[i], false);
-    gridfunctions_[i]->Register(std::string("V_" + std::to_string(i)), V_[i],
-                                false);
-
-    current_solver_options_[i] = new hephaestus::InputParameters;
-    current_solver_options_[i]->SetParam("Tolerance", float(1.0e-9));
-    current_solver_options_[i]->SetParam("MaxIter", (unsigned int)1000);
-    current_solver_options_[i]->SetParam("PrintLevel", 1);
-
-    sps_params_[i] = new hephaestus::InputParameters;
-    sps_params_[i]->SetParam("SourceName",
-                             std::string("source_" + std::to_string(i)));
-    sps_params_[i]->SetParam("PotentialName",
-                             std::string("V_" + std::to_string(i)));
-    sps_params_[i]->SetParam("HCurlFESpaceName",
-                             std::string("HCurl_" + std::to_string(i)));
-    sps_params_[i]->SetParam("H1FESpaceName",
-                             std::string("H1_" + std::to_string(i)));
-    sps_params_[i]->SetParam("SolverOptions", *current_solver_options_[i]);
-    sps_params_[i]->SetParam("ConductivityCoefName",
-                             std::string("magnetic_permeability"));
-
-    coefs_[i] = new hephaestus::Coefficients;
-    coefs_[i]->scalars.Register("magnetic_permeability", coef1_, false);
-
-    sps_[i] = new hephaestus::ScalarPotentialSource(*sps_params_[i]);
-    sps_[i]->Init(*gridfunctions_[i], *fespaces_[i], *bc_maps_[i], *coefs_[i]);
-
-    mfem::ParLinearForm dummy(HCurlFESpace_[i]);
-    sps_[i]->Apply(&dummy);
-
-    // Clean the divergence of the two J fields
-    cleanDivergence(gridfunctions_[i],
-                    std::string("source_" + std::to_string(i)),
-                    std::string("V_" + std::to_string(i)), bc_maps_[i]);
-
-    // Normalise the current through the wedges and use them as a reference
-    // The MPI allreduce is to take into account the MPI partitioning
-    double flux = calcFlux(J_[i], elec_attrs_.first);
-    *J_[i] /= abs(flux);
-  }
-
-  *J_[0] *= -1.0;
 }
 
 void ClosedCoilSolver::cleanDivergence(hephaestus::GridFunctions *gridfunctions,
@@ -437,82 +281,35 @@ void ClosedCoilSolver::restoreAttributes() {
   mesh_parent_->SetAttributes();
 }
 
-// Auxiliary methods
+void ClosedCoilSolver::solveOpenCoils(hephaestus::GridFunctions &gridfunctions,
+                                      hephaestus::Coefficients &coefficients) {
 
-double calcFlux(mfem::GridFunction *v_field, int face_attr) {
+  for (int i = 0; i < 2; ++i) {
 
-  double flux = 0.0;
-  double area = 0.0;
+    ocs_params_[i] = new hephaestus::InputParameters;
+    bc_maps_[i] = new hephaestus::BCMap;
+    coefs_[i] = new hephaestus::Coefficients;
+    fespaces_[i] = new hephaestus::FESpaces;
 
-  mfem::FiniteElementSpace *FES = v_field->FESpace();
-  mfem::Mesh *mesh = FES->GetMesh();
+    ocs_params_[i]->SetParam("SourceName", J_gf_name_);
+    ocs_params_[i]->SetParam("IFuncCoefName", I_coef_name_);
+    ocs_params_[i]->SetParam("PotentialName", std::string("Phi"));
 
-  mfem::Vector local_dofs, normal_vec;
-  mfem::DenseMatrix dshape;
-  mfem::Array<int> dof_ids;
+    if (i == 1)
+      std::swap(elec_attrs_.first, elec_attrs_.second);
 
-  for (int i = 0; i < mesh->GetNBE(); i++) {
-
-    if (mesh->GetBdrAttribute(i) != face_attr)
-      continue;
-
-    mfem::FaceElementTransformations *FTr =
-        mesh->GetFaceElementTransformations(mesh->GetBdrFace(i));
-    if (FTr == nullptr)
-      continue;
-
-    const mfem::FiniteElement &elem = *FES->GetFE(FTr->Elem1No);
-    const int int_order = 2 * elem.GetOrder() + 3;
-    const mfem::IntegrationRule &ir =
-        mfem::IntRules.Get(FTr->FaceGeom, int_order);
-
-    FES->GetElementDofs(FTr->Elem1No, dof_ids);
-    v_field->GetSubVector(dof_ids, local_dofs);
-    const int space_dim = FTr->Face->GetSpaceDim();
-    normal_vec.SetSize(space_dim);
-    dshape.SetSize(elem.GetDof(), space_dim);
-
-    for (int j = 0; j < ir.GetNPoints(); j++) {
-
-      const mfem::IntegrationPoint &ip = ir.IntPoint(j);
-      mfem::IntegrationPoint eip;
-      FTr->Loc1.Transform(ip, eip);
-      FTr->Face->SetIntPoint(&ip);
-      double face_weight = FTr->Face->Weight();
-      double val = 0.0;
-      FTr->Elem1->SetIntPoint(&eip);
-      elem.CalcVShape(*FTr->Elem1, dshape);
-      mfem::CalcOrtho(FTr->Face->Jacobian(), normal_vec);
-      val += dshape.InnerProduct(normal_vec, local_dofs) / face_weight;
-
-      // Measure the area of the boundary
-      area += ip.weight * face_weight;
-
-      // Integrate alpha * n.Grad(x) + beta * x
-      flux += val * ip.weight * face_weight;
-    }
+    opencoil_[i] = new hephaestus::OpenCoilSolver(
+        *ocs_params_[i], submesh_domains_[i], elec_attrs_, order_);
+    if (i == 1)
+      opencoil_[i]->setRefFace(elec_attrs_.second);
+    opencoil_[i]->Init(gridfunctions, *fespaces_[i], *bc_maps_[i],
+                       coefficients);
   }
 
-  double total_flux;
-  MPI_Allreduce(&flux, &total_flux, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-
-  return total_flux;
+  std::swap(elec_attrs_.first, elec_attrs_.second);
 }
 
-void ClosedCoilSolver::SubdomainToArray(
-    const std::vector<hephaestus::Subdomain> &sd, mfem::Array<int> &arr) {
-
-  arr.DeleteAll();
-  for (auto s : sd)
-    arr.Append(s.id);
-}
-
-void ClosedCoilSolver::SubdomainToArray(const hephaestus::Subdomain &sd,
-                                        mfem::Array<int> &arr) {
-
-  arr.DeleteAll();
-  arr.Append(sd.id);
-}
+// Auxiliary methods
 
 void ClosedCoilSolver::inheritBdrAttributes(const mfem::ParMesh *parent_mesh,
                                             mfem::ParSubMesh *child_mesh) {
@@ -587,6 +384,8 @@ Plane3D::Plane3D() : d(0) {
   u = new mfem::Vector(3);
   *u = 0.0;
 }
+
+Plane3D::~Plane3D() { delete u; }
 
 void Plane3D::make3DPlane(const mfem::ParMesh *pm, const int face) {
 
