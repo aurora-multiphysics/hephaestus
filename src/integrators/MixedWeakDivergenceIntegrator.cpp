@@ -1,7 +1,8 @@
 #include "MixedWeakDivergenceIntegrator.hpp"
 
 
-namespace mfem{
+namespace mfem {
+    
 void MixedWeakDivergenceIntegrator::AssembleElementMatrix2(const mfem::FiniteElement &trial_fe,
                                                             const mfem::FiniteElement &test_fe,
                                                             mfem::ElementTransformation &Trans,

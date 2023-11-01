@@ -1,6 +1,13 @@
 #pragma once
 #include "mfem.hpp"
 
+// MFEM mixed integrator to calculate the bilinear form,
+// (u, (∇ . v))
+
+//  For when your test function is a vector value represented by multiple copies of a scalar field i.e. H1^3,
+//  and your trial function is a scalar in H1
+
+
 namespace mfem {
 
 class MixedWeakDivergenceIntegrator : public mfem::BilinearFormIntegrator
