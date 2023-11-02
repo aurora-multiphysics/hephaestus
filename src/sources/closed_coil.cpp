@@ -40,6 +40,8 @@ ClosedCoilSolver::ClosedCoilSolver(
   elec_attrs_.first = electrode_face;
   coef1_ = new mfem::ConstantCoefficient(1.0);
   coef0_ = new mfem::ConstantCoefficient(0.0);
+  makeWedge();
+
 }
 
 ClosedCoilSolver::~ClosedCoilSolver() {
@@ -47,11 +49,8 @@ ClosedCoilSolver::~ClosedCoilSolver() {
   delete coef1_;
   delete coef0_;
 
-  deleteAndClear(fespaces_);
-  deleteAndClear(bc_maps_);
-  deleteAndClear(coefs_);
-  deleteAndClear(ocs_params_);
-  deleteAndClear(opencoil_);
+  // Deal with destructor!!
+  
 }
 
 void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
@@ -86,36 +85,22 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
 
   mesh_parent_ = HCurlFESpace_parent_->GetParMesh();
 
-  resizeChildVectors();
-  makeWedge();
-  solveOpenCoils(gridfunctions, coefficients);
+  prepareCoilSubmesh();
+  solveTransition();
   restoreAttributes();
 }
 
 void ClosedCoilSolver::Apply(mfem::ParLinearForm *lf) {
 
-  for (int i = 0; i < 2; ++i)
-    opencoil_[i]->Apply(lf);
+  // Deal with Apply!
 
-  // This is just because the loop above causes double counting at the
-  // interfaces This structure is temporary, will change it for the Dular
-  // representation
-  *lf = 0.0;
-  lf->Add(1.0, *J_parent_);
+  //*lf = 0.0;
+  //lf->Add(1.0, *J_parent_);
 }
 
 void ClosedCoilSolver::SubtractSource(mfem::ParGridFunction *gf) {}
 
 // ClosedCoilSolver main methods
-
-void ClosedCoilSolver::resizeChildVectors() {
-
-  fespaces_.resize(2);
-  bc_maps_.resize(2);
-  coefs_.resize(2);
-  opencoil_.resize(2);
-  ocs_params_.resize(2);
-}
 
 void ClosedCoilSolver::makeWedge() {
 
@@ -246,10 +231,9 @@ void ClosedCoilSolver::makeWedge() {
   for (auto e : wedge_els)
     mesh_parent_->SetAttribute(e, new_domain_attr_);
 
-  std::vector<hephaestus::Subdomain> v;
-  v.emplace_back(hephaestus::Subdomain("wedge", new_domain_attr_));
-  submesh_domains_.push_back(coil_domains_);
-  submesh_domains_.push_back(v);
+  hephaestus::Subdomain wedge("wedge", new_domain_attr_);
+  transition_domain_.push_back(wedge);
+  coil_domains_.push_back(wedge);
 
   mesh_parent_->FinalizeTopology();
   mesh_parent_->Finalize();
@@ -281,32 +265,36 @@ void ClosedCoilSolver::restoreAttributes() {
   mesh_parent_->SetAttributes();
 }
 
-void ClosedCoilSolver::solveOpenCoils(hephaestus::GridFunctions &gridfunctions,
-                                      hephaestus::Coefficients &coefficients) {
+void ClosedCoilSolver::solveTransition() {
 
-  for (int i = 0; i < 2; ++i) {
+  ocs_params_ = new hephaestus::InputParameters;
+  bc_maps_ = new hephaestus::BCMap;
+  coefs_ = new hephaestus::Coefficients;
+  fespaces_ = new hephaestus::FESpaces;
+  gridfunctions_ = new hephaestus::GridFunctions;
 
-    ocs_params_[i] = new hephaestus::InputParameters;
-    bc_maps_[i] = new hephaestus::BCMap;
-    coefs_[i] = new hephaestus::Coefficients;
-    fespaces_[i] = new hephaestus::FESpaces;
+  ocs_params_->SetParam("SourceName", J_gf_name_);
+  ocs_params_->SetParam("IFuncCoefName", I_coef_name_);
+  ocs_params_->SetParam("PotentialName", std::string("Phi"));
 
-    ocs_params_[i]->SetParam("SourceName", J_gf_name_);
-    ocs_params_[i]->SetParam("IFuncCoefName", I_coef_name_);
-    ocs_params_[i]->SetParam("PotentialName", std::string("Phi"));
+  opencoil_ = new hephaestus::OpenCoilSolver(
+      *ocs_params_, transition_domain_, elec_attrs_, order_);
 
-    if (i == 1)
-      std::swap(elec_attrs_.first, elec_attrs_.second);
+  opencoil_->Init(*gridfunctions_, *fespaces_, *bc_maps_,
+                       *coefs_);
+  
+}
 
-    opencoil_[i] = new hephaestus::OpenCoilSolver(
-        *ocs_params_[i], submesh_domains_[i], elec_attrs_, order_);
-    if (i == 1)
-      opencoil_[i]->setRefFace(elec_attrs_.second);
-    opencoil_[i]->Init(gridfunctions, *fespaces_[i], *bc_maps_[i],
-                       coefficients);
-  }
+void ClosedCoilSolver::prepareCoilSubmesh() {
 
-  std::swap(elec_attrs_.first, elec_attrs_.second);
+  mfem::Array<int> doms_array;
+  subdomainToArray(coil_domains_, doms_array);
+  coil_submesh_ = new mfem::ParSubMesh(
+      mfem::ParSubMesh::CreateFromDomain(*mesh_parent_, doms_array));
+
+
+
+
 }
 
 // Auxiliary methods
@@ -360,6 +348,22 @@ bool ClosedCoilSolver::isInDomain(const int el, const hephaestus::Subdomain &sd,
 
   return mesh->GetAttribute(el) == sd.id;
 }
+
+void ClosedCoilSolver::subdomainToArray(
+    const std::vector<hephaestus::Subdomain> &sd, mfem::Array<int> &arr) {
+
+  arr.DeleteAll();
+  for (auto s : sd)
+    arr.Append(s.id);
+}
+
+void ClosedCoilSolver::subdomainToArray(const hephaestus::Subdomain &sd,
+                                        mfem::Array<int> &arr) {
+
+  arr.DeleteAll();
+  arr.Append(sd.id);
+}
+
 
 mfem::Vector ClosedCoilSolver::elementCentre(int el, mfem::ParMesh *pm) {
 

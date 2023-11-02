@@ -53,16 +53,16 @@ public:
   // element.
   mfem::Vector elementCentre(int el, mfem::ParMesh *pm);
 
-  // Resizes all of the vectors to the number of children submeshes (2, in this
-  // case).
-  void resizeChildVectors();
-
   // Checks whether a given element is within a certain domain or vector of
   // domains.
   bool isInDomain(const int el, const std::vector<hephaestus::Subdomain> &dom,
                   const mfem::ParMesh *mesh);
   bool isInDomain(const int el, const hephaestus::Subdomain &sd,
                   const mfem::ParMesh *mesh);
+
+  void subdomainToArray(const std::vector<hephaestus::Subdomain> &sd, mfem::Array<int> &arr);
+  void subdomainToArray(const hephaestus::Subdomain &sd, mfem::Array<int> &arr);
+
 
   // Resets the domain attributes on the parent mesh to what they were initially
   void restoreAttributes();
@@ -73,16 +73,18 @@ public:
                        std::string J_name, std::string V_name,
                        hephaestus::BCMap *bc_map);
 
-  // Applies the OpenCoilSolver to the two submeshes separately
-  void solveOpenCoils(hephaestus::GridFunctions &gridfunctions,
-                      hephaestus::Coefficients &coefficients);
+  // Applies the OpenCoilSolver to the transition region
+  void solveTransition();
+
+  // Extracts the coil submesh and prepares the gridfunctions and FE spaces
+  // for being passed to the OpenCoilSolver in the transition region
+  void prepareCoilSubmesh();
 
 private:
   // Parameters
   int order_;
   int new_domain_attr_;
   std::pair<int, int> elec_attrs_;
-  std::vector<hephaestus::Subdomain> coil_domains_;
   mfem::ConstantCoefficient *coef1_;
   mfem::ConstantCoefficient *coef0_;
   mfem::Coefficient *Itotal_;
@@ -98,14 +100,20 @@ private:
   mfem::ParGridFunction *J_parent_;
   mfem::ParFiniteElementSpace *HCurlFESpace_parent_;
 
-  // Children OpenCoilSolver objects
-  std::vector<hephaestus::InputParameters *> ocs_params_;
-  std::vector<hephaestus::FESpaces *> fespaces_;
-  std::vector<hephaestus::BCMap *> bc_maps_;
-  std::vector<hephaestus::Coefficients *> coefs_;
-  std::vector<hephaestus::OpenCoilSolver *> opencoil_;
+  // Coil mesh
+  mfem::ParSubMesh *coil_submesh_;
 
-  std::vector<std::vector<hephaestus::Subdomain>> submesh_domains_;
+  // Children OpenCoilSolver objects
+  hephaestus::InputParameters *ocs_params_;
+  hephaestus::FESpaces *fespaces_;
+  hephaestus::GridFunctions *gridfunctions_;
+  hephaestus::Coefficients *coefs_;
+  hephaestus::BCMap *bc_maps_;
+  hephaestus::OpenCoilSolver *opencoil_;
+
+  std::vector<hephaestus::Subdomain> coil_domains_;
+  std::vector<hephaestus::Subdomain> transition_domain_;
+
 };
 
 class Plane3D {
