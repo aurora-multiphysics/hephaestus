@@ -84,11 +84,33 @@ template <typename T> void ifDelete(T *ptr) {
     delete ptr;
 }
 
+void inheritBdrAttributes(const mfem::ParMesh *parent_mesh,
+                                            mfem::ParSubMesh *child_mesh) {
+
+  int face, ori, att;
+  auto map = child_mesh->GetParentToSubMeshFaceIDMap();
+
+  for (int bdr = 0; bdr < parent_mesh->GetNBE(); ++bdr) {
+
+    parent_mesh->GetBdrElementFace(bdr, &face, &ori);
+    if (map[face] != -1) {
+      att = parent_mesh->GetBdrAttribute(bdr);
+      auto *new_elem = child_mesh->GetFace(map[face])->Duplicate(child_mesh);
+      new_elem->SetAttribute(att);
+      child_mesh->AddBdrElement(new_elem);
+    }
+  }
+
+  child_mesh->FinalizeTopology();
+  child_mesh->Finalize();
+  child_mesh->SetAttributes();
+}
+
 /////////////////////////////////////////////////////////////////////
 
 OpenCoilSolver::OpenCoilSolver(
     const hephaestus::InputParameters &params,
-    const std::vector<hephaestus::Subdomain> &coil_dom,
+    const mfem::Array<int> &coil_dom,
     const std::pair<int, int> electrodes, const int order)
     : J_gf_name_(params.GetParam<std::string>("SourceName")),
       V_gf_name_(params.GetParam<std::string>("PotentialName")),
@@ -141,7 +163,7 @@ void OpenCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
   if (Itotal_ == nullptr) {
     std::cout << I_coef_name_ + " not found in coefficients when "
                                 "creating OpenCoilSolver. "
-                                "Assuming unit current. ";
+                                "Assuming unit current.\n";
     Itotal_ = new mfem::ConstantCoefficient(1.0);
   }
 
@@ -156,7 +178,7 @@ void OpenCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
   V_parent_ = gridfunctions.Get(V_gf_name_);
   if (V_parent_ == nullptr) {
     std::cout << V_gf_name_ + " not found in gridfunctions when "
-                              "creating OpenCoilSolver. ";
+                              "creating OpenCoilSolver.\n";
   }
 
   mesh_parent_ = J_parent_->ParFESpace()->GetParMesh();
@@ -195,10 +217,10 @@ void OpenCoilSolver::SubtractSource(mfem::ParGridFunction *gf) {}
 
 void OpenCoilSolver::initChildMesh() {
 
-  mfem::Array<int> doms_array;
-  SubdomainToArray(coil_domains_, doms_array);
   mesh_ = new mfem::ParSubMesh(
-      mfem::ParSubMesh::CreateFromDomain(*mesh_parent_, doms_array));
+      mfem::ParSubMesh::CreateFromDomain(*mesh_parent_, coil_domains_));
+
+  inheritBdrAttributes(mesh_parent_, mesh_);
 }
 
 void OpenCoilSolver::makeFESpaces() {

@@ -15,7 +15,7 @@ class ClosedCoilSolver : public hephaestus::Source {
 
 public:
   ClosedCoilSolver(const hephaestus::InputParameters &params,
-                   const std::vector<hephaestus::Subdomain> &coil_dom,
+                   const mfem::Array<int> &coil_dom,
                    const int electrode_face, const int order);
 
   ~ClosedCoilSolver();
@@ -43,12 +43,6 @@ public:
                         mfem::Array<int> &arr);
   void SubdomainToArray(const hephaestus::Subdomain &sd, mfem::Array<int> &arr);
 
-  // Extracting a submesh sometimes erases boundary attribute information. This
-  // method ensures that boundary attributes are carried over from parent to
-  // child mesh.
-  void inheritBdrAttributes(const mfem::ParMesh *parent_mesh,
-                            mfem::ParSubMesh *child_mesh);
-
   // Finds the coordinates for the "centre of mass" of the vertices of an
   // element.
   mfem::Vector elementCentre(int el, mfem::ParMesh *pm);
@@ -59,9 +53,9 @@ public:
 
   // Checks whether a given element is within a certain domain or vector of
   // domains.
-  bool isInDomain(const int el, const std::vector<hephaestus::Subdomain> &dom,
+  bool isInDomain(const int el, const mfem::Array<int> &dom,
                   const mfem::ParMesh *mesh);
-  bool isInDomain(const int el, const hephaestus::Subdomain &sd,
+  bool isInDomain(const int el, const int &sd,
                   const mfem::ParMesh *mesh);
 
   // Resets the domain attributes on the parent mesh to what they were initially
@@ -82,7 +76,7 @@ private:
   int order_;
   int new_domain_attr_;
   std::pair<int, int> elec_attrs_;
-  std::vector<hephaestus::Subdomain> coil_domains_;
+  mfem::Array<int> coil_domains_;
   mfem::ConstantCoefficient *coef1_;
   mfem::ConstantCoefficient *coef0_;
   mfem::Coefficient *Itotal_;
@@ -105,7 +99,7 @@ private:
   std::vector<hephaestus::Coefficients *> coefs_;
   std::vector<hephaestus::OpenCoilSolver *> opencoil_;
 
-  std::vector<std::vector<hephaestus::Subdomain>> submesh_domains_;
+  std::vector<mfem::Array<int>> submesh_domains_;
 };
 
 class Plane3D {

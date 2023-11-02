@@ -29,7 +29,7 @@ template <typename T> void deleteAndClear(std::vector<T *> v) {
 
 ClosedCoilSolver::ClosedCoilSolver(
     const hephaestus::InputParameters &params,
-    const std::vector<hephaestus::Subdomain> &coil_dom,
+    const mfem::Array<int> &coil_dom,
     const int electrode_face, const int order)
     : hcurl_fespace_name_(params.GetParam<std::string>("HCurlFESpaceName")),
       J_gf_name_(params.GetParam<std::string>("JGridFunctionName")),
@@ -246,8 +246,8 @@ void ClosedCoilSolver::makeWedge() {
   for (auto e : wedge_els)
     mesh_parent_->SetAttribute(e, new_domain_attr_);
 
-  std::vector<hephaestus::Subdomain> v;
-  v.emplace_back(hephaestus::Subdomain("wedge", new_domain_attr_));
+  mfem::Array<int> v;
+  v.Append(new_domain_attr_);
   submesh_domains_.push_back(coil_domains_);
   submesh_domains_.push_back(v);
 
@@ -311,30 +311,8 @@ void ClosedCoilSolver::solveOpenCoils(hephaestus::GridFunctions &gridfunctions,
 
 // Auxiliary methods
 
-void ClosedCoilSolver::inheritBdrAttributes(const mfem::ParMesh *parent_mesh,
-                                            mfem::ParSubMesh *child_mesh) {
-
-  int face, ori, att;
-  auto map = child_mesh->GetParentToSubMeshFaceIDMap();
-
-  for (int bdr = 0; bdr < parent_mesh->GetNBE(); ++bdr) {
-
-    parent_mesh->GetBdrElementFace(bdr, &face, &ori);
-    if (map[face] != -1) {
-      att = parent_mesh->GetBdrAttribute(bdr);
-      auto *new_elem = child_mesh->GetFace(map[face])->Duplicate(child_mesh);
-      new_elem->SetAttribute(att);
-      child_mesh->AddBdrElement(new_elem);
-    }
-  }
-
-  child_mesh->FinalizeTopology();
-  child_mesh->Finalize();
-  child_mesh->SetAttributes();
-}
-
 bool ClosedCoilSolver::isInDomain(const int el,
-                                  const std::vector<hephaestus::Subdomain> &dom,
+                                  const mfem::Array<int> &dom,
                                   const mfem::ParMesh *mesh) {
 
   // This is for ghost elements
@@ -344,21 +322,21 @@ bool ClosedCoilSolver::isInDomain(const int el,
   bool verify = false;
 
   for (auto sd : dom) {
-    if (mesh->GetAttribute(el) == sd.id)
+    if (mesh->GetAttribute(el) == sd)
       verify = true;
   }
 
   return verify;
 }
 
-bool ClosedCoilSolver::isInDomain(const int el, const hephaestus::Subdomain &sd,
+bool ClosedCoilSolver::isInDomain(const int el, const int &sd,
                                   const mfem::ParMesh *mesh) {
 
   // This is for ghost elements
   if (el < 0)
     return false;
 
-  return mesh->GetAttribute(el) == sd.id;
+  return mesh->GetAttribute(el) == sd;
 }
 
 mfem::Vector ClosedCoilSolver::elementCentre(int el, mfem::ParMesh *pm) {

@@ -9,11 +9,14 @@ double calcFlux(mfem::GridFunction *v_field, int face_attr);
 
 template <typename T> void ifDelete(T *ptr);
 
+void inheritBdrAttributes(const mfem::ParMesh *parent_mesh,
+                          mfem::ParSubMesh *child_mesh);
+
 class OpenCoilSolver : public hephaestus::Source {
 
 public:
   OpenCoilSolver(const hephaestus::InputParameters &params,
-                 const std::vector<hephaestus::Subdomain> &coil_dom,
+                 const mfem::Array<int> &coil_dom,
                  const std::pair<int, int> electrodes, const int order);
 
   ~OpenCoilSolver();
@@ -55,7 +58,7 @@ private:
   int order_;
   int ref_face_;
   std::pair<int, int> elec_attrs_;
-  std::vector<hephaestus::Subdomain> coil_domains_;
+  mfem::Array<int> coil_domains_;
   mfem::ConstantCoefficient *coef1_;
   mfem::ConstantCoefficient *coef0_;
   mfem::Coefficient *Itotal_;
