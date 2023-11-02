@@ -174,11 +174,17 @@ void OpenCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
                                       "creating OpenCoilSolver\n";
     mfem::mfem_error(error_message.c_str());
   }
-
+  else if (J_parent_->ParFESpace()->FEColl()->GetContType() != mfem::FiniteElementCollection::TANGENTIAL){
+    mfem::mfem_error("J GridFunction must be of HCurl type.");
+  }
+    
   V_parent_ = gridfunctions.Get(V_gf_name_);
   if (V_parent_ == nullptr) {
     std::cout << V_gf_name_ + " not found in gridfunctions when "
                               "creating OpenCoilSolver.\n";
+  }
+  else if (V_parent_->ParFESpace()->FEColl()->GetContType() != mfem::FiniteElementCollection::CONTINUOUS){
+    mfem::mfem_error("V GridFunction must be of H1 type.");
   }
 
   mesh_parent_ = J_parent_->ParFESpace()->GetParMesh();
