@@ -110,12 +110,11 @@ void inheritBdrAttributes(const mfem::ParMesh *parent_mesh,
 
 OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters &params,
                                const mfem::Array<int> &coil_dom,
-                               const std::pair<int, int> electrodes,
-                               const int order)
+                               const std::pair<int, int> electrodes)
     : J_gf_name_(params.GetParam<std::string>("SourceName")),
       V_gf_name_(params.GetParam<std::string>("PotentialName")),
       I_coef_name_(params.GetParam<std::string>("IFuncCoefName")),
-      coil_domains_(coil_dom), order_(order), elec_attrs_(electrodes),
+      coil_domains_(coil_dom), elec_attrs_(electrodes),
       coef1_(nullptr), coef0_(nullptr), mesh_parent_(nullptr),
       J_parent_(nullptr), V_parent_(nullptr), J_(nullptr), V_(nullptr),
       high_src_(nullptr), low_src_(nullptr) {
@@ -177,14 +176,19 @@ void OpenCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
              mfem::FiniteElementCollection::TANGENTIAL) {
     mfem::mfem_error("J GridFunction must be of HCurl type.");
   }
+  order_hcurl_ = J_parent_->ParFESpace()->FEColl()->GetOrder();
 
   V_parent_ = gridfunctions.Get(V_gf_name_);
   if (V_parent_ == nullptr) {
     std::cout << V_gf_name_ + " not found in gridfunctions when "
                               "creating OpenCoilSolver.\n";
+    order_h1_ = order_hcurl_;
   } else if (V_parent_->ParFESpace()->FEColl()->GetContType() !=
              mfem::FiniteElementCollection::CONTINUOUS) {
     mfem::mfem_error("V GridFunction must be of H1 type.");
+  }
+  else {
+    order_h1_ = V_parent_->ParFESpace()->FEColl()->GetOrder();
   }
 
   mesh_parent_ = J_parent_->ParFESpace()->GetParMesh();
@@ -231,8 +235,8 @@ void OpenCoilSolver::initChildMesh() {
 
 void OpenCoilSolver::makeFESpaces() {
 
-  H1_Collection_ = new mfem::H1_FECollection(order_, mesh_->Dimension());
-  HCurl_Collection_ = new mfem::ND_FECollection(order_, mesh_->Dimension());
+  H1_Collection_ = new mfem::H1_FECollection(order_h1_, mesh_->Dimension());
+  HCurl_Collection_ = new mfem::ND_FECollection(order_hcurl_, mesh_->Dimension());
   H1FESpace_ = new mfem::ParFiniteElementSpace(mesh_, H1_Collection_);
   HCurlFESpace_ = new mfem::ParFiniteElementSpace(mesh_, HCurl_Collection_);
 }

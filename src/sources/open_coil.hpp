@@ -17,7 +17,7 @@ class OpenCoilSolver : public hephaestus::Source {
 public:
   OpenCoilSolver(const hephaestus::InputParameters &params,
                  const mfem::Array<int> &coil_dom,
-                 const std::pair<int, int> electrodes, const int order);
+                 const std::pair<int, int> electrodes);
 
   ~OpenCoilSolver();
 
@@ -55,7 +55,8 @@ public:
 
 private:
   // Parameters
-  int order_;
+  int order_h1_;
+  int order_hcurl_;
   int ref_face_;
   std::pair<int, int> elec_attrs_;
   mfem::Array<int> coil_domains_;

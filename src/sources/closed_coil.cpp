@@ -298,7 +298,7 @@ void ClosedCoilSolver::solveOpenCoils(hephaestus::GridFunctions &gridfunctions,
       std::swap(elec_attrs_.first, elec_attrs_.second);
 
     opencoil_[i] = new hephaestus::OpenCoilSolver(
-        *ocs_params_[i], submesh_domains_[i], elec_attrs_, order_);
+        *ocs_params_[i], submesh_domains_[i], elec_attrs_);
     if (i == 1)
       opencoil_[i]->setRefFace(elec_attrs_.second);
     opencoil_[i]->Init(gridfunctions, *fespaces_[i], *bc_maps_[i],
