@@ -77,10 +77,10 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
 
   Itotal_ = coefficients.scalars.Get(I_coef_name_);
   if (Itotal_ == nullptr) {
-    const std::string error_message = I_coef_name_ +
-                                      " not found in coefficients when "
-                                      "creating ClosedCoilSolver\n";
-    mfem::mfem_error(error_message.c_str());
+    std::cout << I_coef_name_ + " not found in coefficients when "
+                                "creating ClosedCoilSolver. "
+                                "Assuming unit current. ";
+    Itotal_ = new mfem::ConstantCoefficient(1.0);
   }
 
   mesh_parent_ = HCurlFESpace_parent_->GetParMesh();
