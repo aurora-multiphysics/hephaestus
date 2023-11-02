@@ -43,12 +43,6 @@ public:
                         mfem::Array<int> &arr);
   void SubdomainToArray(const hephaestus::Subdomain &sd, mfem::Array<int> &arr);
 
-  // Extracting a submesh sometimes erases boundary attribute information. This
-  // method ensures that boundary attributes are carried over from parent to
-  // child mesh.
-  void inheritBdrAttributes(const mfem::ParMesh *parent_mesh,
-                            mfem::ParSubMesh *child_mesh);
-
   // Finds the coordinates for the "centre of mass" of the vertices of an
   // element.
   mfem::Vector elementCentre(int el, mfem::ParMesh *pm);
@@ -100,8 +94,10 @@ private:
   mfem::ParGridFunction *J_parent_;
   mfem::ParFiniteElementSpace *HCurlFESpace_parent_;
 
-  // Coil mesh
-  mfem::ParSubMesh *coil_submesh_;
+  // Coil mesh, FE Space, and current
+  mfem::ParSubMesh *mesh_coil_;
+  mfem::ParGridFunction *J_coil_;
+  mfem::ParFiniteElementSpace *HCurlFESpace_coil_;
 
   // Children OpenCoilSolver objects
   hephaestus::InputParameters *ocs_params_;
