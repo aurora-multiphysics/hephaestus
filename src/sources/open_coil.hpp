@@ -12,6 +12,13 @@ template <typename T> void ifDelete(T *ptr);
 void inheritBdrAttributes(const mfem::ParMesh *parent_mesh,
                           mfem::ParSubMesh *child_mesh);
 
+// Applies the HelmholtzProjector onto the J GridFunction to clean it of any
+// divergences
+void cleanDivergence(hephaestus::GridFunctions *gridfunctions,
+                       std::string J_name, std::string V_name,
+                       hephaestus::BCMap *bc_map);
+
+
 class OpenCoilSolver : public hephaestus::Source {
 
 public:
@@ -42,12 +49,6 @@ public:
 
   // Solves for the divergence-free current based on Dirichlet BCs.
   void SPSCurrent();
-
-  // Applies the HelmholtzProjector onto the J GridFunction to clean it of any
-  // divergences
-  void cleanDivergence(hephaestus::GridFunctions *gridfunctions,
-                       std::string J_name, std::string V_name,
-                       hephaestus::BCMap *bc_map);
 
   // Sets the boundary attribute for the face to be used as reference in flux
   // calculation

@@ -106,6 +106,19 @@ void inheritBdrAttributes(const mfem::ParMesh *parent_mesh,
   child_mesh->SetAttributes();
 }
 
+void cleanDivergence(hephaestus::GridFunctions *gridfunctions,
+                                     std::string J_name, std::string V_name,
+                                     hephaestus::BCMap *bc_map) {
+
+  hephaestus::InputParameters pars;
+  hephaestus::FESpaces fes;
+
+  pars.SetParam("VectorGridFunctionName", J_name);
+  pars.SetParam("ScalarGridFunctionName", V_name);
+  hephaestus::HelmholtzProjector projector(pars);
+  projector.Project(*gridfunctions, fes, *bc_map);
+}
+
 /////////////////////////////////////////////////////////////////////
 
 OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters &params,
@@ -308,28 +321,11 @@ void OpenCoilSolver::SPSCurrent() {
   mfem::ParLinearForm dummy(HCurlFESpace_);
   sps_->Apply(&dummy);
 
-  // Clean the divergence of the two J fields
-  cleanDivergence(gridfunctions_, std::string("source"), std::string("V"),
-                  bc_maps_);
-
   // Normalise the current through the wedges and use them as a reference
   double flux = calcFlux(J_, ref_face_);
   *J_ /= abs(flux);
   if (V_)
     *V_ /= abs(flux);
-}
-
-void OpenCoilSolver::cleanDivergence(hephaestus::GridFunctions *gridfunctions,
-                                     std::string J_name, std::string V_name,
-                                     hephaestus::BCMap *bc_map) {
-
-  hephaestus::InputParameters pars;
-  hephaestus::FESpaces fes;
-
-  pars.SetParam("VectorGridFunctionName", J_name);
-  pars.SetParam("ScalarGridFunctionName", V_name);
-  hephaestus::HelmholtzProjector projector(pars);
-  projector.Project(*gridfunctions, fes, *bc_map);
 }
 
 void OpenCoilSolver::setRefFace(const int face) { ref_face_ = face; }
