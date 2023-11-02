@@ -57,7 +57,8 @@ int main(int argc, char *argv[]) {
   // Parsing the string of attributes
   std::stringstream ss(coil_attr);
   int att;
-  while (ss >> att) coil_domains.Append(att);
+  while (ss >> att)
+    coil_domains.Append(att);
 
   // FES and GridFunctions
   mfem::ND_FECollection HCurl_Col(order, pmesh.get()->Dimension());

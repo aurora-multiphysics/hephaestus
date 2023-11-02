@@ -27,10 +27,9 @@ template <typename T> void deleteAndClear(std::vector<T *> v) {
 
 // Base class methods
 
-ClosedCoilSolver::ClosedCoilSolver(
-    const hephaestus::InputParameters &params,
-    const mfem::Array<int> &coil_dom,
-    const int electrode_face, const int order)
+ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters &params,
+                                   const mfem::Array<int> &coil_dom,
+                                   const int electrode_face, const int order)
     : hcurl_fespace_name_(params.GetParam<std::string>("HCurlFESpaceName")),
       J_gf_name_(params.GetParam<std::string>("JGridFunctionName")),
       I_coef_name_(params.GetParam<std::string>("IFuncCoefName")),
@@ -311,8 +310,7 @@ void ClosedCoilSolver::solveOpenCoils(hephaestus::GridFunctions &gridfunctions,
 
 // Auxiliary methods
 
-bool ClosedCoilSolver::isInDomain(const int el,
-                                  const mfem::Array<int> &dom,
+bool ClosedCoilSolver::isInDomain(const int el, const mfem::Array<int> &dom,
                                   const mfem::ParMesh *mesh) {
 
   // This is for ghost elements

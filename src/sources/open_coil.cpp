@@ -85,7 +85,7 @@ template <typename T> void ifDelete(T *ptr) {
 }
 
 void inheritBdrAttributes(const mfem::ParMesh *parent_mesh,
-                                            mfem::ParSubMesh *child_mesh) {
+                          mfem::ParSubMesh *child_mesh) {
 
   int face, ori, att;
   auto map = child_mesh->GetParentToSubMeshFaceIDMap();
@@ -108,10 +108,10 @@ void inheritBdrAttributes(const mfem::ParMesh *parent_mesh,
 
 /////////////////////////////////////////////////////////////////////
 
-OpenCoilSolver::OpenCoilSolver(
-    const hephaestus::InputParameters &params,
-    const mfem::Array<int> &coil_dom,
-    const std::pair<int, int> electrodes, const int order)
+OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters &params,
+                               const mfem::Array<int> &coil_dom,
+                               const std::pair<int, int> electrodes,
+                               const int order)
     : J_gf_name_(params.GetParam<std::string>("SourceName")),
       V_gf_name_(params.GetParam<std::string>("PotentialName")),
       I_coef_name_(params.GetParam<std::string>("IFuncCoefName")),
@@ -173,17 +173,17 @@ void OpenCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
                                       " not found in gridfunctions when "
                                       "creating OpenCoilSolver\n";
     mfem::mfem_error(error_message.c_str());
-  }
-  else if (J_parent_->ParFESpace()->FEColl()->GetContType() != mfem::FiniteElementCollection::TANGENTIAL){
+  } else if (J_parent_->ParFESpace()->FEColl()->GetContType() !=
+             mfem::FiniteElementCollection::TANGENTIAL) {
     mfem::mfem_error("J GridFunction must be of HCurl type.");
   }
-    
+
   V_parent_ = gridfunctions.Get(V_gf_name_);
   if (V_parent_ == nullptr) {
     std::cout << V_gf_name_ + " not found in gridfunctions when "
                               "creating OpenCoilSolver.\n";
-  }
-  else if (V_parent_->ParFESpace()->FEColl()->GetContType() != mfem::FiniteElementCollection::CONTINUOUS){
+  } else if (V_parent_->ParFESpace()->FEColl()->GetContType() !=
+             mfem::FiniteElementCollection::CONTINUOUS) {
     mfem::mfem_error("V GridFunction must be of H1 type.");
   }
 
@@ -311,7 +311,8 @@ void OpenCoilSolver::SPSCurrent() {
   // Normalise the current through the wedges and use them as a reference
   double flux = calcFlux(J_, ref_face_);
   *J_ /= abs(flux);
-  if (V_) *V_ /= abs(flux);
+  if (V_)
+    *V_ /= abs(flux);
 }
 
 void OpenCoilSolver::cleanDivergence(hephaestus::GridFunctions *gridfunctions,

@@ -15,8 +15,8 @@ class ClosedCoilSolver : public hephaestus::Source {
 
 public:
   ClosedCoilSolver(const hephaestus::InputParameters &params,
-                   const mfem::Array<int> &coil_dom,
-                   const int electrode_face, const int order);
+                   const mfem::Array<int> &coil_dom, const int electrode_face,
+                   const int order);
 
   ~ClosedCoilSolver();
 
@@ -55,8 +55,7 @@ public:
   // domains.
   bool isInDomain(const int el, const mfem::Array<int> &dom,
                   const mfem::ParMesh *mesh);
-  bool isInDomain(const int el, const int &sd,
-                  const mfem::ParMesh *mesh);
+  bool isInDomain(const int el, const int &sd, const mfem::ParMesh *mesh);
 
   // Resets the domain attributes on the parent mesh to what they were initially
   void restoreAttributes();
