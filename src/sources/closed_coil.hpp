@@ -15,8 +15,8 @@ class ClosedCoilSolver : public hephaestus::Source {
 
 public:
   ClosedCoilSolver(const hephaestus::InputParameters &params,
-                   const std::vector<hephaestus::Subdomain> &coil_dom,
-                   const int electrode_face, const int order);
+                   const mfem::Array<int> &coil_dom, const int electrode_face,
+                   const int order);
 
   ~ClosedCoilSolver();
 
@@ -49,10 +49,9 @@ public:
 
   // Checks whether a given element is within a certain domain or vector of
   // domains.
-  bool isInDomain(const int el, const std::vector<hephaestus::Subdomain> &dom,
+  bool isInDomain(const int el, const mfem::Array<int> &dom,
                   const mfem::ParMesh *mesh);
-  bool isInDomain(const int el, const hephaestus::Subdomain &sd,
-                  const mfem::ParMesh *mesh);
+  bool isInDomain(const int el, const int &sd, const mfem::ParMesh *mesh);
 
   void subdomainToArray(const std::vector<hephaestus::Subdomain> &sd, mfem::Array<int> &arr);
   void subdomainToArray(const hephaestus::Subdomain &sd, mfem::Array<int> &arr);
@@ -79,6 +78,7 @@ private:
   int order_;
   int new_domain_attr_;
   std::pair<int, int> elec_attrs_;
+  mfem::Array<int> coil_domains_;
   mfem::ConstantCoefficient *coef1_;
   mfem::ConstantCoefficient *coef0_;
   mfem::Coefficient *Itotal_;
@@ -107,8 +107,8 @@ private:
   hephaestus::BCMap *bc_maps_;
   hephaestus::OpenCoilSolver *opencoil_;
 
-  std::vector<hephaestus::Subdomain> coil_domains_;
-  std::vector<hephaestus::Subdomain> transition_domain_;
+  mfem::Array<int> coil_domains_;
+  mfem::Array<int> transition_domain_;
 
 };
 

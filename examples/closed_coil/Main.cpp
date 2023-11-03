@@ -52,14 +52,13 @@ int main(int argc, char *argv[]) {
 
   // This vector of subdomains will form the coil that we pass to
   // ClosedCoilSolver
-  std::vector<hephaestus::Subdomain> coil_domains;
+  mfem::Array<int> coil_domains;
 
   // Parsing the string of attributes
   std::stringstream ss(coil_attr);
   int att;
   while (ss >> att)
-    coil_domains.push_back(
-        hephaestus::Subdomain("coil" + std::to_string(att), att));
+    coil_domains.Append(att);
 
   // FES and GridFunctions
   mfem::ND_FECollection HCurl_Col(order, pmesh.get()->Dimension());

@@ -27,10 +27,9 @@ template <typename T> void deleteAndClear(std::vector<T *> v) {
 
 // Base class methods
 
-ClosedCoilSolver::ClosedCoilSolver(
-    const hephaestus::InputParameters &params,
-    const std::vector<hephaestus::Subdomain> &coil_dom,
-    const int electrode_face, const int order)
+ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters &params,
+                                   const mfem::Array<int> &coil_dom,
+                                   const int electrode_face, const int order)
     : hcurl_fespace_name_(params.GetParam<std::string>("HCurlFESpaceName")),
       J_gf_name_(params.GetParam<std::string>("JGridFunctionName")),
       I_coef_name_(params.GetParam<std::string>("IFuncCoefName")),
@@ -227,9 +226,8 @@ void ClosedCoilSolver::makeWedge() {
   for (auto e : wedge_els)
     mesh_parent_->SetAttribute(e, new_domain_attr_);
 
-  hephaestus::Subdomain wedge("wedge", new_domain_attr_);
-  transition_domain_.push_back(wedge);
-  coil_domains_.push_back(wedge);
+  transition_domain_.Append(new_domain_attr_);
+  coil_domains_.Append(new_domain_attr_);
 
   mesh_parent_->FinalizeTopology();
   mesh_parent_->Finalize();
@@ -284,10 +282,8 @@ void ClosedCoilSolver::solveTransition() {
 void ClosedCoilSolver::prepareCoilSubmesh() {
 
   // Extracting submesh
-  mfem::Array<int> doms_array;
-  subdomainToArray(coil_domains_, doms_array);
   mesh_coil_ = new mfem::ParSubMesh(
-      mfem::ParSubMesh::CreateFromDomain(*mesh_parent_, doms_array));
+      mfem::ParSubMesh::CreateFromDomain(*mesh_parent_, coil_domains_));
 
   inheritBdrAttributes(mesh_parent_, mesh_coil_);
   
@@ -299,8 +295,7 @@ void ClosedCoilSolver::prepareCoilSubmesh() {
 
 // Auxiliary methods
 
-bool ClosedCoilSolver::isInDomain(const int el,
-                                  const std::vector<hephaestus::Subdomain> &dom,
+bool ClosedCoilSolver::isInDomain(const int el, const mfem::Array<int> &dom,
                                   const mfem::ParMesh *mesh) {
 
   // This is for ghost elements
@@ -310,21 +305,21 @@ bool ClosedCoilSolver::isInDomain(const int el,
   bool verify = false;
 
   for (auto sd : dom) {
-    if (mesh->GetAttribute(el) == sd.id)
+    if (mesh->GetAttribute(el) == sd)
       verify = true;
   }
 
   return verify;
 }
 
-bool ClosedCoilSolver::isInDomain(const int el, const hephaestus::Subdomain &sd,
+bool ClosedCoilSolver::isInDomain(const int el, const int &sd,
                                   const mfem::ParMesh *mesh) {
 
   // This is for ghost elements
   if (el < 0)
     return false;
 
-  return mesh->GetAttribute(el) == sd.id;
+  return mesh->GetAttribute(el) == sd;
 }
 
 void ClosedCoilSolver::subdomainToArray(

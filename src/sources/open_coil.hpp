@@ -9,12 +9,22 @@ double calcFlux(mfem::GridFunction *v_field, int face_attr);
 
 template <typename T> void ifDelete(T *ptr);
 
+void inheritBdrAttributes(const mfem::ParMesh *parent_mesh,
+                          mfem::ParSubMesh *child_mesh);
+
+// Applies the HelmholtzProjector onto the J GridFunction to clean it of any
+// divergences
+void cleanDivergence(hephaestus::GridFunctions *gridfunctions,
+                       std::string J_name, std::string V_name,
+                       hephaestus::BCMap *bc_map);
+
+
 class OpenCoilSolver : public hephaestus::Source {
 
 public:
   OpenCoilSolver(const hephaestus::InputParameters &params,
-                 const std::vector<hephaestus::Subdomain> &coil_dom,
-                 const std::pair<int, int> electrodes, const int order);
+                 const mfem::Array<int> &coil_dom,
+                 const std::pair<int, int> electrodes);
 
   ~OpenCoilSolver();
 
@@ -40,22 +50,17 @@ public:
   // Solves for the divergence-free current based on Dirichlet BCs.
   void SPSCurrent();
 
-  // Applies the HelmholtzProjector onto the J GridFunction to clean it of any
-  // divergences
-  void cleanDivergence(hephaestus::GridFunctions *gridfunctions,
-                       std::string J_name, std::string V_name,
-                       hephaestus::BCMap *bc_map);
-
   // Sets the boundary attribute for the face to be used as reference in flux
   // calculation
   void setRefFace(const int face);
 
 private:
   // Parameters
-  int order_;
+  int order_h1_;
+  int order_hcurl_;
   int ref_face_;
   std::pair<int, int> elec_attrs_;
-  std::vector<hephaestus::Subdomain> coil_domains_;
+  mfem::Array<int> coil_domains_;
   mfem::ConstantCoefficient *coef1_;
   mfem::ConstantCoefficient *coef0_;
   mfem::Coefficient *Itotal_;

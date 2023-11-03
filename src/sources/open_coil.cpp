@@ -84,16 +84,50 @@ template <typename T> void ifDelete(T *ptr) {
     delete ptr;
 }
 
+void inheritBdrAttributes(const mfem::ParMesh *parent_mesh,
+                          mfem::ParSubMesh *child_mesh) {
+
+  int face, ori, att;
+  auto map = child_mesh->GetParentToSubMeshFaceIDMap();
+
+  for (int bdr = 0; bdr < parent_mesh->GetNBE(); ++bdr) {
+
+    parent_mesh->GetBdrElementFace(bdr, &face, &ori);
+    if (map[face] != -1) {
+      att = parent_mesh->GetBdrAttribute(bdr);
+      auto *new_elem = child_mesh->GetFace(map[face])->Duplicate(child_mesh);
+      new_elem->SetAttribute(att);
+      child_mesh->AddBdrElement(new_elem);
+    }
+  }
+
+  child_mesh->FinalizeTopology();
+  child_mesh->Finalize();
+  child_mesh->SetAttributes();
+}
+
+void cleanDivergence(hephaestus::GridFunctions *gridfunctions,
+                                     std::string J_name, std::string V_name,
+                                     hephaestus::BCMap *bc_map) {
+
+  hephaestus::InputParameters pars;
+  hephaestus::FESpaces fes;
+
+  pars.SetParam("VectorGridFunctionName", J_name);
+  pars.SetParam("ScalarGridFunctionName", V_name);
+  hephaestus::HelmholtzProjector projector(pars);
+  projector.Project(*gridfunctions, fes, *bc_map);
+}
+
 /////////////////////////////////////////////////////////////////////
 
-OpenCoilSolver::OpenCoilSolver(
-    const hephaestus::InputParameters &params,
-    const std::vector<hephaestus::Subdomain> &coil_dom,
-    const std::pair<int, int> electrodes, const int order)
+OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters &params,
+                               const mfem::Array<int> &coil_dom,
+                               const std::pair<int, int> electrodes)
     : J_gf_name_(params.GetParam<std::string>("SourceName")),
       V_gf_name_(params.GetParam<std::string>("PotentialName")),
       I_coef_name_(params.GetParam<std::string>("IFuncCoefName")),
-      coil_domains_(coil_dom), order_(order), elec_attrs_(electrodes),
+      coil_domains_(coil_dom), elec_attrs_(electrodes),
       coef1_(nullptr), coef0_(nullptr), mesh_parent_(nullptr),
       J_parent_(nullptr), V_parent_(nullptr), J_(nullptr), V_(nullptr),
       high_src_(nullptr), low_src_(nullptr) {
@@ -141,7 +175,7 @@ void OpenCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
   if (Itotal_ == nullptr) {
     std::cout << I_coef_name_ + " not found in coefficients when "
                                 "creating OpenCoilSolver. "
-                                "Assuming unit current. ";
+                                "Assuming unit current.\n";
     Itotal_ = new mfem::ConstantCoefficient(1.0);
   }
 
@@ -151,12 +185,23 @@ void OpenCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
                                       " not found in gridfunctions when "
                                       "creating OpenCoilSolver\n";
     mfem::mfem_error(error_message.c_str());
+  } else if (J_parent_->ParFESpace()->FEColl()->GetContType() !=
+             mfem::FiniteElementCollection::TANGENTIAL) {
+    mfem::mfem_error("J GridFunction must be of HCurl type.");
   }
+  order_hcurl_ = J_parent_->ParFESpace()->FEColl()->GetOrder();
 
   V_parent_ = gridfunctions.Get(V_gf_name_);
   if (V_parent_ == nullptr) {
     std::cout << V_gf_name_ + " not found in gridfunctions when "
-                              "creating OpenCoilSolver. ";
+                              "creating OpenCoilSolver.\n";
+    order_h1_ = order_hcurl_;
+  } else if (V_parent_->ParFESpace()->FEColl()->GetContType() !=
+             mfem::FiniteElementCollection::CONTINUOUS) {
+    mfem::mfem_error("V GridFunction must be of H1 type.");
+  }
+  else {
+    order_h1_ = V_parent_->ParFESpace()->FEColl()->GetOrder();
   }
 
   mesh_parent_ = J_parent_->ParFESpace()->GetParMesh();
@@ -195,16 +240,16 @@ void OpenCoilSolver::SubtractSource(mfem::ParGridFunction *gf) {}
 
 void OpenCoilSolver::initChildMesh() {
 
-  mfem::Array<int> doms_array;
-  SubdomainToArray(coil_domains_, doms_array);
   mesh_ = new mfem::ParSubMesh(
-      mfem::ParSubMesh::CreateFromDomain(*mesh_parent_, doms_array));
+      mfem::ParSubMesh::CreateFromDomain(*mesh_parent_, coil_domains_));
+
+  inheritBdrAttributes(mesh_parent_, mesh_);
 }
 
 void OpenCoilSolver::makeFESpaces() {
 
-  H1_Collection_ = new mfem::H1_FECollection(order_, mesh_->Dimension());
-  HCurl_Collection_ = new mfem::ND_FECollection(order_, mesh_->Dimension());
+  H1_Collection_ = new mfem::H1_FECollection(order_h1_, mesh_->Dimension());
+  HCurl_Collection_ = new mfem::ND_FECollection(order_hcurl_, mesh_->Dimension());
   H1FESpace_ = new mfem::ParFiniteElementSpace(mesh_, H1_Collection_);
   HCurlFESpace_ = new mfem::ParFiniteElementSpace(mesh_, HCurl_Collection_);
 }
@@ -276,27 +321,11 @@ void OpenCoilSolver::SPSCurrent() {
   mfem::ParLinearForm dummy(HCurlFESpace_);
   sps_->Apply(&dummy);
 
-  // Clean the divergence of the two J fields
-  cleanDivergence(gridfunctions_, std::string("source"), std::string("V"),
-                  bc_maps_);
-
   // Normalise the current through the wedges and use them as a reference
   double flux = calcFlux(J_, ref_face_);
   *J_ /= abs(flux);
-  if (V_) *V_ /= abs(flux);
-}
-
-void OpenCoilSolver::cleanDivergence(hephaestus::GridFunctions *gridfunctions,
-                                     std::string J_name, std::string V_name,
-                                     hephaestus::BCMap *bc_map) {
-
-  hephaestus::InputParameters pars;
-  hephaestus::FESpaces fes;
-
-  pars.SetParam("VectorGridFunctionName", J_name);
-  pars.SetParam("ScalarGridFunctionName", V_name);
-  hephaestus::HelmholtzProjector projector(pars);
-  projector.Project(*gridfunctions, fes, *bc_map);
+  if (V_)
+    *V_ /= abs(flux);
 }
 
 void OpenCoilSolver::setRefFace(const int face) { ref_face_ = face; }
