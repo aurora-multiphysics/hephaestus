@@ -145,14 +145,7 @@ OpenCoilSolver::~OpenCoilSolver() {
   ifDelete(J_);
   ifDelete(V_);
 
-  ifDelete(sps_);
-  ifDelete(sps_params_);
-  ifDelete(current_solver_options_);
-
-  ifDelete(gridfunctions_);
-  ifDelete(fespaces_);
   ifDelete(bc_maps_);
-  ifDelete(coefs_);
   ifDelete(high_DBC_);
   ifDelete(low_DBC_);
 }
@@ -312,6 +305,13 @@ void OpenCoilSolver::SPSCurrent() {
   *J_ /= abs(flux);
   if (V_)
     *V_ /= abs(flux);
+
+  delete fespaces_;
+  delete gridfunctions_;
+  delete current_solver_options_;
+  delete sps_params_;
+  delete coefs_;
+  delete sps_;
 }
 
 void OpenCoilSolver::setRefFace(const int face) { ref_face_ = face; }
