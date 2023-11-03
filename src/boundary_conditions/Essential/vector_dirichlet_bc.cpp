@@ -9,9 +9,10 @@ VectorDirichletBC::VectorDirichletBC(
 VectorDirichletBC::VectorDirichletBC(
     const std::string &name_, mfem::Array<int> bdr_attributes_,
     mfem::VectorCoefficient *vec_coeff_,
-    mfem::VectorCoefficient *vec_coeff_im_)
+    mfem::VectorCoefficient *vec_coeff_im_,
+    APPLY_TYPE boundary_apply_type_)
     : EssentialBC(name_, bdr_attributes_), vec_coeff(vec_coeff_),
-      vec_coeff_im(vec_coeff_im_) {}
+      vec_coeff_im(vec_coeff_im_), boundary_apply_type(boundary_apply_type_) {}
 
 void VectorDirichletBC::applyBC(mfem::GridFunction &gridfunc,
                                         mfem::Mesh *mesh_) {
@@ -22,7 +23,18 @@ void VectorDirichletBC::applyBC(mfem::GridFunction &gridfunc,
         "Boundary condition does not store valid coefficients to specify the "
         "components of the vector at the Dirichlet boundary.");
   }
-  gridfunc.ProjectBdrCoefficientTangent(*(this->vec_coeff), ess_bdrs);
+
+  switch (boundary_apply_type)
+  {
+  case STANDARD:
+    gridfunc.ProjectBdrCoefficient(*(this->vec_coeff), ess_bdrs);
+    break;
+  case NORMAL:
+    gridfunc.ProjectBdrCoefficientNormal(*(this->vec_coeff), ess_bdrs);
+    break;
+  case TANGENTIAL:
+    gridfunc.ProjectBdrCoefficientTangent(*(this->vec_coeff), ess_bdrs);
+  }
 }
 
 void VectorDirichletBC::applyBC(mfem::ParComplexGridFunction &gridfunc,

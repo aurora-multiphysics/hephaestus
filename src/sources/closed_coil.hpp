@@ -61,7 +61,6 @@ public:
   // Applies the OpenCoilSolver to the two submeshes separately
   void solveOpenCoils(hephaestus::GridFunctions &gridfunctions,
                       hephaestus::Coefficients &coefficients);
-
 private:
   // Parameters
   int order_;

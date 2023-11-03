@@ -56,34 +56,33 @@ public:
 
   void AddFESpace(std::string fespace_name, std::string fec_name, int vdim = 1,
                   int ordering = mfem::Ordering::byNODES);
-
   void AddGridFunction(std::string gridfunction_name, std::string fespace_name);
-
   template <class T>
   void AddKernel(std::string var_name, hephaestus::Kernel<T> *kernel) {
     this->GetProblem()->GetEquationSystem()->addVariableNameIfMissing(var_name);
     this->GetProblem()->GetEquationSystem()->addKernel(var_name, kernel);
   };
+  void AddBoundaryCondition(std::string bc_name,
+                            hephaestus::BoundaryCondition *bc, bool own_data);
+  void AddAuxSolver(std::string auxsolver_name, hephaestus::AuxSolver *aux,
+                    bool own_data);
+  void AddPostprocessor(std::string auxsolver_name, hephaestus::AuxSolver *aux,
+                        bool own_data);
+  void AddSource(std::string source_name, hephaestus::Source *source,
+                 bool own_data);
 
   virtual void RegisterFESpaces() = 0;
-
   virtual void RegisterGridFunctions() = 0;
-
   virtual void RegisterAuxSolvers() = 0;
-
   virtual void RegisterCoefficients() = 0;
 
   virtual void InitializeKernels() = 0;
-
   virtual void ConstructEquationSystem() = 0;
-
   virtual void ConstructOperator() = 0;
-
   virtual void ConstructState() = 0;
-
   virtual void ConstructSolver() = 0;
 
-  void InitializePostprocessors();
+  void InitializeAuxSolvers();
 };
 
 class ProblemBuildSequencer {
@@ -115,7 +114,7 @@ public:
     this->problem_builder->InitializeKernels();
     this->problem_builder->ConstructOperator();
     this->problem_builder->ConstructState();
-    this->problem_builder->InitializePostprocessors();
+    this->problem_builder->InitializeAuxSolvers();
   }
   void ConstructEquationSystemProblem() {
     this->problem_builder->RegisterFESpaces();
@@ -127,7 +126,7 @@ public:
     this->problem_builder->ConstructOperator();
     this->problem_builder->ConstructState();
     this->problem_builder->ConstructSolver();
-    this->problem_builder->InitializePostprocessors();
+    this->problem_builder->InitializeAuxSolvers();
   }
 };
 
