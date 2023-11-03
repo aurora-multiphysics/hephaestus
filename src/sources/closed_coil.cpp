@@ -345,9 +345,9 @@ void ClosedCoilSolver::SetBCs() {
 
   for (int i = 0; i < 2; ++i) {
 
-    high_DBC_[i] = new hephaestus::FunctionDirichletBC(
+    high_DBC_[i] = new hephaestus::ScalarDirichletBC(
         std::string("V_" + std::to_string(i)), high_terminal_, high_src_);
-    low_DBC_[i] = new hephaestus::FunctionDirichletBC(
+    low_DBC_[i] = new hephaestus::ScalarDirichletBC(
         std::string("V_" + std::to_string(i)), low_terminal_, low_src_);
     bc_maps_[i] = new hephaestus::BCMap;
     bc_maps_[i]->Register("high_potential", high_DBC_[i], true);
