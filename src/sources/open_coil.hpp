@@ -100,8 +100,8 @@ private:
   hephaestus::FESpaces *fespaces_;
   hephaestus::BCMap *bc_maps_;
   hephaestus::Coefficients *coefs_;
-  hephaestus::FunctionDirichletBC *high_DBC_;
-  hephaestus::FunctionDirichletBC *low_DBC_;
+  hephaestus::ScalarDirichletBC *high_DBC_;
+  hephaestus::ScalarDirichletBC *low_DBC_;
 };
 
 } // namespace hephaestus

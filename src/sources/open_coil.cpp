@@ -257,9 +257,9 @@ void OpenCoilSolver::setBCs() {
   if (low_terminal_.Size() == 0)
     low_terminal_.Append(elec_attrs_.second);
 
-  high_DBC_ = new hephaestus::FunctionDirichletBC(std::string("V"),
+  high_DBC_ = new hephaestus::ScalarDirichletBC(std::string("V"),
                                                   high_terminal_, &high_src_);
-  low_DBC_ = new hephaestus::FunctionDirichletBC(std::string("V"),
+  low_DBC_ = new hephaestus::ScalarDirichletBC(std::string("V"),
                                                  low_terminal_, &low_src_);
 
   bc_maps_ = new hephaestus::BCMap;
