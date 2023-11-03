@@ -65,12 +65,16 @@ public:
                        std::string J_name, std::string V_name,
                        hephaestus::BCMap *bc_map);
 
-  // Applies the OpenCoilSolver to the transition region
-  void solveTransition();
-
   // Extracts the coil submesh and prepares the gridfunctions and FE spaces
   // for being passed to the OpenCoilSolver in the transition region
   void prepareCoilSubmesh();
+
+  // Applies the OpenCoilSolver to the transition region
+  void solveTransition();
+
+  // Solves for the current in the coil region
+  void solveCoil();
+
 
 private:
   // Parameters

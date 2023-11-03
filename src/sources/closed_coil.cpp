@@ -261,6 +261,20 @@ void ClosedCoilSolver::restoreAttributes() {
   mesh_parent_->SetAttributes();
 }
 
+void ClosedCoilSolver::prepareCoilSubmesh() {
+
+  // Extracting submesh
+  mesh_coil_ = new mfem::ParSubMesh(
+      mfem::ParSubMesh::CreateFromDomain(*mesh_parent_, coil_domains_));
+
+  inheritBdrAttributes(mesh_parent_, mesh_coil_);
+  
+  // FES and GridFunction
+  HCurlFESpace_coil_ = new mfem::ParFiniteElementSpace(
+      mesh_coil_, new mfem::ND_FECollection(order_, mesh_coil_->Dimension()));
+  J_coil_ = new mfem::ParGridFunction(HCurlFESpace_coil_);
+}
+
 void ClosedCoilSolver::solveTransition() {
 
   ocs_params_ = new hephaestus::InputParameters;
@@ -288,18 +302,8 @@ void ClosedCoilSolver::solveTransition() {
   mesh_coil_->Transfer(*J_parent_, *J_coil_);
 }
 
-void ClosedCoilSolver::prepareCoilSubmesh() {
+void ClosedCoilSolver::solveCoil(){
 
-  // Extracting submesh
-  mesh_coil_ = new mfem::ParSubMesh(
-      mfem::ParSubMesh::CreateFromDomain(*mesh_parent_, coil_domains_));
-
-  inheritBdrAttributes(mesh_parent_, mesh_coil_);
-  
-  // FES and GridFunction
-  HCurlFESpace_coil_ = new mfem::ParFiniteElementSpace(
-      mesh_coil_, new mfem::ND_FECollection(order_, mesh_coil_->Dimension()));
-  J_coil_ = new mfem::ParGridFunction(HCurlFESpace_coil_);
 }
 
 // Auxiliary methods
