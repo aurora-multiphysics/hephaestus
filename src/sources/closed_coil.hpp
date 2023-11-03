@@ -1,6 +1,4 @@
 #pragma once
-#include "div_free_source.hpp"
-#include "helmholtz_projector.hpp"
 #include "open_coil.hpp"
 #include "scalar_potential_source.hpp"
 #include "source_base.hpp"
