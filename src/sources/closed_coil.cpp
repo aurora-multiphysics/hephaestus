@@ -29,11 +29,11 @@ template <typename T> void deleteAndClear(std::vector<T *> v) {
 
 ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters &params,
                                    const mfem::Array<int> &coil_dom,
-                                   const int electrode_face, const int order)
+                                   const int electrode_face)
     : hcurl_fespace_name_(params.GetParam<std::string>("HCurlFESpaceName")),
       J_gf_name_(params.GetParam<std::string>("JGridFunctionName")),
       I_coef_name_(params.GetParam<std::string>("IFuncCoefName")),
-      coil_domains_(coil_dom), order_(order), coef1_(nullptr), coef0_(nullptr),
+      coil_domains_(coil_dom), coef1_(nullptr), coef0_(nullptr),
       mesh_parent_(nullptr), J_parent_(nullptr), HCurlFESpace_parent_(nullptr) {
 
   elec_attrs_.first = electrode_face;
@@ -80,6 +80,8 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
   }
 
   mesh_parent_ = HCurlFESpace_parent_->GetParMesh();
+
+  order_ = HCurlFESpace_parent_->FEColl()->GetOrder();
 
   makeWedge();
   prepareCoilSubmesh();
@@ -266,17 +268,24 @@ void ClosedCoilSolver::solveTransition() {
   coefs_ = new hephaestus::Coefficients;
   fespaces_ = new hephaestus::FESpaces;
   gridfunctions_ = new hephaestus::GridFunctions;
-  gridfunctions_->Register("J_coil", J_coil_, false);
+  gridfunctions_->Register("J_parent", J_parent_, false);
 
-  ocs_params_->SetParam("SourceName", std::string("J_coil"));
+  ocs_params_->SetParam("SourceName", std::string("J_parent"));
   ocs_params_->SetParam("IFuncCoefName", std::string("I"));
   ocs_params_->SetParam("PotentialName", std::string("Phi"));
 
   opencoil_ = new hephaestus::OpenCoilSolver(*ocs_params_, transition_domain_,
-                                             elec_attrs_, order_);
+                                             elec_attrs_);
   opencoil_->Init(*gridfunctions_, *fespaces_, *bc_maps_, *coefs_);
   mfem::ParLinearForm dummy;
   opencoil_->Apply(&dummy);
+
+  // The transition region result goes 
+  // Child -> Grandparent -> Parent
+  // Ideally, it should go Child -> Parent
+  // However, MFEM has issues creating transfer maps
+  // between several generations
+  mesh_coil_->Transfer(*J_parent_, *J_coil_);
 }
 
 void ClosedCoilSolver::prepareCoilSubmesh() {

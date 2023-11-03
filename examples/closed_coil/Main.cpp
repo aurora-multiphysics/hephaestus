@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
   coilsolver_pars.SetParam("IFuncCoefName", std::string("I"));
 
   hephaestus::ClosedCoilSolver coil(coilsolver_pars, coil_domains,
-                                    electrode_attr, order);
+                                    electrode_attr);
   coil.Init(gfs, fes, bcs, coefs);
   mfem::ParLinearForm ccs_rhs;
   coil.Apply(&ccs_rhs);

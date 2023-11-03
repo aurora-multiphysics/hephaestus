@@ -15,8 +15,7 @@ class ClosedCoilSolver : public hephaestus::Source {
 
 public:
   ClosedCoilSolver(const hephaestus::InputParameters &params,
-                   const mfem::Array<int> &coil_dom, const int electrode_face,
-                   const int order);
+                   const mfem::Array<int> &coil_dom, const int electrode_face);
 
   ~ClosedCoilSolver();
 
@@ -79,6 +78,7 @@ private:
   int new_domain_attr_;
   std::pair<int, int> elec_attrs_;
   mfem::Array<int> coil_domains_;
+  mfem::Array<int> transition_domain_;
   mfem::ConstantCoefficient *coef1_;
   mfem::ConstantCoefficient *coef0_;
   mfem::Coefficient *Itotal_;
@@ -106,9 +106,6 @@ private:
   hephaestus::Coefficients *coefs_;
   hephaestus::BCMap *bc_maps_;
   hephaestus::OpenCoilSolver *opencoil_;
-
-  mfem::Array<int> coil_domains_;
-  mfem::Array<int> transition_domain_;
 
 };
 
