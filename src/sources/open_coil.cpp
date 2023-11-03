@@ -107,8 +107,8 @@ void inheritBdrAttributes(const mfem::ParMesh *parent_mesh,
 }
 
 void cleanDivergence(hephaestus::GridFunctions *gridfunctions,
-                                     std::string J_name, std::string V_name,
-                                     hephaestus::BCMap *bc_map) {
+                     std::string J_name, std::string V_name,
+                     hephaestus::BCMap *bc_map) {
 
   hephaestus::InputParameters pars;
   hephaestus::FESpaces fes;
@@ -127,20 +127,14 @@ OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters &params,
     : J_gf_name_(params.GetParam<std::string>("SourceName")),
       V_gf_name_(params.GetParam<std::string>("PotentialName")),
       I_coef_name_(params.GetParam<std::string>("IFuncCoefName")),
-      coil_domains_(coil_dom), elec_attrs_(electrodes),
-      coef1_(nullptr), coef0_(nullptr), mesh_parent_(nullptr),
-      J_parent_(nullptr), V_parent_(nullptr), J_(nullptr), V_(nullptr),
-      high_src_(nullptr), low_src_(nullptr) {
+      coil_domains_(coil_dom), elec_attrs_(electrodes), coef1_(1.0),
+      mesh_parent_(nullptr), J_parent_(nullptr), V_parent_(nullptr),
+      J_(nullptr), V_(nullptr), high_src_(highV), low_src_(lowV) {
 
-  coef1_ = new mfem::ConstantCoefficient(1.0);
-  coef0_ = new mfem::ConstantCoefficient(0.0);
   ref_face_ = elec_attrs_.first;
 }
 
 OpenCoilSolver::~OpenCoilSolver() {
-
-  ifDelete(coef1_);
-  ifDelete(coef0_);
 
   ifDelete(mesh_);
   ifDelete(H1_Collection_);
@@ -150,9 +144,6 @@ OpenCoilSolver::~OpenCoilSolver() {
 
   ifDelete(J_);
   ifDelete(V_);
-
-  ifDelete(high_src_);
-  ifDelete(low_src_);
 
   ifDelete(sps_);
   ifDelete(sps_params_);
@@ -199,8 +190,7 @@ void OpenCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
   } else if (V_parent_->ParFESpace()->FEColl()->GetContType() !=
              mfem::FiniteElementCollection::CONTINUOUS) {
     mfem::mfem_error("V GridFunction must be of H1 type.");
-  }
-  else {
+  } else {
     order_h1_ = V_parent_->ParFESpace()->FEColl()->GetOrder();
   }
 
@@ -249,7 +239,8 @@ void OpenCoilSolver::initChildMesh() {
 void OpenCoilSolver::makeFESpaces() {
 
   H1_Collection_ = new mfem::H1_FECollection(order_h1_, mesh_->Dimension());
-  HCurl_Collection_ = new mfem::ND_FECollection(order_hcurl_, mesh_->Dimension());
+  HCurl_Collection_ =
+      new mfem::ND_FECollection(order_hcurl_, mesh_->Dimension());
   H1FESpace_ = new mfem::ParFiniteElementSpace(mesh_, H1_Collection_);
   HCurlFESpace_ = new mfem::ParFiniteElementSpace(mesh_, HCurl_Collection_);
 }
@@ -273,15 +264,10 @@ void OpenCoilSolver::setBCs() {
   if (low_terminal_.Size() == 0)
     low_terminal_.Append(elec_attrs_.second);
 
-  if (high_src_ == nullptr)
-    high_src_ = new mfem::FunctionCoefficient(highV);
-  if (low_src_ == nullptr)
-    low_src_ = new mfem::FunctionCoefficient(lowV);
-
   high_DBC_ = new hephaestus::FunctionDirichletBC(std::string("V"),
-                                                  high_terminal_, high_src_);
+                                                  high_terminal_, &high_src_);
   low_DBC_ = new hephaestus::FunctionDirichletBC(std::string("V"),
-                                                 low_terminal_, low_src_);
+                                                 low_terminal_, &low_src_);
 
   bc_maps_ = new hephaestus::BCMap;
   bc_maps_->Register("high_potential", high_DBC_, true);
@@ -313,7 +299,7 @@ void OpenCoilSolver::SPSCurrent() {
                         std::string("magnetic_permeability"));
 
   coefs_ = new hephaestus::Coefficients;
-  coefs_->scalars.Register("magnetic_permeability", coef1_, false);
+  coefs_->scalars.Register("magnetic_permeability", &coef1_, false);
 
   sps_ = new hephaestus::ScalarPotentialSource(*sps_params_);
   sps_->Init(*gridfunctions_, *fespaces_, *bc_maps_, *coefs_);

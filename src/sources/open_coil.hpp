@@ -61,8 +61,7 @@ private:
   int ref_face_;
   std::pair<int, int> elec_attrs_;
   mfem::Array<int> coil_domains_;
-  mfem::ConstantCoefficient *coef1_;
-  mfem::ConstantCoefficient *coef0_;
+  mfem::ConstantCoefficient coef1_;
   mfem::Coefficient *Itotal_;
 
   // Names
@@ -87,8 +86,8 @@ private:
   mfem::ParGridFunction *V_;
 
   // Child boundary condition objects
-  mfem::FunctionCoefficient *high_src_;
-  mfem::FunctionCoefficient *low_src_;
+  mfem::FunctionCoefficient high_src_;
+  mfem::FunctionCoefficient low_src_;
   mfem::Array<int> high_terminal_;
   mfem::Array<int> low_terminal_;
 
