@@ -64,15 +64,15 @@ protected:
         new mfem::FunctionCoefficient(potential_high);
     bc_map.Register(
         "high_potential",
-        new hephaestus::FunctionDirichletBC(std::string("electric_potential"),
-                                            high_terminal, potential_src),
+        new hephaestus::ScalarDirichletBC(std::string("electric_potential"),
+                                          high_terminal, potential_src),
         true);
     coefficients.scalars.Register("source_potential", potential_src, true);
 
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 2;
     bc_map.Register("ground_potential",
-                    new hephaestus::FunctionDirichletBC(
+                    new hephaestus::ScalarDirichletBC(
                         std::string("electric_potential"), ground_terminal,
                         new mfem::FunctionCoefficient(potential_ground)),
                     true);

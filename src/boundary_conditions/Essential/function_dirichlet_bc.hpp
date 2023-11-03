@@ -3,20 +3,18 @@
 
 namespace hephaestus {
 
-class FunctionDirichletBC : public EssentialBC {
+class ScalarDirichletBC : public EssentialBC {
 public:
-  FunctionDirichletBC(const std::string &name_,
-                      mfem::Array<int> bdr_attributes_);
-  FunctionDirichletBC(const std::string &name_,
-                      mfem::Array<int> bdr_attributes_,
-                      mfem::FunctionCoefficient *coeff_,
-                      mfem::FunctionCoefficient *coeff_im_ = nullptr);
+  ScalarDirichletBC(const std::string &name_, mfem::Array<int> bdr_attributes_);
+  ScalarDirichletBC(const std::string &name_, mfem::Array<int> bdr_attributes_,
+                    mfem::Coefficient *coeff_,
+                    mfem::Coefficient *coeff_im_ = nullptr);
 
   virtual void applyBC(mfem::GridFunction &gridfunc,
                        mfem::Mesh *mesh_) override;
 
-  mfem::FunctionCoefficient *coeff;
-  mfem::FunctionCoefficient *coeff_im;
+  mfem::Coefficient *coeff;
+  mfem::Coefficient *coeff_im;
 };
 
 } // namespace hephaestus
