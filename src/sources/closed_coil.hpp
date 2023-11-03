@@ -58,12 +58,6 @@ public:
   // Resets the domain attributes on the parent mesh to what they were initially
   void restoreAttributes();
 
-  // Applies the HelmholtzProjector onto the J GridFunction to clean it of any
-  // divergences
-  void cleanDivergence(hephaestus::GridFunctions *gridfunctions,
-                       std::string J_name, std::string V_name,
-                       hephaestus::BCMap *bc_map);
-
   // Applies the OpenCoilSolver to the two submeshes separately
   void solveOpenCoils(hephaestus::GridFunctions &gridfunctions,
                       hephaestus::Coefficients &coefficients);
