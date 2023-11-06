@@ -128,8 +128,10 @@ OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters &params,
       V_gf_name_(params.GetParam<std::string>("PotentialName")),
       I_coef_name_(params.GetParam<std::string>("IFuncCoefName")),
       coil_domains_(coil_dom), elec_attrs_(electrodes), coef1_(1.0),
-      mesh_parent_(nullptr), J_parent_(nullptr), V_parent_(nullptr),
-      J_(nullptr), V_(nullptr), high_src_(highV), low_src_(lowV) {
+      mesh_parent_(nullptr), mesh_(nullptr), H1FESpace_(nullptr),
+      HCurlFESpace_(nullptr), J_parent_(nullptr), V_parent_(nullptr),
+      J_(nullptr), V_(nullptr), high_src_(highV), low_src_(lowV),
+      high_terminal_(1), low_terminal_(1) {
 
   ref_face_ = elec_attrs_.first;
 }
@@ -137,17 +139,10 @@ OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters &params,
 OpenCoilSolver::~OpenCoilSolver() {
 
   ifDelete(mesh_);
-  ifDelete(H1_Collection_);
-  ifDelete(HCurl_Collection_);
   ifDelete(H1FESpace_);
   ifDelete(HCurlFESpace_);
-
   ifDelete(J_);
   ifDelete(V_);
-
-  ifDelete(bc_maps_);
-  ifDelete(high_DBC_);
-  ifDelete(low_DBC_);
 }
 
 void OpenCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
@@ -223,18 +218,20 @@ void OpenCoilSolver::SubtractSource(mfem::ParGridFunction *gf) {}
 
 void OpenCoilSolver::initChildMesh() {
 
-  mesh_ = new mfem::ParSubMesh(
-      mfem::ParSubMesh::CreateFromDomain(*mesh_parent_, coil_domains_));
-
+  if (mesh_ == nullptr)
+    mesh_ = new mfem::ParSubMesh(
+        mfem::ParSubMesh::CreateFromDomain(*mesh_parent_, coil_domains_));
 }
 
 void OpenCoilSolver::makeFESpaces() {
 
-  H1_Collection_ = new mfem::H1_FECollection(order_h1_, mesh_->Dimension());
-  HCurl_Collection_ =
-      new mfem::ND_FECollection(order_hcurl_, mesh_->Dimension());
-  H1FESpace_ = new mfem::ParFiniteElementSpace(mesh_, H1_Collection_);
-  HCurlFESpace_ = new mfem::ParFiniteElementSpace(mesh_, HCurl_Collection_);
+  if (H1FESpace_ == nullptr)
+    H1FESpace_ = new mfem::ParFiniteElementSpace(
+        mesh_, new mfem::H1_FECollection(order_h1_, mesh_->Dimension()));
+
+  if (HCurlFESpace_ == nullptr)
+    HCurlFESpace_ = new mfem::ParFiniteElementSpace(
+        mesh_, new mfem::ND_FECollection(order_hcurl_, mesh_->Dimension()));
 }
 
 void OpenCoilSolver::makeGridFunctions() {
@@ -251,66 +248,59 @@ void OpenCoilSolver::makeGridFunctions() {
 
 void OpenCoilSolver::setBCs() {
 
-  if (high_terminal_.Size() == 0)
-    high_terminal_.Append(elec_attrs_.first);
-  if (low_terminal_.Size() == 0)
-    low_terminal_.Append(elec_attrs_.second);
-
-  high_DBC_ = new hephaestus::ScalarDirichletBC(std::string("V"),
-                                                  high_terminal_, &high_src_);
-  low_DBC_ = new hephaestus::ScalarDirichletBC(std::string("V"),
-                                                 low_terminal_, &low_src_);
-
-  bc_maps_ = new hephaestus::BCMap;
-  bc_maps_->Register("high_potential", high_DBC_, true);
-  bc_maps_->Register("low_potential", low_DBC_, true);
+  high_terminal_[0] = elec_attrs_.first;
+  low_terminal_[0] = elec_attrs_.second;
 }
 
 void OpenCoilSolver::SPSCurrent() {
 
-  fespaces_ = new hephaestus::FESpaces;
-  fespaces_->Register(std::string("HCurl"), HCurlFESpace_, true);
-  fespaces_->Register(std::string("H1"), H1FESpace_, true);
+  hephaestus::BCMap bc_maps;
+  bc_maps.Register("high_potential",
+                    new hephaestus::ScalarDirichletBC(
+                        std::string("V"), high_terminal_, &high_src_),
+                    true);
 
-  gridfunctions_ = new hephaestus::GridFunctions;
-  gridfunctions_->Register(std::string("source"), J_, true);
-  gridfunctions_->Register(std::string("V"), V_, true);
+  bc_maps.Register("low_potential",
+                    new hephaestus::ScalarDirichletBC(
+                      std::string("V"), low_terminal_, &low_src_),
+                    true);
 
-  current_solver_options_ = new hephaestus::InputParameters;
-  current_solver_options_->SetParam("Tolerance", float(1.0e-9));
-  current_solver_options_->SetParam("MaxIter", (unsigned int)1000);
-  current_solver_options_->SetParam("PrintLevel", 1);
+  hephaestus::FESpaces fespaces;
+  fespaces.Register(std::string("HCurl"), HCurlFESpace_, true);
+  fespaces.Register(std::string("H1"), H1FESpace_, true);
 
-  sps_params_ = new hephaestus::InputParameters;
-  sps_params_->SetParam("SourceName", std::string("source"));
-  sps_params_->SetParam("PotentialName", std::string("V"));
-  sps_params_->SetParam("HCurlFESpaceName", std::string("HCurl"));
-  sps_params_->SetParam("H1FESpaceName", std::string("H1"));
-  sps_params_->SetParam("SolverOptions", *current_solver_options_);
-  sps_params_->SetParam("ConductivityCoefName",
-                        std::string("magnetic_permeability"));
+  hephaestus::GridFunctions gridfunctions;
+  gridfunctions.Register(std::string("source"), J_, true);
+  gridfunctions.Register(std::string("V"), V_, true);
 
-  coefs_ = new hephaestus::Coefficients;
-  coefs_->scalars.Register("magnetic_permeability", &coef1_, false);
+  hephaestus::InputParameters current_solver_options;
+  current_solver_options.SetParam("Tolerance", float(1.0e-9));
+  current_solver_options.SetParam("MaxIter", (unsigned int)1000);
+  current_solver_options.SetParam("PrintLevel", 1);
 
-  sps_ = new hephaestus::ScalarPotentialSource(*sps_params_);
-  sps_->Init(*gridfunctions_, *fespaces_, *bc_maps_, *coefs_);
+  hephaestus::InputParameters sps_params;
+  sps_params.SetParam("SourceName", std::string("source"));
+  sps_params.SetParam("PotentialName", std::string("V"));
+  sps_params.SetParam("HCurlFESpaceName", std::string("HCurl"));
+  sps_params.SetParam("H1FESpaceName", std::string("H1"));
+  sps_params.SetParam("SolverOptions", current_solver_options);
+  sps_params.SetParam("ConductivityCoefName",
+                      std::string("magnetic_permeability"));
+
+  hephaestus::Coefficients coefs;
+  coefs.scalars.Register("magnetic_permeability", &coef1_, false);
+
+  hephaestus::ScalarPotentialSource sps(sps_params);
+  sps.Init(gridfunctions, fespaces, bc_maps, coefs);
 
   mfem::ParLinearForm dummy(HCurlFESpace_);
-  sps_->Apply(&dummy);
+  sps.Apply(&dummy);
 
   // Normalise the current through the wedges and use them as a reference
   double flux = calcFlux(J_, ref_face_);
   *J_ /= abs(flux);
   if (V_)
     *V_ /= abs(flux);
-
-  delete fespaces_;
-  delete gridfunctions_;
-  delete current_solver_options_;
-  delete sps_params_;
-  delete coefs_;
-  delete sps_;
 }
 
 void OpenCoilSolver::setRefFace(const int face) { ref_face_ = face; }

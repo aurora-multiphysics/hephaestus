@@ -47,13 +47,7 @@ TEST(OpenCoilTest, CheckData) {
   mfem::ParLinearForm dummy(&HCurlFESpace);
   opencoil.Apply(&dummy);
 
-  mfem::VisItDataCollection *visit_DC =
-      new mfem::VisItDataCollection("OpenCoilTest", pmesh.get());
-  visit_DC->RegisterField("J", &j);
-  visit_DC->Save();
-
   double flux = hephaestus::calcFlux(&j,elec_attrs.first);
-  std::cout << "flux = " << flux << std::endl;
  
   EXPECT_FLOAT_EQ(flux, Ival);
 

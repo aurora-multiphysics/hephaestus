@@ -76,8 +76,6 @@ private:
 
   // Child mesh and FE spaces
   mfem::ParSubMesh *mesh_;
-  mfem::H1_FECollection *H1_Collection_;
-  mfem::ND_FECollection *HCurl_Collection_;
   mfem::ParFiniteElementSpace *H1FESpace_;
   mfem::ParFiniteElementSpace *HCurlFESpace_;
 
@@ -91,17 +89,6 @@ private:
   mfem::Array<int> high_terminal_;
   mfem::Array<int> low_terminal_;
 
-  // Child ScalarPotentialSource objects
-  hephaestus::ScalarPotentialSource *sps_;
-  hephaestus::InputParameters *sps_params_;
-  hephaestus::InputParameters *current_solver_options_;
-
-  hephaestus::GridFunctions *gridfunctions_;
-  hephaestus::FESpaces *fespaces_;
-  hephaestus::BCMap *bc_maps_;
-  hephaestus::Coefficients *coefs_;
-  hephaestus::ScalarDirichletBC *high_DBC_;
-  hephaestus::ScalarDirichletBC *low_DBC_;
 };
 
 } // namespace hephaestus
