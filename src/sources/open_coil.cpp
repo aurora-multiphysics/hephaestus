@@ -226,7 +226,6 @@ void OpenCoilSolver::initChildMesh() {
   mesh_ = new mfem::ParSubMesh(
       mfem::ParSubMesh::CreateFromDomain(*mesh_parent_, coil_domains_));
 
-  inheritBdrAttributes(mesh_parent_, mesh_);
 }
 
 void OpenCoilSolver::makeFESpaces() {
