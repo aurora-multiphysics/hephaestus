@@ -15,9 +15,8 @@ void inheritBdrAttributes(const mfem::ParMesh *parent_mesh,
 // Applies the HelmholtzProjector onto the J GridFunction to clean it of any
 // divergences
 void cleanDivergence(hephaestus::GridFunctions *gridfunctions,
-                       std::string J_name, std::string V_name,
-                       hephaestus::BCMap *bc_map);
-
+                     std::string J_name, std::string V_name,
+                     hephaestus::BCMap *bc_map);
 
 class OpenCoilSolver : public hephaestus::Source {
 
@@ -47,7 +46,8 @@ public:
   // calculation.
   void setBCs();
 
-  // Solves for the divergence-free current based on Dirichlet BCs.
+  // Solves for the divergence-free Hodge dual of the electric current based on
+  // Dirichlet BCs.
   void SPSCurrent();
 
   // Sets the boundary attribute for the face to be used as reference in flux
@@ -88,7 +88,6 @@ private:
   mfem::FunctionCoefficient low_src_;
   mfem::Array<int> high_terminal_;
   mfem::Array<int> low_terminal_;
-
 };
 
 } // namespace hephaestus

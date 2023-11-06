@@ -38,7 +38,7 @@ TEST(OpenCoilTest, CheckData) {
   ocs_params.SetParam("IFuncCoefName", std::string("Itotal"));
   ocs_params.SetParam("PotentialName", std::string("V"));
 
-  std::pair<int,int> elec_attrs{1,2};
+  std::pair<int, int> elec_attrs{1, 2};
   mfem::Array<int> submesh_domains;
   submesh_domains.Append(1);
 
@@ -47,8 +47,7 @@ TEST(OpenCoilTest, CheckData) {
   mfem::ParLinearForm dummy(&HCurlFESpace);
   opencoil.Apply(&dummy);
 
-  double flux = hephaestus::calcFlux(&j,elec_attrs.first);
- 
-  EXPECT_FLOAT_EQ(flux, Ival);
+  double flux = hephaestus::calcFlux(&j, elec_attrs.first);
 
+  EXPECT_FLOAT_EQ(flux, Ival);
 }
