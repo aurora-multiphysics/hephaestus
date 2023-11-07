@@ -69,13 +69,14 @@ public:
 
 private:
   // Parameters
-  int order_;
+  int order_hcurl_;
+  int order_h1_;
   int new_domain_attr_;
   std::pair<int, int> elec_attrs_;
   mfem::Array<int> coil_domains_;
   mfem::Array<int> transition_domain_;
-  mfem::ConstantCoefficient *coef1_;
-  mfem::ConstantCoefficient *coef0_;
+  mfem::ConstantCoefficient coef1_;
+  mfem::ConstantCoefficient coef0_;
   mfem::Coefficient *Itotal_;
   std::vector<int> old_dom_attrs;
 
@@ -92,14 +93,13 @@ private:
   // Coil mesh, FE Space, and current
   mfem::ParSubMesh *mesh_coil_;
   mfem::ParGridFunction *J_coil_;
-  mfem::ParFiniteElementSpace *HCurlFESpace_coil_;
 
   // Children OpenCoilSolver objects
-  hephaestus::InputParameters *ocs_params_;
-  hephaestus::FESpaces *fespaces_;
-  hephaestus::GridFunctions *gridfunctions_;
-  hephaestus::Coefficients *coefs_;
-  hephaestus::BCMap *bc_maps_;
+  hephaestus::InputParameters ocs_params_;
+  hephaestus::FESpaces fespaces_;
+  hephaestus::GridFunctions gridfunctions_;
+  hephaestus::Coefficients coefs_;
+  hephaestus::BCMap bc_maps_;
   hephaestus::OpenCoilSolver *opencoil_;
 
 };

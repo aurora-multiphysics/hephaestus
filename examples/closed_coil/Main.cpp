@@ -8,7 +8,7 @@ int main(int argc, char *argv[]) {
 
   // Refinement and order
   int par_ref_lvl = 1;
-  int order = 2;
+  int order = 1;
 
   // Total electrical current going around the coil. Must be nonzero, can be
   // changed later.

@@ -33,18 +33,13 @@ ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters &params,
     : hcurl_fespace_name_(params.GetParam<std::string>("HCurlFESpaceName")),
       J_gf_name_(params.GetParam<std::string>("JGridFunctionName")),
       I_coef_name_(params.GetParam<std::string>("IFuncCoefName")),
-      coil_domains_(coil_dom), coef1_(nullptr), coef0_(nullptr),
-      mesh_parent_(nullptr), J_parent_(nullptr), HCurlFESpace_parent_(nullptr) {
+      coil_domains_(coil_dom), coef1_(1.0), coef0_(0.0), mesh_parent_(nullptr),
+      J_parent_(nullptr), HCurlFESpace_parent_(nullptr) {
 
   elec_attrs_.first = electrode_face;
-  coef1_ = new mfem::ConstantCoefficient(1.0);
-  coef0_ = new mfem::ConstantCoefficient(0.0);
 }
 
 ClosedCoilSolver::~ClosedCoilSolver() {
-
-  delete coef1_;
-  delete coef0_;
 
   // Deal with destructor!!
 }
@@ -67,8 +62,11 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
   if (J_parent_ == nullptr) {
     const std::string error_message = J_gf_name_ +
                                       " not found in gridfunctions when "
-                                      "creating ClosedCoilSolver\n";
+                                      "creating OpenCoilSolver\n";
     mfem::mfem_error(error_message.c_str());
+  } else if (J_parent_->ParFESpace()->FEColl()->GetContType() !=
+             mfem::FiniteElementCollection::TANGENTIAL) {
+    mfem::mfem_error("J GridFunction must be of HCurl type.");
   }
 
   Itotal_ = coefficients.scalars.Get(I_coef_name_);
@@ -80,8 +78,7 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
   }
 
   mesh_parent_ = HCurlFESpace_parent_->GetParMesh();
-
-  order_ = HCurlFESpace_parent_->FEColl()->GetOrder();
+  order_hcurl_ = HCurlFESpace_parent_->FEColl()->GetOrder();
 
   makeWedge();
   prepareCoilSubmesh();
@@ -250,48 +247,40 @@ void ClosedCoilSolver::restoreAttributes() {
 
 void ClosedCoilSolver::prepareCoilSubmesh() {
 
-  // Extracting submesh
   mesh_coil_ = new mfem::ParSubMesh(
       mfem::ParSubMesh::CreateFromDomain(*mesh_parent_, coil_domains_));
 
   inheritBdrAttributes(mesh_parent_, mesh_coil_);
-  
-  // FES and GridFunction
-  HCurlFESpace_coil_ = new mfem::ParFiniteElementSpace(
-      mesh_coil_, new mfem::ND_FECollection(order_, mesh_coil_->Dimension()));
-  J_coil_ = new mfem::ParGridFunction(HCurlFESpace_coil_);
+
+  J_coil_ = new mfem::ParGridFunction(new mfem::ParFiniteElementSpace(
+      mesh_coil_,
+      new mfem::ND_FECollection(order_hcurl_, mesh_coil_->Dimension())));
 }
 
 void ClosedCoilSolver::solveTransition() {
 
-  ocs_params_ = new hephaestus::InputParameters;
-  bc_maps_ = new hephaestus::BCMap;
-  coefs_ = new hephaestus::Coefficients;
-  fespaces_ = new hephaestus::FESpaces;
-  gridfunctions_ = new hephaestus::GridFunctions;
-  gridfunctions_->Register("J_parent", J_parent_, false);
+  gridfunctions_.Register("J_parent", J_parent_, false);
 
-  ocs_params_->SetParam("SourceName", std::string("J_parent"));
-  ocs_params_->SetParam("IFuncCoefName", std::string("I"));
-  ocs_params_->SetParam("PotentialName", std::string("Phi"));
+  ocs_params_.SetParam("SourceName", std::string("J_parent"));
+  ocs_params_.SetParam("IFuncCoefName", std::string("I"));
+  ocs_params_.SetParam("PotentialName", std::string("Phi"));
 
-  opencoil_ = new hephaestus::OpenCoilSolver(*ocs_params_, transition_domain_,
+  opencoil_ = new hephaestus::OpenCoilSolver(ocs_params_, transition_domain_,
                                              elec_attrs_);
-  opencoil_->Init(*gridfunctions_, *fespaces_, *bc_maps_, *coefs_);
+  opencoil_->Init(gridfunctions_, fespaces_, bc_maps_, coefs_);
   mfem::ParLinearForm dummy;
   opencoil_->Apply(&dummy);
 
-  // The transition region result goes 
+  // The transition region result goes
   // Child -> Grandparent -> Parent
   // Ideally, it should go Child -> Parent
   // However, MFEM has issues creating transfer maps
   // between several generations
   mesh_coil_->Transfer(*J_parent_, *J_coil_);
+  delete opencoil_;
 }
 
-void ClosedCoilSolver::solveCoil(){
-
-}
+void ClosedCoilSolver::solveCoil() {}
 
 // Auxiliary methods
 
