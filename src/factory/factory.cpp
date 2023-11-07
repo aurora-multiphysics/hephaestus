@@ -28,11 +28,13 @@ Factory::createProblemBuilder(std::string &formulation_name) {
   } else if (formulation_name == "ComplexEForm") {
     return new hephaestus::ComplexEFormulation(
         "magnetic_reluctivity", "electrical_conductivity",
-        "dielectric_permittivity", "frequency", "electric_field");
+        "dielectric_permittivity", "frequency", "electric_field",
+        "electric_field_real", "electric_field_imag");
   } else if (formulation_name == "ComplexAForm") {
     return new hephaestus::ComplexAFormulation(
         "magnetic_reluctivity", "electrical_conductivity",
-        "dielectric_permittivity", "frequency", "magnetic_vector_potential");
+        "dielectric_permittivity", "frequency", "magnetic_vector_potential",
+        "magnetic_vector_potential_real", "magnetic_vector_potential_imag");
   } else if (formulation_name == "Custom") {
     return new hephaestus::TimeDomainEMFormulation();
   } else {
@@ -46,11 +48,13 @@ Factory::createFrequencyDomainEMFormulation(std::string &formulation) {
   if (formulation == "ComplexEForm") {
     return new hephaestus::ComplexEFormulation(
         "magnetic_reluctivity", "electrical_conductivity",
-        "dielectric_permittivity", "frequency", "electric_field");
+        "dielectric_permittivity", "frequency", "electric_field",
+        "electric_field_real", "electric_field_imag");
   } else if (formulation == "ComplexAForm") {
     return new hephaestus::ComplexAFormulation(
         "magnetic_reluctivity", "electrical_conductivity",
-        "dielectric_permittivity", "frequency", "magnetic_vector_potential");
+        "dielectric_permittivity", "frequency", "magnetic_vector_potential",
+        "magnetic_vector_potential_real", "magnetic_vector_potential_imag");
   } else {
     MFEM_WARNING("Steady formulation name " << formulation
                                             << " not recognised.");

@@ -141,7 +141,8 @@ TEST_F(TestComplexAFormRod, CheckRun) {
   hephaestus::SteadyStateProblemBuilder *problem_builder =
       new hephaestus::ComplexAFormulation(
           "magnetic_reluctivity", "electrical_conductivity",
-          "dielectric_permittivity", "frequency", "magnetic_vector_potential");
+          "dielectric_permittivity", "frequency", "magnetic_vector_potential",
+          "magnetic_vector_potential_real", "magnetic_vector_potential_imag");
   hephaestus::BCMap bc_map(
       params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
   hephaestus::Coefficients coefficients(
@@ -158,6 +159,9 @@ TEST_F(TestComplexAFormRod, CheckRun) {
 
   problem_builder->SetMesh(pmesh);
   problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P1"));
+  problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P1"));
+  problem_builder->AddGridFunction("magnetic_vector_potential_real", "HCurl");
+  problem_builder->AddGridFunction("magnetic_vector_potential_imag", "HCurl");
   problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P1"));
   problem_builder->SetBoundaryConditions(bc_map);
   problem_builder->SetAuxSolvers(preprocessors);

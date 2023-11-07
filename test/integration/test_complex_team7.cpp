@@ -175,7 +175,8 @@ TEST_F(TestComplexTeam7, CheckRun) {
   hephaestus::SteadyStateProblemBuilder *problem_builder =
       new hephaestus::ComplexAFormulation(
           "magnetic_reluctivity", "electrical_conductivity",
-          "dielectric_permittivity", "frequency", "magnetic_vector_potential");
+          "dielectric_permittivity", "frequency", "magnetic_vector_potential",
+          "magnetic_vector_potential_real", "magnetic_vector_potential_imag");
   problem_builder->SetMesh(pmesh);
   problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P1"));
   problem_builder->AddFESpace(std::string("HDiv"), std::string("RT_3D_P0"));

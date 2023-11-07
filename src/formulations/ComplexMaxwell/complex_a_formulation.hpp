@@ -31,7 +31,9 @@ public:
                       const std::string &electric_conductivity_name,
                       const std::string &dielectric_permittivity_name,
                       const std::string &frequency_coef_name,
-                      const std::string &magnetic_vector_potential_name);
+                      const std::string &magnetic_vector_potential_complex_name,
+                      const std::string &magnetic_vector_potential_real_name,
+                      const std::string &magnetic_vector_potential_imag_name);
 
   virtual void RegisterAuxSolvers() override;
 };

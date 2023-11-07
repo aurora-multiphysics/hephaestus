@@ -7,11 +7,15 @@ ComplexAFormulation::ComplexAFormulation(
     const std::string &electric_conductivity_name,
     const std::string &dielectric_permittivity_name,
     const std::string &frequency_coef_name,
-    const std::string &magnetic_vector_potential_name)
+    const std::string &magnetic_vector_potential_complex_name,
+    const std::string &magnetic_vector_potential_real_name,
+    const std::string &magnetic_vector_potential_imag_name)
     : ComplexMaxwellFormulation(
           magnetic_reluctivity_name, electric_conductivity_name,
           dielectric_permittivity_name, frequency_coef_name,
-          magnetic_vector_potential_name){};
+          magnetic_vector_potential_complex_name,
+          magnetic_vector_potential_real_name,
+          magnetic_vector_potential_imag_name){};
 
 void ComplexAFormulation::RegisterAuxSolvers() {
   hephaestus::Coefficients &coefficients = this->GetProblem()->coefficients;
@@ -25,12 +29,12 @@ void ComplexAFormulation::RegisterAuxSolvers() {
               << " found in gridfunctions: building auxvar " << std::endl;
     // }
     auxsolvers.Register("_magnetic_flux_density_re_aux",
-                        new hephaestus::CurlAuxSolver(
-                            _h_curl_var_name + "_real", b_field_name + "_real"),
+                        new hephaestus::CurlAuxSolver(_h_curl_var_real_name,
+                                                      b_field_name + "_real"),
                         true);
     auxsolvers.Register("_magnetic_flux_density_im_aux",
-                        new hephaestus::CurlAuxSolver(
-                            _h_curl_var_name + "_imag", b_field_name + "_imag"),
+                        new hephaestus::CurlAuxSolver(_h_curl_var_imag_name,
+                                                      b_field_name + "_imag"),
                         true);
   }
 

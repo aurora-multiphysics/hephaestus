@@ -39,8 +39,8 @@ public:
   virtual void Init(mfem::Vector &X) override;
   virtual void Solve(mfem::Vector &X) override;
 
-  std::string h_curl_var_name, stiffness_coef_name, mass_coef_name,
-      loss_coef_name;
+  std::string h_curl_var_complex_name, h_curl_var_real_name,
+      h_curl_var_imag_name, stiffness_coef_name, mass_coef_name, loss_coef_name;
   mfem::ParComplexGridFunction *u_;
   mfem::ParComplexLinearForm *b1_;
   mfem::ParSesquilinearForm *a1_;
@@ -66,7 +66,9 @@ protected:
   const std::string _beta_coef_name;
   const std::string _zeta_coef_name;
   const std::string _frequency_coef_name;
-  const std::string _h_curl_var_name;
+  const std::string _h_curl_var_complex_name;
+  const std::string _h_curl_var_real_name;
+  const std::string _h_curl_var_imag_name;
   const std::string _mass_coef_name;
   const std::string _loss_coef_name;
 
@@ -75,7 +77,9 @@ public:
                             const std::string &alpha_coef_name,
                             const std::string &beta_coef_name,
                             const std::string &zeta_coef_name,
-                            const std::string &h_curl_var_name);
+                            const std::string &h_curl_var_complex_name,
+                            const std::string &h_curl_var_real_name,
+                            const std::string &h_curl_var_imag_name);
 
   virtual void ConstructOperator() override;
 

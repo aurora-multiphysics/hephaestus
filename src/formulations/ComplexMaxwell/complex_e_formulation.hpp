@@ -30,6 +30,44 @@ public:
                       const std::string &electric_conductivity_name,
                       const std::string &dielectric_permittivity_name,
                       const std::string &frequency_coef_name,
-                      const std::string &e_field_name);
+                      const std::string &e_field_complex_name,
+                      const std::string &e_field_real_name,
+                      const std::string &e_field_imag_name);
+
+  // Enable auxiliary calculation of J ∈ H(div)
+  virtual void
+  registerCurrentDensityAux(const std::string &j_field_real_name,
+                            const std::string &j_field_imag_name) override {
+    //* Current density J = Jᵉ + σE
+    //* Induced electric field, Jind = σE
+    hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+    auxsolvers.Register(j_field_real_name,
+                        new hephaestus::ScaledVectorGridFunctionAux(
+                            _electric_field_real_name, j_field_real_name,
+                            _electric_conductivity_name),
+                        true);
+  };
+
+  // Enable auxiliary calculation of P ∈ L2
+  virtual void registerJouleHeatingDensityAux(
+      const std::string &p_field_name, const std::string &e_field_real_name,
+      const std::string &e_field_imag_name,
+      const std::string &conductivity_coef_name) override{
+
+  };
+
+protected:
+  const std::string &_magnetic_reluctivity_name =
+      hephaestus::ComplexMaxwellFormulation::_alpha_coef_name;
+  const std::string &_electric_conductivity_name =
+      hephaestus::ComplexMaxwellFormulation::_beta_coef_name;
+  const std::string &_electric_permittivity_name =
+      hephaestus::ComplexMaxwellFormulation::_zeta_coef_name;
+  const std::string &_electric_field_complex_name =
+      hephaestus::ComplexMaxwellFormulation::_h_curl_var_complex_name;
+  const std::string &_electric_field_real_name =
+      hephaestus::ComplexMaxwellFormulation::_h_curl_var_real_name;
+  const std::string &_electric_field_imag_name =
+      hephaestus::ComplexMaxwellFormulation::_h_curl_var_imag_name;
 };
 } // namespace hephaestus

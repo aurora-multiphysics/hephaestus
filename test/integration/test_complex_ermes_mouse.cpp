@@ -95,7 +95,8 @@ protected:
     hephaestus::FrequencyDomainEMFormulation *formulation =
         new hephaestus::ComplexEFormulation(
             "magnetic_reluctivity", "electrical_conductivity",
-            "dielectric_permittivity", "frequency", "electric_field");
+            "dielectric_permittivity", "frequency", "electric_field",
+            "electric_field_real", "electric_field_imag");
 
     hephaestus::InputParameters solver_options;
     solver_options.SetParam("Tolerance", float(1.0e-16));
@@ -128,7 +129,8 @@ TEST_F(TestComplexERMESMouse, CheckRun) {
   hephaestus::SteadyStateProblemBuilder *problem_builder =
       new hephaestus::ComplexEFormulation(
           "magnetic_reluctivity", "electrical_conductivity",
-          "dielectric_permittivity", "frequency", "electric_field");
+          "dielectric_permittivity", "frequency", "electric_field",
+          "electric_field_real", "electric_field_imag");
   hephaestus::BCMap bc_map(
       params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
   hephaestus::Coefficients coefficients(
