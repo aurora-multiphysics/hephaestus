@@ -2,8 +2,6 @@
 
 const char *DATA_DIR = "../../data/";
 
-double current(const mfem::Vector &x, double t) { return 10.; }
-
 int main(int argc, char *argv[]) {
 
   // Refinement and order
@@ -12,7 +10,7 @@ int main(int argc, char *argv[]) {
 
   // Total electrical current going around the coil. Must be nonzero, can be
   // changed later.
-  double Jtotal = 10;
+  double Itotal = 10;
 
   // Attribute that defines the internal face over which we apply the potential
   // difference
@@ -30,7 +28,7 @@ int main(int argc, char *argv[]) {
   args.AddOption(&par_ref_lvl, "-ref", "--parallel-refinement",
                  "Parallel refinement level.");
   args.AddOption(&order, "-o", "--order", "Base functions order");
-  args.AddOption(&Jtotal, "-I", "--Itotal", "Total electrical current.");
+  args.AddOption(&Itotal, "-I", "--Itotal", "Total electrical current.");
   args.AddOption(&mesh_filename, "-f", "--mesh-filename", "Mesh file name");
   args.AddOption(
       &electrode_attr, "-e", "--electrode",
@@ -66,7 +64,7 @@ int main(int argc, char *argv[]) {
   mfem::ParGridFunction J(&FES_HCurl);
 
   // Time-dependent current
-  mfem::FunctionCoefficient I_val(current);
+  mfem::ConstantCoefficient I_val(Itotal);
 
   // Input parameters and maps
   hephaestus::GridFunctions gfs;

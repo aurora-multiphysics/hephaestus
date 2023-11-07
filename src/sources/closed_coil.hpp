@@ -29,11 +29,21 @@ public:
   // the two opposing faces of the layer, to act as Dirichlet BCs.
   void makeWedge();
 
-  // Takes in either a Subdomain or a vector of subdomains, and arranges them in
-  // an array for creating submeshes.
-  void SubdomainToArray(const std::vector<hephaestus::Subdomain> &sd,
-                        mfem::Array<int> &arr);
-  void SubdomainToArray(const hephaestus::Subdomain &sd, mfem::Array<int> &arr);
+  // Extracts the coil submesh and prepares the gridfunctions and FE spaces
+  // for being passed to the OpenCoilSolver in the transition region
+  void prepareCoilSubmesh();
+
+  // Applies the OpenCoilSolver to the transition region
+  void solveTransition();
+
+  // Solves for the current in the coil region
+  void solveCoil();
+
+  // Sets the current such that its flux across the electrode face is 1
+  void normaliseCurrent();
+
+  // Resets the domain attributes on the parent mesh to what they were initially
+  void restoreAttributes();
 
   // Finds the coordinates for the "centre of mass" of the vertices of an
   // element.
@@ -45,26 +55,6 @@ public:
                   const mfem::ParMesh *mesh);
   bool isInDomain(const int el, const int &sd, const mfem::ParMesh *mesh);
 
-  void subdomainToArray(const std::vector<hephaestus::Subdomain> &sd, mfem::Array<int> &arr);
-  void subdomainToArray(const hephaestus::Subdomain &sd, mfem::Array<int> &arr);
-
-
-  // Resets the domain attributes on the parent mesh to what they were initially
-  void restoreAttributes();
-
-  // Extracts the coil submesh and prepares the gridfunctions and FE spaces
-  // for being passed to the OpenCoilSolver in the transition region
-  void prepareCoilSubmesh();
-
-  // Applies the OpenCoilSolver to the transition region
-  void solveTransition();
-
-  // Solves for the current in the coil region
-  void solveCoil();
-
-  // Forms the final electric current result
-  void formCurrent();
-
 private:
   // Parameters
   int order_hcurl_;
@@ -73,8 +63,6 @@ private:
   std::pair<int, int> elec_attrs_;
   mfem::Array<int> coil_domains_;
   mfem::Array<int> transition_domain_;
-  mfem::ConstantCoefficient coef1_;
-  mfem::ConstantCoefficient coef0_;
   mfem::Coefficient *Itotal_;
   std::vector<int> old_dom_attrs;
 
@@ -94,8 +82,6 @@ private:
   mfem::ParFiniteElementSpace *H1FESpace_coil_;
   mfem::ParGridFunction *J_coil_;
   mfem::ParGridFunction *Jt_coil_;
-  mfem::ParGridFunction *auxV_coil_;
-
 };
 
 class Plane3D {
