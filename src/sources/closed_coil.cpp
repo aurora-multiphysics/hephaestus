@@ -79,10 +79,13 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
 
   mesh_parent_ = HCurlFESpace_parent_->GetParMesh();
   order_hcurl_ = HCurlFESpace_parent_->FEColl()->GetOrder();
+  order_h1_ = order_hcurl_;
 
   makeWedge();
   prepareCoilSubmesh();
   solveTransition();
+  solveCoil();
+  formCurrent();
   restoreAttributes();
 }
 
@@ -250,37 +253,98 @@ void ClosedCoilSolver::prepareCoilSubmesh() {
   mesh_coil_ = new mfem::ParSubMesh(
       mfem::ParSubMesh::CreateFromDomain(*mesh_parent_, coil_domains_));
 
-  inheritBdrAttributes(mesh_parent_, mesh_coil_);
-
-  J_coil_ = new mfem::ParGridFunction(new mfem::ParFiniteElementSpace(
+  // inheritBdrAttributes(mesh_parent_, mesh_coil_);
+  HCurlFESpace_coil_ = new mfem::ParFiniteElementSpace(
       mesh_coil_,
-      new mfem::ND_FECollection(order_hcurl_, mesh_coil_->Dimension())));
+      new mfem::ND_FECollection(order_hcurl_, mesh_coil_->Dimension()));
+
+  H1FESpace_coil_ = new mfem::ParFiniteElementSpace(
+      mesh_coil_,
+      new mfem::H1_FECollection(order_h1_, mesh_coil_->Dimension()));
+
+  J_coil_ = new mfem::ParGridFunction(HCurlFESpace_coil_);
+  Jt_coil_ = new mfem::ParGridFunction(HCurlFESpace_coil_);
+  auxV_coil_ = new mfem::ParGridFunction(H1FESpace_coil_);
+
+  *J_coil_ = 0.0;
+  *Jt_coil_ = 0.0;
+  *auxV_coil_ = 0.0;
 }
 
 void ClosedCoilSolver::solveTransition() {
 
-  gridfunctions_.Register("J_parent", J_parent_, false);
+  hephaestus::FESpaces fespaces;
+  hephaestus::Coefficients coefs;
+  hephaestus::BCMap bc_maps;
 
-  ocs_params_.SetParam("SourceName", std::string("J_parent"));
-  ocs_params_.SetParam("IFuncCoefName", std::string("I"));
-  ocs_params_.SetParam("PotentialName", std::string("Phi"));
+  hephaestus::GridFunctions gridfunctions;
+  gridfunctions.Register("J_parent", J_parent_, false);
 
-  opencoil_ = new hephaestus::OpenCoilSolver(ocs_params_, transition_domain_,
-                                             elec_attrs_);
-  opencoil_->Init(gridfunctions_, fespaces_, bc_maps_, coefs_);
+  hephaestus::InputParameters ocs_params;
+  ocs_params.SetParam("SourceName", std::string("J_parent"));
+  ocs_params.SetParam("IFuncCoefName", std::string("I"));
+  ocs_params.SetParam("PotentialName", std::string("Phi"));
+
+  hephaestus::OpenCoilSolver opencoil(ocs_params, transition_domain_,
+                                      elec_attrs_);
+
+  opencoil.Init(gridfunctions, fespaces, bc_maps, coefs);
   mfem::ParLinearForm dummy;
-  opencoil_->Apply(&dummy);
+  opencoil.Apply(&dummy);
 
   // The transition region result goes
   // Child -> Grandparent -> Parent
   // Ideally, it should go Child -> Parent
   // However, MFEM has issues creating transfer maps
   // between several generations
-  mesh_coil_->Transfer(*J_parent_, *J_coil_);
-  delete opencoil_;
+  mesh_coil_->Transfer(*J_parent_, *Jt_coil_);
 }
 
-void ClosedCoilSolver::solveCoil() {}
+void ClosedCoilSolver::solveCoil() {
+  // (∇Va,∇ψ) = (Jt,∇ψ)
+  // where Va is auxV_coil_, the auxiliary continuous "potential"
+  // ψ are the H1 test functions
+  // Jt is the vector function corresponding to the current in 
+  // the transition region
+  // The boundary terms are zero because ∇Va and Jt are perpendicular
+  // to the coil boundaries
+
+  mfem::ParBilinearForm a(H1FESpace_coil_);
+  a.AddDomainIntegrator(new mfem::DiffusionIntegrator);
+  a.Assemble();
+
+  mfem::VectorGridFunctionCoefficient JtCoef(Jt_coil_);
+  mfem::ParLinearForm b(H1FESpace_coil_);
+  b.AddDomainIntegrator(new mfem::DomainLFGradIntegrator(JtCoef));
+  b.Assemble();
+
+  mfem::HypreParMatrix A;
+  mfem::Vector B, X;
+  mfem::Array<int> boundary_dofs;
+  a.FormLinearSystem(boundary_dofs, *auxV_coil_, b, A, X, B);
+
+  mfem::HypreBoomerAMG amg(A);
+  mfem::HyprePCG pcg(A);
+  pcg.SetTol(1e-8);
+  pcg.SetMaxIter(500);
+  pcg.SetPrintLevel(1);
+  pcg.SetPreconditioner(amg);
+  pcg.Mult(B, X);
+
+  a.RecoverFEMSolution(X, b, *auxV_coil_);
+
+}
+
+void ClosedCoilSolver::formCurrent() {
+
+  mfem::ParDiscreteLinearOperator grad(H1FESpace_coil_, HCurlFESpace_coil_);
+  grad.AddDomainInterpolator(new mfem::GradientInterpolator());
+  grad.Assemble();
+
+  grad.Mult(*auxV_coil_, *J_coil_);
+  J_coil_->Add(-1.0, *Jt_coil_);
+}
+
 
 // Auxiliary methods
 

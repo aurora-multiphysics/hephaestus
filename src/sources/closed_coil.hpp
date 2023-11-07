@@ -29,11 +29,6 @@ public:
   // the two opposing faces of the layer, to act as Dirichlet BCs.
   void makeWedge();
 
-  // Splits a full parallel mesh into two parallel submeshes by extracting a
-  // 1-element wide layer adjacent to the electrode face as one submesh and the
-  // rest of the coil as the second submesh.
-  void initChildMeshes();
-
   // Takes in either a Subdomain or a vector of subdomains, and arranges them in
   // an array for creating submeshes.
   void SubdomainToArray(const std::vector<hephaestus::Subdomain> &sd,
@@ -67,6 +62,9 @@ public:
   // Solves for the current in the coil region
   void solveCoil();
 
+  // Forms the final electric current result
+  void formCurrent();
+
 private:
   // Parameters
   int order_hcurl_;
@@ -92,15 +90,11 @@ private:
 
   // Coil mesh, FE Space, and current
   mfem::ParSubMesh *mesh_coil_;
+  mfem::ParFiniteElementSpace *HCurlFESpace_coil_;
+  mfem::ParFiniteElementSpace *H1FESpace_coil_;
   mfem::ParGridFunction *J_coil_;
-
-  // Children OpenCoilSolver objects
-  hephaestus::InputParameters ocs_params_;
-  hephaestus::FESpaces fespaces_;
-  hephaestus::GridFunctions gridfunctions_;
-  hephaestus::Coefficients coefs_;
-  hephaestus::BCMap bc_maps_;
-  hephaestus::OpenCoilSolver *opencoil_;
+  mfem::ParGridFunction *Jt_coil_;
+  mfem::ParGridFunction *auxV_coil_;
 
 };
 
