@@ -74,7 +74,7 @@ protected:
     mfem::FunctionCoefficient *ground_coeff =
         new mfem::FunctionCoefficient(potential_ground);
     bc_map.Register("ground_potential",
-                    new hephaestus::FunctionDirichletBC(
+                    new hephaestus::ScalarDirichletBC(
                         std::string("electric_potential"),
                         mfem::Array<int>({1, 2, 3}), ground_coeff),
                     true);

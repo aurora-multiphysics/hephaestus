@@ -15,9 +15,8 @@ void inheritBdrAttributes(const mfem::ParMesh *parent_mesh,
 // Applies the HelmholtzProjector onto the J GridFunction to clean it of any
 // divergences
 void cleanDivergence(hephaestus::GridFunctions *gridfunctions,
-                       std::string J_name, std::string V_name,
-                       hephaestus::BCMap *bc_map);
-
+                     std::string J_name, std::string V_name,
+                     hephaestus::BCMap *bc_map);
 
 class OpenCoilSolver : public hephaestus::Source {
 
@@ -47,7 +46,8 @@ public:
   // calculation.
   void setBCs();
 
-  // Solves for the divergence-free current based on Dirichlet BCs.
+  // Solves for the divergence-free Hodge dual of the electric current based on
+  // Dirichlet BCs.
   void SPSCurrent();
 
   // Sets the boundary attribute for the face to be used as reference in flux
@@ -61,8 +61,7 @@ private:
   int ref_face_;
   std::pair<int, int> elec_attrs_;
   mfem::Array<int> coil_domains_;
-  mfem::ConstantCoefficient *coef1_;
-  mfem::ConstantCoefficient *coef0_;
+  mfem::ConstantCoefficient coef1_;
   mfem::Coefficient *Itotal_;
 
   // Names
@@ -77,8 +76,6 @@ private:
 
   // Child mesh and FE spaces
   mfem::ParSubMesh *mesh_;
-  mfem::H1_FECollection *H1_Collection_;
-  mfem::ND_FECollection *HCurl_Collection_;
   mfem::ParFiniteElementSpace *H1FESpace_;
   mfem::ParFiniteElementSpace *HCurlFESpace_;
 
@@ -87,22 +84,10 @@ private:
   mfem::ParGridFunction *V_;
 
   // Child boundary condition objects
-  mfem::FunctionCoefficient *high_src_;
-  mfem::FunctionCoefficient *low_src_;
+  mfem::FunctionCoefficient high_src_;
+  mfem::FunctionCoefficient low_src_;
   mfem::Array<int> high_terminal_;
   mfem::Array<int> low_terminal_;
-
-  // Child ScalarPotentialSource objects
-  hephaestus::ScalarPotentialSource *sps_;
-  hephaestus::InputParameters *sps_params_;
-  hephaestus::InputParameters *current_solver_options_;
-
-  hephaestus::GridFunctions *gridfunctions_;
-  hephaestus::FESpaces *fespaces_;
-  hephaestus::BCMap *bc_maps_;
-  hephaestus::Coefficients *coefs_;
-  hephaestus::FunctionDirichletBC *high_DBC_;
-  hephaestus::FunctionDirichletBC *low_DBC_;
 };
 
 } // namespace hephaestus

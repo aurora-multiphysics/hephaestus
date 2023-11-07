@@ -1,6 +1,4 @@
 #pragma once
-#include "div_free_source.hpp"
-#include "helmholtz_projector.hpp"
 #include "open_coil.hpp"
 #include "scalar_potential_source.hpp"
 #include "source_base.hpp"
@@ -59,12 +57,6 @@ public:
   // Resets the domain attributes on the parent mesh to what they were initially
   void restoreAttributes();
 
-  // Applies the HelmholtzProjector onto the J GridFunction to clean it of any
-  // divergences
-  void cleanDivergence(hephaestus::GridFunctions *gridfunctions,
-                       std::string J_name, std::string V_name,
-                       hephaestus::BCMap *bc_map);
-
   // Extracts the coil submesh and prepares the gridfunctions and FE spaces
   // for being passed to the OpenCoilSolver in the transition region
   void prepareCoilSubmesh();
@@ -74,7 +66,6 @@ public:
 
   // Solves for the current in the coil region
   void solveCoil();
-
 
 private:
   // Parameters

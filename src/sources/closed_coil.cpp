@@ -236,19 +236,6 @@ void ClosedCoilSolver::makeWedge() {
   mesh_parent_->SetAttributes();
 }
 
-void ClosedCoilSolver::cleanDivergence(hephaestus::GridFunctions *gridfunctions,
-                                       std::string J_name, std::string V_name,
-                                       hephaestus::BCMap *bc_map) {
-
-  hephaestus::InputParameters pars;
-  hephaestus::FESpaces fes;
-
-  pars.SetParam("VectorGridFunctionName", J_name);
-  pars.SetParam("ScalarGridFunctionName", V_name);
-  hephaestus::HelmholtzProjector projector(pars);
-  projector.Project(*gridfunctions, fes, *bc_map);
-}
-
 void ClosedCoilSolver::restoreAttributes() {
 
   // Domain attributes
