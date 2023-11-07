@@ -1,4 +1,4 @@
-#include "closed_coil.hpp"
+#include "open_coil.hpp"
 #include <gtest/gtest.h>
 
 static void JExact(const mfem::Vector &x, mfem::Vector &J);
