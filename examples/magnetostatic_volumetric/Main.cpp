@@ -118,7 +118,7 @@ int main(int argc, char *argv[]) {
   MPI_Init(&argc, &argv);
 
   // Create Formulation
-  hephaestus::SteadyStateProblemBuilder *problem_builder =
+  hephaestus::MagnetostaticFormulation *problem_builder =
       new hephaestus::MagnetostaticFormulation("magnetic_reluctivity",
                                                "magnetic_permeability",
                                                "magnetic_vector_potential");
@@ -135,6 +135,7 @@ int main(int argc, char *argv[]) {
                                    std::string("HCurl"));
   problem_builder->AddGridFunction(std::string("magnetic_flux_density"),
                                    std::string("HDiv"));
+  problem_builder->registerMagneticFluxDensityAux("magnetic_flux_density");
   hephaestus::Coefficients coefficients = defineCoefficients();
   problem_builder->SetCoefficients(coefficients);
 
