@@ -118,7 +118,7 @@ TEST_F(TestComplexIrisWaveguide, CheckRun) {
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
 
-  hephaestus::SteadyStateProblemBuilder *problem_builder =
+  hephaestus::ComplexEFormulation *problem_builder =
       new hephaestus::ComplexEFormulation(
           "magnetic_reluctivity", "electrical_conductivity",
           "dielectric_permittivity", "frequency", "electric_field",
@@ -140,6 +140,25 @@ TEST_F(TestComplexIrisWaveguide, CheckRun) {
   problem_builder->SetMesh(pmesh);
   problem_builder->SetBoundaryConditions(bc_map);
   problem_builder->SetAuxSolvers(preprocessors);
+
+  problem_builder->AddFESpace("HDiv", "RT_3D_P0");
+  problem_builder->AddFESpace("Scalar_L2", "L2Int_3D_P0");
+
+  problem_builder->AddGridFunction("magnetic_flux_density_real", "HDiv");
+  problem_builder->AddGridFunction("magnetic_flux_density_imag", "HDiv");
+  problem_builder->registerMagneticFluxDensityAux("magnetic_flux_density_real",
+                                                  "magnetic_flux_density_imag");
+
+  problem_builder->AddGridFunction("current_density_real", "HDiv");
+  problem_builder->AddGridFunction("current_density_imag", "HDiv");
+  problem_builder->registerCurrentDensityAux("current_density_real",
+                                             "current_density_imag");
+
+  problem_builder->AddGridFunction("joule_heating_density", "Scalar_L2");
+  problem_builder->registerJouleHeatingDensityAux(
+      "joule_heating_density", "electric_field_real", "electric_field_imag",
+      "electrical_conductivity");
+
   problem_builder->SetCoefficients(coefficients);
   problem_builder->SetPostprocessors(postprocessors);
   problem_builder->SetSources(sources);

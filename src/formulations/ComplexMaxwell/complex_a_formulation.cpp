@@ -17,54 +17,76 @@ ComplexAFormulation::ComplexAFormulation(
           magnetic_vector_potential_real_name,
           magnetic_vector_potential_imag_name){};
 
-void ComplexAFormulation::RegisterAuxSolvers() {
-  hephaestus::Coefficients &coefficients = this->GetProblem()->coefficients;
-  hephaestus::GridFunctions &gridfunctions = this->GetProblem()->gridfunctions;
+// Enable auxiliary calculation of J ∈ H(div)
+void ComplexAFormulation::registerCurrentDensityAux(
+    const std::string &j_field_real_name,
+    const std::string &j_field_imag_name) {
+  //* Current density J = Jᵉ + σE
+  //* Induced current density Jind = σE = -iωσA
   hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
-  std::vector<std::string> aux_var_names;
-  std::string b_field_name = "magnetic_flux_density";
-  if (gridfunctions.Get(b_field_name + "_real") != NULL) {
-    // if (myid_ == 0) {
-    std::cout << b_field_name + "_real"
-              << " found in gridfunctions: building auxvar " << std::endl;
-    // }
-    auxsolvers.Register("_magnetic_flux_density_re_aux",
-                        new hephaestus::CurlAuxSolver(_h_curl_var_real_name,
-                                                      b_field_name + "_real"),
-                        true);
-    auxsolvers.Register("_magnetic_flux_density_im_aux",
-                        new hephaestus::CurlAuxSolver(_h_curl_var_imag_name,
-                                                      b_field_name + "_imag"),
-                        true);
-  }
+  auxsolvers.Register(j_field_imag_name,
+                      new hephaestus::ScaledVectorGridFunctionAux(
+                          _magnetic_vector_potential_real_name,
+                          j_field_imag_name, _loss_coef_name, -1.0),
+                      true);
+  auxsolvers.Register(j_field_real_name,
+                      new hephaestus::ScaledVectorGridFunctionAux(
+                          _magnetic_vector_potential_imag_name,
+                          j_field_real_name, _loss_coef_name, 1.0),
+                      true);
+};
 
-  // E = -iωA
-  std::string e_field_name = std::string("electric_field");
-  // if (gridfunctions.Get(e_field_name + "_real") != NULL) {
-  //   // if (myid_ == 0) {
-  //   std::cout << e_field_name + "_real"
-  //             << " found in gridfunctions: building auxvar " << std::endl;
-  //   // }
-  //   hephaestus::InputParameters e_field_aux_params;
-  //   e_field_aux_params.SetParam("CoefficientName",
-  //                               std::string("_neg_angular_frequency"));
-  //   e_field_aux_params.SetParam("InputVariableName",
-  //                               _h_curl_var_name + "_real");
-  //   e_field_aux_params.SetParam("ScaledVariableName", e_field_name +
-  //   "_imag"); auxsolvers.Register(
-  //       "_electric_field_re_aux",
-  //       new hephaestus::ScaledGridFunctionAuxSolver(e_field_aux_params),
-  //       true);
-  //   e_field_aux_params.SetParam("CoefficientName",
-  //                               std::string("_angular_frequency"));
-  //   e_field_aux_params.SetParam("InputVariableName",
-  //                               _h_curl_var_name + "_imag");
-  //   e_field_aux_params.SetParam("ScaledVariableName", e_field_name +
-  //   "_real"); auxsolvers.Register(
-  //       "_electric_field_im_aux",
-  //       new hephaestus::ScaledGridFunctionAuxSolver(e_field_aux_params),
-  //       true);
-  // }
+void ComplexAFormulation::registerMagneticFluxDensityAux(
+    const std::string &b_field_real_name,
+    const std::string &b_field_imag_name) {
+  //* Magnetic flux density B = curl A
+  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  auxsolvers.Register(
+      b_field_real_name,
+      new hephaestus::CurlAuxSolver(_magnetic_vector_potential_real_name,
+                                    b_field_real_name),
+      true);
+  auxsolvers.Register(
+      b_field_imag_name,
+      new hephaestus::CurlAuxSolver(_magnetic_vector_potential_imag_name,
+                                    b_field_imag_name),
+      true);
+}
+
+void ComplexAFormulation::registerElectricFieldAux(
+    const std::string &e_field_real_name,
+    const std::string &e_field_imag_name) {
+  //* Electric field E =-dA/dt=-iωA
+  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  auxsolvers.Register(e_field_imag_name,
+                      new hephaestus::ScaledVectorGridFunctionAux(
+                          _magnetic_vector_potential_real_name,
+                          e_field_imag_name, "_angular_frequency", -1.0),
+                      true);
+  auxsolvers.Register(e_field_real_name,
+                      new hephaestus::ScaledVectorGridFunctionAux(
+                          _magnetic_vector_potential_imag_name,
+                          e_field_real_name, "_angular_frequency", 1.0),
+                      true);
+}
+
+// Enable auxiliary calculation of P ∈ L2
+// Time averaged Joule heating density E.J
+void ComplexAFormulation::registerJouleHeatingDensityAux(
+    const std::string &p_field_name, const std::string &e_field_real_name,
+    const std::string &e_field_imag_name,
+    const std::string &conductivity_coef_name) {
+  //* Time averaged Joule heating density = E.J
+  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  auxsolvers.Register(p_field_name,
+                      new hephaestus::VectorGridFunctionDotProductAux(
+                          p_field_name, p_field_name, _loss_coef_name,
+                          _magnetic_vector_potential_real_name,
+                          _magnetic_vector_potential_real_name,
+                          _magnetic_vector_potential_imag_name,
+                          _magnetic_vector_potential_imag_name, true),
+                      true);
+  auxsolvers.Get(p_field_name)->SetPriority(2);
 }
 
 } // namespace hephaestus

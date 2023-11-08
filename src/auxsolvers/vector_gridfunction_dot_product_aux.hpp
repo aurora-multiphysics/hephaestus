@@ -37,17 +37,21 @@ private:
   mfem::ParGridFunction *_v_gf_re;
   mfem::ParGridFunction *_v_gf_im;
 
-  const std::string _u_gf_name;
-  const std::string _v_gf_name;
+  const std::string _u_gf_real_name;
+  const std::string _v_gf_real_name;
+  const std::string _u_gf_imag_name;
+  const std::string _v_gf_imag_name;
   const std::string _scaling_coef_name;
   bool _complex_average;
 
 public:
   VectorGridFunctionDotProductAux(const std::string &dot_product_gf_name,
                                   const std::string &dot_product_coef_name,
-                                  const std::string &u_gf_name,
-                                  const std::string &v_gf_name,
                                   const std::string &scaling_coef_name,
+                                  const std::string &u_gf_real_name,
+                                  const std::string &v_gf_real_name,
+                                  const std::string &u_gf_imag_name = "",
+                                  const std::string &v_gf_imag_name = "",
                                   const bool complex_average = false);
 
   void Init(const hephaestus::GridFunctions &gridfunctions,

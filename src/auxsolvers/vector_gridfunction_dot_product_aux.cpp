@@ -25,11 +25,13 @@ double VectorGridFunctionDotProductCoefficient::Eval(
 
 VectorGridFunctionDotProductAux::VectorGridFunctionDotProductAux(
     const std::string &dot_product_gf_name,
-    const std::string &dot_product_coef_name, const std::string &u_gf_name,
-    const std::string &v_gf_name, const std::string &scaling_coef_name,
-    const bool complex_average)
+    const std::string &dot_product_coef_name,
+    const std::string &scaling_coef_name, const std::string &u_gf_real_name,
+    const std::string &v_gf_real_name, const std::string &u_gf_imag_name,
+    const std::string &v_gf_imag_name, const bool complex_average)
     : CoefficientAux(dot_product_gf_name, dot_product_coef_name),
-      _u_gf_name(u_gf_name), _v_gf_name(v_gf_name),
+      _u_gf_real_name(u_gf_real_name), _v_gf_real_name(v_gf_real_name),
+      _u_gf_imag_name(u_gf_imag_name), _v_gf_imag_name(v_gf_imag_name),
       _scaling_coef_name(scaling_coef_name), _complex_average(complex_average),
       _scaling_coef(nullptr), _u_gf_re(nullptr), _u_gf_im(nullptr),
       _v_gf_re(nullptr), _v_gf_im(nullptr) {}
@@ -44,48 +46,48 @@ void VectorGridFunctionDotProductAux::Init(
   }
 
   if (_complex_average) {
-    _u_gf_re = gridfunctions.Get(_u_gf_name + "_real");
+    _u_gf_re = gridfunctions.Get(_u_gf_real_name);
     if (_u_gf_re == NULL) {
       MFEM_ABORT(
           "GridFunction "
-          << _u_gf_name + "_real"
+          << _u_gf_real_name
           << " not found when initializing VectorGridFunctionDotProductAux");
     }
-    _v_gf_re = gridfunctions.Get(_v_gf_name + "_real");
+    _v_gf_re = gridfunctions.Get(_v_gf_real_name);
     if (_v_gf_re == NULL) {
       MFEM_ABORT(
           "GridFunction "
-          << _v_gf_name + "_real"
+          << _v_gf_real_name
           << " not found when initializing VectorGridFunctionDotProductAux");
     }
-    _u_gf_im = gridfunctions.Get(_u_gf_name + "_imag");
+    _u_gf_im = gridfunctions.Get(_u_gf_imag_name);
     if (_u_gf_im == NULL) {
       MFEM_ABORT(
           "GridFunction "
-          << _u_gf_name + "_imag"
+          << _u_gf_imag_name
           << " not found when initializing VectorGridFunctionDotProductAux");
     }
-    _v_gf_im = gridfunctions.Get(_v_gf_name + "_imag");
+    _v_gf_im = gridfunctions.Get(_v_gf_imag_name);
     if (_v_gf_im == NULL) {
       MFEM_ABORT(
           "GridFunction "
-          << _v_gf_name + "_imag"
+          << _v_gf_imag_name
           << " not found when initializing VectorGridFunctionDotProductAux");
     }
 
   } else {
-    _u_gf_re = gridfunctions.Get(_u_gf_name);
+    _u_gf_re = gridfunctions.Get(_u_gf_real_name);
     if (_u_gf_re == NULL) {
       MFEM_ABORT(
           "GridFunction "
-          << _u_gf_name
+          << _u_gf_real_name
           << " not found when initializing VectorGridFunctionDotProductAux");
     }
-    _v_gf_re = gridfunctions.Get(_v_gf_name);
+    _v_gf_re = gridfunctions.Get(_v_gf_real_name);
     if (_v_gf_re == NULL) {
       MFEM_ABORT(
           "GridFunction "
-          << _v_gf_name
+          << _v_gf_real_name
           << " not found when initializing VectorGridFunctionDotProductAux");
     }
   }

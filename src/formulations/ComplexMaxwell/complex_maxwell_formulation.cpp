@@ -185,6 +185,12 @@ void ComplexMaxwellFormulation::RegisterCoefficients() {
       true);
 
   coefficients.scalars.Register(
+      "_inv_angular_frequency",
+      new mfem::RatioCoefficient(
+          1.0, *coefficients.scalars.Get("_angular_frequency")),
+      true);
+
+  coefficients.scalars.Register(
       _mass_coef_name,
       new mfem::TransformedCoefficient(
           coefficients.scalars.Get("_neg_angular_frequency_sq"),
