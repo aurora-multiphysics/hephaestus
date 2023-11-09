@@ -56,12 +56,6 @@ void ComplexMaxwellOperator::Solve(mfem::Vector &X) {
     a1_.AddDomainIntegrator(NULL, new mfem::VectorFEMassIntegrator(*lossCoef_));
   }
 
-  // Volume Current Density
-  mfem::Vector j(3);
-  j = 0.0;
-  mfem::VectorConstantCoefficient jrCoef_(j);
-  mfem::VectorConstantCoefficient jiCoef_(j);
-
   mfem::ParLinearForm b1_real_(u_->ParFESpace());
   mfem::ParLinearForm b1_imag_(u_->ParFESpace());
   b1_real_ = 0.0;
@@ -79,8 +73,8 @@ void ComplexMaxwellOperator::Solve(mfem::Vector &X) {
   a1_.Finalize();
 
   b1_.Assemble();
-  b1_.real() += *b1_real_;
-  b1_.imag() += *b1_imag_;
+  b1_.real() += b1_real_;
+  b1_.imag() += b1_imag_;
 
   a1_.FormLinearSystem(ess_bdr_tdofs_, *u_, b1_, A1, U, RHS);
 
