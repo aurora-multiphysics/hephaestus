@@ -89,12 +89,13 @@ protected:
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team7.g")).c_str(),
                     1, 1);
 
-    std::map<std::string, mfem::DataCollection *> data_collections;
-    data_collections["VisItDataCollection"] =
-        new mfem::VisItDataCollection("ComplexMaxwellTeam7VisIt");
-    data_collections["ParaViewDataCollection"] =
-        new mfem::ParaViewDataCollection("ComplexMaxwellTeam7ParaView");
-    hephaestus::Outputs outputs(data_collections);
+    hephaestus::Outputs outputs;
+    outputs.Register("VisItDataCollection",
+                     new mfem::VisItDataCollection("ComplexMaxwellTeam7VisIt"),
+                     true);
+    outputs.Register(
+        "ParaViewDataCollection",
+        new mfem::ParaViewDataCollection("ComplexMaxwellTeam7ParaView"), true);
 
     hephaestus::AuxSolvers postprocessors;
     hephaestus::AuxSolvers preprocessors;

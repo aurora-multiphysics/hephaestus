@@ -81,10 +81,10 @@ protected:
         (std::string(DATA_DIR) + std::string("./ermes_mouse_coarse.g")).c_str(),
         1, 1);
 
-    std::map<std::string, mfem::DataCollection *> data_collections;
-    data_collections["VisItDataCollection"] =
-        new mfem::VisItDataCollection("ComplexMaxwellERMESMouse");
-    hephaestus::Outputs outputs(data_collections);
+    hephaestus::Outputs outputs;
+    outputs.Register("VisItDataCollection",
+                     new mfem::VisItDataCollection("ComplexMaxwellERMESMouse"),
+                     true);
 
     hephaestus::FESpaces fespaces;
     hephaestus::GridFunctions gridfunctions;

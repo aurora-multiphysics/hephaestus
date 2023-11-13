@@ -14,19 +14,9 @@ TransientExecutioner::TransientExecutioner(
 
 void TransientExecutioner::Init() {
   // Set up DataCollections to track fields of interest.
-  for (auto const &[name, dc_] : problem->outputs.data_collections) {
-    problem->outputs.RegisterOutputFields(dc_, problem->pmesh.get(),
-                                          problem->gridfunctions);
-    // Write initial fields to disk
-    problem->outputs.WriteOutputFields(dc_, t, 0);
-  }
-
-  // Initialize GLVis visualization and send the initial condition
-  // by socket to a GLVis server.
-  if (visualization) {
-    problem->outputs.InitializeGLVis(problem->myid_, problem->gridfunctions);
-    problem->outputs.DisplayToGLVis(problem->gridfunctions);
-  }
+  problem->outputs.SetGridFunctions(problem->gridfunctions);
+  problem->outputs.Reset();
+  problem->outputs.EnableGLVis(visualization);
 }
 
 void TransientExecutioner::Step(double dt, int it) const {
@@ -42,23 +32,7 @@ void TransientExecutioner::Step(double dt, int it) const {
 
   // Output data
   if (last_step || (it % vis_steps) == 0) {
-
-    // Output timestep summary to console
-    problem->outputs.WriteConsoleSummary(problem->myid_, t, it);
-
-    // Make sure all ranks have sent their 'v' solution before initiating
-    // another set of GLVis connections (one from each rank):
-    MPI_Barrier(problem->pmesh->GetComm());
-
-    // Send output fields to GLVis for visualisation
-    if (visualization) {
-      problem->outputs.DisplayToGLVis(problem->gridfunctions);
-    }
-
-    // Save output fields at timestep to DataCollections
-    for (auto const &[name, dc_] : problem->outputs.data_collections) {
-      problem->outputs.WriteOutputFields(dc_, t, it);
-    }
+    problem->outputs.Write(t);
   }
 }
 

@@ -77,12 +77,11 @@ protected:
         (std::string(DATA_DIR) + std::string("./cylinder-hex-q2.gen")).c_str(),
         1, 1);
 
-    std::map<std::string, mfem::DataCollection *> data_collections;
-    data_collections["VisItDataCollection"] =
-        new mfem::VisItDataCollection("HFormVisIt");
-    data_collections["ParaViewDataCollection"] =
-        new mfem::ParaViewDataCollection("HFormParaView");
-    hephaestus::Outputs outputs(data_collections);
+    hephaestus::Outputs outputs;
+    outputs.Register("VisItDataCollection",
+                     new mfem::VisItDataCollection("HFormVisIt"), true);
+    outputs.Register("ParaViewDataCollection",
+                     new mfem::ParaViewDataCollection("HFormParaView"), true);
 
     hephaestus::InputParameters solver_options;
     solver_options.SetParam("Tolerance", float(1.0e-16));

@@ -103,10 +103,10 @@ hephaestus::Sources defineSources() {
   return sources;
 }
 hephaestus::Outputs defineOutputs() {
-  std::map<std::string, mfem::DataCollection *> data_collections;
-  data_collections["ParaViewDataCollection"] =
-      new mfem::ParaViewDataCollection("Team7ParaView");
-  hephaestus::Outputs outputs(data_collections);
+  hephaestus::Outputs outputs;
+  outputs.Register("ParaViewDataCollection",
+                   new mfem::ParaViewDataCollection("MagnetostaticParaView"),
+                   true);
   return outputs;
 }
 

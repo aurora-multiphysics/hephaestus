@@ -105,12 +105,11 @@ protected:
         (std::string(DATA_DIR) + std::string("./cylinder-hex-q2.gen")).c_str(),
         1, 1);
 
-    std::map<std::string, mfem::DataCollection *> data_collections;
-    data_collections["VisItDataCollection"] =
-        new mfem::VisItDataCollection("EBFormVisIt");
-    data_collections["ParaViewDataCollection"] =
-        new mfem::ParaViewDataCollection("EBFormParaView");
-    hephaestus::Outputs outputs(data_collections);
+    hephaestus::Outputs outputs;
+    outputs.Register("VisItDataCollection",
+                     new mfem::VisItDataCollection("EBFormVisIt"), true);
+    outputs.Register("ParaViewDataCollection",
+                     new mfem::ParaViewDataCollection("EBFormParaView"), true);
 
     hephaestus::AuxSolvers postprocessors;
     postprocessors.Register("JouleHeatingAux",

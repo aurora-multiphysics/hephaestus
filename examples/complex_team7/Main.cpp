@@ -106,10 +106,10 @@ hephaestus::Sources defineSources() {
   return sources;
 }
 hephaestus::Outputs defineOutputs() {
-  std::map<std::string, mfem::DataCollection *> data_collections;
-  data_collections["ParaViewDataCollection"] =
-      new mfem::ParaViewDataCollection("ComplexTeam7ParaView");
-  hephaestus::Outputs outputs(data_collections);
+  hephaestus::Outputs outputs;
+  outputs.Register("ParaViewDataCollection",
+                   new mfem::ParaViewDataCollection("ComplexTeam7ParaView"),
+                   true);
   return outputs;
 }
 

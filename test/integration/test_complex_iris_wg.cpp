@@ -79,10 +79,10 @@ protected:
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./irises.g")).c_str(),
                     1, 1);
 
-    std::map<std::string, mfem::DataCollection *> data_collections;
-    data_collections["VisItDataCollection"] =
-        new mfem::VisItDataCollection("Hertz-AMR-Parallel-VisIt");
-    hephaestus::Outputs outputs(data_collections);
+    hephaestus::Outputs outputs;
+    outputs.Register("VisItDataCollection",
+                     new mfem::VisItDataCollection("Hertz-AMR-Parallel-VisIt"),
+                     true);
 
     hephaestus::FESpaces fespaces;
     hephaestus::GridFunctions gridfunctions;

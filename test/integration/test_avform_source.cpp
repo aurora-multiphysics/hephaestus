@@ -87,10 +87,9 @@ protected:
     mfem::Mesh mesh(
         (std::string(DATA_DIR) + std::string("./beam-tet.mesh")).c_str(), 1, 1);
 
-    std::map<std::string, mfem::DataCollection *> data_collections;
-    data_collections["VisItDataCollection"] =
-        new mfem::VisItDataCollection("AVFormVisIt");
-    hephaestus::Outputs outputs(data_collections);
+    hephaestus::Outputs outputs;
+    outputs.Register("VisItDataCollection",
+                     new mfem::VisItDataCollection("AVFormVisIt"), true);
 
     hephaestus::InputParameters l2errpostprocparams;
     l2errpostprocparams.SetParam("VariableName",
