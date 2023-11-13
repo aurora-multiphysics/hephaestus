@@ -139,6 +139,7 @@ OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters &params,
 OpenCoilSolver::~OpenCoilSolver() {
 
   ifDelete(mesh_);
+  ifDelete(m1_);
   ifDelete(H1FESpace_);
   ifDelete(HCurlFESpace_);
   ifDelete(J_);
@@ -189,6 +190,7 @@ void OpenCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
   makeGridFunctions();
   setBCs();
   SPSCurrent();
+  buildM1();
 }
 
 void OpenCoilSolver::Apply(mfem::ParLinearForm *lf) {
@@ -211,7 +213,10 @@ void OpenCoilSolver::Apply(mfem::ParLinearForm *lf) {
     *V_ /= I;
   }
 
-  lf->Add(1.0, *J_parent_);
+  m1_->Update();
+  m1_->Assemble();
+  m1_->AddMult(*J_parent_, *lf, 1.0);
+
 }
 
 void OpenCoilSolver::SubtractSource(mfem::ParGridFunction *gf) {}
@@ -301,6 +306,16 @@ void OpenCoilSolver::SPSCurrent() {
   *J_ /= abs(flux);
   if (V_)
     *V_ /= abs(flux);
+}
+
+void OpenCoilSolver::buildM1() {
+
+  if (m1_ == nullptr)
+    m1_ = new mfem::ParBilinearForm(J_parent_->ParFESpace());
+
+  m1_->AddDomainIntegrator(
+      new mfem::VectorFEMassIntegrator(new mfem::ConstantCoefficient(1.0)));
+  m1_->Assemble();
 }
 
 void OpenCoilSolver::setRefFace(const int face) { ref_face_ = face; }

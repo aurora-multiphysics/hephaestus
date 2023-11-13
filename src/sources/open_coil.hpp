@@ -50,6 +50,10 @@ public:
   // Dirichlet BCs.
   void SPSCurrent();
 
+  // Creates a mass matrix with basis functions that will be used in the Apply()
+  // method
+  void buildM1();
+
   // Sets the boundary attribute for the face to be used as reference in flux
   // calculation
   void setRefFace(const int face);
@@ -88,6 +92,9 @@ private:
   mfem::FunctionCoefficient low_src_;
   mfem::Array<int> high_terminal_;
   mfem::Array<int> low_terminal_;
+
+  // Mass Matrix
+  mfem::ParBilinearForm *m1_;
 };
 
 } // namespace hephaestus
