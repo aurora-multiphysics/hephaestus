@@ -34,7 +34,7 @@ ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters &params,
       J_gf_name_(params.GetParam<std::string>("JGridFunctionName")),
       I_coef_name_(params.GetParam<std::string>("IFuncCoefName")),
       coil_domains_(coil_dom), mesh_parent_(nullptr), J_parent_(nullptr),
-      HCurlFESpace_parent_(nullptr) {
+      HCurlFESpace_parent_(nullptr), m1_(nullptr) {
 
   elec_attrs_.first = electrode_face;
 }
@@ -89,6 +89,7 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
   prepareCoilSubmesh();
   solveTransition();
   solveCoil();
+  buildM1();
   normaliseCurrent();
   restoreAttributes();
 }
@@ -107,7 +108,10 @@ void ClosedCoilSolver::Apply(mfem::ParLinearForm *lf) {
   mesh_coil_->Transfer(*J_coil_, *J_parent_);
   *J_coil_ /= I;
 
-  lf->Add(1.0, *J_parent_);
+  m1_->Update();
+  m1_->Assemble();
+  m1_->AddMult(*J_parent_, *lf, 1.0);
+
 }
 
 void ClosedCoilSolver::SubtractSource(mfem::ParGridFunction *gf) {}
@@ -343,6 +347,16 @@ void ClosedCoilSolver::solveCoil() {
 
   grad.Mult(auxV_coil, *J_coil_);
   J_coil_->Add(-1.0, *Jt_coil_);
+}
+
+void ClosedCoilSolver::buildM1() {
+
+  if (m1_ == nullptr)
+    m1_ = new mfem::ParBilinearForm(HCurlFESpace_parent_);
+
+  m1_->AddDomainIntegrator(
+      new mfem::VectorFEMassIntegrator(new mfem::ConstantCoefficient(1.0)));
+  m1_->Assemble();
 }
 
 void ClosedCoilSolver::normaliseCurrent() {

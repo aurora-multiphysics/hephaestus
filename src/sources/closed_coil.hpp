@@ -39,6 +39,10 @@ public:
   // Solves for the current in the coil region
   void solveCoil();
 
+  // Creates a mass matrix with basis functions that will be used in the Apply()
+  // method
+  void buildM1();
+
   // Sets the current such that its flux across the electrode face is 1
   void normaliseCurrent();
 
@@ -82,6 +86,9 @@ private:
   mfem::ParFiniteElementSpace *H1FESpace_coil_;
   mfem::ParGridFunction *J_coil_;
   mfem::ParGridFunction *Jt_coil_;
+
+  // Mass Matrix
+  mfem::ParBilinearForm *m1_;
 };
 
 class Plane3D {
