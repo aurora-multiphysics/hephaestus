@@ -294,7 +294,7 @@ void ClosedCoilSolver::solveTransition() {
                                       elec_attrs_);
 
   opencoil.Init(gridfunctions, fespaces, bc_maps, coefs);
-  mfem::ParLinearForm dummy;
+  mfem::ParLinearForm dummy(HCurlFESpace_coil_);
   opencoil.Apply(&dummy);
 
   // The transition region result goes

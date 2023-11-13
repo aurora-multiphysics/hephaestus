@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
   hephaestus::ClosedCoilSolver coil(coilsolver_pars, coil_domains,
                                     electrode_attr);
   coil.Init(gfs, fes, bcs, coefs);
-  mfem::ParLinearForm ccs_rhs;
+  mfem::ParLinearForm ccs_rhs(&FES_HCurl);
   coil.Apply(&ccs_rhs);
 
   mfem::VisItDataCollection *visit_DC =
