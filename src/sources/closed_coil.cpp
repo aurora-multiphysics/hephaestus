@@ -110,6 +110,7 @@ void ClosedCoilSolver::Apply(mfem::ParLinearForm *lf) {
 
   m1_->Update();
   m1_->Assemble();
+  m1_->Finalize();
   m1_->AddMult(*J_parent_, *lf, 1.0);
 
 }
