@@ -191,12 +191,10 @@ TEST_F(TestAFormSource, CheckRun) {
     exec_params.SetParam("StartTime", float(0.00));
     exec_params.SetParam("EndTime", float(0.05));
     exec_params.SetParam("VisualisationSteps", int(1));
-    exec_params.SetParam("UseGLVis", true);
     exec_params.SetParam("Problem", problem.get());
     hephaestus::TransientExecutioner *executioner =
         new hephaestus::TransientExecutioner(exec_params);
 
-    executioner->Init();
     executioner->Execute();
 
     delete executioner;

@@ -171,11 +171,10 @@ TEST_F(TestComplexIrisWaveguide, CheckRun) {
       problem_builder->ReturnProblem();
 
   hephaestus::InputParameters exec_params;
-  exec_params.SetParam("UseGLVis", true);
   exec_params.SetParam("Problem", problem.get());
   hephaestus::SteadyExecutioner *executioner =
       new hephaestus::SteadyExecutioner(exec_params);
-  executioner->Init();
+
   executioner->Execute();
 
   mfem::Vector zeroVec(3);

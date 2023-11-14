@@ -177,7 +177,6 @@ int main(int argc, char *argv[]) {
       new hephaestus::SteadyExecutioner(exec_params);
 
   std::cout << "Created exec ";
-  executioner->Init();
   executioner->Execute();
 
   MPI_Finalize();

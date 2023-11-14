@@ -9,8 +9,6 @@ public:
   SteadyExecutioner() = default;
   explicit SteadyExecutioner(const hephaestus::InputParameters &params);
 
-  void Init() override;
-
   void Solve() const override;
 
   void Execute() const override;

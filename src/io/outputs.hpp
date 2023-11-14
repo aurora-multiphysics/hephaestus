@@ -10,6 +10,8 @@
 namespace hephaestus {
 
 class Outputs : public mfem::NamedFieldsMap<mfem::DataCollection> {
+  friend class ProblemBuilder;
+
 public:
   Outputs();
   Outputs(hephaestus::GridFunctions &gridfunctions);
@@ -18,8 +20,10 @@ public:
     _gridfunctions = &gridfunctions;
   }
 
+  // Enable GLVis streams for visualisation
   void EnableGLVis(bool &use_glvis) { _use_glvis = use_glvis; }
 
+  // Reset Outputs and re-register output fields from GridFunctions
   void Reset() {
     // Reset cycle counter
     _cycle = 0;
@@ -36,14 +40,14 @@ public:
     }
   }
 
+  // Write outputs out to requested streams
   void Write(double t = 1.0) {
+    // Wait for all ranks to finish updating their solution before output
+    MPI_Barrier(_my_comm);
+    // Update cycle counter
     _cycle++;
     // Output timestep summary to console
     WriteConsoleSummary(_my_rank, t);
-    // Make sure all ranks have sent their 'v' solution before initiating
-    // another set of GLVis connections (one from each rank):
-    // Send output fields to GLVis for visualisation
-    MPI_Barrier(_my_comm);
     if (_use_glvis) {
       DisplayToGLVis();
     }
@@ -53,13 +57,19 @@ public:
 
 private:
   std::map<std::string, mfem::socketstream *> socks_;
-
   hephaestus::GridFunctions *_gridfunctions;
-  int _cycle;
-  bool _use_glvis;
-  MPI_Comm _my_comm;
+  int _cycle{0};
+  bool _use_glvis{false};
+  MPI_Comm _my_comm{MPI_COMM_WORLD};
   int _n_ranks, _my_rank;
 
+  // Initialize Outputs with Gridfunctions; used in ProblemBuilder
+  void Init(hephaestus::GridFunctions &gridfunctions) {
+    SetGridFunctions(gridfunctions);
+    Reset();
+  }
+
+  // Register fields (gridfunctions) to write to DataCollections
   void RegisterOutputFields() {
     for (auto output = begin(); output != end(); ++output) {
       auto const &dc_(output->second);
@@ -73,16 +83,7 @@ private:
     }
   }
 
-  void WriteConsoleSummary(int _my_rank, double t) {
-    // Write a summary of the timestep to console.
-    if (_my_rank == 0) {
-      std::cout << std::fixed;
-      std::cout << "step " << std::setw(6) << _cycle
-                << ",\tt = " << std::setw(6) << std::setprecision(3) << t
-                << std::endl;
-    }
-  }
-
+  // Write out fields (gridfunctions) to DataCollections
   void WriteOutputFields(double t) {
     // Write fields to disk
     for (auto output = begin(); output != end(); ++output) {
@@ -93,6 +94,17 @@ private:
     }
   }
 
+  // Write out summary of last timestep to console
+  void WriteConsoleSummary(int _my_rank, double t) {
+    if (_my_rank == 0) {
+      std::cout << std::fixed;
+      std::cout << "step " << std::setw(6) << _cycle
+                << ",\tt = " << std::setw(6) << std::setprecision(3) << t
+                << std::endl;
+    }
+  }
+
+  // Initialize GLVis sockets and fields
   void InitializeGLVis(int _my_rank) {
     if (_my_rank == 0) {
       std::cout << "Opening GLVis sockets." << std::endl;
@@ -109,6 +121,7 @@ private:
     }
   }
 
+  // Update GLVis display of output fields (gridfunctions)
   void DisplayToGLVis() {
     char vishost[] = "localhost";
     int visport = 19916;

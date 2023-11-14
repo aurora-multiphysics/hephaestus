@@ -204,11 +204,10 @@ TEST_F(TestComplexTeam7, CheckRun) {
       problem_builder->ReturnProblem();
 
   hephaestus::InputParameters exec_params;
-  exec_params.SetParam("UseGLVis", true);
   exec_params.SetParam("Problem", problem.get());
   hephaestus::SteadyExecutioner *executioner =
       new hephaestus::SteadyExecutioner(exec_params);
   std::cout << "Created exec ";
-  executioner->Init();
+
   executioner->Execute();
 }

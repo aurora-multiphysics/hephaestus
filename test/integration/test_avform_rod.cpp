@@ -146,10 +146,9 @@ TEST_F(TestAVFormRod, CheckRun) {
   exec_params.SetParam("StartTime", float(0.00));
   exec_params.SetParam("EndTime", float(2.5));
   exec_params.SetParam("VisualisationSteps", int(1));
-  exec_params.SetParam("UseGLVis", true);
   exec_params.SetParam("Problem", problem.get());
   hephaestus::TransientExecutioner *executioner =
       new hephaestus::TransientExecutioner(exec_params);
-  executioner->Init();
+
   executioner->Execute();
 }

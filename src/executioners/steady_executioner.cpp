@@ -6,13 +6,6 @@ SteadyExecutioner::SteadyExecutioner(const hephaestus::InputParameters &params)
     : Executioner(params),
       problem(params.GetParam<hephaestus::SteadyStateProblem *>("Problem")) {}
 
-void SteadyExecutioner::Init() {
-  // Set up DataCollections to track fields of interest.
-  problem->outputs.SetGridFunctions(problem->gridfunctions);
-  problem->outputs.Reset();
-  problem->outputs.EnableGLVis(visualization);
-}
-
 void SteadyExecutioner::Solve() const {
   // Advance time step.
   problem->preprocessors.Solve();

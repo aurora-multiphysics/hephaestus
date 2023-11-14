@@ -162,7 +162,6 @@ int main(int argc, char *argv[]) {
       new hephaestus::SteadyExecutioner(exec_params);
 
   mfem::out << "Created executioner";
-  executioner->Init();
   executioner->Execute();
 
   MPI_Finalize();

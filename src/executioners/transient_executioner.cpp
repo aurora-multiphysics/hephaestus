@@ -12,13 +12,6 @@ TransientExecutioner::TransientExecutioner(
       vis_steps(params.GetOptionalParam<int>("VisualisationSteps", 1)),
       last_step(false) {}
 
-void TransientExecutioner::Init() {
-  // Set up DataCollections to track fields of interest.
-  problem->outputs.SetGridFunctions(problem->gridfunctions);
-  problem->outputs.Reset();
-  problem->outputs.EnableGLVis(visualization);
-}
-
 void TransientExecutioner::Step(double dt, int it) const {
   // Check if current time step is final
   if (t + dt >= t_final - dt / 2) {
