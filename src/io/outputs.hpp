@@ -16,12 +16,14 @@ public:
   Outputs();
   Outputs(hephaestus::GridFunctions &gridfunctions);
 
-  void SetGridFunctions(hephaestus::GridFunctions &gridfunctions) {
-    _gridfunctions = &gridfunctions;
+  // Set output fields to write out. If output_field_names is empty, all
+  // gridfunctions will be written by default.
+  void SetOutputFieldNames(std::vector<std::string> &output_field_names) {
+    _output_field_names = output_field_names;
   }
 
   // Enable GLVis streams for visualisation
-  void EnableGLVis(bool &use_glvis) { _use_glvis = use_glvis; }
+  void EnableGLVis(const bool &use_glvis) { _use_glvis = use_glvis; }
 
   // Reset Outputs and re-register output fields from GridFunctions
   void Reset() {
@@ -58,6 +60,7 @@ public:
 private:
   std::map<std::string, mfem::socketstream *> socks_;
   hephaestus::GridFunctions *_gridfunctions;
+  std::vector<std::string> _output_field_names{};
   int _cycle{0};
   bool _use_glvis{false};
   MPI_Comm _my_comm{MPI_COMM_WORLD};
@@ -69,6 +72,10 @@ private:
     Reset();
   }
 
+  void SetGridFunctions(hephaestus::GridFunctions &gridfunctions) {
+    _gridfunctions = &gridfunctions;
+  }
+
   // Register fields (gridfunctions) to write to DataCollections
   void RegisterOutputFields() {
     for (auto output = begin(); output != end(); ++output) {
@@ -76,9 +83,16 @@ private:
       mfem::ParMesh *pmesh_(
           _gridfunctions->begin()->second->ParFESpace()->GetParMesh());
       dc_->SetMesh(pmesh_);
-      for (auto var = _gridfunctions->begin(); var != _gridfunctions->end();
-           ++var) {
-        dc_->RegisterField(var->first, var->second);
+
+      if (_output_field_names.empty()) {
+        for (auto var = _gridfunctions->begin(); var != _gridfunctions->end();
+             ++var) {
+          dc_->RegisterField(var->first, var->second);
+        }
+      } else {
+        for (auto field_name : _output_field_names) {
+          dc_->RegisterField(field_name, _gridfunctions->Get(field_name));
+        }
       }
     }
   }

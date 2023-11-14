@@ -71,6 +71,8 @@ hephaestus::Coefficients defineCoefficients() {
   coefficients.scalars.Register("magnetic_permeability",
                                 new mfem::ConstantCoefficient(M_PI * 4.0e-7),
                                 true);
+  coefficients.scalars.Register("dielectric_permittivity",
+                                new mfem::ConstantCoefficient(8.854e-12), true);
 
   mfem::VectorFunctionCoefficient *JSrcCoef =
       new mfem::VectorFunctionCoefficient(3, source_current);
@@ -121,7 +123,7 @@ int main(int argc, char *argv[]) {
   MPI_Init(&argc, &argv);
 
   // Create Formulation
-  hephaestus::SteadyStateProblemBuilder *problem_builder =
+  hephaestus::ComplexAFormulation *problem_builder =
       new hephaestus::ComplexAFormulation(
           "magnetic_reluctivity", "electrical_conductivity",
           "dielectric_permittivity", "frequency", "magnetic_vector_potential",
@@ -132,24 +134,34 @@ int main(int argc, char *argv[]) {
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(mfem::ParMesh(MPI_COMM_WORLD, mesh));
   problem_builder->SetMesh(pmesh);
-  problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P1"));
-  problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P1"));
-  problem_builder->AddFESpace(std::string("HDiv"), std::string("RT_3D_P0"));
-  problem_builder->AddFESpace(std::string("L2"), std::string("L2_3D_P1"));
-  problem_builder->AddGridFunction(
-      std::string("magnetic_vector_potential_real"), std::string("HCurl"));
-  problem_builder->AddGridFunction(
-      std::string("magnetic_vector_potential_imag"), std::string("HCurl"));
-  problem_builder->AddGridFunction(std::string("electric_field_real"),
-                                   std::string("HCurl"));
-  problem_builder->AddGridFunction(std::string("electric_field_imag"),
-                                   std::string("HCurl"));
-  problem_builder->AddGridFunction(std::string("magnetic_flux_density_real"),
-                                   std::string("HDiv"));
-  problem_builder->AddGridFunction(std::string("magnetic_flux_density_imag"),
-                                   std::string("HDiv"));
-  problem_builder->AddGridFunction(std::string("joule_heating_load"),
-                                   std::string("L2"));
+  problem_builder->AddFESpace("HCurl", "ND_3D_P1");
+  problem_builder->AddFESpace("H1", "H1_3D_P1");
+  problem_builder->AddFESpace("HDiv", "RT_3D_P0");
+  problem_builder->AddFESpace("L2", "L2_3D_P0");
+
+  problem_builder->AddGridFunction("magnetic_vector_potential_real", "HCurl");
+  problem_builder->AddGridFunction("magnetic_vector_potential_imag", "HCurl");
+
+  problem_builder->AddGridFunction("electric_field_real", "HCurl");
+  problem_builder->AddGridFunction("electric_field_imag", "HCurl");
+  problem_builder->registerElectricFieldAux("electric_field_real",
+                                            "electric_field_imag");
+
+  problem_builder->AddGridFunction("magnetic_flux_density_real", "HDiv");
+  problem_builder->AddGridFunction("magnetic_flux_density_imag", "HDiv");
+  problem_builder->registerMagneticFluxDensityAux("magnetic_flux_density_real",
+                                                  "magnetic_flux_density_imag");
+
+  problem_builder->AddGridFunction("current_density_real", "HDiv");
+  problem_builder->AddGridFunction("current_density_imag", "HDiv");
+  problem_builder->registerCurrentDensityAux("current_density_real",
+                                             "current_density_imag");
+
+  problem_builder->AddGridFunction("joule_heating_density", "L2");
+  problem_builder->registerJouleHeatingDensityAux(
+      "joule_heating_density", "electric_field_real", "electric_field_imag",
+      "electrical_conductivity");
+
   hephaestus::Coefficients coefficients = defineCoefficients();
   problem_builder->SetCoefficients(coefficients);
 
@@ -171,7 +183,6 @@ int main(int argc, char *argv[]) {
       problem_builder->ReturnProblem();
 
   hephaestus::InputParameters exec_params;
-  exec_params.SetParam("UseGLVis", true);
   exec_params.SetParam("Problem", problem.get());
   hephaestus::SteadyExecutioner *executioner =
       new hephaestus::SteadyExecutioner(exec_params);
