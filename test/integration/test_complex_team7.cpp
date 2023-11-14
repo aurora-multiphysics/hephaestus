@@ -89,12 +89,13 @@ protected:
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team7.g")).c_str(),
                     1, 1);
 
-    std::map<std::string, mfem::DataCollection *> data_collections;
-    data_collections["VisItDataCollection"] =
-        new mfem::VisItDataCollection("ComplexMaxwellTeam7VisIt");
-    data_collections["ParaViewDataCollection"] =
-        new mfem::ParaViewDataCollection("ComplexMaxwellTeam7ParaView");
-    hephaestus::Outputs outputs(data_collections);
+    hephaestus::Outputs outputs;
+    outputs.Register("VisItDataCollection",
+                     new mfem::VisItDataCollection("ComplexMaxwellTeam7VisIt"),
+                     true);
+    outputs.Register(
+        "ParaViewDataCollection",
+        new mfem::ParaViewDataCollection("ComplexMaxwellTeam7ParaView"), true);
 
     hephaestus::AuxSolvers postprocessors;
     hephaestus::AuxSolvers preprocessors;
@@ -203,11 +204,10 @@ TEST_F(TestComplexTeam7, CheckRun) {
       problem_builder->ReturnProblem();
 
   hephaestus::InputParameters exec_params;
-  exec_params.SetParam("UseGLVis", true);
   exec_params.SetParam("Problem", problem.get());
   hephaestus::SteadyExecutioner *executioner =
       new hephaestus::SteadyExecutioner(exec_params);
   std::cout << "Created exec ";
-  executioner->Init();
+
   executioner->Execute();
 }

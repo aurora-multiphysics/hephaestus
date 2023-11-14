@@ -104,10 +104,9 @@ hephaestus::Sources defineSources() {
   return sources;
 }
 hephaestus::Outputs defineOutputs() {
-  std::map<std::string, mfem::DataCollection *> data_collections;
-  data_collections["ParaViewDataCollection"] =
-      new mfem::ParaViewDataCollection("Team7ParaView");
-  hephaestus::Outputs outputs(data_collections);
+  hephaestus::Outputs outputs;
+  outputs.Register("ParaViewDataCollection",
+                   new mfem::ParaViewDataCollection("Team7ParaView"), true);
   return outputs;
 }
 
@@ -176,13 +175,11 @@ int main(int argc, char *argv[]) {
   exec_params.SetParam("StartTime", float(0.00));
   exec_params.SetParam("EndTime", float(0.002));
   exec_params.SetParam("VisualisationSteps", int(1));
-  exec_params.SetParam("UseGLVis", false);
   exec_params.SetParam("Problem", problem.get());
   hephaestus::TransientExecutioner *executioner =
       new hephaestus::TransientExecutioner(exec_params);
 
   mfem::out << "Created executioner";
-  executioner->Init();
   executioner->Execute();
 
   MPI_Finalize();

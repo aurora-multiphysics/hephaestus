@@ -81,10 +81,10 @@ protected:
         (std::string(DATA_DIR) + std::string("./ermes_mouse_coarse.g")).c_str(),
         1, 1);
 
-    std::map<std::string, mfem::DataCollection *> data_collections;
-    data_collections["VisItDataCollection"] =
-        new mfem::VisItDataCollection("ComplexMaxwellERMESMouse");
-    hephaestus::Outputs outputs(data_collections);
+    hephaestus::Outputs outputs;
+    outputs.Register("VisItDataCollection",
+                     new mfem::VisItDataCollection("ComplexMaxwellERMESMouse"),
+                     true);
 
     hephaestus::FESpaces fespaces;
     hephaestus::GridFunctions gridfunctions;
@@ -160,11 +160,10 @@ TEST_F(TestComplexERMESMouse, CheckRun) {
       problem_builder->ReturnProblem();
 
   hephaestus::InputParameters exec_params;
-  exec_params.SetParam("UseGLVis", true);
   exec_params.SetParam("Problem", problem.get());
   hephaestus::SteadyExecutioner *executioner =
       new hephaestus::SteadyExecutioner(exec_params);
-  executioner->Init();
+
   executioner->Execute();
 
   mfem::Vector zeroVec(3);

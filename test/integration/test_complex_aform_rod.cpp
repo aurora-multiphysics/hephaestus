@@ -81,12 +81,11 @@ protected:
         (std::string(DATA_DIR) + std::string("./cylinder-hex-q2.gen")).c_str(),
         1, 1);
 
-    std::map<std::string, mfem::DataCollection *> data_collections;
-    data_collections["VisItDataCollection"] =
-        new mfem::VisItDataCollection("EBFormVisIt");
-    data_collections["ParaViewDataCollection"] =
-        new mfem::ParaViewDataCollection("EBFormParaView");
-    hephaestus::Outputs outputs(data_collections);
+    hephaestus::Outputs outputs;
+    outputs.Register("VisItDataCollection",
+                     new mfem::VisItDataCollection("EBFormVisIt"), true);
+    outputs.Register("ParaViewDataCollection",
+                     new mfem::ParaViewDataCollection("EBFormParaView"), true);
 
     hephaestus::GridFunctions gridfunctions;
     hephaestus::AuxSolvers preprocessors;
@@ -201,10 +200,9 @@ TEST_F(TestComplexAFormRod, CheckRun) {
       problem_builder->ReturnProblem();
 
   hephaestus::InputParameters exec_params;
-  exec_params.SetParam("UseGLVis", true);
   exec_params.SetParam("Problem", problem.get());
   hephaestus::SteadyExecutioner *executioner =
       new hephaestus::SteadyExecutioner(exec_params);
-  executioner->Init();
+
   executioner->Execute();
 }
