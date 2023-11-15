@@ -13,10 +13,13 @@ void inheritBdrAttributes(const mfem::ParMesh *parent_mesh,
                           mfem::ParSubMesh *child_mesh);
 
 // Applies the HelmholtzProjector onto the J GridFunction to clean it of any
-// divergences
-void cleanDivergence(hephaestus::GridFunctions *gridfunctions,
-                     std::string J_name, std::string V_name,
-                     hephaestus::BCMap *bc_map);
+// divergences. This is for the simplest case with no BCs
+void cleanDivergence(mfem::GridFunction &Vec_GF, int printlevel);
+
+// The more complicated case where BCs are needed
+void cleanDivergence(const hephaestus::GridFunctions &gfs,
+                     const hephaestus::BCMap &bcs, const std::string vec_gf_name,
+                     const std::string scalar_gf_name, int printlevel);
 
 class OpenCoilSolver : public hephaestus::Source {
 
@@ -63,6 +66,7 @@ private:
   int order_h1_;
   int order_hcurl_;
   int ref_face_;
+  bool perform_helmholtz_projection;
   std::pair<int, int> elec_attrs_;
   mfem::Array<int> coil_domains_;
   mfem::ConstantCoefficient coef1_;
@@ -95,6 +99,9 @@ private:
 
   // Mass Matrix
   mfem::ParBilinearForm *m1_;
+
+  // BC Map
+  hephaestus::BCMap bc_maps;
 };
 
 } // namespace hephaestus

@@ -104,8 +104,6 @@ void HelmholtzProjector::Project(hephaestus::GridFunctions &gridfunctions,
  
 }
 
-
-
 void HelmholtzProjector::setForms(){
 
   gDiv_ = new mfem::ParLinearForm(H1FESpace_);
@@ -134,10 +132,10 @@ void HelmholtzProjector::setBCs(){
   // (g, ∇q) - (∇Q, ∇q) - <P(g).n, q> = 0
   int myid = H1FESpace_->GetMyRank();
   ess_bdr_tdofs_ = new mfem::Array<int>;
-  mfem::ParGridFunction Phi_gf(H1FESpace_);
+  //mfem::ParGridFunction Phi_gf(H1FESpace_);
 
   // <P(g).n, q>
-  bc_map_->applyEssentialBCs(gf_name_, *ess_bdr_tdofs_, Phi_gf,
+  bc_map_->applyEssentialBCs(gf_name_, *ess_bdr_tdofs_, *q_,
                              (H1FESpace_->GetParMesh()));
   bc_map_->applyIntegratedBCs(gf_name_, *gDiv_,
                               (H1FESpace_->GetParMesh()));
@@ -147,7 +145,7 @@ void HelmholtzProjector::setBCs(){
   int localsize = ess_bdr_tdofs_->Size();
   int fullsize;
   MPI_Allreduce(&fullsize, &localsize, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-  
+
   if (fullsize == 0){
     ess_bdr_tdofs_->SetSize((myid == 0) ? 1 : 0);
     if (myid == 0) {
@@ -177,7 +175,7 @@ void HelmholtzProjector::solveLinearSystem(){
   mfem::HypreBoomerAMG *amg_ = new mfem::HypreBoomerAMG(*A0_);
   amg_->SetPrintLevel(1);
   mfem::HyprePCG *pcg_ = new mfem::HyprePCG(*A0_);
-  pcg_->SetTol(1e-14);
+  pcg_->SetTol(1e-20);
   pcg_->SetMaxIter(200);
   pcg_->SetPrintLevel(1);
   pcg_->SetPreconditioner(*amg_);
