@@ -147,7 +147,7 @@ OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters &params,
       coil_domains_(coil_dom), elec_attrs_(electrodes), coef1_(1.0),
       mesh_parent_(nullptr), mesh_(nullptr), H1FESpace_(nullptr),
       HCurlFESpace_(nullptr), J_parent_(nullptr), V_parent_(nullptr),
-      J_(nullptr), V_(nullptr), high_src_(highV), low_src_(lowV),
+      J_(nullptr), V_(nullptr), m1_(nullptr), high_src_(highV), low_src_(lowV),
       high_terminal_(1), low_terminal_(1) {
 
   ref_face_ = elec_attrs_.first;
@@ -221,11 +221,10 @@ void OpenCoilSolver::Apply(mfem::ParLinearForm *lf) {
 
   double I = Itotal_->Eval(*Tr, ip);
   *J_ *= I;
+  *J_parent_ = 0.0;
   mesh_->Transfer(*J_, *J_parent_);
   *J_ /= I;
 
-  mesh_parent_->Save("mesh");
-  J_parent_->Save("J_before");
   ////////////////////////////// EXPERIMENTS ////////////////////////////
 
   if (perform_helmholtz_projection) {
@@ -242,13 +241,11 @@ void OpenCoilSolver::Apply(mfem::ParLinearForm *lf) {
         true);
     bcs_parent.Register("low_potential",
                         new hephaestus::ScalarDirichletBC(
-                            std::string("V_parent"), low_terminal_, &high_src_),
+                            std::string("V_parent"), low_terminal_, &low_src_),
                         true);
 
     cleanDivergence(gfs_parent, bcs_parent, "J_parent", "V_parent");
   }
-
-  J_parent_->Save("J_after");
 
   //////////////////////////////////////////////////////////////////////
 
@@ -353,12 +350,12 @@ void OpenCoilSolver::SPSCurrent() {
 
 void OpenCoilSolver::buildM1() {
 
-  if (m1_ == nullptr)
+  if (m1_ == nullptr){
     m1_ = new mfem::ParBilinearForm(J_parent_->ParFESpace());
-
-  m1_->AddDomainIntegrator(
-      new mfem::VectorFEMassIntegrator(new mfem::ConstantCoefficient(1.0)));
-  m1_->Assemble();
+    m1_->AddDomainIntegrator(
+        new mfem::VectorFEMassIntegrator(new mfem::ConstantCoefficient(1.0)));
+    m1_->Assemble();
+  }
 }
 
 void OpenCoilSolver::setRefFace(const int face) { ref_face_ = face; }
