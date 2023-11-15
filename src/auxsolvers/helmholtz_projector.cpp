@@ -136,18 +136,25 @@ void HelmholtzProjector::setBCs(){
   ess_bdr_tdofs_ = new mfem::Array<int>;
   mfem::ParGridFunction Phi_gf(H1FESpace_);
 
-  // Apply essential BC. Necessary to ensure potential at least one point is
-  // fixed.
-  ess_bdr_tdofs_->SetSize((myid == 0) ? 1 : 0);
-  if (myid == 0) {
-    *ess_bdr_tdofs_[0] = 0;
-  }
-
   // <P(g).n, q>
   bc_map_->applyEssentialBCs(gf_name_, *ess_bdr_tdofs_, Phi_gf,
                              (H1FESpace_->GetParMesh()));
   bc_map_->applyIntegratedBCs(gf_name_, *gDiv_,
                               (H1FESpace_->GetParMesh()));
+
+  // Apply essential BC. Necessary to ensure potential at least one point is
+  // fixed.
+  int localsize = ess_bdr_tdofs_->Size();
+  int fullsize;
+  MPI_Allreduce(&fullsize, &localsize, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+  
+  if (fullsize == 0){
+    ess_bdr_tdofs_->SetSize((myid == 0) ? 1 : 0);
+    if (myid == 0) {
+      *ess_bdr_tdofs_[0] = 0;
+    }
+  }
+
 }
 
 void HelmholtzProjector::solveLinearSystem(){
