@@ -130,7 +130,6 @@ void cleanDivergence(hephaestus::GridFunctions &gfs, hephaestus::BCMap &bcs,
   pars.SetParam("VectorGridFunctionName", vec_gf_name);
   pars.SetParam("ScalarGridFunctionName", scalar_gf_name);
   pars.SetParam("PrintLevel", printlevel);
-  std::cout << "Value of HAS is " << gfs.Has(vec_gf_name) << std::endl;
   hephaestus::HelmholtzProjector projector(pars);
   projector.Project(gfs, fes, bcs);
 }

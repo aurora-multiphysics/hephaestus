@@ -132,7 +132,6 @@ void HelmholtzProjector::setBCs(){
   // (g, ∇q) - (∇Q, ∇q) - <P(g).n, q> = 0
   int myid = H1FESpace_->GetMyRank();
   ess_bdr_tdofs_ = new mfem::Array<int>;
-  //mfem::ParGridFunction Phi_gf(H1FESpace_);
 
   // <P(g).n, q>
   bc_map_->applyEssentialBCs(gf_name_, *ess_bdr_tdofs_, *q_,
