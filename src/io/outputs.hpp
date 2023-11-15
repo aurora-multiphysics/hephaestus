@@ -23,7 +23,10 @@ public:
   }
 
   // Enable GLVis streams for visualisation
-  void EnableGLVis(const bool &use_glvis) { _use_glvis = use_glvis; }
+  void EnableGLVis(const bool &use_glvis) {
+    _use_glvis = use_glvis;
+    InitializeGLVis(_my_rank);
+  }
 
   // Reset Outputs and re-register output fields from GridFunctions
   void Reset() {
@@ -37,7 +40,6 @@ public:
     // Initialize GLVis _use_glvis and send the initial condition
     // by socket to a GLVis server.
     if (_use_glvis) {
-      InitializeGLVis(_my_rank);
       DisplayToGLVis();
     }
   }
