@@ -106,6 +106,9 @@ void ClosedCoilSolver::Apply(mfem::ParLinearForm *lf) {
   double I = Itotal_->Eval(*Tr, ip);
   *J_coil_ *= I;
   mesh_coil_->Transfer(*J_coil_, *J_parent_);
+  hephaestus::GridFunctions gridfunctions;
+  gridfunctions.Register("Vector_GF", J_parent_, false);
+  cleanDivergence(gridfunctions,0);
   *J_coil_ /= I;
 
   m1_->Update();
@@ -289,7 +292,8 @@ void ClosedCoilSolver::solveTransition() {
   ocs_params.SetParam("SourceName", std::string("J_parent"));
   ocs_params.SetParam("IFuncCoefName", std::string("I"));
   ocs_params.SetParam("PotentialName", std::string("Phi"));
-
+  ocs_params.SetParam("HelmholtzProjection", false);
+ 
   hephaestus::OpenCoilSolver opencoil(ocs_params, transition_domain_,
                                       elec_attrs_);
 
@@ -332,10 +336,11 @@ void ClosedCoilSolver::solveCoil() {
   a.FormLinearSystem(boundary_dofs, auxV_coil, b, A, X, B);
 
   mfem::HypreBoomerAMG amg(A);
+  amg.SetPrintLevel(1);
   mfem::HyprePCG pcg(A);
-  pcg.SetTol(1e-8);
+  pcg.SetTol(1e-15);
   pcg.SetMaxIter(500);
-  pcg.SetPrintLevel(1);
+  pcg.SetPrintLevel(2);
   pcg.SetPreconditioner(amg);
   pcg.Mult(B, X);
   a.RecoverFEMSolution(X, b, auxV_coil);
