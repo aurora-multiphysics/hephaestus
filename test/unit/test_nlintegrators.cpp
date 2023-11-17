@@ -202,9 +202,7 @@ TEST(NonlinearIntegratorTest, CheckData) {
   mfem::Solver *jacobian_solver;
   // Set up the Jacobian solver
   mfem::HyprePCG j_pcg(HCurlFESpace.GetComm());
-  // mfem::HypreAMS ams(&HCurlFESpace);
-  // ams.SetSingularProblem();
-  mfem::HypreBoomerAMG ams;
+  mfem::HypreAMS ams(&HCurlFESpace);
   ams.SetPrintLevel(1);
   j_pcg.SetTol(1e-7);
   j_pcg.SetMaxIter(300);
