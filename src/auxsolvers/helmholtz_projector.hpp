@@ -21,6 +21,7 @@ private:
   std::string h1_fespace_name_;
   std::string gf_grad_name_;
   std::string gf_name_;
+  hephaestus::InputParameters solver_options_;
 
   mfem::ParFiniteElementSpace *H1FESpace_;
   mfem::ParFiniteElementSpace *HCurlFESpace_;

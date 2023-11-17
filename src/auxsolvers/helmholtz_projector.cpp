@@ -13,7 +13,17 @@ HelmholtzProjector::HelmholtzProjector(
                                                     "ScalarGF_Name")),
       H1FESpace_(nullptr), HCurlFESpace_(nullptr), q_(nullptr), g(nullptr),
       div_free_src_gf_(nullptr), gDiv_(nullptr), weakDiv_(nullptr),
-      grad_(nullptr), a0_(nullptr) {}
+      grad_(nullptr), a0_(nullptr) {
+
+  hephaestus::InputParameters default_pars;
+  default_pars.SetParam("Tolerance", double(1.0e-19));
+  default_pars.SetParam("MaxIter", (unsigned int)1000);
+  default_pars.SetParam("PrintLevel", 1);
+
+  solver_options_ = params.GetOptionalParam<hephaestus::InputParameters>(
+        "SolverOptions", default_pars);
+
+  }
 
 HelmholtzProjector::~HelmholtzProjector() {
 
@@ -126,7 +136,7 @@ void HelmholtzProjector::setGrad() {
 
 void HelmholtzProjector::setBCs() {
 
-  // Begin Divergence free projection
+  // Begin Divergence-free projection
   // (g, ∇q) - (∇Q, ∇q) - <P(g).n, q> = 0
   int myid = H1FESpace_->GetMyRank();
 
@@ -141,11 +151,9 @@ void HelmholtzProjector::setBCs() {
   int fullsize;
   MPI_Allreduce(&fullsize, &localsize, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
 
-  if (fullsize == 0) {
-    ess_bdr_tdofs_.SetSize((myid == 0) ? 1 : 0);
-    if (myid == 0) {
-      ess_bdr_tdofs_[0] = 0;
-    }
+  if (fullsize == 0 && myid == 0) {
+    ess_bdr_tdofs_.SetSize(1);
+    ess_bdr_tdofs_[0] = 0;
   }
 }
 
@@ -165,16 +173,9 @@ void HelmholtzProjector::solveLinearSystem() {
   mfem::Vector B0;
   a0_->FormLinearSystem(ess_bdr_tdofs_, *q_, *gDiv_, A0, X0, B0);
 
-  // Solve the linear system for Q
-  mfem::HypreBoomerAMG amg(A0);
-  amg.SetPrintLevel(0);
-  mfem::HyprePCG pcg(A0);
-  pcg.SetTol(1e-16);
-  pcg.SetMaxIter(200);
-  pcg.SetPrintLevel(0);
-  pcg.SetPreconditioner(amg);
-  pcg.Mult(B0, X0);
+  hephaestus::DefaultGMRESSolver a0_solver(solver_options_, A0);
 
+  a0_solver.Mult(B0, X0);
   a0_->RecoverFEMSolution(X0, *gDiv_, *q_);
 }
 

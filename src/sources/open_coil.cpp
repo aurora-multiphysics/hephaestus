@@ -115,7 +115,6 @@ void cleanDivergence(mfem::ParGridFunction &Vec_GF, int printlevel = 0) {
 
   gfs.Register("Vector_GF", &Vec_GF, false);
   pars.SetParam("VectorGridFunctionName", std::string("Vector_GF"));
-  pars.SetParam("PrintLevel", printlevel);
   hephaestus::HelmholtzProjector projector(pars);
   projector.Project(gfs, fes, bcs);
 }
@@ -149,6 +148,14 @@ OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters &params,
       HCurlFESpace_(nullptr), J_parent_(nullptr), V_parent_(nullptr),
       J_(nullptr), V_(nullptr), m1_(nullptr), high_src_(highV), low_src_(lowV),
       high_terminal_(1), low_terminal_(1) {
+
+  hephaestus::InputParameters default_pars;
+  default_pars.SetParam("Tolerance", double(1.0e-20));
+  default_pars.SetParam("MaxIter", (unsigned int)1000);
+  default_pars.SetParam("PrintLevel", -1);
+
+  solver_options_ = params.GetOptionalParam<hephaestus::InputParameters>(
+        "SolverOptions", default_pars);
 
   ref_face_ = elec_attrs_.first;
 }
@@ -243,7 +250,7 @@ void OpenCoilSolver::Apply(mfem::ParLinearForm *lf) {
                         new hephaestus::ScalarDirichletBC(
                             std::string("V_parent"), low_terminal_, &low_src_),
                         true);
-
+  
     cleanDivergence(gfs_parent, bcs_parent, "J_parent", "V_parent");
   }
 
@@ -318,17 +325,12 @@ void OpenCoilSolver::SPSCurrent() {
   gridfunctions.Register(std::string("source"), J_, true);
   gridfunctions.Register(std::string("V"), V_, true);
 
-  hephaestus::InputParameters current_solver_options;
-  current_solver_options.SetParam("Tolerance", float(1.0e-20));
-  current_solver_options.SetParam("MaxIter", (unsigned int)200);
-  current_solver_options.SetParam("PrintLevel", 1);
-
   hephaestus::InputParameters sps_params;
   sps_params.SetParam("SourceName", std::string("source"));
   sps_params.SetParam("PotentialName", std::string("V"));
   sps_params.SetParam("HCurlFESpaceName", std::string("HCurl"));
   sps_params.SetParam("H1FESpaceName", std::string("H1"));
-  sps_params.SetParam("SolverOptions", current_solver_options);
+  sps_params.SetParam("SolverOptions", solver_options_);
   sps_params.SetParam("ConductivityCoefName",
                       std::string("magnetic_permeability"));
 

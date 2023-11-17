@@ -69,6 +69,7 @@ private:
   mfem::Array<int> transition_domain_;
   mfem::Coefficient *Itotal_;
   std::vector<int> old_dom_attrs;
+  hephaestus::InputParameters solver_options_;
 
   // Names
   std::string hcurl_fespace_name_;

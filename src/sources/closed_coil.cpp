@@ -36,6 +36,14 @@ ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters &params,
       coil_domains_(coil_dom), mesh_parent_(nullptr), J_parent_(nullptr),
       HCurlFESpace_parent_(nullptr), m1_(nullptr) {
 
+  hephaestus::InputParameters default_pars;
+  default_pars.SetParam("Tolerance", double(1.0e-20));
+  default_pars.SetParam("MaxIter", (unsigned int)1000);
+  default_pars.SetParam("PrintLevel", 1);
+
+  solver_options_ = params.GetOptionalParam<hephaestus::InputParameters>(
+          "SolverOptions", default_pars);
+
   elec_attrs_.first = electrode_face;
 }
 
@@ -108,7 +116,7 @@ void ClosedCoilSolver::Apply(mfem::ParLinearForm *lf) {
   mesh_coil_->Transfer(*J_coil_, *J_parent_);
   hephaestus::GridFunctions gridfunctions;
   gridfunctions.Register("Vector_GF", J_parent_, false);
-  cleanDivergence(gridfunctions,0);
+  cleanDivergence(*J_parent_,0);
   *J_coil_ /= I;
 
   m1_->Update();
@@ -292,6 +300,7 @@ void ClosedCoilSolver::solveTransition() {
   ocs_params.SetParam("SourceName", std::string("J_parent"));
   ocs_params.SetParam("IFuncCoefName", std::string("I"));
   ocs_params.SetParam("PotentialName", std::string("Phi"));
+  ocs_params.SetParam("SolverOptions", solver_options_);
   ocs_params.SetParam("HelmholtzProjection", false);
  
   hephaestus::OpenCoilSolver opencoil(ocs_params, transition_domain_,
@@ -335,14 +344,9 @@ void ClosedCoilSolver::solveCoil() {
   mfem::Array<int> boundary_dofs;
   a.FormLinearSystem(boundary_dofs, auxV_coil, b, A, X, B);
 
-  mfem::HypreBoomerAMG amg(A);
-  amg.SetPrintLevel(1);
-  mfem::HyprePCG pcg(A);
-  pcg.SetTol(1e-15);
-  pcg.SetMaxIter(500);
-  pcg.SetPrintLevel(2);
-  pcg.SetPreconditioner(amg);
-  pcg.Mult(B, X);
+  hephaestus::DefaultGMRESSolver a_solver(solver_options_, A);
+
+  a_solver.Mult(B,X);
   a.RecoverFEMSolution(X, b, auxV_coil);
 
   // Now we form the final coil current
