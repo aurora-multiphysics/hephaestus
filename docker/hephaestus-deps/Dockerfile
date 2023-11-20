@@ -2,6 +2,11 @@
 # Get base image
 FROM ubuntu:20.04
 
+# This is needed or it mpiexec complains because docker runs as root
+# Discussion on this issue https://github.com/open-mpi/ompi/issues/4451
+ENV OMPI_ALLOW_RUN_AS_ROOT=1
+ENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+
 # By default one core is used to compile
 ARG compile_cores=4
 
