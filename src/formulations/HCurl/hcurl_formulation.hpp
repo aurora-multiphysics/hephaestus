@@ -40,7 +40,7 @@ public:
       dtalpha_coef_name;
 };
 
-class HCurlOperator : public TimeDomainEquationSystemOperator {
+class HCurlOperator : public TimeDomainProblemOperator {
 public:
   HCurlOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
                 hephaestus::GridFunctions &gridfunctions,

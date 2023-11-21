@@ -11,7 +11,7 @@ void SteadyStateProblemBuilder::InitializeKernels() {
 }
 void SteadyStateProblemBuilder::ConstructOperator() {
   this->problem->eq_sys_operator =
-      std::make_unique<hephaestus::EquationSystemOperator>(
+      std::make_unique<hephaestus::ProblemOperator>(
           *(this->problem->pmesh), this->problem->fespaces,
           this->problem->gridfunctions, this->problem->bc_map,
           this->problem->coefficients, this->problem->sources,

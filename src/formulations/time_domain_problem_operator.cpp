@@ -1,4 +1,4 @@
-#include "time_domain_equation_system_operator.hpp"
+#include "time_domain_problem_operator.hpp"
 
 namespace hephaestus {
 
@@ -15,7 +15,7 @@ GetTimeDerivativeNames(std::vector<std::string> gridfunction_names) {
   return time_derivative_names;
 }
 
-void TimeDomainEquationSystemOperator::SetGridFunctions() {
+void TimeDomainProblemOperator::SetGridFunctions() {
   state_var_names = _equation_system->var_names;
   local_test_vars = populateVectorFromNamedFieldsMap<mfem::ParGridFunction>(
       _gridfunctions, _equation_system->var_names);
@@ -52,7 +52,7 @@ void TimeDomainEquationSystemOperator::SetGridFunctions() {
   }
 };
 
-void TimeDomainEquationSystemOperator::Init(mfem::Vector &X) {
+void TimeDomainProblemOperator::Init(mfem::Vector &X) {
   // Define material property coefficients
   for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
     local_test_vars.at(ind)->MakeRef(local_test_vars.at(ind)->ParFESpace(),
@@ -65,9 +65,9 @@ void TimeDomainEquationSystemOperator::Init(mfem::Vector &X) {
   _equation_system->buildEquationSystem(_bc_map, _sources);
 };
 
-void TimeDomainEquationSystemOperator::ImplicitSolve(const double dt,
-                                                     const mfem::Vector &X,
-                                                     mfem::Vector &dX_dt) {
+void TimeDomainProblemOperator::ImplicitSolve(const double dt,
+                                              const mfem::Vector &X,
+                                              mfem::Vector &dX_dt) {
   dX_dt = 0.0;
   for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
     local_test_vars.at(ind)->MakeRef(local_test_vars.at(ind)->ParFESpace(),
@@ -90,7 +90,7 @@ void TimeDomainEquationSystemOperator::ImplicitSolve(const double dt,
   _equation_system->RecoverFEMSolution(trueX, _gridfunctions);
 }
 
-void TimeDomainEquationSystemOperator::SetEquationSystem(
+void TimeDomainProblemOperator::SetEquationSystem(
     hephaestus::TimeDependentEquationSystem *equation_system) {
   _equation_system = equation_system;
 }

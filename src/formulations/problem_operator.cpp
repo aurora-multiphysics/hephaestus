@@ -1,8 +1,8 @@
-#include "equation_system_operator.hpp"
+#include "problem_operator.hpp"
 
 namespace hephaestus {
 
-void EquationSystemOperator::SetGridFunctions() {
+void ProblemOperator::SetGridFunctions() {
   local_test_vars = populateVectorFromNamedFieldsMap<mfem::ParGridFunction>(
       _gridfunctions, state_var_names);
 
@@ -36,7 +36,7 @@ void EquationSystemOperator::SetGridFunctions() {
   }
 };
 
-void EquationSystemOperator::Init(mfem::Vector &X) {
+void ProblemOperator::Init(mfem::Vector &X) {
   // Define material property coefficients
   for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
     local_test_vars.at(ind)->MakeRef(local_test_vars.at(ind)->ParFESpace(),
@@ -45,6 +45,6 @@ void EquationSystemOperator::Init(mfem::Vector &X) {
   }
 }
 
-void EquationSystemOperator::Solve(mfem::Vector &X) {}
+void ProblemOperator::Solve(mfem::Vector &X) {}
 
 } // namespace hephaestus

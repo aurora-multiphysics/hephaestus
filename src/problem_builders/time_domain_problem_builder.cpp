@@ -49,7 +49,7 @@ void TimeDomainProblemBuilder::InitializeKernels() {
 
 void TimeDomainProblemBuilder::ConstructOperator() {
   this->problem->td_operator =
-      std::make_unique<hephaestus::TimeDomainEquationSystemOperator>(
+      std::make_unique<hephaestus::TimeDomainProblemOperator>(
           *(this->problem->pmesh), this->problem->fespaces,
           this->problem->gridfunctions, this->problem->bc_map,
           this->problem->coefficients, this->problem->sources,

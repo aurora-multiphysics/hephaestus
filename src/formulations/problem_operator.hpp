@@ -7,34 +7,24 @@
 #include "sources.hpp"
 
 namespace hephaestus {
-
-std::string GetTimeDerivativeName(const std::string &name);
-
-std::vector<std::string>
-GetTimeDerivativeNames(std::vector<std::string> gridfunction_names);
-
-// Specifies output interfaces of a time-domain EM formulation.
-class TimeDomainEquationSystemOperator : public mfem::TimeDependentOperator {
+class ProblemOperator : public mfem::Operator {
 public:
-  TimeDomainEquationSystemOperator(mfem::ParMesh &pmesh,
-                                   hephaestus::FESpaces &fespaces,
-                                   hephaestus::GridFunctions &gridfunctions,
-                                   hephaestus::BCMap &bc_map,
-                                   hephaestus::Coefficients &coefficients,
-                                   hephaestus::Sources &sources,
-                                   hephaestus::InputParameters &solver_options)
+  ProblemOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
+                  hephaestus::GridFunctions &gridfunctions,
+                  hephaestus::BCMap &bc_map,
+                  hephaestus::Coefficients &coefficients,
+                  hephaestus::Sources &sources,
+                  hephaestus::InputParameters &solver_options)
       : myid_(0), num_procs_(1), pmesh_(&pmesh), _fespaces(fespaces),
         _gridfunctions(gridfunctions), _bc_map(bc_map), _sources(sources),
         _coefficients(coefficients), _solver_options(solver_options){};
 
-  ~TimeDomainEquationSystemOperator(){};
+  ~ProblemOperator(){};
 
   virtual void SetGridFunctions();
   virtual void Init(mfem::Vector &X);
-  virtual void ImplicitSolve(const double dt, const mfem::Vector &X,
-                             mfem::Vector &dX_dt) override;
-  void
-  SetEquationSystem(hephaestus::TimeDependentEquationSystem *equation_system);
+  virtual void Solve(mfem::Vector &X);
+  void Mult(const mfem::Vector &x, mfem::Vector &y) const override{};
 
   mfem::Array<int> true_offsets, block_trueOffsets;
   // Vector of names of state gridfunctions used in formulation, ordered by
@@ -47,9 +37,7 @@ public:
   // in formulation,
   std::vector<std::string> active_aux_var_names;
 
-  std::vector<mfem::ParGridFunction *> local_trial_vars, local_test_vars;
-
-  hephaestus::TimeDependentEquationSystem *_equation_system;
+  std::vector<mfem::ParGridFunction *> local_test_vars;
 
   int myid_;
   int num_procs_;
@@ -60,9 +48,6 @@ public:
   hephaestus::Sources &_sources;
   hephaestus::Coefficients &_coefficients;
   hephaestus::InputParameters &_solver_options;
-
-  mutable hephaestus::DefaultGMRESSolver *solver = NULL;
-  mutable hephaestus::DefaultHCurlPCGSolver *a1_solver = NULL;
 
   mfem::OperatorHandle blockA;
   mfem::BlockVector trueX, trueRhs;

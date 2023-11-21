@@ -22,7 +22,7 @@ protected:
   const std::string _h_curl_var_name;
 };
 
-class StaticsOperator : public EquationSystemOperator {
+class StaticsOperator : public ProblemOperator {
 public:
   StaticsOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
                   hephaestus::GridFunctions &gridfunctions,

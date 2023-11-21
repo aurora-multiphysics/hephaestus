@@ -41,7 +41,7 @@ public:
       _beta_coef_name, _dtalpha_coef_name;
 };
 
-class DualOperator : public TimeDomainEquationSystemOperator {
+class DualOperator : public TimeDomainProblemOperator {
 public:
   DualOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
                hephaestus::GridFunctions &gridfunctions,

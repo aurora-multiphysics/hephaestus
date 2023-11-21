@@ -186,8 +186,8 @@ AVOperator::AVOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
                        hephaestus::Coefficients &coefficients,
                        hephaestus::Sources &sources,
                        hephaestus::InputParameters &solver_options)
-    : TimeDomainEquationSystemOperator(pmesh, fespaces, gridfunctions, bc_map,
-                                       coefficients, sources, solver_options) {
+    : TimeDomainProblemOperator(pmesh, fespaces, gridfunctions, bc_map,
+                                coefficients, sources, solver_options) {
   // Initialize MPI gridfunctions
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh.GetComm(), &myid_);

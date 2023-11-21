@@ -78,19 +78,19 @@ StaticsOperator::StaticsOperator(mfem::ParMesh &pmesh,
                                  hephaestus::Coefficients &coefficients,
                                  hephaestus::Sources &sources,
                                  hephaestus::InputParameters &solver_options)
-    : EquationSystemOperator(pmesh, fespaces, gridfunctions, bc_map,
-                             coefficients, sources, solver_options),
+    : ProblemOperator(pmesh, fespaces, gridfunctions, bc_map, coefficients,
+                      sources, solver_options),
       h_curl_var_name(solver_options.GetParam<std::string>("HCurlVarName")),
       stiffness_coef_name(
           solver_options.GetParam<std::string>("StiffnessCoefName")) {}
 
 void StaticsOperator::SetGridFunctions() {
   state_var_names.push_back(h_curl_var_name);
-  EquationSystemOperator::SetGridFunctions();
+  ProblemOperator::SetGridFunctions();
 };
 
 void StaticsOperator::Init(mfem::Vector &X) {
-  EquationSystemOperator::Init(X);
+  ProblemOperator::Init(X);
   stiffCoef_ = _coefficients.scalars.Get(stiffness_coef_name);
 }
 

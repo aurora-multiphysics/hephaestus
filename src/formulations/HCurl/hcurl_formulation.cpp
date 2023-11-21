@@ -145,8 +145,8 @@ HCurlOperator::HCurlOperator(mfem::ParMesh &pmesh,
                              hephaestus::Coefficients &coefficients,
                              hephaestus::Sources &sources,
                              hephaestus::InputParameters &solver_options)
-    : TimeDomainEquationSystemOperator(pmesh, fespaces, gridfunctions, bc_map,
-                                       coefficients, sources, solver_options) {}
+    : TimeDomainProblemOperator(pmesh, fespaces, gridfunctions, bc_map,
+                                coefficients, sources, solver_options) {}
 
 /*
 This is the main computational code that computes dX/dt implicitly

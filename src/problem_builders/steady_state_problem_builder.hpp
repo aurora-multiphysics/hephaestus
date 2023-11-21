@@ -1,19 +1,19 @@
 #pragma once
-#include "equation_system_operator.hpp"
 #include "problem_builder_base.hpp"
+#include "problem_operator.hpp"
 namespace hephaestus {
 
 class SteadyStateProblem : public hephaestus::Problem {
 public:
   std::unique_ptr<hephaestus::EquationSystem> eq_sys;
-  std::unique_ptr<hephaestus::EquationSystemOperator> eq_sys_operator;
+  std::unique_ptr<hephaestus::ProblemOperator> eq_sys_operator;
 
   SteadyStateProblem() = default;
 
   virtual hephaestus::EquationSystem *GetEquationSystem() {
     return eq_sys.get();
   };
-  virtual hephaestus::EquationSystemOperator *GetOperator() {
+  virtual hephaestus::ProblemOperator *GetOperator() {
     return eq_sys_operator.get();
   };
 };

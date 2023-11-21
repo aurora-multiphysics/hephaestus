@@ -1,6 +1,6 @@
 #pragma once
 #include "problem_builder_base.hpp"
-#include "time_domain_equation_system_operator.hpp"
+#include "time_domain_problem_operator.hpp"
 
 namespace hephaestus {
 
@@ -8,14 +8,14 @@ namespace hephaestus {
 class TimeDomainProblem : public hephaestus::Problem {
 public:
   std::unique_ptr<hephaestus::TimeDependentEquationSystem> td_equation_system;
-  std::unique_ptr<hephaestus::TimeDomainEquationSystemOperator> td_operator;
+  std::unique_ptr<hephaestus::TimeDomainProblemOperator> td_operator;
 
   TimeDomainProblem() = default;
 
   virtual hephaestus::TimeDependentEquationSystem *GetEquationSystem() {
     return td_equation_system.get();
   };
-  virtual hephaestus::TimeDomainEquationSystemOperator *GetOperator() {
+  virtual hephaestus::TimeDomainProblemOperator *GetOperator() {
     return td_operator.get();
   };
 };

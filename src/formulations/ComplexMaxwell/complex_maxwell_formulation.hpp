@@ -24,7 +24,7 @@ Robin boundaries weakly constrain (α∇×u)×n + γ(n×n×u) = F
 Divergence cleaning (such as via Helmholtz projection)
 should be performed on g before use in this operator.
 */
-class ComplexMaxwellOperator : public EquationSystemOperator {
+class ComplexMaxwellOperator : public ProblemOperator {
 public:
   ComplexMaxwellOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
                          hephaestus::GridFunctions &gridfunctions,

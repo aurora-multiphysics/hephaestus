@@ -7,8 +7,8 @@ ComplexMaxwellOperator::ComplexMaxwellOperator(
     hephaestus::GridFunctions &gridfunctions, hephaestus::BCMap &bc_map,
     hephaestus::Coefficients &coefficients, hephaestus::Sources &sources,
     hephaestus::InputParameters &solver_options)
-    : EquationSystemOperator(pmesh, fespaces, gridfunctions, bc_map,
-                             coefficients, sources, solver_options),
+    : ProblemOperator(pmesh, fespaces, gridfunctions, bc_map, coefficients,
+                      sources, solver_options),
       h_curl_var_complex_name(
           solver_options.GetParam<std::string>("HCurlVarComplexName")),
       h_curl_var_real_name(
@@ -24,14 +24,14 @@ void ComplexMaxwellOperator::SetGridFunctions() {
   state_var_names.push_back(h_curl_var_real_name);
   state_var_names.push_back(h_curl_var_imag_name);
 
-  EquationSystemOperator::SetGridFunctions();
+  ProblemOperator::SetGridFunctions();
 
   u_ = new mfem::ParComplexGridFunction(local_test_vars.at(0)->ParFESpace());
   *u_ = std::complex(0.0, 0.0);
 };
 
 void ComplexMaxwellOperator::Init(mfem::Vector &X) {
-  EquationSystemOperator::Init(X);
+  ProblemOperator::Init(X);
 
   stiffCoef_ = _coefficients.scalars.Get(stiffness_coef_name);
   massCoef_ = _coefficients.scalars.Get(mass_coef_name);

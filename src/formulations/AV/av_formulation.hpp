@@ -45,7 +45,7 @@ public:
   mfem::ConstantCoefficient negCoef;
 };
 
-class AVOperator : public TimeDomainEquationSystemOperator {
+class AVOperator : public TimeDomainProblemOperator {
 public:
   AVOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
              hephaestus::GridFunctions &gridfunctions,

@@ -164,11 +164,11 @@ DualOperator::DualOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
                            hephaestus::Coefficients &coefficients,
                            hephaestus::Sources &sources,
                            hephaestus::InputParameters &solver_options)
-    : TimeDomainEquationSystemOperator(pmesh, fespaces, gridfunctions, bc_map,
-                                       coefficients, sources, solver_options) {}
+    : TimeDomainProblemOperator(pmesh, fespaces, gridfunctions, bc_map,
+                                coefficients, sources, solver_options) {}
 
 void DualOperator::Init(mfem::Vector &X) {
-  TimeDomainEquationSystemOperator::Init(X);
+  TimeDomainProblemOperator::Init(X);
   hephaestus::WeakCurlEquationSystem *eqs =
       dynamic_cast<hephaestus::WeakCurlEquationSystem *>(_equation_system);
   _h_curl_var_name = eqs->_h_curl_var_name;
@@ -216,7 +216,7 @@ void DualOperator::ImplicitSolve(const double dt, const mfem::Vector &X,
 }
 
 void DualOperator::SetGridFunctions() {
-  TimeDomainEquationSystemOperator::SetGridFunctions();
+  TimeDomainProblemOperator::SetGridFunctions();
   // Blocks for solution vector are smaller than the operator size
   // for DualOperator, as curl is stored separately.
   // Block operator only has the HCurl TrueVSize;
