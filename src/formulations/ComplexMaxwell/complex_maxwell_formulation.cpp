@@ -116,7 +116,7 @@ void ComplexMaxwellFormulation::ConstructOperator() {
   solver_options.SetParam("StiffnessCoefName", _alpha_coef_name);
   solver_options.SetParam("MassCoefName", _mass_coef_name);
   solver_options.SetParam("LossCoefName", _loss_coef_name);
-  this->problem->eq_sys_operator =
+  this->problem->ss_operator =
       std::make_unique<hephaestus::ComplexMaxwellOperator>(
           *(this->problem->pmesh), this->problem->fespaces,
           this->problem->gridfunctions, this->problem->bc_map,

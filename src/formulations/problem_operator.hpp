@@ -30,12 +30,6 @@ public:
   // Vector of names of state gridfunctions used in formulation, ordered by
   // appearance in block vector during solve.
   std::vector<std::string> state_var_names;
-  // Vector of names of recognised auxiliary gridfunctions that can be
-  // calculated from formulation,
-  std::vector<std::string> aux_var_names;
-  // Vector of names of active auxiliary gridfunctions that are being calculated
-  // in formulation,
-  std::vector<std::string> active_aux_var_names;
 
   std::vector<mfem::ParGridFunction *> local_test_vars;
 

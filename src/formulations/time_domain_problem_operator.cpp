@@ -42,14 +42,6 @@ void TimeDomainProblemOperator::SetGridFunctions() {
   this->width = true_offsets[local_test_vars.size()];
   trueX.Update(block_trueOffsets);
   trueRhs.Update(block_trueOffsets);
-
-  // Populate vector of active auxiliary gridfunctions
-  active_aux_var_names.resize(0);
-  for (auto &aux_var_name : aux_var_names) {
-    if (_gridfunctions.Has(aux_var_name)) {
-      active_aux_var_names.push_back(aux_var_name);
-    }
-  }
 };
 
 void TimeDomainProblemOperator::Init(mfem::Vector &X) {

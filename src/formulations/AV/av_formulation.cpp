@@ -191,10 +191,6 @@ AVOperator::AVOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
   // Initialize MPI gridfunctions
   MPI_Comm_size(pmesh.GetComm(), &num_procs_);
   MPI_Comm_rank(pmesh.GetComm(), &myid_);
-
-  aux_var_names.resize(2);
-  aux_var_names.at(0) = "electric_field";
-  aux_var_names.at(1) = "magnetic_flux_density";
 }
 
 /*

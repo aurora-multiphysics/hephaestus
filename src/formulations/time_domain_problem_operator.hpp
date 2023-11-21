@@ -40,12 +40,6 @@ public:
   // Vector of names of state gridfunctions used in formulation, ordered by
   // appearance in block vector during solve.
   std::vector<std::string> state_var_names;
-  // Vector of names of recognised auxiliary gridfunctions that can be
-  // calculated from formulation,
-  std::vector<std::string> aux_var_names;
-  // Vector of names of active auxiliary gridfunctions that are being calculated
-  // in formulation,
-  std::vector<std::string> active_aux_var_names;
 
   std::vector<mfem::ParGridFunction *> local_trial_vars, local_test_vars;
 
@@ -60,6 +54,10 @@ public:
   hephaestus::Sources &_sources;
   hephaestus::Coefficients &_coefficients;
   hephaestus::InputParameters &_solver_options;
+
+  mutable mfem::Solver *jacobian_solver = NULL;
+  mutable mfem::NewtonSolver *newton_solver = NULL;
+  mfem::OperatorHandle equation_system;
 
   mutable hephaestus::DefaultGMRESSolver *solver = NULL;
   mutable hephaestus::DefaultHCurlPCGSolver *a1_solver = NULL;

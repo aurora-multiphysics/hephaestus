@@ -39,12 +39,11 @@ void StaticsFormulation::ConstructOperator() {
       this->GetProblem()->solver_options;
   solver_options.SetParam("HCurlVarName", _h_curl_var_name);
   solver_options.SetParam("StiffnessCoefName", _alpha_coef_name);
-  this->problem->eq_sys_operator =
-      std::make_unique<hephaestus::StaticsOperator>(
-          *(this->problem->pmesh), this->problem->fespaces,
-          this->problem->gridfunctions, this->problem->bc_map,
-          this->problem->coefficients, this->problem->sources,
-          this->problem->solver_options);
+  this->problem->ss_operator = std::make_unique<hephaestus::StaticsOperator>(
+      *(this->problem->pmesh), this->problem->fespaces,
+      this->problem->gridfunctions, this->problem->bc_map,
+      this->problem->coefficients, this->problem->sources,
+      this->problem->solver_options);
   this->problem->GetOperator()->SetGridFunctions();
 };
 
