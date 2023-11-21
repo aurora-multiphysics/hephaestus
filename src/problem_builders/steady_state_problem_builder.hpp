@@ -52,7 +52,7 @@ public:
 
   virtual void ConstructState() override;
 
-  virtual void ConstructSolver() override{};
+  virtual void ConstructTimestepper() override{};
 };
 
 } // namespace hephaestus

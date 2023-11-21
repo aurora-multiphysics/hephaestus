@@ -80,7 +80,7 @@ public:
   virtual void ConstructEquationSystem() = 0;
   virtual void ConstructOperator() = 0;
   virtual void ConstructState() = 0;
-  virtual void ConstructSolver() = 0;
+  virtual void ConstructTimestepper() = 0;
 
   void InitializeAuxSolvers();
   void InitializeOutputs();
@@ -127,7 +127,7 @@ public:
     this->problem_builder->InitializeKernels();
     this->problem_builder->ConstructOperator();
     this->problem_builder->ConstructState();
-    this->problem_builder->ConstructSolver();
+    this->problem_builder->ConstructTimestepper();
     this->problem_builder->InitializeAuxSolvers();
     this->problem_builder->InitializeOutputs();
   }

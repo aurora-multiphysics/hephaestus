@@ -67,7 +67,7 @@ void TimeDomainProblemBuilder::ConstructState() {
   this->problem->td_operator->SetTime(0.0);
 }
 
-void TimeDomainProblemBuilder::ConstructSolver() {
+void TimeDomainProblemBuilder::ConstructTimestepper() {
   this->problem->ode_solver = new mfem::BackwardEulerSolver;
   this->problem->ode_solver->Init(*(this->problem->td_operator));
 }
