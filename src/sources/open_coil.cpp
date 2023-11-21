@@ -106,6 +106,16 @@ void inheritBdrAttributes(const mfem::ParMesh *parent_mesh,
   child_mesh->SetAttributes();
 }
 
+void attrToMarker(const mfem::Array<int> attr_list,
+                  mfem::Array<int> &marker_list, int max_attr) {
+
+  marker_list.SetSize(max_attr);
+  marker_list = 0;
+
+  for (auto a : attr_list)
+    marker_list[a - 1] = 1;
+}
+
 void cleanDivergence(mfem::ParGridFunction &Vec_GF, int printlevel = 0) {
 
   hephaestus::InputParameters pars;
@@ -155,7 +165,7 @@ OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters &params,
   default_pars.SetParam("PrintLevel", -1);
 
   solver_options_ = params.GetOptionalParam<hephaestus::InputParameters>(
-        "SolverOptions", default_pars);
+      "SolverOptions", default_pars);
 
   ref_face_ = elec_attrs_.first;
 }
@@ -236,7 +246,8 @@ void OpenCoilSolver::Apply(mfem::ParLinearForm *lf) {
 
   if (perform_helmholtz_projection) {
     V_parent_ = new mfem::ParGridFunction(new mfem::ParFiniteElementSpace(
-        mesh_parent_, new mfem::H1_FECollection(order_h1_, mesh_parent_->Dimension())));
+        mesh_parent_,
+        new mfem::H1_FECollection(order_h1_, mesh_parent_->Dimension())));
     hephaestus::GridFunctions gfs_parent;
     hephaestus::BCMap bcs_parent;
     gfs_parent.Register("J_parent", J_parent_, false);
@@ -250,7 +261,7 @@ void OpenCoilSolver::Apply(mfem::ParLinearForm *lf) {
                         new hephaestus::ScalarDirichletBC(
                             std::string("V_parent"), low_terminal_, &low_src_),
                         true);
-  
+
     cleanDivergence(gfs_parent, bcs_parent, "J_parent", "V_parent");
   }
 
@@ -351,11 +362,15 @@ void OpenCoilSolver::SPSCurrent() {
 }
 
 void OpenCoilSolver::buildM1() {
+  
+  if (m1_ == nullptr) {
 
-  if (m1_ == nullptr){
     m1_ = new mfem::ParBilinearForm(J_parent_->ParFESpace());
+    hephaestus::attrToMarker(coil_domains_, coil_markers_,
+                             mesh_parent_->attributes.Max());
     m1_->AddDomainIntegrator(
-        new mfem::VectorFEMassIntegrator(new mfem::ConstantCoefficient(1.0)));
+        new mfem::VectorFEMassIntegrator(new mfem::ConstantCoefficient(1.0)),
+        coil_markers_);
     m1_->Assemble();
   }
 }

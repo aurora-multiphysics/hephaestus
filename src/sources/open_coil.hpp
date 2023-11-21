@@ -21,6 +21,8 @@ void cleanDivergence(const hephaestus::GridFunctions &gfs,
                      const hephaestus::BCMap &bcs, const std::string vec_gf_name,
                      const std::string scalar_gf_name, int printlevel);
 
+void attrToMarker(const mfem::Array<int> attr_list, mfem::Array<int> &marker_list, int max_attr);
+
 class OpenCoilSolver : public hephaestus::Source {
 
 public:
@@ -69,6 +71,7 @@ private:
   bool perform_helmholtz_projection;
   std::pair<int, int> elec_attrs_;
   mfem::Array<int> coil_domains_;
+  mfem::Array<int> coil_markers_;
   mfem::ConstantCoefficient coef1_;
   mfem::Coefficient *Itotal_;
   hephaestus::InputParameters solver_options_;

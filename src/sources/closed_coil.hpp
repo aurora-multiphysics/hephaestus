@@ -66,6 +66,7 @@ private:
   int new_domain_attr_;
   std::pair<int, int> elec_attrs_;
   mfem::Array<int> coil_domains_;
+  mfem::Array<int> coil_markers_;
   mfem::Array<int> transition_domain_;
   mfem::Coefficient *Itotal_;
   std::vector<int> old_dom_attrs;
@@ -88,7 +89,7 @@ private:
   mfem::ParGridFunction *J_coil_;
   mfem::ParGridFunction *Jt_coil_;
 
-  // Mass Matrix
+  // Mass Matrix and linear forms
   mfem::ParBilinearForm *m1_;
 };
 

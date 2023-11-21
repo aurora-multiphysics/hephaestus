@@ -49,6 +49,8 @@ ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters &params,
 
 ClosedCoilSolver::~ClosedCoilSolver() {
 
+  restoreAttributes();
+
   delete mesh_coil_;
   delete HCurlFESpace_coil_;
   delete H1FESpace_coil_;
@@ -99,7 +101,6 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
   solveCoil();
   buildM1();
   normaliseCurrent();
-  restoreAttributes();
 }
 
 void ClosedCoilSolver::Apply(mfem::ParLinearForm *lf) {
@@ -114,9 +115,9 @@ void ClosedCoilSolver::Apply(mfem::ParLinearForm *lf) {
   double I = Itotal_->Eval(*Tr, ip);
   *J_coil_ *= I;
   mesh_coil_->Transfer(*J_coil_, *J_parent_);
-  hephaestus::GridFunctions gridfunctions;
-  gridfunctions.Register("Vector_GF", J_parent_, false);
-  cleanDivergence(*J_parent_,0);
+  //hephaestus::GridFunctions gridfunctions;
+  //gridfunctions.Register("Vector_GF", J_parent_, false);
+  //cleanDivergence(*J_parent_,0);
   *J_coil_ /= I;
 
   m1_->Update();
@@ -307,7 +308,7 @@ void ClosedCoilSolver::solveTransition() {
                                       elec_attrs_);
 
   opencoil.Init(gridfunctions, fespaces, bc_maps, coefs);
-  mfem::ParLinearForm dummy(HCurlFESpace_coil_);
+  mfem::ParLinearForm dummy(HCurlFESpace_parent_);
   opencoil.Apply(&dummy);
 
   // The transition region result goes
@@ -356,16 +357,20 @@ void ClosedCoilSolver::solveCoil() {
 
   grad.Mult(auxV_coil, *J_coil_);
   J_coil_->Add(-1.0, *Jt_coil_);
+  cleanDivergence(*J_coil_,0);
 }
 
 void ClosedCoilSolver::buildM1() {
 
-  if (m1_ == nullptr)
-    m1_ = new mfem::ParBilinearForm(HCurlFESpace_parent_);
+  if (m1_ == nullptr) {
 
-  m1_->AddDomainIntegrator(
-      new mfem::VectorFEMassIntegrator(new mfem::ConstantCoefficient(1.0)));
-  m1_->Assemble();
+    m1_ = new mfem::ParBilinearForm(HCurlFESpace_parent_);
+    hephaestus::attrToMarker(coil_domains_, coil_markers_, mesh_parent_->attributes.Max());
+    m1_->AddDomainIntegrator(
+        new mfem::VectorFEMassIntegrator(new mfem::ConstantCoefficient(1.0)), coil_markers_);
+    m1_->Assemble();
+  }
+  
 }
 
 void ClosedCoilSolver::normaliseCurrent() {
