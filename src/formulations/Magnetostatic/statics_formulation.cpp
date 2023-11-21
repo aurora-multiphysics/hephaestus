@@ -84,7 +84,7 @@ StaticsOperator::StaticsOperator(mfem::ParMesh &pmesh,
           solver_options.GetParam<std::string>("StiffnessCoefName")) {}
 
 void StaticsOperator::SetGridFunctions() {
-  state_var_names.push_back(h_curl_var_name);
+  trial_var_names.push_back(h_curl_var_name);
   ProblemOperator::SetGridFunctions();
 };
 
@@ -104,7 +104,7 @@ Fully discretised equations
 (α∇×u, ∇×u') - (s0, u') - <(α∇×u) × n, u'> = 0
 */
 void StaticsOperator::Solve(mfem::Vector &X) {
-  mfem::ParGridFunction &a_(*local_test_vars.at(0));
+  mfem::ParGridFunction &a_(*trial_variables.at(0));
   a_ = 0.0;
   mfem::ParLinearForm b1_(a_.ParFESpace());
   b1_ = 0.0;

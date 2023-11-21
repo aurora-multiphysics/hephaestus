@@ -139,23 +139,23 @@ void AVEquationSystem::Init(hephaestus::GridFunctions &gridfunctions,
 }
 
 void AVEquationSystem::addKernels() {
-  addVariableNameIfMissing(a_name);
+  addTrialVariableNameIfMissing(a_name);
   std::string da_dt_name = GetTimeDerivativeName(a_name);
-  addVariableNameIfMissing(v_name);
+  addTrialVariableNameIfMissing(v_name);
   std::string dv_dt_name = GetTimeDerivativeName(v_name);
 
-  // (α∇×A_{n}, ∇×A')
+  // (α∇×A_{n}, ∇×dA'/dt)
   hephaestus::InputParameters weakCurlCurlParams;
   weakCurlCurlParams.SetParam("CoupledVariableName", a_name);
   weakCurlCurlParams.SetParam("CoefficientName", alpha_coef_name);
   addKernel(da_dt_name, new hephaestus::WeakCurlCurlKernel(weakCurlCurlParams));
 
-  // (αdt∇×dA/dt_{n+1}, ∇×A')
+  // (αdt∇×dA/dt_{n+1}, ∇×dA'/dt)
   hephaestus::InputParameters curlCurlParams;
   curlCurlParams.SetParam("CoefficientName", dtalpha_coef_name);
   addKernel(da_dt_name, new hephaestus::CurlCurlKernel(curlCurlParams));
 
-  // (βdA/dt_{n+1}, A')
+  // (βdA/dt_{n+1}, dA'/dt)
   hephaestus::InputParameters vectorFEMassParams;
   vectorFEMassParams.SetParam("CoefficientName", beta_coef_name);
   addKernel(da_dt_name, new hephaestus::VectorFEMassKernel(vectorFEMassParams));
@@ -212,12 +212,13 @@ u_{n+1} = u_{n} + dt du/dt_{n+1}
 void AVOperator::ImplicitSolve(const double dt, const mfem::Vector &X,
                                mfem::Vector &dX_dt) {
   dX_dt = 0.0;
-  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
-    local_test_vars.at(ind)->MakeRef(local_test_vars.at(ind)->ParFESpace(),
+  for (unsigned int ind = 0; ind < trial_variables.size(); ++ind) {
+    trial_variables.at(ind)->MakeRef(trial_variables.at(ind)->ParFESpace(),
                                      const_cast<mfem::Vector &>(X),
                                      true_offsets[ind]);
-    local_trial_vars.at(ind)->MakeRef(local_trial_vars.at(ind)->ParFESpace(),
-                                      dX_dt, true_offsets[ind]);
+    trial_variable_time_derivatives.at(ind)->MakeRef(
+        trial_variable_time_derivatives.at(ind)->ParFESpace(), dX_dt,
+        true_offsets[ind]);
   }
   _coefficients.SetTime(this->GetTime());
   _equation_system->setTimeStep(dt);

@@ -29,9 +29,8 @@ public:
   mfem::Array<int> true_offsets, block_trueOffsets;
   // Vector of names of state gridfunctions used in formulation, ordered by
   // appearance in block vector during solve.
-  std::vector<std::string> state_var_names;
-
-  std::vector<mfem::ParGridFunction *> local_test_vars;
+  std::vector<std::string> trial_var_names;
+  std::vector<mfem::ParGridFunction *> trial_variables;
 
   int myid_;
   int num_procs_;

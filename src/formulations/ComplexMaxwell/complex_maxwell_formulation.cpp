@@ -21,12 +21,12 @@ ComplexMaxwellOperator::ComplexMaxwellOperator(
       loss_coef_name(solver_options.GetParam<std::string>("LossCoefName")) {}
 
 void ComplexMaxwellOperator::SetGridFunctions() {
-  state_var_names.push_back(h_curl_var_real_name);
-  state_var_names.push_back(h_curl_var_imag_name);
+  trial_var_names.push_back(h_curl_var_real_name);
+  trial_var_names.push_back(h_curl_var_imag_name);
 
   ProblemOperator::SetGridFunctions();
 
-  u_ = new mfem::ParComplexGridFunction(local_test_vars.at(0)->ParFESpace());
+  u_ = new mfem::ParComplexGridFunction(trial_variables.at(0)->ParFESpace());
   *u_ = std::complex(0.0, 0.0);
 };
 
@@ -88,8 +88,8 @@ void ComplexMaxwellOperator::Solve(mfem::Vector &X) {
 
   a1_.RecoverFEMSolution(U, b1_, *u_);
 
-  *_gridfunctions.Get(state_var_names.at(0)) = u_->real();
-  *_gridfunctions.Get(state_var_names.at(1)) = u_->imag();
+  *_gridfunctions.Get(trial_var_names.at(0)) = u_->real();
+  *_gridfunctions.Get(trial_var_names.at(1)) = u_->imag();
 }
 
 ComplexMaxwellFormulation::ComplexMaxwellFormulation(

@@ -106,7 +106,7 @@ void CurlCurlEquationSystem::Init(hephaestus::GridFunctions &gridfunctions,
 }
 
 void CurlCurlEquationSystem::addKernels() {
-  addVariableNameIfMissing(h_curl_var_name);
+  addTrialVariableNameIfMissing(h_curl_var_name);
   std::string dh_curl_var_dt = GetTimeDerivativeName(h_curl_var_name);
 
   // (α∇×u_{n}, ∇×u')
@@ -167,12 +167,13 @@ u_{n+1} = u_{n} + dt du/dt_{n+1}
 void HCurlOperator::ImplicitSolve(const double dt, const mfem::Vector &X,
                                   mfem::Vector &dX_dt) {
   dX_dt = 0.0;
-  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
-    local_test_vars.at(ind)->MakeRef(local_test_vars.at(ind)->ParFESpace(),
+  for (unsigned int ind = 0; ind < trial_variables.size(); ++ind) {
+    trial_variables.at(ind)->MakeRef(trial_variables.at(ind)->ParFESpace(),
                                      const_cast<mfem::Vector &>(X),
                                      true_offsets[ind]);
-    local_trial_vars.at(ind)->MakeRef(local_trial_vars.at(ind)->ParFESpace(),
-                                      dX_dt, true_offsets[ind]);
+    trial_variable_time_derivatives.at(ind)->MakeRef(
+        trial_variable_time_derivatives.at(ind)->ParFESpace(), dX_dt,
+        true_offsets[ind]);
   }
   _coefficients.SetTime(this->GetTime());
   _equation_system->setTimeStep(dt);

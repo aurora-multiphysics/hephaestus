@@ -55,7 +55,8 @@ public:
 // Specifies output interfaces of a time-domain EM formulation.
 class ComplexMaxwellFormulation
     : public hephaestus::FrequencyDomainEMFormulation {
-  // std::vector<mfem::ParGridFunction *> local_trial_vars, local_test_vars;
+  // std::vector<mfem::ParGridFunction *> trial_variable_time_derivatives,
+  // trial_variables;
 protected:
   const std::string _alpha_coef_name;
   const std::string _beta_coef_name;

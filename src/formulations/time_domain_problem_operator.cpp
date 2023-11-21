@@ -16,42 +16,43 @@ GetTimeDerivativeNames(std::vector<std::string> gridfunction_names) {
 }
 
 void TimeDomainProblemOperator::SetGridFunctions() {
-  state_var_names = _equation_system->var_names;
-  local_test_vars = populateVectorFromNamedFieldsMap<mfem::ParGridFunction>(
-      _gridfunctions, _equation_system->var_names);
-  local_trial_vars = populateVectorFromNamedFieldsMap<mfem::ParGridFunction>(
-      _gridfunctions, _equation_system->var_time_derivative_names);
+  trial_var_names = _equation_system->trial_var_names;
+  trial_variables = populateVectorFromNamedFieldsMap<mfem::ParGridFunction>(
+      _gridfunctions, _equation_system->trial_var_names);
+  trial_variable_time_derivatives =
+      populateVectorFromNamedFieldsMap<mfem::ParGridFunction>(
+          _gridfunctions, _equation_system->trial_var_time_derivative_names);
 
   // Set operator size and block structure
-  block_trueOffsets.SetSize(local_test_vars.size() + 1);
+  block_trueOffsets.SetSize(trial_variables.size() + 1);
   block_trueOffsets[0] = 0;
-  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
+  for (unsigned int ind = 0; ind < trial_variables.size(); ++ind) {
     block_trueOffsets[ind + 1] =
-        local_test_vars.at(ind)->ParFESpace()->TrueVSize();
+        trial_variables.at(ind)->ParFESpace()->TrueVSize();
   }
   block_trueOffsets.PartialSum();
 
-  true_offsets.SetSize(local_test_vars.size() + 1);
+  true_offsets.SetSize(trial_variables.size() + 1);
   true_offsets[0] = 0;
-  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
-    true_offsets[ind + 1] = local_test_vars.at(ind)->ParFESpace()->GetVSize();
+  for (unsigned int ind = 0; ind < trial_variables.size(); ++ind) {
+    true_offsets[ind + 1] = trial_variables.at(ind)->ParFESpace()->GetVSize();
   }
   true_offsets.PartialSum();
 
-  this->height = true_offsets[local_test_vars.size()];
-  this->width = true_offsets[local_test_vars.size()];
+  this->height = true_offsets[trial_variables.size()];
+  this->width = true_offsets[trial_variables.size()];
   trueX.Update(block_trueOffsets);
   trueRhs.Update(block_trueOffsets);
 };
 
 void TimeDomainProblemOperator::Init(mfem::Vector &X) {
   // Define material property coefficients
-  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
-    local_test_vars.at(ind)->MakeRef(local_test_vars.at(ind)->ParFESpace(),
+  for (unsigned int ind = 0; ind < trial_variables.size(); ++ind) {
+    trial_variables.at(ind)->MakeRef(trial_variables.at(ind)->ParFESpace(),
                                      const_cast<mfem::Vector &>(X),
                                      true_offsets[ind]);
-    *(local_test_vars.at(ind)) = 0.0;
-    *(local_trial_vars.at(ind)) = 0.0;
+    *(trial_variables.at(ind)) = 0.0;
+    *(trial_variable_time_derivatives.at(ind)) = 0.0;
   }
 
   _equation_system->buildEquationSystem(_bc_map, _sources);
@@ -61,12 +62,13 @@ void TimeDomainProblemOperator::ImplicitSolve(const double dt,
                                               const mfem::Vector &X,
                                               mfem::Vector &dX_dt) {
   dX_dt = 0.0;
-  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
-    local_test_vars.at(ind)->MakeRef(local_test_vars.at(ind)->ParFESpace(),
+  for (unsigned int ind = 0; ind < trial_variables.size(); ++ind) {
+    trial_variables.at(ind)->MakeRef(trial_variables.at(ind)->ParFESpace(),
                                      const_cast<mfem::Vector &>(X),
                                      true_offsets[ind]);
-    local_trial_vars.at(ind)->MakeRef(local_trial_vars.at(ind)->ParFESpace(),
-                                      dX_dt, true_offsets[ind]);
+    trial_variable_time_derivatives.at(ind)->MakeRef(
+        trial_variable_time_derivatives.at(ind)->ParFESpace(), dX_dt,
+        true_offsets[ind]);
   }
   _coefficients.SetTime(this->GetTime());
   _equation_system->setTimeStep(dt);

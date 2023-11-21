@@ -135,8 +135,8 @@ void WeakCurlEquationSystem::Init(hephaestus::GridFunctions &gridfunctions,
 }
 
 void WeakCurlEquationSystem::addKernels() {
-  addVariableNameIfMissing(_h_curl_var_name);
-  addVariableNameIfMissing(_h_div_var_name);
+  addTrialVariableNameIfMissing(_h_curl_var_name);
+  addTrialVariableNameIfMissing(_h_div_var_name);
   std::string dh_curl_var_dt = GetTimeDerivativeName(_h_curl_var_name);
 
   // (αv_{n}, ∇×u')
@@ -185,12 +185,13 @@ void DualOperator::Init(mfem::Vector &X) {
 void DualOperator::ImplicitSolve(const double dt, const mfem::Vector &X,
                                  mfem::Vector &dX_dt) {
   dX_dt = 0.0;
-  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
-    local_test_vars.at(ind)->MakeRef(local_test_vars.at(ind)->ParFESpace(),
+  for (unsigned int ind = 0; ind < trial_variables.size(); ++ind) {
+    trial_variables.at(ind)->MakeRef(trial_variables.at(ind)->ParFESpace(),
                                      const_cast<mfem::Vector &>(X),
                                      true_offsets[ind]);
-    local_trial_vars.at(ind)->MakeRef(local_trial_vars.at(ind)->ParFESpace(),
-                                      dX_dt, true_offsets[ind]);
+    trial_variable_time_derivatives.at(ind)->MakeRef(
+        trial_variable_time_derivatives.at(ind)->ParFESpace(), dX_dt,
+        true_offsets[ind]);
   }
   _coefficients.SetTime(this->GetTime());
   _equation_system->setTimeStep(dt);
@@ -220,11 +221,11 @@ void DualOperator::SetGridFunctions() {
   // Blocks for solution vector are smaller than the operator size
   // for DualOperator, as curl is stored separately.
   // Block operator only has the HCurl TrueVSize;
-  block_trueOffsets.SetSize(local_test_vars.size());
+  block_trueOffsets.SetSize(trial_variables.size());
   block_trueOffsets[0] = 0;
-  for (unsigned int ind = 0; ind < local_test_vars.size() - 1; ++ind) {
+  for (unsigned int ind = 0; ind < trial_variables.size() - 1; ++ind) {
     block_trueOffsets[ind + 1] =
-        local_test_vars.at(ind)->ParFESpace()->TrueVSize();
+        trial_variables.at(ind)->ParFESpace()->TrueVSize();
   }
   block_trueOffsets.PartialSum();
 

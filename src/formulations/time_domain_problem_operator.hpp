@@ -37,11 +37,13 @@ public:
   SetEquationSystem(hephaestus::TimeDependentEquationSystem *equation_system);
 
   mfem::Array<int> true_offsets, block_trueOffsets;
+
   // Vector of names of state gridfunctions used in formulation, ordered by
   // appearance in block vector during solve.
-  std::vector<std::string> state_var_names;
+  std::vector<std::string> trial_var_names;
 
-  std::vector<mfem::ParGridFunction *> local_trial_vars, local_test_vars;
+  std::vector<mfem::ParGridFunction *> trial_variable_time_derivatives,
+      trial_variables;
 
   hephaestus::TimeDependentEquationSystem *_equation_system;
 
@@ -64,6 +66,9 @@ public:
 
   mfem::OperatorHandle blockA;
   mfem::BlockVector trueX, trueRhs;
+  // mutable mfem::Solver *_jacobian_solver = NULL;
+  // mutable mfem::NewtonSolver *_newton_solver = NULL;
+  // mfem::OperatorHandle _equation_system_operator;
 };
 
 } // namespace hephaestus

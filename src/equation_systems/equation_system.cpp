@@ -3,8 +3,8 @@
 namespace hephaestus {
 
 EquationSystem::EquationSystem(const hephaestus::InputParameters &params)
-    : var_names(), test_var_names(), test_pfespaces(), blfs(), lfs(), nlfs(),
-      mblfs(), ess_tdof_lists(), xs() {}
+    : trial_var_names(), test_var_names(), test_pfespaces(), blfs(), lfs(),
+      nlfs(), mblfs(), ess_tdof_lists(), xs() {}
 
 EquationSystem::~EquationSystem() {
   hBlocks.DeleteAll();
@@ -22,10 +22,10 @@ EquationSystem::~EquationSystem() {
   lf_kernels_map.DeleteData(true);
 }
 
-void EquationSystem::addVariableNameIfMissing(std::string var_name) {
-  if (std::find(var_names.begin(), var_names.end(), var_name) ==
-      var_names.end()) {
-    var_names.push_back(var_name);
+void EquationSystem::addTrialVariableNameIfMissing(std::string trial_var_name) {
+  if (std::find(trial_var_names.begin(), trial_var_names.end(),
+                trial_var_name) == trial_var_names.end()) {
+    trial_var_names.push_back(trial_var_name);
   }
 }
 
@@ -335,16 +335,17 @@ void EquationSystem::buildEquationSystem(hephaestus::BCMap &bc_map,
 
 TimeDependentEquationSystem::TimeDependentEquationSystem(
     const hephaestus::InputParameters &params)
-    : EquationSystem(params), var_time_derivative_names(), dtCoef(1.0) {}
+    : EquationSystem(params), trial_var_time_derivative_names(), dtCoef(1.0) {}
 
-void TimeDependentEquationSystem::addVariableNameIfMissing(
-    std::string var_name) {
-  EquationSystem::addVariableNameIfMissing(var_name);
-  std::string var_time_derivative_name = GetTimeDerivativeName(var_name);
-  if (std::find(var_time_derivative_names.begin(),
-                var_time_derivative_names.end(),
-                var_time_derivative_name) == var_time_derivative_names.end()) {
-    var_time_derivative_names.push_back(var_time_derivative_name);
+void TimeDependentEquationSystem::addTrialVariableNameIfMissing(
+    std::string trial_var_name) {
+  EquationSystem::addTrialVariableNameIfMissing(trial_var_name);
+  std::string var_time_derivative_name = GetTimeDerivativeName(trial_var_name);
+  if (std::find(trial_var_time_derivative_names.begin(),
+                trial_var_time_derivative_names.end(),
+                var_time_derivative_name) ==
+      trial_var_time_derivative_names.end()) {
+    trial_var_time_derivative_names.push_back(var_time_derivative_name);
   }
 }
 

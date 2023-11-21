@@ -30,10 +30,14 @@ public:
 
   virtual ~EquationSystem();
 
-  // Names of all gridfunctions corresponding to gridfunctions. This may differ
-  // from test_var_names when test gridfunctions include time derivatives.
-  std::vector<std::string> var_names;
-  // Names of all test gridfunctions with kernels in this equation system.
+  // Test variables are associated with LinearForms,
+  // whereas trial variables are associated with gridfunctions.
+
+  // Names of all variables corresponding to gridfunctions. This may differ
+  // from test_var_names when time derivatives are present.
+  std::vector<std::string> trial_var_names;
+  // Names of all test variables corresponding to linear forms in this equation
+  // system.
   std::vector<std::string> test_var_names;
   std::vector<mfem::ParFiniteElementSpace *> test_pfespaces;
 
@@ -46,7 +50,7 @@ public:
 
   // add test variable to EquationSystem;
   virtual void addTestVariableNameIfMissing(std::string test_var_name);
-  virtual void addVariableNameIfMissing(std::string var_name);
+  virtual void addTrialVariableNameIfMissing(std::string trial_var_name);
 
   // Add kernels. EquationSystem takes ownership.
   void addKernel(std::string test_var_name,
@@ -113,13 +117,14 @@ public:
   static std::string GetTimeDerivativeName(std::string name) {
     return std::string("d") + name + std::string("_dt");
   }
-  virtual void addVariableNameIfMissing(std::string var_name) override;
+  virtual void
+  addTrialVariableNameIfMissing(std::string trial_var_name) override;
 
   virtual void setTimeStep(double dt);
   virtual void updateEquationSystem(hephaestus::BCMap &bc_map,
                                     hephaestus::Sources &sources);
   mfem::ConstantCoefficient dtCoef; // Coefficient for timestep scaling
-  std::vector<std::string> var_time_derivative_names;
+  std::vector<std::string> trial_var_time_derivative_names;
 };
 
 } // namespace hephaestus
