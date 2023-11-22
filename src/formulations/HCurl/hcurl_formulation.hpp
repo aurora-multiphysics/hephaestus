@@ -18,8 +18,6 @@ public:
 
   virtual void ConstructJacobianSolver() override;
 
-  virtual void ConstructOperator() override;
-
   virtual void RegisterGridFunctions() override;
 
   virtual void RegisterCoefficients() override;
@@ -42,17 +40,6 @@ public:
 
   std::string h_curl_var_name, alpha_coef_name, beta_coef_name,
       dtalpha_coef_name;
-};
-
-class HCurlOperator : public TimeDomainProblemOperator {
-public:
-  HCurlOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
-                hephaestus::GridFunctions &gridfunctions,
-                hephaestus::BCMap &bc_map,
-                hephaestus::Coefficients &coefficients,
-                hephaestus::Sources &sources, mfem::Solver &jacobian_solver);
-
-  ~HCurlOperator(){};
 };
 
 } // namespace hephaestus

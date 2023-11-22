@@ -51,17 +51,6 @@ void AVFormulation::ConstructEquationSystem() {
       std::make_unique<hephaestus::AVEquationSystem>(av_system_params);
 }
 
-void AVFormulation::ConstructOperator() {
-  this->problem->td_operator = std::make_unique<hephaestus::AVOperator>(
-      *(this->problem->pmesh), this->problem->fespaces,
-      this->problem->gridfunctions, this->problem->bc_map,
-      this->problem->coefficients, this->problem->sources,
-      *(this->problem->_jacobian_solver));
-  this->problem->td_operator->SetEquationSystem(
-      this->problem->td_equation_system.get());
-  this->problem->td_operator->SetGridFunctions();
-};
-
 void AVFormulation::RegisterGridFunctions() {
   int &myid = this->GetProblem()->myid_;
   hephaestus::GridFunctions &gridfunctions = this->GetProblem()->gridfunctions;
@@ -179,14 +168,5 @@ void AVEquationSystem::addKernels() {
             new hephaestus::VectorFEWeakDivergenceKernel(
                 vectorFEWeakDivergenceParams));
 }
-
-AVOperator::AVOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
-                       hephaestus::GridFunctions &gridfunctions,
-                       hephaestus::BCMap &bc_map,
-                       hephaestus::Coefficients &coefficients,
-                       hephaestus::Sources &sources,
-                       mfem::Solver &jacobian_solver)
-    : TimeDomainProblemOperator(pmesh, fespaces, gridfunctions, bc_map,
-                                coefficients, sources, jacobian_solver) {}
 
 } // namespace hephaestus

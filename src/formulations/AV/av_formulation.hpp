@@ -16,8 +16,6 @@ public:
 
   virtual void ConstructEquationSystem() override;
 
-  virtual void ConstructOperator() override;
-
   virtual void RegisterGridFunctions() override;
 
   virtual void RegisterCoefficients() override;
@@ -45,13 +43,4 @@ public:
   mfem::ConstantCoefficient negCoef;
 };
 
-class AVOperator : public TimeDomainProblemOperator {
-public:
-  AVOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
-             hephaestus::GridFunctions &gridfunctions,
-             hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients,
-             hephaestus::Sources &sources, mfem::Solver &jacobian_solver);
-
-  ~AVOperator(){};
-};
 } // namespace hephaestus

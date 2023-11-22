@@ -74,17 +74,6 @@ void HCurlFormulation::ConstructJacobianSolver() {
   this->problem->_jacobian_solver = solver;
 }
 
-void HCurlFormulation::ConstructOperator() {
-  this->problem->td_operator = std::make_unique<hephaestus::HCurlOperator>(
-      *(this->problem->pmesh), this->problem->fespaces,
-      this->problem->gridfunctions, this->problem->bc_map,
-      this->problem->coefficients, this->problem->sources,
-      *(this->problem->_jacobian_solver));
-  this->problem->td_operator->SetEquationSystem(
-      this->problem->td_equation_system.get());
-  this->problem->td_operator->SetGridFunctions();
-};
-
 void HCurlFormulation::RegisterGridFunctions() {
   int &myid = this->GetProblem()->myid_;
   hephaestus::GridFunctions &gridfunctions = this->GetProblem()->gridfunctions;
@@ -156,65 +145,5 @@ void HCurlFormulation::RegisterCoefficients() {
     MFEM_ABORT(_beta_coef_name + " coefficient not found.");
   }
 }
-
-HCurlOperator::HCurlOperator(mfem::ParMesh &pmesh,
-                             hephaestus::FESpaces &fespaces,
-                             hephaestus::GridFunctions &gridfunctions,
-                             hephaestus::BCMap &bc_map,
-                             hephaestus::Coefficients &coefficients,
-                             hephaestus::Sources &sources,
-                             mfem::Solver &jacobian_solver)
-    : TimeDomainProblemOperator(pmesh, fespaces, gridfunctions, bc_map,
-                                coefficients, sources, jacobian_solver) {}
-
-/*
-This is the main computational code that computes dX/dt implicitly
-where X is the state vector containing p, u and v.
-
-Unknowns
-s0_{n+1} ∈ H(div) source field, where s0 = -β∇p
-du/dt_{n+1} ∈ H(curl)
-p_{n+1} ∈ H1
-
-Fully discretised equations
--(s0_{n+1}, ∇ p') + <n.s0_{n+1}, p'> = 0
-(α∇×u_{n}, ∇×u') + (αdt∇×du/dt_{n+1}, ∇×u') + (βdu/dt_{n+1}, u')
-- (s0_{n+1}, u') - <(α∇×u_{n+1}) × n, u'> = 0
-using
-u_{n+1} = u_{n} + dt du/dt_{n+1}
-*/
-// void HCurlOperator::ImplicitSolve(const double dt, const mfem::Vector &X,
-//                                   mfem::Vector &dX_dt) {
-//   dX_dt = 0.0;
-//   for (unsigned int ind = 0; ind < trial_variables.size(); ++ind) {
-//     trial_variables.at(ind)->MakeRef(trial_variables.at(ind)->ParFESpace(),
-//                                      const_cast<mfem::Vector &>(X),
-//                                      true_offsets[ind]);
-//     trial_variable_time_derivatives.at(ind)->MakeRef(
-//         trial_variable_time_derivatives.at(ind)->ParFESpace(), dX_dt,
-//         true_offsets[ind]);
-//   }
-//   _coefficients.SetTime(this->GetTime());
-//   _equation_system->setTimeStep(dt);
-//   _equation_system->updateEquationSystem(_bc_map, _sources);
-
-//   _equation_system->FormLinearSystem(_equation_system_operator, trueX,
-//   trueRhs);
-
-//   if (_jacobian_solver != NULL) {
-//     delete _jacobian_solver;
-//   }
-//   _jacobian_solver = new hephaestus::DefaultHCurlPCGSolver(
-//       _solver_options, *_equation_system_operator.As<mfem::HypreParMatrix>(),
-//       _equation_system->test_pfespaces.at(0));
-//   _jacobian_solver->Mult(trueRhs, trueX);
-//   _equation_system->RecoverFEMSolution(trueX, _gridfunctions);
-// }
-
-// void HCurlOperator::buildJacobianSolver() {
-//   setJacobianSolver(new hephaestus::DefaultHCurlPCGSolver(
-//       _solver_options, *_equation_system_operator.As<mfem::HypreParMatrix>(),
-//       _equation_system->test_pfespaces.at(0)));
-// }
 
 } // namespace hephaestus
