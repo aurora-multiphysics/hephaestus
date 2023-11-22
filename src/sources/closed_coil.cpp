@@ -37,9 +37,9 @@ ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters &params,
       HCurlFESpace_parent_(nullptr), m1_(nullptr) {
 
   hephaestus::InputParameters default_pars;
-  default_pars.SetParam("Tolerance", double(1.0e-15));
+  default_pars.SetParam("Tolerance", double(1.0e-20));
   default_pars.SetParam("MaxIter", (unsigned int)500);
-  default_pars.SetParam("PrintLevel", 0);
+  default_pars.SetParam("PrintLevel", 1);
 
   solver_options_ = params.GetOptionalParam<hephaestus::InputParameters>(
       "SolverOptions", default_pars);
@@ -99,7 +99,7 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
   makeWedge();
   prepareCoilSubmesh();
   solveTransition();
-  solveCoil();
+  //solveCoil();
   buildM1();
   normaliseCurrent();
 }
@@ -256,7 +256,8 @@ void ClosedCoilSolver::makeWedge() {
   for (auto e : wedge_els)
     mesh_parent_->SetAttribute(e, new_domain_attr_);
 
-  transition_domain_.Append(new_domain_attr_);
+  //transition_domain_.Append(new_domain_attr_);
+  transition_domain_ = coil_domains_;
   coil_domains_.Append(new_domain_attr_);
 
   mesh_parent_->FinalizeTopology();
@@ -293,7 +294,6 @@ void ClosedCoilSolver::solveTransition() {
 
   hephaestus::GridFunctions gridfunctions;
   gridfunctions.Register("J_parent", J_parent_, false);
-  gridfunctions.Register("J_coil", J_coil_, false);
 
   hephaestus::InputParameters ocs_params;
   ocs_params.SetParam("SourceName", std::string("J_parent"));
@@ -315,6 +315,8 @@ void ClosedCoilSolver::solveTransition() {
   // However, MFEM has issues creating transfer maps
   // between several generations
   mesh_coil_->Transfer(*J_parent_, *Jt_coil_);
+  cleanDivergence(*Jt_coil_, solver_options_);
+  J_coil_->Add(1.0, *Jt_coil_);
 }
 
 void ClosedCoilSolver::solveCoil() {
