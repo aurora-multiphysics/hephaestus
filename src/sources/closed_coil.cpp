@@ -56,6 +56,7 @@ ClosedCoilSolver::~ClosedCoilSolver() {
   delete H1FESpace_coil_;
   delete J_coil_;
   delete Jt_coil_;
+  delete m1_;
 }
 
 void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
@@ -305,10 +306,8 @@ void ClosedCoilSolver::solveTransition() {
                                       elec_attrs_);
 
   opencoil.Init(gridfunctions, fespaces, bc_maps, coefs);
-  lf_full_ = new mfem::ParLinearForm(HCurlFESpace_parent_);
-  // mfem::ParLinearForm dummy(HCurlFESpace_coil_);
-  opencoil.Apply(lf_full_);
-  lf_full_->Assemble();
+  mfem::ParLinearForm lf_full(HCurlFESpace_parent_);
+  opencoil.Apply(&lf_full);
 
   // The transition region result goes
   // Child -> Grandparent -> Parent
