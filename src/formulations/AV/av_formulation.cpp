@@ -56,7 +56,7 @@ void AVFormulation::ConstructOperator() {
       *(this->problem->pmesh), this->problem->fespaces,
       this->problem->gridfunctions, this->problem->bc_map,
       this->problem->coefficients, this->problem->sources,
-      this->problem->solver_options);
+      *(this->problem->_jacobian_solver));
   this->problem->td_operator->SetEquationSystem(
       this->problem->td_equation_system.get());
   this->problem->td_operator->SetGridFunctions();
@@ -185,12 +185,8 @@ AVOperator::AVOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
                        hephaestus::BCMap &bc_map,
                        hephaestus::Coefficients &coefficients,
                        hephaestus::Sources &sources,
-                       hephaestus::InputParameters &solver_options)
+                       mfem::Solver &jacobian_solver)
     : TimeDomainProblemOperator(pmesh, fespaces, gridfunctions, bc_map,
-                                coefficients, sources, solver_options) {
-  // Initialize MPI gridfunctions
-  MPI_Comm_size(pmesh.GetComm(), &num_procs_);
-  MPI_Comm_rank(pmesh.GetComm(), &myid_);
-}
+                                coefficients, sources, jacobian_solver) {}
 
 } // namespace hephaestus

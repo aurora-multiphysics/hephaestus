@@ -3,6 +3,7 @@
 namespace hephaestus {
 void ProblemBuilder::SetMesh(std::shared_ptr<mfem::ParMesh> pmesh) {
   this->GetProblem()->pmesh = pmesh;
+  this->GetProblem()->comm = pmesh->GetComm();
   MPI_Comm_rank(pmesh->GetComm(), &(this->GetProblem()->myid_));
 }
 
@@ -33,6 +34,16 @@ void ProblemBuilder::SetSources(hephaestus::Sources &sources) {
 
 void ProblemBuilder::SetOutputs(hephaestus::Outputs &outputs) {
   this->GetProblem()->outputs = outputs;
+}
+
+void ProblemBuilder::SetJacobianPreconditioner(
+    std::shared_ptr<mfem::Solver> preconditioner) {
+  this->GetProblem()->_jacobian_preconditioner = preconditioner;
+}
+
+void ProblemBuilder::SetJacobianSolver(
+    std::shared_ptr<mfem::Solver> jacobian_solver) {
+  this->GetProblem()->_jacobian_solver = jacobian_solver;
 }
 
 void ProblemBuilder::SetSolverOptions(

@@ -24,9 +24,14 @@ public:
   mfem::ODESolver *ode_solver;
   mfem::BlockVector *F;
 
+  std::shared_ptr<mfem::Solver> _jacobian_preconditioner;
+  std::shared_ptr<mfem::Solver> _jacobian_solver;
+  mfem::NewtonSolver _nonlinear_solver;
+
   hephaestus::FECollections fecs;
   hephaestus::FESpaces fespaces;
   hephaestus::GridFunctions gridfunctions;
+  MPI_Comm comm;
   int myid_;
   int num_procs_;
 
@@ -51,6 +56,8 @@ public:
   void SetPostprocessors(hephaestus::AuxSolvers &postprocessors);
   void SetSources(hephaestus::Sources &sources);
   void SetOutputs(hephaestus::Outputs &outputs);
+  void SetJacobianPreconditioner(std::shared_ptr<mfem::Solver> preconditioner);
+  void SetJacobianSolver(std::shared_ptr<mfem::Solver> solver);
   void SetSolverOptions(hephaestus::InputParameters &solver_options);
   void SetCoefficients(hephaestus::Coefficients &coefficients);
 
@@ -79,6 +86,8 @@ public:
 
   virtual void InitializeKernels() = 0;
   virtual void ConstructEquationSystem() = 0;
+  virtual void ConstructJacobianPreconditioner() = 0;
+  virtual void ConstructJacobianSolver() = 0;
   virtual void ConstructOperator() = 0;
   virtual void ConstructState() = 0;
   virtual void ConstructTimestepper() = 0;
@@ -114,6 +123,8 @@ public:
     this->problem_builder->RegisterAuxSolvers();
     this->problem_builder->RegisterCoefficients();
     this->problem_builder->InitializeKernels();
+    this->problem_builder->ConstructJacobianPreconditioner();
+    this->problem_builder->ConstructJacobianSolver();
     this->problem_builder->ConstructOperator();
     this->problem_builder->ConstructState();
     this->problem_builder->InitializeAuxSolvers();
@@ -126,6 +137,8 @@ public:
     this->problem_builder->RegisterCoefficients();
     this->problem_builder->ConstructEquationSystem();
     this->problem_builder->InitializeKernels();
+    this->problem_builder->ConstructJacobianPreconditioner();
+    this->problem_builder->ConstructJacobianSolver();
     this->problem_builder->ConstructOperator();
     this->problem_builder->ConstructState();
     this->problem_builder->ConstructTimestepper();

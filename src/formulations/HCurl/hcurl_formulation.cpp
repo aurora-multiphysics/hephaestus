@@ -55,12 +55,31 @@ void HCurlFormulation::ConstructEquationSystem() {
       std::make_unique<hephaestus::CurlCurlEquationSystem>(weak_form_params);
 }
 
+void HCurlFormulation::ConstructJacobianPreconditioner() {
+  std::shared_ptr<mfem::HypreAMS> precond{std::make_shared<mfem::HypreAMS>(
+      this->problem->GetEquationSystem()->test_pfespaces.at(0))};
+  precond->SetSingularProblem();
+  precond->SetPrintLevel(-1);
+  this->problem->_jacobian_preconditioner = precond;
+}
+
+void HCurlFormulation::ConstructJacobianSolver() {
+  std::shared_ptr<mfem::HyprePCG> solver{
+      std::make_shared<mfem::HyprePCG>(this->problem->comm)};
+  solver->SetTol(1e-16);
+  solver->SetMaxIter(1000);
+  solver->SetPrintLevel(-1);
+  solver->SetPreconditioner(*std::dynamic_pointer_cast<mfem::HypreSolver>(
+      this->problem->_jacobian_preconditioner));
+  this->problem->_jacobian_solver = solver;
+}
+
 void HCurlFormulation::ConstructOperator() {
   this->problem->td_operator = std::make_unique<hephaestus::HCurlOperator>(
       *(this->problem->pmesh), this->problem->fespaces,
       this->problem->gridfunctions, this->problem->bc_map,
       this->problem->coefficients, this->problem->sources,
-      this->problem->solver_options);
+      *(this->problem->_jacobian_solver));
   this->problem->td_operator->SetEquationSystem(
       this->problem->td_equation_system.get());
   this->problem->td_operator->SetGridFunctions();
@@ -144,9 +163,9 @@ HCurlOperator::HCurlOperator(mfem::ParMesh &pmesh,
                              hephaestus::BCMap &bc_map,
                              hephaestus::Coefficients &coefficients,
                              hephaestus::Sources &sources,
-                             hephaestus::InputParameters &solver_options)
+                             mfem::Solver &jacobian_solver)
     : TimeDomainProblemOperator(pmesh, fespaces, gridfunctions, bc_map,
-                                coefficients, sources, solver_options) {}
+                                coefficients, sources, jacobian_solver) {}
 
 /*
 This is the main computational code that computes dX/dt implicitly
@@ -192,10 +211,10 @@ u_{n+1} = u_{n} + dt du/dt_{n+1}
 //   _equation_system->RecoverFEMSolution(trueX, _gridfunctions);
 // }
 
-void HCurlOperator::buildJacobianSolver() {
-  setJacobianSolver(new hephaestus::DefaultHCurlPCGSolver(
-      _solver_options, *_equation_system_operator.As<mfem::HypreParMatrix>(),
-      _equation_system->test_pfespaces.at(0)));
-}
+// void HCurlOperator::buildJacobianSolver() {
+//   setJacobianSolver(new hephaestus::DefaultHCurlPCGSolver(
+//       _solver_options, *_equation_system_operator.As<mfem::HypreParMatrix>(),
+//       _equation_system->test_pfespaces.at(0)));
+// }
 
 } // namespace hephaestus

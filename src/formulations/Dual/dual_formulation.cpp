@@ -62,12 +62,31 @@ void DualFormulation::ConstructEquationSystem() {
       std::make_unique<hephaestus::WeakCurlEquationSystem>(weak_form_params);
 }
 
+void DualFormulation::ConstructJacobianPreconditioner() {
+  std::shared_ptr<mfem::HypreAMS> precond{std::make_shared<mfem::HypreAMS>(
+      this->problem->GetEquationSystem()->test_pfespaces.at(0))};
+  precond->SetSingularProblem();
+  precond->SetPrintLevel(-1);
+  this->problem->_jacobian_preconditioner = precond;
+}
+
+void DualFormulation::ConstructJacobianSolver() {
+  std::shared_ptr<mfem::HyprePCG> solver{
+      std::make_shared<mfem::HyprePCG>(this->problem->comm)};
+  solver->SetTol(1e-16);
+  solver->SetMaxIter(1000);
+  solver->SetPrintLevel(-1);
+  solver->SetPreconditioner(*std::dynamic_pointer_cast<mfem::HypreSolver>(
+      this->problem->_jacobian_preconditioner));
+  this->problem->_jacobian_solver = solver;
+}
+
 void DualFormulation::ConstructOperator() {
   this->problem->td_operator = std::make_unique<hephaestus::DualOperator>(
       *(this->problem->pmesh), this->problem->fespaces,
       this->problem->gridfunctions, this->problem->bc_map,
       this->problem->coefficients, this->problem->sources,
-      this->problem->solver_options);
+      *(this->problem->_jacobian_solver));
   this->problem->td_operator->SetEquationSystem(
       this->problem->td_equation_system.get());
   this->problem->td_operator->SetGridFunctions();
@@ -163,9 +182,9 @@ DualOperator::DualOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
                            hephaestus::BCMap &bc_map,
                            hephaestus::Coefficients &coefficients,
                            hephaestus::Sources &sources,
-                           hephaestus::InputParameters &solver_options)
+                           mfem::Solver &jacobian_solver)
     : TimeDomainProblemOperator(pmesh, fespaces, gridfunctions, bc_map,
-                                coefficients, sources, solver_options) {}
+                                coefficients, sources, jacobian_solver) {}
 
 void DualOperator::Init(mfem::Vector &X) {
   TimeDomainProblemOperator::Init(X);
@@ -190,12 +209,6 @@ void DualOperator::ImplicitSolve(const double dt, const mfem::Vector &X,
   // dv/dt_{n+1} = -∇×u
   curl->Mult(*u_, *dv_);
   *dv_ *= -1.0;
-}
-
-void DualOperator::buildJacobianSolver() {
-  setJacobianSolver(new hephaestus::DefaultHCurlPCGSolver(
-      _solver_options, *_equation_system_operator.As<mfem::HypreParMatrix>(),
-      _equation_system->test_pfespaces.at(0)));
 }
 
 void DualOperator::SetGridFunctions() {

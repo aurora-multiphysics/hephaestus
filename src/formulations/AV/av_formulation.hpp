@@ -50,8 +50,7 @@ public:
   AVOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
              hephaestus::GridFunctions &gridfunctions,
              hephaestus::BCMap &bc_map, hephaestus::Coefficients &coefficients,
-             hephaestus::Sources &sources,
-             hephaestus::InputParameters &solver_options);
+             hephaestus::Sources &sources, mfem::Solver &jacobian_solver);
 
   ~AVOperator(){};
 };

@@ -47,13 +47,31 @@ void TimeDomainProblemBuilder::InitializeKernels() {
                               this->problem->coefficients);
 }
 
+void TimeDomainProblemBuilder::ConstructJacobianPreconditioner() {
+  std::shared_ptr<mfem::HypreBoomerAMG> precond{
+      std::make_shared<mfem::HypreBoomerAMG>()};
+  precond->SetPrintLevel(-1);
+  this->problem->_jacobian_preconditioner = precond;
+}
+
+void TimeDomainProblemBuilder::ConstructJacobianSolver() {
+  std::shared_ptr<mfem::HypreGMRES> solver{
+      std::make_shared<mfem::HypreGMRES>(this->problem->comm)};
+  solver->SetTol(1e-16);
+  solver->SetMaxIter(1000);
+  solver->SetPrintLevel(-1);
+  solver->SetPreconditioner(*std::dynamic_pointer_cast<mfem::HypreSolver>(
+      this->problem->_jacobian_preconditioner));
+  this->problem->_jacobian_solver = solver;
+}
+
 void TimeDomainProblemBuilder::ConstructOperator() {
   this->problem->td_operator =
       std::make_unique<hephaestus::TimeDomainProblemOperator>(
           *(this->problem->pmesh), this->problem->fespaces,
           this->problem->gridfunctions, this->problem->bc_map,
           this->problem->coefficients, this->problem->sources,
-          this->problem->solver_options);
+          *(this->problem->_jacobian_solver));
   this->problem->td_operator->SetEquationSystem(
       this->problem->td_equation_system.get());
   this->problem->td_operator->SetGridFunctions();

@@ -22,10 +22,13 @@ public:
                             hephaestus::BCMap &bc_map,
                             hephaestus::Coefficients &coefficients,
                             hephaestus::Sources &sources,
-                            hephaestus::InputParameters &solver_options)
+                            mfem::Solver &jacobian_solver)
       : myid_(0), num_procs_(1), pmesh_(&pmesh), _fespaces(fespaces),
         _gridfunctions(gridfunctions), _bc_map(bc_map), _sources(sources),
-        _coefficients(coefficients), _solver_options(solver_options){};
+        _coefficients(coefficients), _jacobian_solver(&jacobian_solver) {
+    MPI_Comm_size(pmesh.GetComm(), &num_procs_);
+    MPI_Comm_rank(pmesh.GetComm(), &myid_);
+  };
 
   ~TimeDomainProblemOperator(){};
 
@@ -44,12 +47,12 @@ public:
   //   _equation_system_operator = equation_system_operator;
   // };
   // void setJacobianPreconditioner(){};
-  void setJacobianSolver(mfem::Solver *jacobian_solver) {
-    if (_jacobian_solver != NULL) {
-      delete _jacobian_solver;
-    }
-    _jacobian_solver = jacobian_solver;
-  };
+  // void setJacobianSolver(mfem::Solver *jacobian_solver) {
+  //   if (_jacobian_solver != NULL) {
+  //     delete _jacobian_solver;
+  //   }
+  //   _jacobian_solver = jacobian_solver;
+  // };
 
   // virtual hephaestus::TimeDependentEquationSystem *GetEquationSystem() = 0;
   // virtual mfem::OperatorHandle GetEquationSystemOperator() = 0;
@@ -77,7 +80,7 @@ public:
   hephaestus::BCMap &_bc_map;
   hephaestus::Sources &_sources;
   hephaestus::Coefficients &_coefficients;
-  hephaestus::InputParameters &_solver_options;
+  mfem::Solver *_jacobian_solver;
 
   // Set all of the below from formulation:
   // SetJacobianSolver
@@ -88,8 +91,7 @@ public:
   mfem::OperatorHandle _equation_system_operator;
 
 private:
-  mfem::Solver *_jacobian_solver = NULL;
-  mfem::NewtonSolver *_newton_solver = NULL;
+  // mfem::Solver *_jacobian_solver = NULL;
 };
 
 } // namespace hephaestus

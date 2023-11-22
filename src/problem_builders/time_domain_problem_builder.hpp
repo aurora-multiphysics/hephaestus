@@ -52,6 +52,10 @@ public:
 
   virtual void ConstructEquationSystem() override;
 
+  virtual void ConstructJacobianPreconditioner() override;
+
+  virtual void ConstructJacobianSolver() override;
+
   virtual void InitializeKernels() override;
 
   virtual void ConstructOperator() override;

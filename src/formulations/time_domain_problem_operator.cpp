@@ -82,8 +82,8 @@ void TimeDomainProblemOperator::buildEquationSystemOperator(double dt) {
   _equation_system->FormLinearSystem(_equation_system_operator, trueX, trueRhs);
 }
 void TimeDomainProblemOperator::buildJacobianSolver() {
-  setJacobianSolver(new hephaestus::DefaultGMRESSolver(
-      _solver_options, *_equation_system_operator.As<mfem::HypreParMatrix>()));
+  getJacobianSolver()->SetOperator(
+      *_equation_system_operator.As<mfem::HypreParMatrix>());
 }
 
 void TimeDomainProblemOperator::SetEquationSystem(

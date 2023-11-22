@@ -48,6 +48,10 @@ public:
 
   virtual void ConstructEquationSystem() override{};
 
+  virtual void ConstructJacobianPreconditioner() override{};
+
+  virtual void ConstructJacobianSolver() override{};
+
   virtual void ConstructOperator() override;
 
   virtual void ConstructState() override;

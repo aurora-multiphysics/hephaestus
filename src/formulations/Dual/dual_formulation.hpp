@@ -14,6 +14,10 @@ public:
 
   virtual void ConstructEquationSystem() override;
 
+  virtual void ConstructJacobianPreconditioner() override;
+
+  virtual void ConstructJacobianSolver() override;
+
   virtual void ConstructOperator() override;
 
   virtual void RegisterGridFunctions() override;
@@ -47,8 +51,7 @@ public:
                hephaestus::GridFunctions &gridfunctions,
                hephaestus::BCMap &bc_map,
                hephaestus::Coefficients &coefficients,
-               hephaestus::Sources &sources,
-               hephaestus::InputParameters &solver_options);
+               hephaestus::Sources &sources, mfem::Solver &jacobian_solver);
 
   ~DualOperator(){};
 
@@ -57,7 +60,6 @@ public:
   void ImplicitSolve(const double dt, const mfem::Vector &X,
                      mfem::Vector &dX_dt) override;
   virtual void SetGridFunctions() override;
-  virtual void buildJacobianSolver() override;
 
   mfem::ParFiniteElementSpace *HCurlFESpace_;
   mfem::ParFiniteElementSpace *HDivFESpace_;
