@@ -68,6 +68,7 @@ private:
   mfem::Array<int> coil_domains_;
   mfem::Array<int> coil_markers_;
   mfem::Array<int> transition_domain_;
+  mfem::Array<int> transition_markers_;
   mfem::Coefficient *Itotal_;
   std::vector<int> old_dom_attrs;
   hephaestus::InputParameters solver_options_;
@@ -91,6 +92,7 @@ private:
 
   // Mass Matrix and linear forms
   mfem::ParBilinearForm *m1_;
+  mfem::ParLinearForm *lf_full_;
 };
 
 class Plane3D {

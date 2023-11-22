@@ -116,7 +116,8 @@ void attrToMarker(const mfem::Array<int> attr_list,
     marker_list[a - 1] = 1;
 }
 
-void cleanDivergence(mfem::ParGridFunction &Vec_GF, int printlevel = 0) {
+void cleanDivergence(mfem::ParGridFunction &Vec_GF,
+                     hephaestus::InputParameters solve_pars) {
 
   hephaestus::InputParameters pars;
   hephaestus::GridFunctions gfs;
@@ -125,20 +126,22 @@ void cleanDivergence(mfem::ParGridFunction &Vec_GF, int printlevel = 0) {
 
   gfs.Register("Vector_GF", &Vec_GF, false);
   pars.SetParam("VectorGridFunctionName", std::string("Vector_GF"));
+  pars.SetParam("SolverOptions", solve_pars);
   hephaestus::HelmholtzProjector projector(pars);
   projector.Project(gfs, fes, bcs);
 }
 
 void cleanDivergence(hephaestus::GridFunctions &gfs, hephaestus::BCMap &bcs,
                      const std::string vec_gf_name,
-                     const std::string scalar_gf_name, int printlevel = 0) {
+                     const std::string scalar_gf_name,
+                     hephaestus::InputParameters solve_pars) {
 
   hephaestus::InputParameters pars;
   hephaestus::FESpaces fes;
 
   pars.SetParam("VectorGridFunctionName", vec_gf_name);
   pars.SetParam("ScalarGridFunctionName", scalar_gf_name);
-  pars.SetParam("PrintLevel", printlevel);
+  pars.SetParam("SolverOptions", solve_pars);
   hephaestus::HelmholtzProjector projector(pars);
   projector.Project(gfs, fes, bcs);
 }
@@ -262,7 +265,7 @@ void OpenCoilSolver::Apply(mfem::ParLinearForm *lf) {
                             std::string("V_parent"), low_terminal_, &low_src_),
                         true);
 
-    cleanDivergence(gfs_parent, bcs_parent, "J_parent", "V_parent");
+    cleanDivergence(gfs_parent, bcs_parent, "J_parent", "V_parent", solver_options_);
   }
 
   //////////////////////////////////////////////////////////////////////
@@ -362,7 +365,7 @@ void OpenCoilSolver::SPSCurrent() {
 }
 
 void OpenCoilSolver::buildM1() {
-  
+
   if (m1_ == nullptr) {
 
     m1_ = new mfem::ParBilinearForm(J_parent_->ParFESpace());

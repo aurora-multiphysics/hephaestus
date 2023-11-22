@@ -37,12 +37,12 @@ ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters &params,
       HCurlFESpace_parent_(nullptr), m1_(nullptr) {
 
   hephaestus::InputParameters default_pars;
-  default_pars.SetParam("Tolerance", double(1.0e-20));
-  default_pars.SetParam("MaxIter", (unsigned int)1000);
-  default_pars.SetParam("PrintLevel", 1);
+  default_pars.SetParam("Tolerance", double(1.0e-15));
+  default_pars.SetParam("MaxIter", (unsigned int)500);
+  default_pars.SetParam("PrintLevel", 0);
 
   solver_options_ = params.GetOptionalParam<hephaestus::InputParameters>(
-          "SolverOptions", default_pars);
+      "SolverOptions", default_pars);
 
   elec_attrs_.first = electrode_face;
 }
@@ -115,15 +115,11 @@ void ClosedCoilSolver::Apply(mfem::ParLinearForm *lf) {
   double I = Itotal_->Eval(*Tr, ip);
   *J_coil_ *= I;
   mesh_coil_->Transfer(*J_coil_, *J_parent_);
-  //hephaestus::GridFunctions gridfunctions;
-  //gridfunctions.Register("Vector_GF", J_parent_, false);
-  //cleanDivergence(*J_parent_,0);
   *J_coil_ /= I;
 
   m1_->Update();
   m1_->Assemble();
   m1_->AddMult(*J_parent_, *lf, 1.0);
-
 }
 
 void ClosedCoilSolver::SubtractSource(mfem::ParGridFunction *gf) {}
@@ -296,6 +292,7 @@ void ClosedCoilSolver::solveTransition() {
 
   hephaestus::GridFunctions gridfunctions;
   gridfunctions.Register("J_parent", J_parent_, false);
+  gridfunctions.Register("J_coil", J_coil_, false);
 
   hephaestus::InputParameters ocs_params;
   ocs_params.SetParam("SourceName", std::string("J_parent"));
@@ -303,13 +300,15 @@ void ClosedCoilSolver::solveTransition() {
   ocs_params.SetParam("PotentialName", std::string("Phi"));
   ocs_params.SetParam("SolverOptions", solver_options_);
   ocs_params.SetParam("HelmholtzProjection", false);
- 
+
   hephaestus::OpenCoilSolver opencoil(ocs_params, transition_domain_,
                                       elec_attrs_);
 
   opencoil.Init(gridfunctions, fespaces, bc_maps, coefs);
-  mfem::ParLinearForm dummy(HCurlFESpace_parent_);
-  opencoil.Apply(&dummy);
+  lf_full_ = new mfem::ParLinearForm(HCurlFESpace_parent_);
+  // mfem::ParLinearForm dummy(HCurlFESpace_coil_);
+  opencoil.Apply(lf_full_);
+  lf_full_->Assemble();
 
   // The transition region result goes
   // Child -> Grandparent -> Parent
@@ -335,29 +334,31 @@ void ClosedCoilSolver::solveCoil() {
   a.AddDomainIntegrator(new mfem::DiffusionIntegrator);
   a.Assemble();
 
+  hephaestus::attrToMarker(transition_domain_, transition_markers_,
+                             mesh_coil_->attributes.Max());
+
   mfem::VectorGridFunctionCoefficient JtCoef(Jt_coil_);
   mfem::ParLinearForm b(H1FESpace_coil_);
-  b.AddDomainIntegrator(new mfem::DomainLFGradIntegrator(JtCoef));
+  b.AddDomainIntegrator(new mfem::DomainLFGradIntegrator(JtCoef), transition_markers_);
   b.Assemble();
 
   mfem::HypreParMatrix A;
   mfem::Vector B, X;
   mfem::Array<int> boundary_dofs;
   a.FormLinearSystem(boundary_dofs, auxV_coil, b, A, X, B);
-
   hephaestus::DefaultGMRESSolver a_solver(solver_options_, A);
 
-  a_solver.Mult(B,X);
+  a_solver.Mult(B, X);
   a.RecoverFEMSolution(X, b, auxV_coil);
 
   // Now we form the final coil current
   mfem::ParDiscreteLinearOperator grad(H1FESpace_coil_, HCurlFESpace_coil_);
   grad.AddDomainInterpolator(new mfem::GradientInterpolator());
   grad.Assemble();
-
   grad.Mult(auxV_coil, *J_coil_);
+
   J_coil_->Add(-1.0, *Jt_coil_);
-  cleanDivergence(*J_coil_,0);
+  cleanDivergence(*J_coil_, solver_options_);
 }
 
 void ClosedCoilSolver::buildM1() {
@@ -365,12 +366,13 @@ void ClosedCoilSolver::buildM1() {
   if (m1_ == nullptr) {
 
     m1_ = new mfem::ParBilinearForm(HCurlFESpace_parent_);
-    hephaestus::attrToMarker(coil_domains_, coil_markers_, mesh_parent_->attributes.Max());
+    hephaestus::attrToMarker(coil_domains_, coil_markers_,
+                             mesh_parent_->attributes.Max());
     m1_->AddDomainIntegrator(
-        new mfem::VectorFEMassIntegrator(new mfem::ConstantCoefficient(1.0)), coil_markers_);
+        new mfem::VectorFEMassIntegrator(new mfem::ConstantCoefficient(1.0)),
+        coil_markers_);
     m1_->Assemble();
   }
-  
 }
 
 void ClosedCoilSolver::normaliseCurrent() {
