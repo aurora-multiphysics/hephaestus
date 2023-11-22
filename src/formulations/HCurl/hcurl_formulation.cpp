@@ -164,31 +164,38 @@ Fully discretised equations
 using
 u_{n+1} = u_{n} + dt du/dt_{n+1}
 */
-void HCurlOperator::ImplicitSolve(const double dt, const mfem::Vector &X,
-                                  mfem::Vector &dX_dt) {
-  dX_dt = 0.0;
-  for (unsigned int ind = 0; ind < trial_variables.size(); ++ind) {
-    trial_variables.at(ind)->MakeRef(trial_variables.at(ind)->ParFESpace(),
-                                     const_cast<mfem::Vector &>(X),
-                                     true_offsets[ind]);
-    trial_variable_time_derivatives.at(ind)->MakeRef(
-        trial_variable_time_derivatives.at(ind)->ParFESpace(), dX_dt,
-        true_offsets[ind]);
-  }
-  _coefficients.SetTime(this->GetTime());
-  _equation_system->setTimeStep(dt);
-  _equation_system->updateEquationSystem(_bc_map, _sources);
+// void HCurlOperator::ImplicitSolve(const double dt, const mfem::Vector &X,
+//                                   mfem::Vector &dX_dt) {
+//   dX_dt = 0.0;
+//   for (unsigned int ind = 0; ind < trial_variables.size(); ++ind) {
+//     trial_variables.at(ind)->MakeRef(trial_variables.at(ind)->ParFESpace(),
+//                                      const_cast<mfem::Vector &>(X),
+//                                      true_offsets[ind]);
+//     trial_variable_time_derivatives.at(ind)->MakeRef(
+//         trial_variable_time_derivatives.at(ind)->ParFESpace(), dX_dt,
+//         true_offsets[ind]);
+//   }
+//   _coefficients.SetTime(this->GetTime());
+//   _equation_system->setTimeStep(dt);
+//   _equation_system->updateEquationSystem(_bc_map, _sources);
 
-  _equation_system->FormLinearSystem(blockA, trueX, trueRhs);
+//   _equation_system->FormLinearSystem(_equation_system_operator, trueX,
+//   trueRhs);
 
-  if (a1_solver != NULL) {
-    delete a1_solver;
-  }
-  a1_solver = new hephaestus::DefaultHCurlPCGSolver(
-      _solver_options, *blockA.As<mfem::HypreParMatrix>(),
-      _equation_system->test_pfespaces.at(0));
-  a1_solver->Mult(trueRhs, trueX);
-  _equation_system->RecoverFEMSolution(trueX, _gridfunctions);
+//   if (_jacobian_solver != NULL) {
+//     delete _jacobian_solver;
+//   }
+//   _jacobian_solver = new hephaestus::DefaultHCurlPCGSolver(
+//       _solver_options, *_equation_system_operator.As<mfem::HypreParMatrix>(),
+//       _equation_system->test_pfespaces.at(0));
+//   _jacobian_solver->Mult(trueRhs, trueX);
+//   _equation_system->RecoverFEMSolution(trueX, _gridfunctions);
+// }
+
+void HCurlOperator::buildJacobianSolver() {
+  setJacobianSolver(new hephaestus::DefaultHCurlPCGSolver(
+      _solver_options, *_equation_system_operator.As<mfem::HypreParMatrix>(),
+      _equation_system->test_pfespaces.at(0)));
 }
 
 } // namespace hephaestus

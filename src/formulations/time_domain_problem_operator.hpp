@@ -33,8 +33,30 @@ public:
   virtual void Init(mfem::Vector &X);
   virtual void ImplicitSolve(const double dt, const mfem::Vector &X,
                              mfem::Vector &dX_dt) override;
+
+  virtual void buildEquationSystemOperator(double dt);
+  virtual void buildJacobianSolver();
+
   void
   SetEquationSystem(hephaestus::TimeDependentEquationSystem *equation_system);
+  // void
+  // setEquationSystemOperator(mfem::OperatorHandle &equation_system_operator) {
+  //   _equation_system_operator = equation_system_operator;
+  // };
+  // void setJacobianPreconditioner(){};
+  void setJacobianSolver(mfem::Solver *jacobian_solver) {
+    if (_jacobian_solver != NULL) {
+      delete _jacobian_solver;
+    }
+    _jacobian_solver = jacobian_solver;
+  };
+
+  // virtual hephaestus::TimeDependentEquationSystem *GetEquationSystem() = 0;
+  // virtual mfem::OperatorHandle GetEquationSystemOperator() = 0;
+  // virtual mfem::Solver *GetJacobianPreconditioner() = 0;
+
+  virtual mfem::Solver *getJacobianSolver() { return _jacobian_solver; };
+  // virtual mfem::NewtonSolver *GetNewtonSolver() = 0;
 
   mfem::Array<int> true_offsets, block_trueOffsets;
 
@@ -57,18 +79,17 @@ public:
   hephaestus::Coefficients &_coefficients;
   hephaestus::InputParameters &_solver_options;
 
-  mutable mfem::Solver *jacobian_solver = NULL;
-  mutable mfem::NewtonSolver *newton_solver = NULL;
-  mfem::OperatorHandle equation_system;
+  // Set all of the below from formulation:
+  // SetJacobianSolver
+  // SetNewtonSolver
+  // SetOperator - test removing the DefaultSolvers from ImplicitSolve
 
-  mutable hephaestus::DefaultGMRESSolver *solver = NULL;
-  mutable hephaestus::DefaultHCurlPCGSolver *a1_solver = NULL;
-
-  mfem::OperatorHandle blockA;
   mfem::BlockVector trueX, trueRhs;
-  // mutable mfem::Solver *_jacobian_solver = NULL;
-  // mutable mfem::NewtonSolver *_newton_solver = NULL;
-  // mfem::OperatorHandle _equation_system_operator;
+  mfem::OperatorHandle _equation_system_operator;
+
+private:
+  mfem::Solver *_jacobian_solver = NULL;
+  mfem::NewtonSolver *_newton_solver = NULL;
 };
 
 } // namespace hephaestus

@@ -123,9 +123,9 @@ void StaticsOperator::Solve(mfem::Vector &X) {
   mfem::Vector &RHS(trueRhs.GetBlock(0));
   a1_.FormLinearSystem(ess_bdr_tdofs_, a_, b1_, CurlMuInvCurl, A, RHS);
 
-  hephaestus::DefaultHCurlPCGSolver a1_solver(_solver_options, CurlMuInvCurl,
-                                              a_.ParFESpace());
-  a1_solver.Mult(RHS, A);
+  hephaestus::DefaultHCurlPCGSolver _jacobian_solver(
+      _solver_options, CurlMuInvCurl, a_.ParFESpace());
+  _jacobian_solver.Mult(RHS, A);
   a1_.RecoverFEMSolution(A, b1_, a_);
 }
 

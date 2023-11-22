@@ -81,9 +81,9 @@ void ComplexMaxwellOperator::Solve(mfem::Vector &X) {
   mfem::ComplexHypreParMatrix *A1Z = A1.As<mfem::ComplexHypreParMatrix>();
   mfem::HypreParMatrix *A1C = A1Z->GetSystemMatrix();
   mfem::SuperLURowLocMatrix A_SuperLU(*A1C);
-  mfem::SuperLUSolver solver(MPI_COMM_WORLD);
-  solver.SetOperator(A_SuperLU);
-  solver.Mult(RHS, U);
+  mfem::SuperLUSolver _jacobian_solver(MPI_COMM_WORLD);
+  _jacobian_solver.SetOperator(A_SuperLU);
+  _jacobian_solver.Mult(RHS, U);
   delete A1C;
 
   a1_.RecoverFEMSolution(U, b1_, *u_);

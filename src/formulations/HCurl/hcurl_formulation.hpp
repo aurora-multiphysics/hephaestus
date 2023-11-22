@@ -51,8 +51,7 @@ public:
 
   ~HCurlOperator(){};
 
-  void ImplicitSolve(const double dt, const mfem::Vector &X,
-                     mfem::Vector &dX_dt) override;
+  virtual void buildJacobianSolver() override;
 };
 
 } // namespace hephaestus

@@ -42,7 +42,7 @@ public:
   hephaestus::Coefficients &_coefficients;
   hephaestus::InputParameters &_solver_options;
 
-  mfem::OperatorHandle blockA;
+  mfem::OperatorHandle _equation_system_operator;
   mfem::BlockVector trueX, trueRhs;
 };
 

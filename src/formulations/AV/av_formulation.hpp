@@ -54,8 +54,5 @@ public:
              hephaestus::InputParameters &solver_options);
 
   ~AVOperator(){};
-
-  void ImplicitSolve(const double dt, const mfem::Vector &X,
-                     mfem::Vector &dX_dt) override;
 };
 } // namespace hephaestus

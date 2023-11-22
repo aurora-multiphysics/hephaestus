@@ -71,17 +71,19 @@ void TimeDomainProblemOperator::ImplicitSolve(const double dt,
         true_offsets[ind]);
   }
   _coefficients.SetTime(this->GetTime());
+  buildEquationSystemOperator(dt);
+  buildJacobianSolver();
+  getJacobianSolver()->Mult(trueRhs, trueX);
+  _equation_system->RecoverFEMSolution(trueX, _gridfunctions);
+}
+void TimeDomainProblemOperator::buildEquationSystemOperator(double dt) {
   _equation_system->setTimeStep(dt);
   _equation_system->updateEquationSystem(_bc_map, _sources);
-
-  _equation_system->FormLinearSystem(blockA, trueX, trueRhs);
-  if (solver != NULL) {
-    delete solver;
-  }
-  solver = new hephaestus::DefaultGMRESSolver(
-      _solver_options, *blockA.As<mfem::HypreParMatrix>());
-  solver->Mult(trueRhs, trueX);
-  _equation_system->RecoverFEMSolution(trueX, _gridfunctions);
+  _equation_system->FormLinearSystem(_equation_system_operator, trueX, trueRhs);
+}
+void TimeDomainProblemOperator::buildJacobianSolver() {
+  setJacobianSolver(new hephaestus::DefaultGMRESSolver(
+      _solver_options, *_equation_system_operator.As<mfem::HypreParMatrix>()));
 }
 
 void TimeDomainProblemOperator::SetEquationSystem(

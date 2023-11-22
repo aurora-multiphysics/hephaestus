@@ -184,36 +184,18 @@ void DualOperator::Init(mfem::Vector &X) {
 
 void DualOperator::ImplicitSolve(const double dt, const mfem::Vector &X,
                                  mfem::Vector &dX_dt) {
-  dX_dt = 0.0;
-  for (unsigned int ind = 0; ind < trial_variables.size(); ++ind) {
-    trial_variables.at(ind)->MakeRef(trial_variables.at(ind)->ParFESpace(),
-                                     const_cast<mfem::Vector &>(X),
-                                     true_offsets[ind]);
-    trial_variable_time_derivatives.at(ind)->MakeRef(
-        trial_variable_time_derivatives.at(ind)->ParFESpace(), dX_dt,
-        true_offsets[ind]);
-  }
-  _coefficients.SetTime(this->GetTime());
-  _equation_system->setTimeStep(dt);
-  _equation_system->updateEquationSystem(_bc_map, _sources);
-
-  _equation_system->FormLinearSystem(blockA, trueX, trueRhs);
-
-  if (a1_solver != NULL) {
-    delete a1_solver;
-  }
-  a1_solver = new hephaestus::DefaultHCurlPCGSolver(
-      _solver_options, *blockA.As<mfem::HypreParMatrix>(),
-      _equation_system->test_pfespaces.at(0));
-  a1_solver->Mult(trueRhs, trueX);
-  _equation_system->RecoverFEMSolution(trueX, _gridfunctions);
-
+  TimeDomainProblemOperator::ImplicitSolve(dt, X, dX_dt);
   // Subtract off contribution from source
   _sources.SubtractSources(u_);
-
   // dv/dt_{n+1} = -∇×u
   curl->Mult(*u_, *dv_);
   *dv_ *= -1.0;
+}
+
+void DualOperator::buildJacobianSolver() {
+  setJacobianSolver(new hephaestus::DefaultHCurlPCGSolver(
+      _solver_options, *_equation_system_operator.As<mfem::HypreParMatrix>(),
+      _equation_system->test_pfespaces.at(0)));
 }
 
 void DualOperator::SetGridFunctions() {
