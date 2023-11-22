@@ -90,9 +90,8 @@ private:
   mfem::ParGridFunction *J_coil_;
   mfem::ParGridFunction *Jt_coil_;
 
-  // Mass Matrix and linear forms
+  // Mass Matrix
   mfem::ParBilinearForm *m1_;
-  mfem::ParLinearForm *lf_full_;
 };
 
 class Plane3D {
