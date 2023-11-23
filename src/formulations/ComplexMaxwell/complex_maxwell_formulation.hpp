@@ -26,12 +26,15 @@ should be performed on g before use in this operator.
 */
 class ComplexMaxwellOperator : public ProblemOperator {
 public:
-  ComplexMaxwellOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
-                         hephaestus::GridFunctions &gridfunctions,
-                         hephaestus::BCMap &bc_map,
-                         hephaestus::Coefficients &coefficients,
-                         hephaestus::Sources &sources,
-                         hephaestus::InputParameters &solver_options);
+  ComplexMaxwellOperator(
+      mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
+      hephaestus::GridFunctions &gridfunctions, hephaestus::BCMap &bc_map,
+      hephaestus::Coefficients &coefficients, hephaestus::Sources &sources,
+      mfem::Solver &jacobian_solver, const std::string &h_curl_var_complex_name,
+      const std::string &h_curl_var_real_name,
+      const std::string &h_curl_var_imag_name,
+      const std::string &stiffness_coef_name, const std::string &mass_coef_name,
+      const std::string &loss_coef_name);
 
   ~ComplexMaxwellOperator(){};
 
@@ -39,8 +42,9 @@ public:
   virtual void Init(mfem::Vector &X) override;
   virtual void Solve(mfem::Vector &X) override;
 
-  std::string h_curl_var_complex_name, h_curl_var_real_name,
-      h_curl_var_imag_name, stiffness_coef_name, mass_coef_name, loss_coef_name;
+  std::string _h_curl_var_complex_name, _h_curl_var_real_name,
+      _h_curl_var_imag_name, _stiffness_coef_name, _mass_coef_name,
+      _loss_coef_name;
   mfem::ParComplexGridFunction *u_;
   mfem::ComplexOperator::Convention conv_ = mfem::ComplexOperator::HERMITIAN;
 

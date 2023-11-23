@@ -6,23 +6,22 @@ ComplexMaxwellOperator::ComplexMaxwellOperator(
     mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
     hephaestus::GridFunctions &gridfunctions, hephaestus::BCMap &bc_map,
     hephaestus::Coefficients &coefficients, hephaestus::Sources &sources,
-    hephaestus::InputParameters &solver_options)
+    mfem::Solver &jacobian_solver, const std::string &h_curl_var_complex_name,
+    const std::string &h_curl_var_real_name,
+    const std::string &h_curl_var_imag_name,
+    const std::string &stiffness_coef_name, const std::string &mass_coef_name,
+    const std::string &loss_coef_name)
     : ProblemOperator(pmesh, fespaces, gridfunctions, bc_map, coefficients,
-                      sources, solver_options),
-      h_curl_var_complex_name(
-          solver_options.GetParam<std::string>("HCurlVarComplexName")),
-      h_curl_var_real_name(
-          solver_options.GetParam<std::string>("HCurlVarRealName")),
-      h_curl_var_imag_name(
-          solver_options.GetParam<std::string>("HCurlVarImagName")),
-      stiffness_coef_name(
-          solver_options.GetParam<std::string>("StiffnessCoefName")),
-      mass_coef_name(solver_options.GetParam<std::string>("MassCoefName")),
-      loss_coef_name(solver_options.GetParam<std::string>("LossCoefName")) {}
+                      sources, jacobian_solver),
+      _h_curl_var_complex_name(h_curl_var_complex_name),
+      _h_curl_var_real_name(h_curl_var_real_name),
+      _h_curl_var_imag_name(h_curl_var_imag_name),
+      _stiffness_coef_name(stiffness_coef_name),
+      _mass_coef_name(mass_coef_name), _loss_coef_name(loss_coef_name) {}
 
 void ComplexMaxwellOperator::SetGridFunctions() {
-  trial_var_names.push_back(h_curl_var_real_name);
-  trial_var_names.push_back(h_curl_var_imag_name);
+  trial_var_names.push_back(_h_curl_var_real_name);
+  trial_var_names.push_back(_h_curl_var_imag_name);
 
   ProblemOperator::SetGridFunctions();
 
@@ -33,9 +32,9 @@ void ComplexMaxwellOperator::SetGridFunctions() {
 void ComplexMaxwellOperator::Init(mfem::Vector &X) {
   ProblemOperator::Init(X);
 
-  stiffCoef_ = _coefficients.scalars.Get(stiffness_coef_name);
-  massCoef_ = _coefficients.scalars.Get(mass_coef_name);
-  lossCoef_ = _coefficients.scalars.Get(loss_coef_name);
+  stiffCoef_ = _coefficients.scalars.Get(_stiffness_coef_name);
+  massCoef_ = _coefficients.scalars.Get(_mass_coef_name);
+  lossCoef_ = _coefficients.scalars.Get(_loss_coef_name);
 }
 
 void ComplexMaxwellOperator::Solve(mfem::Vector &X) {
@@ -64,10 +63,10 @@ void ComplexMaxwellOperator::Solve(mfem::Vector &X) {
   _sources.Apply(&b1_real_);
 
   mfem::ParComplexLinearForm b1_(u_->ParFESpace(), conv_);
-  _bc_map.applyEssentialBCs(h_curl_var_complex_name, ess_bdr_tdofs_, *u_,
+  _bc_map.applyEssentialBCs(_h_curl_var_complex_name, ess_bdr_tdofs_, *u_,
                             pmesh_);
-  _bc_map.applyIntegratedBCs(h_curl_var_complex_name, b1_, pmesh_);
-  _bc_map.applyIntegratedBCs(h_curl_var_complex_name, a1_, pmesh_);
+  _bc_map.applyIntegratedBCs(_h_curl_var_complex_name, b1_, pmesh_);
+  _bc_map.applyIntegratedBCs(_h_curl_var_complex_name, a1_, pmesh_);
 
   a1_.Assemble();
   a1_.Finalize();
@@ -108,20 +107,14 @@ ComplexMaxwellFormulation::ComplexMaxwellFormulation(
       _loss_coef_name(std::string("maxwell_loss")) {}
 
 void ComplexMaxwellFormulation::ConstructOperator() {
-  hephaestus::InputParameters &solver_options =
-      this->GetProblem()->solver_options;
-  solver_options.SetParam("HCurlVarComplexName", _h_curl_var_complex_name);
-  solver_options.SetParam("HCurlVarRealName", _h_curl_var_real_name);
-  solver_options.SetParam("HCurlVarImagName", _h_curl_var_imag_name);
-  solver_options.SetParam("StiffnessCoefName", _alpha_coef_name);
-  solver_options.SetParam("MassCoefName", _mass_coef_name);
-  solver_options.SetParam("LossCoefName", _loss_coef_name);
   this->problem->ss_operator =
       std::make_unique<hephaestus::ComplexMaxwellOperator>(
           *(this->problem->pmesh), this->problem->fespaces,
           this->problem->gridfunctions, this->problem->bc_map,
           this->problem->coefficients, this->problem->sources,
-          this->problem->solver_options);
+          *(this->problem->_jacobian_solver), _h_curl_var_complex_name,
+          _h_curl_var_real_name, _h_curl_var_imag_name, _alpha_coef_name,
+          _mass_coef_name, _loss_coef_name);
   this->problem->GetOperator()->SetGridFunctions();
 }
 

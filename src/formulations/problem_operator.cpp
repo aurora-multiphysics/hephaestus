@@ -37,6 +37,4 @@ void ProblemOperator::Init(mfem::Vector &X) {
   }
 }
 
-void ProblemOperator::Solve(mfem::Vector &X) {}
-
 } // namespace hephaestus

@@ -13,17 +13,18 @@ public:
                   hephaestus::GridFunctions &gridfunctions,
                   hephaestus::BCMap &bc_map,
                   hephaestus::Coefficients &coefficients,
-                  hephaestus::Sources &sources,
-                  hephaestus::InputParameters &solver_options)
+                  hephaestus::Sources &sources, mfem::Solver &jacobian_solver)
       : myid_(0), num_procs_(1), pmesh_(&pmesh), _fespaces(fespaces),
         _gridfunctions(gridfunctions), _bc_map(bc_map), _sources(sources),
-        _coefficients(coefficients), _solver_options(solver_options){};
+        _coefficients(coefficients), _jacobian_solver(&jacobian_solver){};
 
   ~ProblemOperator(){};
 
   virtual void SetGridFunctions();
   virtual void Init(mfem::Vector &X);
-  virtual void Solve(mfem::Vector &X);
+  virtual void Solve(mfem::Vector &X){};
+  virtual void buildJacobianSolver(){};
+  virtual mfem::Solver *getJacobianSolver() { return _jacobian_solver; };
   void Mult(const mfem::Vector &x, mfem::Vector &y) const override{};
 
   mfem::Array<int> true_offsets, block_trueOffsets;
@@ -40,7 +41,7 @@ public:
   hephaestus::BCMap &_bc_map;
   hephaestus::Sources &_sources;
   hephaestus::Coefficients &_coefficients;
-  hephaestus::InputParameters &_solver_options;
+  mfem::Solver *_jacobian_solver;
 
   mfem::OperatorHandle _equation_system_operator;
   mfem::BlockVector trueX, trueRhs;

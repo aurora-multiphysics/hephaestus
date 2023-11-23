@@ -11,6 +11,10 @@ public:
   StaticsFormulation(const std::string &alpha_coef_name,
                      const std::string &h_curl_var_name);
 
+  virtual void ConstructJacobianPreconditioner() override;
+
+  virtual void ConstructJacobianSolver() override;
+
   virtual void ConstructOperator() override;
 
   virtual void RegisterGridFunctions() override;
@@ -28,17 +32,19 @@ public:
                   hephaestus::GridFunctions &gridfunctions,
                   hephaestus::BCMap &bc_map,
                   hephaestus::Coefficients &coefficients,
-                  hephaestus::Sources &sources,
-                  hephaestus::InputParameters &solver_options);
+                  hephaestus::Sources &sources, mfem::Solver &jacobian_solver,
+                  const std::string &h_curl_var_name,
+                  const std::string &stiffness_coef_name);
 
   ~StaticsOperator(){};
 
   virtual void SetGridFunctions() override;
   virtual void Init(mfem::Vector &X) override;
   virtual void Solve(mfem::Vector &X) override;
+  virtual void buildJacobianSolver() override;
 
 private:
-  std::string h_curl_var_name, stiffness_coef_name;
+  const std::string _h_curl_var_name, _stiffness_coef_name;
 
   mfem::Coefficient *stiffCoef_; // Stiffness Material Coefficient
 };
