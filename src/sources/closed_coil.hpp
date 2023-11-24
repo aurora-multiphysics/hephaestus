@@ -71,26 +71,24 @@ private:
 
   // Names
   std::string hcurl_fespace_name_;
+  std::string h1_fespace_name_;
   std::string J_gf_name_;
   std::string I_coef_name_;
 
   // Parent mesh, FE space, and current
   mfem::ParMesh *mesh_parent_;
   mfem::ParGridFunction *J_parent_;
-  mfem::ParGridFunction *V_parent_;
   mfem::ParFiniteElementSpace *HCurlFESpace_parent_;
   mfem::ParFiniteElementSpace *H1FESpace_parent_;
 
   // Coil mesh, FE Space, and current
   mfem::ParSubMesh *mesh_coil_;
-  mfem::ParFiniteElementSpace *HCurlFESpace_coil_;
   mfem::ParFiniteElementSpace *H1FESpace_coil_;
   mfem::ParGridFunction *Jaux_coil_;
   mfem::ParGridFunction *V_coil_;
-  mfem::ParGridFunction *Vaux_coil_;
 
   // Final LinearForm
-  mfem::ParLinearForm *final_lf;
+  mfem::ParLinearForm *final_lf_;
 };
 
 class Plane3D {
