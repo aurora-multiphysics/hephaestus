@@ -5,6 +5,9 @@
 
 namespace hephaestus {
 
+double highV(const mfem::Vector &x, double t);
+double lowV(const mfem::Vector &x, double t);
+
 double calcFlux(mfem::GridFunction *v_field, int face_attr);
 
 template <typename T> void ifDelete(T *ptr);
@@ -72,7 +75,6 @@ private:
   int order_h1_;
   int order_hcurl_;
   int ref_face_;
-  bool perform_helmholtz_projection;
   std::pair<int, int> elec_attrs_;
   mfem::Array<int> coil_domains_;
   mfem::Array<int> coil_markers_;

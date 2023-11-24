@@ -16,8 +16,9 @@ HelmholtzProjector::HelmholtzProjector(
       grad_(nullptr), a0_(nullptr) {
 
   hephaestus::InputParameters default_pars;
-  default_pars.SetParam("Tolerance", double(1.0e-16));
-  default_pars.SetParam("MaxIter", (unsigned int)500);
+  default_pars.SetParam("Tolerance", float(1.0e-20));
+  default_pars.SetParam("AbsTolerance", float(1.0e-20));
+  default_pars.SetParam("MaxIter", (unsigned int)1000);
   default_pars.SetParam("PrintLevel", 1);
 
   solver_options_ = params.GetOptionalParam<hephaestus::InputParameters>(

@@ -2,10 +2,10 @@
 
 namespace hephaestus {
 
+///// THESE FUNCTIONS WILL EVENTUALLY GO INTO A UTILS FILE ///////////
+
 double highV(const mfem::Vector &x, double t) { return 1.0; }
 double lowV(const mfem::Vector &x, double t) { return 0.0; }
-
-///// THESE FUNCTIONS WILL EVENTUALLY GO INTO A UTILS FILE ///////////
 
 double calcFlux(mfem::GridFunction *v_field, int face_attr) {
 
@@ -154,8 +154,6 @@ OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters &params,
     : J_gf_name_(params.GetParam<std::string>("SourceName")),
       V_gf_name_(params.GetParam<std::string>("PotentialName")),
       I_coef_name_(params.GetParam<std::string>("IFuncCoefName")),
-      perform_helmholtz_projection(
-          params.GetOptionalParam<bool>("HelmholtzProjection", true)),
       coil_domains_(coil_dom), elec_attrs_(electrodes), coef1_(1.0),
       mesh_parent_(nullptr), mesh_(nullptr), H1FESpace_(nullptr),
       HCurlFESpace_(nullptr), J_parent_(nullptr), V_parent_(nullptr),
@@ -163,9 +161,10 @@ OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters &params,
       high_terminal_(1), low_terminal_(1) {
 
   hephaestus::InputParameters default_pars;
-  default_pars.SetParam("Tolerance", double(1.0e-20));
+  default_pars.SetParam("Tolerance", float(1.0e-20));
+  default_pars.SetParam("AbsTolerance", float(1.0e-20));
   default_pars.SetParam("MaxIter", (unsigned int)1000);
-  default_pars.SetParam("PrintLevel", -1);
+  default_pars.SetParam("PrintLevel", 1);
 
   solver_options_ = params.GetOptionalParam<hephaestus::InputParameters>(
       "SolverOptions", default_pars);
@@ -244,31 +243,6 @@ void OpenCoilSolver::Apply(mfem::ParLinearForm *lf) {
   *J_parent_ = 0.0;
   mesh_->Transfer(*J_, *J_parent_);
   *J_ /= I;
-
-  ////////////////////////////// EXPERIMENTS ////////////////////////////
-
-  if (perform_helmholtz_projection) {
-    V_parent_ = new mfem::ParGridFunction(new mfem::ParFiniteElementSpace(
-        mesh_parent_,
-        new mfem::H1_FECollection(order_h1_, mesh_parent_->Dimension())));
-    hephaestus::GridFunctions gfs_parent;
-    hephaestus::BCMap bcs_parent;
-    gfs_parent.Register("J_parent", J_parent_, false);
-    gfs_parent.Register("V_parent", V_parent_, false);
-    bcs_parent.Register(
-        "high_potential",
-        new hephaestus::ScalarDirichletBC(std::string("V_parent"),
-                                          high_terminal_, &high_src_),
-        true);
-    bcs_parent.Register("low_potential",
-                        new hephaestus::ScalarDirichletBC(
-                            std::string("V_parent"), low_terminal_, &low_src_),
-                        true);
-
-    cleanDivergence(gfs_parent, bcs_parent, "J_parent", "V_parent", solver_options_);
-  }
-
-  //////////////////////////////////////////////////////////////////////
 
   if (V_parent_ != nullptr) {
     *V_ *= I;
