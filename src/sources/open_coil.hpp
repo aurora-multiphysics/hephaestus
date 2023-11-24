@@ -5,6 +5,9 @@
 
 namespace hephaestus {
 
+double highV(const mfem::Vector &x, double t);
+double lowV(const mfem::Vector &x, double t);
+
 double calcFlux(mfem::GridFunction *v_field, int face_attr);
 
 template <typename T> void ifDelete(T *ptr);
@@ -13,10 +16,19 @@ void inheritBdrAttributes(const mfem::ParMesh *parent_mesh,
                           mfem::ParSubMesh *child_mesh);
 
 // Applies the HelmholtzProjector onto the J GridFunction to clean it of any
-// divergences
-void cleanDivergence(hephaestus::GridFunctions *gridfunctions,
-                     std::string J_name, std::string V_name,
-                     hephaestus::BCMap *bc_map);
+// divergences. This is for the simplest case with no BCs
+void cleanDivergence(mfem::ParGridFunction &Vec_GF,
+                     hephaestus::InputParameters solve_pars);
+
+// The more complicated case where BCs are needed
+void cleanDivergence(const hephaestus::GridFunctions &gfs,
+                     const hephaestus::BCMap &bcs,
+                     const std::string vec_gf_name,
+                     const std::string scalar_gf_name,
+                     hephaestus::InputParameters solve_pars);
+
+void attrToMarker(const mfem::Array<int> attr_list,
+                  mfem::Array<int> &marker_list, int max_attr);
 
 class OpenCoilSolver : public hephaestus::Source {
 
@@ -65,8 +77,10 @@ private:
   int ref_face_;
   std::pair<int, int> elec_attrs_;
   mfem::Array<int> coil_domains_;
+  mfem::Array<int> coil_markers_;
   mfem::ConstantCoefficient coef1_;
   mfem::Coefficient *Itotal_;
+  hephaestus::InputParameters solver_options_;
 
   // Names
   std::string J_gf_name_;
@@ -95,6 +109,9 @@ private:
 
   // Mass Matrix
   mfem::ParBilinearForm *m1_;
+
+  // BC Map
+  hephaestus::BCMap bc_maps;
 };
 
 } // namespace hephaestus
