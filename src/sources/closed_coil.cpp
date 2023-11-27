@@ -34,12 +34,14 @@ ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters &params,
       h1_fespace_name_(params.GetParam<std::string>("H1FESpaceName")),
       J_gf_name_(params.GetParam<std::string>("JGridFunctionName")),
       I_coef_name_(params.GetParam<std::string>("IFuncCoefName")),
-      coil_domains_(coil_dom), mesh_parent_(nullptr), J_parent_(nullptr),
-      HCurlFESpace_parent_(nullptr), H1FESpace_parent_(nullptr) {
+      J_transfer_(params.GetOptionalParam<bool>("JTransfer", false)),
+      coil_domains_(coil_dom), mesh_parent_(nullptr),
+      J_parent_(nullptr), HCurlFESpace_parent_(nullptr),
+      H1FESpace_parent_(nullptr), Jt_parent_(nullptr) {
 
   hephaestus::InputParameters default_pars;
-  default_pars.SetParam("Tolerance", float(1e-40));
-  default_pars.SetParam("AbsTolerance", float(1e-40));
+  default_pars.SetParam("Tolerance", float(1e-18));
+  default_pars.SetParam("AbsTolerance", float(1e-18));
   default_pars.SetParam("MaxIter", (unsigned int)1000);
   default_pars.SetParam("PrintLevel", 1);
 
@@ -92,10 +94,10 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
 
   J_parent_ = gridfunctions.Get(J_gf_name_);
   if (J_parent_ == nullptr) {
-    const std::string error_message = J_gf_name_ +
-                                      " not found in gridfunctions when "
-                                      "creating OpenCoilSolver\n";
-    mfem::mfem_error(error_message.c_str());
+    std::cout << J_gf_name_ +
+                     " not found in gridfunctions when "
+                     "creating OpenCoilSolver. Creating new GridFunction.\n";
+    J_parent_ = new mfem::ParGridFunction(HCurlFESpace_parent_);
   } else if (J_parent_->ParFESpace()->FEColl()->GetContType() !=
              mfem::FiniteElementCollection::TANGENTIAL) {
     mfem::mfem_error("J GridFunction must be of HCurl type.");
@@ -109,11 +111,11 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
     Itotal_ = new mfem::ConstantCoefficient(1.0);
   }
 
-  if (final_lf_ == nullptr){
+  if (final_lf_ == nullptr) {
     final_lf_ = new mfem::ParLinearForm(HCurlFESpace_parent_);
     *final_lf_ = 0.0;
   }
-  
+
   makeWedge();
   prepareCoilSubmesh();
   solveTransition();
@@ -122,6 +124,9 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
 
   if (!fespaces.Has(h1_fespace_name_))
     delete H1FESpace_parent_;
+
+  if (!gridfunctions.Has(J_gf_name_))
+    delete J_parent_;
 }
 
 void ClosedCoilSolver::Apply(mfem::ParLinearForm *lf) {
@@ -270,8 +275,7 @@ void ClosedCoilSolver::makeWedge() {
   for (auto e : wedge_els)
     mesh_parent_->SetAttribute(e, new_domain_attr_);
 
-  // transition_domain_.Append(new_domain_attr_);
-  transition_domain_ = coil_domains_;
+  transition_domain_.Append(new_domain_attr_);
   coil_domains_.Append(new_domain_attr_);
 
   mesh_parent_->FinalizeTopology();
@@ -372,9 +376,13 @@ void ClosedCoilSolver::solveCoil() {
   grad.AddDomainInterpolator(new mfem::GradientInterpolator());
   grad.Assemble();
   grad.Mult(Vaux_coil, *Jaux_coil_);
+
+  if (J_transfer_)
+    Jt_parent_ = new mfem::ParGridFunction(*J_parent_);
+  
   *J_parent_ = 0.0;
   mesh_coil_->Transfer(*Jaux_coil_, *J_parent_);
-
+  
   mfem::ParBilinearForm m1(HCurlFESpace_parent_);
   hephaestus::attrToMarker(coil_domains_, coil_markers_,
                            mesh_parent_->attributes.Max());
@@ -382,7 +390,14 @@ void ClosedCoilSolver::solveCoil() {
       new mfem::VectorFEMassIntegrator(new mfem::ConstantCoefficient(1.0)),
       coil_markers_);
   m1.Assemble();
-  m1.AddMult(*J_parent_, *final_lf_, -1.0);
+  m1.AddMult(*J_parent_, *final_lf_, -1.0); 
+
+  if (J_transfer_){
+    *J_parent_ -= *Jt_parent_;
+    *J_parent_ *= -1.0;
+    delete Jt_parent_;
+  }
+
 }
 
 void ClosedCoilSolver::normaliseCurrent() {

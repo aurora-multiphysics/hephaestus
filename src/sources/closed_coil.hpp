@@ -69,6 +69,11 @@ private:
   std::vector<int> old_dom_attrs;
   hephaestus::InputParameters solver_options_;
 
+  // Seting J_transfer_ to true will negatively affect performance, but
+  // the resulting source current will be correct for visualisation purposes.
+  // Only set to true if you wish to view the final current.
+  bool J_transfer_;
+
   // Names
   std::string hcurl_fespace_name_;
   std::string h1_fespace_name_;
@@ -80,6 +85,9 @@ private:
   mfem::ParGridFunction *J_parent_;
   mfem::ParFiniteElementSpace *HCurlFESpace_parent_;
   mfem::ParFiniteElementSpace *H1FESpace_parent_;
+
+  // In case J transfer is true
+  mfem::ParGridFunction *Jt_parent_;
 
   // Coil mesh, FE Space, and current
   mfem::ParSubMesh *mesh_coil_;

@@ -35,6 +35,7 @@ hephaestus::Sources defineSources() {
                            std::string("source_current_density"));
   coilsolver_pars.SetParam("IFuncCoefName", std::string("I"));
   coilsolver_pars.SetParam("H1FESpaceName", std::string("H1"));
+  coilsolver_pars.SetParam("JTransfer", true);
 
   hephaestus::Sources sources;
   sources.Register("source",
@@ -94,7 +95,7 @@ int main(int argc, char *argv[]) {
   problem_builder->SetOutputs(outputs);
 
   hephaestus::InputParameters solver_options;
-  solver_options.SetParam("Tolerance", float(1.0e-12));
+  solver_options.SetParam("Tolerance", float(1.0e-13));
   solver_options.SetParam("AbsTolerance", float(1.0e-16));
   solver_options.SetParam("MaxIter", (unsigned int)500);
   solver_options.SetParam("PrintLevel", 2);
