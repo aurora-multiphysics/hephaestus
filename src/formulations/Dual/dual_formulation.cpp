@@ -86,7 +86,7 @@ void DualFormulation::ConstructOperator() {
       *(this->problem->pmesh), this->problem->fespaces,
       this->problem->gridfunctions, this->problem->bc_map,
       this->problem->coefficients, this->problem->sources,
-      *(this->problem->_jacobian_solver));
+      *(this->problem->_jacobian_solver), *(this->problem->_nonlinear_solver));
   this->problem->td_operator->SetEquationSystem(
       this->problem->td_equation_system.get());
   this->problem->td_operator->SetGridFunctions();
@@ -182,9 +182,11 @@ DualOperator::DualOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
                            hephaestus::BCMap &bc_map,
                            hephaestus::Coefficients &coefficients,
                            hephaestus::Sources &sources,
-                           mfem::Solver &jacobian_solver)
+                           mfem::Solver &jacobian_solver,
+                           mfem::NewtonSolver &nonlinear_solver)
     : TimeDomainProblemOperator(pmesh, fespaces, gridfunctions, bc_map,
-                                coefficients, sources, jacobian_solver) {}
+                                coefficients, sources, jacobian_solver,
+                                nonlinear_solver) {}
 
 void DualOperator::Init(mfem::Vector &X) {
   TimeDomainProblemOperator::Init(X);

@@ -56,6 +56,8 @@ public:
 
   virtual void ConstructJacobianSolver() override;
 
+  virtual void ConstructNonlinearSolver() override;
+
   virtual void InitializeKernels() override;
 
   virtual void ConstructOperator() override;

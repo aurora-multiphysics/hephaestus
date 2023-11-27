@@ -26,7 +26,7 @@ public:
 
   std::shared_ptr<mfem::Solver> _jacobian_preconditioner;
   std::shared_ptr<mfem::Solver> _jacobian_solver;
-  mfem::NewtonSolver _nonlinear_solver;
+  std::shared_ptr<mfem::NewtonSolver> _nonlinear_solver;
 
   hephaestus::FECollections fecs;
   hephaestus::FESpaces fespaces;
@@ -88,6 +88,7 @@ public:
   virtual void ConstructEquationSystem() = 0;
   virtual void ConstructJacobianPreconditioner() = 0;
   virtual void ConstructJacobianSolver() = 0;
+  virtual void ConstructNonlinearSolver() = 0;
   virtual void ConstructOperator() = 0;
   virtual void ConstructState() = 0;
   virtual void ConstructTimestepper() = 0;
@@ -125,6 +126,7 @@ public:
     this->problem_builder->InitializeKernels();
     this->problem_builder->ConstructJacobianPreconditioner();
     this->problem_builder->ConstructJacobianSolver();
+    this->problem_builder->ConstructNonlinearSolver();
     this->problem_builder->ConstructOperator();
     this->problem_builder->ConstructState();
     this->problem_builder->InitializeAuxSolvers();
@@ -139,6 +141,7 @@ public:
     this->problem_builder->InitializeKernels();
     this->problem_builder->ConstructJacobianPreconditioner();
     this->problem_builder->ConstructJacobianSolver();
+    this->problem_builder->ConstructNonlinearSolver();
     this->problem_builder->ConstructOperator();
     this->problem_builder->ConstructState();
     this->problem_builder->ConstructTimestepper();

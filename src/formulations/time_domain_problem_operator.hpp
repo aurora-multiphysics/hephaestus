@@ -16,16 +16,15 @@ GetTimeDerivativeNames(std::vector<std::string> gridfunction_names);
 // Specifies output interfaces of a time-domain EM formulation.
 class TimeDomainProblemOperator : public mfem::TimeDependentOperator {
 public:
-  TimeDomainProblemOperator(mfem::ParMesh &pmesh,
-                            hephaestus::FESpaces &fespaces,
-                            hephaestus::GridFunctions &gridfunctions,
-                            hephaestus::BCMap &bc_map,
-                            hephaestus::Coefficients &coefficients,
-                            hephaestus::Sources &sources,
-                            mfem::Solver &jacobian_solver)
+  TimeDomainProblemOperator(
+      mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
+      hephaestus::GridFunctions &gridfunctions, hephaestus::BCMap &bc_map,
+      hephaestus::Coefficients &coefficients, hephaestus::Sources &sources,
+      mfem::Solver &jacobian_solver, mfem::NewtonSolver &nonlinear_solver)
       : myid_(0), num_procs_(1), pmesh_(&pmesh), _fespaces(fespaces),
         _gridfunctions(gridfunctions), _bc_map(bc_map), _sources(sources),
-        _coefficients(coefficients), _jacobian_solver(&jacobian_solver) {
+        _coefficients(coefficients), _jacobian_solver(&jacobian_solver),
+        _nonlinear_solver(nonlinear_solver) {
     MPI_Comm_size(pmesh.GetComm(), &num_procs_);
     MPI_Comm_rank(pmesh.GetComm(), &myid_);
   };
@@ -41,27 +40,11 @@ public:
 
   void
   SetEquationSystem(hephaestus::TimeDependentEquationSystem *equation_system);
-  // void
-  // setEquationSystemOperator(mfem::OperatorHandle &equation_system_operator) {
-  //   _equation_system_operator = equation_system_operator;
-  // };
-  // void setJacobianPreconditioner(){};
-  // void setJacobianSolver(mfem::Solver *jacobian_solver) {
-  //   if (_jacobian_solver != NULL) {
-  //     delete _jacobian_solver;
-  //   }
-  //   _jacobian_solver = jacobian_solver;
-  // };
-
-  // virtual hephaestus::TimeDependentEquationSystem *GetEquationSystem() = 0;
-  // virtual mfem::OperatorHandle GetEquationSystemOperator() = 0;
-  // virtual mfem::Solver *GetJacobianPreconditioner() = 0;
 
   virtual mfem::Solver *getJacobianSolver() { return _jacobian_solver; };
   virtual mfem::NewtonSolver *getNonlinearSolver() {
     return &_nonlinear_solver;
   };
-  // virtual mfem::NewtonSolver *GetNewtonSolver() = 0;
 
   mfem::Array<int> true_offsets, block_trueOffsets;
 
@@ -82,19 +65,12 @@ public:
   hephaestus::BCMap &_bc_map;
   hephaestus::Sources &_sources;
   hephaestus::Coefficients &_coefficients;
-  mfem::NewtonSolver _nonlinear_solver;
-  mfem::Solver *_jacobian_solver;
-
-  // Set all of the below from formulation:
-  // SetJacobianSolver
-  // SetNewtonSolver
-  // SetOperator - test removing the DefaultSolvers from ImplicitSolve
-
   mfem::BlockVector trueX, trueRhs;
   mfem::OperatorHandle _equation_system_operator;
 
 private:
-  // mfem::Solver *_jacobian_solver = NULL;
+  mfem::Solver *_jacobian_solver;
+  mfem::NewtonSolver &_nonlinear_solver;
 };
 
 } // namespace hephaestus

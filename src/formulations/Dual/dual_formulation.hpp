@@ -51,7 +51,8 @@ public:
                hephaestus::GridFunctions &gridfunctions,
                hephaestus::BCMap &bc_map,
                hephaestus::Coefficients &coefficients,
-               hephaestus::Sources &sources, mfem::Solver &jacobian_solver);
+               hephaestus::Sources &sources, mfem::Solver &jacobian_solver,
+               mfem::NewtonSolver &nonlinear_solver);
 
   ~DualOperator(){};
 

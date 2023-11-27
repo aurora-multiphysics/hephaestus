@@ -65,13 +65,24 @@ void TimeDomainProblemBuilder::ConstructJacobianSolver() {
   this->problem->_jacobian_solver = solver;
 }
 
+void TimeDomainProblemBuilder::ConstructNonlinearSolver() {
+  std::shared_ptr<mfem::NewtonSolver> nl_solver{
+      std::make_shared<mfem::NewtonSolver>(this->problem->comm)};
+  // Defaults to one iteration, without further nonlinear iterations
+  nl_solver->SetRelTol(0.0);
+  nl_solver->SetAbsTol(0.0);
+  nl_solver->SetMaxIter(1);
+  this->problem->_nonlinear_solver = nl_solver;
+}
+
 void TimeDomainProblemBuilder::ConstructOperator() {
   this->problem->td_operator =
       std::make_unique<hephaestus::TimeDomainProblemOperator>(
           *(this->problem->pmesh), this->problem->fespaces,
           this->problem->gridfunctions, this->problem->bc_map,
           this->problem->coefficients, this->problem->sources,
-          *(this->problem->_jacobian_solver));
+          *(this->problem->_jacobian_solver),
+          *(this->problem->_nonlinear_solver));
   this->problem->td_operator->SetEquationSystem(
       this->problem->td_equation_system.get());
   this->problem->td_operator->SetGridFunctions();
