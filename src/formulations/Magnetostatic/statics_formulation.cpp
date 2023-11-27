@@ -139,14 +139,7 @@ void StaticsOperator::Solve(mfem::Vector &X) {
   getJacobianSolver()->SetOperator(CurlMuInvCurl);
   getJacobianSolver()->Mult(RHS, A);
 
-  // hephaestus::DefaultHCurlPCGSolver _jacobian_solver(
-  //     _solver_options, CurlMuInvCurl, a_.ParFESpace());
-  // _jacobian_solver.Mult(RHS, A);
   a1_.RecoverFEMSolution(A, b1_, a_);
-}
-
-void StaticsOperator::buildJacobianSolver() {
-  // getJacobianSolver()->SetOperator(CurlMuInvCurl);
 }
 
 } // namespace hephaestus

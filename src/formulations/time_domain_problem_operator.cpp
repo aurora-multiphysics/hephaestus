@@ -72,18 +72,25 @@ void TimeDomainProblemOperator::ImplicitSolve(const double dt,
   }
   _coefficients.SetTime(this->GetTime());
   buildEquationSystemOperator(dt);
-  buildJacobianSolver();
-  getJacobianSolver()->Mult(trueRhs, trueX);
+  getJacobianSolver()->SetOperator(_equation_system->GetGradient(trueX));
+  trueX.SyncToBlocks();
+  trueRhs.SyncToBlocks();
+
+  // getNonlinearSolver()->iterative_mode = true;
+  getNonlinearSolver()->SetSolver(*getJacobianSolver());
+  getNonlinearSolver()->SetOperator(*_equation_system);
+  getNonlinearSolver()->SetRelTol(0.0);
+  getNonlinearSolver()->SetAbsTol(0.0);
+  getNonlinearSolver()->SetMaxIter(1);
+  getNonlinearSolver()->Mult(trueRhs, trueX);
+
+  // getJacobianSolver()->Mult(trueRhs, trueX);
   _equation_system->RecoverFEMSolution(trueX, _gridfunctions);
 }
 void TimeDomainProblemOperator::buildEquationSystemOperator(double dt) {
   _equation_system->setTimeStep(dt);
   _equation_system->updateEquationSystem(_bc_map, _sources);
-  _equation_system->FormLinearSystem(_equation_system_operator, trueX, trueRhs);
-}
-void TimeDomainProblemOperator::buildJacobianSolver() {
-  getJacobianSolver()->SetOperator(
-      *_equation_system_operator.As<mfem::HypreParMatrix>());
+  _equation_system->buildJacobian(trueX, trueRhs);
 }
 
 void TimeDomainProblemOperator::SetEquationSystem(

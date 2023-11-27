@@ -41,7 +41,6 @@ public:
   virtual void SetGridFunctions() override;
   virtual void Init(mfem::Vector &X) override;
   virtual void Solve(mfem::Vector &X) override;
-  virtual void buildJacobianSolver() override;
 
 private:
   const std::string _h_curl_var_name, _stiffness_coef_name;

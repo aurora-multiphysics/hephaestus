@@ -164,6 +164,21 @@ void EquationSystem::FormLinearSystem(mfem::OperatorHandle &op,
   op.Reset(mfem::HypreParMatrixFromBlocks(hBlocks));
 }
 
+void EquationSystem::buildJacobian(mfem::BlockVector &trueX,
+                                   mfem::BlockVector &trueRHS) {
+  this->height = trueX.Size();
+  this->width = trueRHS.Size();
+  FormLinearSystem(jacobian, trueX, trueRHS);
+}
+
+void EquationSystem::Mult(const mfem::Vector &x, mfem::Vector &residual) const {
+  jacobian->Mult(x, residual);
+}
+
+mfem::Operator &EquationSystem::GetGradient(const mfem::Vector &u) const {
+  return *jacobian;
+}
+
 void EquationSystem::RecoverFEMSolution(
     mfem::BlockVector &trueX, hephaestus::GridFunctions &gridfunctions) {
   for (int i = 0; i < test_var_names.size(); i++) {
@@ -315,8 +330,8 @@ void EquationSystem::buildMixedBilinearForms() {
         }
         // Assemble mixed bilinear forms
         mblf->Assemble();
-        // Register mixed bilinear forms associated with a single trial variable
-        // for the current test variable
+        // Register mixed bilinear forms associated with a single trial
+        // variable for the current test variable
         test_mblfs->Register(trial_var_name, mblf, true);
       }
     }

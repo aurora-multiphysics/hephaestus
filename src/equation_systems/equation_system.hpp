@@ -23,7 +23,7 @@ populateVectorFromNamedFieldsMap(mfem::NamedFieldsMap<T> nfmap,
 Class to store weak form components (bilinear and linear forms, and optionally
 mixed and nonlinear forms) and build methods
 */
-class EquationSystem {
+class EquationSystem : public mfem::Operator {
 public:
   EquationSystem(){};
   EquationSystem(const hephaestus::InputParameters &params);
@@ -83,6 +83,16 @@ public:
                                 mfem::BlockVector &trueX,
                                 mfem::BlockVector &trueRHS);
 
+  // Build linear system, with essential boundary conditions accounted for
+  virtual void buildJacobian(mfem::BlockVector &trueX,
+                             mfem::BlockVector &trueRHS);
+
+  /// Compute residual y = Mu
+  virtual void Mult(const mfem::Vector &u, mfem::Vector &residual) const;
+
+  /// Compute J = M + grad_H(u)
+  virtual mfem::Operator &GetGradient(const mfem::Vector &u) const;
+
   // Update variable from solution vector after solve
   virtual void RecoverFEMSolution(mfem::BlockVector &trueX,
                                   hephaestus::GridFunctions &gridfunctions);
@@ -105,6 +115,8 @@ protected:
   mfem::NamedFieldsMap<mfem::NamedFieldsMap<
       mfem::Array<hephaestus::Kernel<mfem::ParMixedBilinearForm> *>>>
       mblf_kernels_map_map;
+
+  mutable mfem::OperatorHandle jacobian;
 };
 
 /*

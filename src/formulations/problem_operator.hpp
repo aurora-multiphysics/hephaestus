@@ -23,7 +23,6 @@ public:
   virtual void SetGridFunctions();
   virtual void Init(mfem::Vector &X);
   virtual void Solve(mfem::Vector &X){};
-  virtual void buildJacobianSolver(){};
   virtual mfem::Solver *getJacobianSolver() { return _jacobian_solver; };
   void Mult(const mfem::Vector &x, mfem::Vector &y) const override{};
 

@@ -38,7 +38,6 @@ public:
                              mfem::Vector &dX_dt) override;
 
   virtual void buildEquationSystemOperator(double dt);
-  virtual void buildJacobianSolver();
 
   void
   SetEquationSystem(hephaestus::TimeDependentEquationSystem *equation_system);
@@ -59,6 +58,9 @@ public:
   // virtual mfem::Solver *GetJacobianPreconditioner() = 0;
 
   virtual mfem::Solver *getJacobianSolver() { return _jacobian_solver; };
+  virtual mfem::NewtonSolver *getNonlinearSolver() {
+    return &_nonlinear_solver;
+  };
   // virtual mfem::NewtonSolver *GetNewtonSolver() = 0;
 
   mfem::Array<int> true_offsets, block_trueOffsets;
@@ -80,6 +82,7 @@ public:
   hephaestus::BCMap &_bc_map;
   hephaestus::Sources &_sources;
   hephaestus::Coefficients &_coefficients;
+  mfem::NewtonSolver _nonlinear_solver;
   mfem::Solver *_jacobian_solver;
 
   // Set all of the below from formulation:
