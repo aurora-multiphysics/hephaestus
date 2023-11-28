@@ -28,7 +28,7 @@ Hephaestus can be built with the following commands from the top level `hephaest
 
     mkdir build
     cd build
-    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DMFEM_DIR=/opt/mfem/build/directory -DMFEM_COMMON_INCLUDES=/opt/mfem/miniapps/common ..
+    cmake -G "Unix Makefiles" -DBUILD_TYPE=Release -DMFEM_DIR=/opt/mfem/build -DMFEM_COMMON_INCLUDES=/opt/mfem/miniapps/common ..
     make
     make test
 
