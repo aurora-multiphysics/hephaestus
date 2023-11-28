@@ -2,6 +2,8 @@
 
 const char *DATA_DIR = "../../data/";
 
+static void zeroVec(const mfem::Vector &x, mfem::Vector &V) { V = 1.0; }
+
 hephaestus::Coefficients defineCoefficients(double Itotal) {
 
   hephaestus::Subdomain coil("coil", 1);
@@ -85,7 +87,6 @@ int main(int argc, char *argv[]) {
                  "List of electrode attributes separated by spaces, e.g. \'1 "
                  "2\'. Must be two values.");
 
-  // ADD AN OPTION FOR DEFINING THE BOUNDARY ATTRIBUTES OF THE ELECTRODES ////
   args.Parse();
 
   MPI_Init(&argc, &argv);
@@ -140,6 +141,17 @@ int main(int argc, char *argv[]) {
                                    std::string("HDiv"));
   problem_builder->registerMagneticFluxDensityAux("magnetic_flux_density");
   hephaestus::Coefficients coefficients = defineCoefficients(Itotal);
+
+  mfem::Array<int> A_DBC_bdr(3);
+  A_DBC_bdr[0] = 1;
+  A_DBC_bdr[1] = 2;
+  A_DBC_bdr[2] = 4;
+  hephaestus::VectorDirichletBC A_DBC("magnetic_vector_potential", A_DBC_bdr,
+                                      new mfem::VectorFunctionCoefficient(3, zeroVec));
+
+  problem_builder->AddBoundaryCondition("A_DBC", &A_DBC,
+                                        true);
+
   problem_builder->SetCoefficients(coefficients);
 
   hephaestus::Sources sources = defineSources(elec_attrs, coil_domains);
@@ -149,8 +161,8 @@ int main(int argc, char *argv[]) {
   problem_builder->SetOutputs(outputs);
 
   hephaestus::InputParameters solver_options;
-  solver_options.SetParam("Tolerance", float(1.0e-18));
-  solver_options.SetParam("AbsTolerance", float(1.0e-18));
+  solver_options.SetParam("Tolerance", float(1.0e-11));
+  solver_options.SetParam("AbsTolerance", float(1.0e-11));
   solver_options.SetParam("MaxIter", (unsigned int)1000);
   solver_options.SetParam("PrintLevel", 2);
   problem_builder->SetSolverOptions(solver_options);
