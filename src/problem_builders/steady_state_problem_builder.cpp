@@ -25,4 +25,10 @@ void SteadyStateProblemBuilder::ConstructState() {
   this->problem->eq_sys_operator->Init(
       *(this->problem->F)); // Set up initial conditions
 }
+
+void SteadyStateProblemBuilder::ConstructEquationSystem() {
+  hephaestus::InputParameters params;
+  this->problem->eq_sys = 
+      std::make_unique<hephaestus::EquationSystem>(params);
+}
 } // namespace hephaestus
