@@ -21,10 +21,16 @@ if (MFEM_DIR)
 else()
    find_package(mfem REQUIRED NAMES MFEM)
 endif()
+
+############################################################
+# Check C++ compiler is the same as used in MFEM 
+############################################################
 message(STATUS "Found mfem config in: ${mfem_DIR} (version ${MFEM_VERSION})")
+
 # Use the same C++ compiler as MFEM. This is needed when MFEM was built using
 # an MPI wrapper and we do not have explicitly the MPI compile and link flags.
 message(STATUS "Mfem compiler is: ${MFEM_CXX_COMPILER}")
+
 if (NOT CMAKE_CXX_COMPILER AND MFEM_CXX_COMPILER)
   set(CMAKE_CXX_COMPILER "${MFEM_CXX_COMPILER}")
 endif()
@@ -81,6 +87,13 @@ elseif(BUILD_TYPE STREQUAL "DEBUG-THREAD")
 elseif(BUILD_TYPE STREQUAL "RELEASE")
   set(BUILD_TYPE_COMPILE_FLAGS -O2)
   set(TEST_LIBRARIES "")
+endif()
+
+############################################################
+# Check clang is being used if build type is set to "DEBUG-MEMORY"
+############################################################
+if(BUILD_TYPE STREQUAL "DEBUG-MEMORY" AND NOT ${CMAKE_CXX_COMPILER} STREQUAL "/usr/bin/clang++")
+    message(FATAL_ERROR "DEBUG-MEMORY option requires the clang++ compiler.")
 endif()
 
 ############################################################
