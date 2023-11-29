@@ -43,10 +43,10 @@ hephaestus::Sources defineSources(std::pair<int, int> elec,
 }
 
 hephaestus::Outputs defineOutputs() {
-  std::map<std::string, mfem::DataCollection *> data_collections;
-  data_collections["ParaViewDataCollection"] =
-      new mfem::ParaViewDataCollection("Team7ParaView");
-  hephaestus::Outputs outputs(data_collections);
+  hephaestus::Outputs outputs;
+  outputs.Register("ParaViewDataCollection",
+                   new mfem::ParaViewDataCollection("Team7ParaView"), true);
+  outputs.EnableGLVis(true);
   return outputs;
 }
 
@@ -146,11 +146,11 @@ int main(int argc, char *argv[]) {
   A_DBC_bdr[0] = 1;
   A_DBC_bdr[1] = 2;
   A_DBC_bdr[2] = 4;
-  hephaestus::VectorDirichletBC A_DBC("magnetic_vector_potential", A_DBC_bdr,
-                                      new mfem::VectorFunctionCoefficient(3, zeroVec));
+  hephaestus::VectorDirichletBC A_DBC(
+      "magnetic_vector_potential", A_DBC_bdr,
+      new mfem::VectorFunctionCoefficient(3, zeroVec));
 
-  problem_builder->AddBoundaryCondition("A_DBC", &A_DBC,
-                                        true);
+  problem_builder->AddBoundaryCondition("A_DBC", &A_DBC, true);
 
   problem_builder->SetCoefficients(coefficients);
 
@@ -179,7 +179,6 @@ int main(int argc, char *argv[]) {
       new hephaestus::SteadyExecutioner(exec_params);
 
   mfem::out << "Created executioner";
-  executioner->Init();
   executioner->Execute();
 
   MPI_Finalize();

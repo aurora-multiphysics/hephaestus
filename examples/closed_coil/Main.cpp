@@ -45,10 +45,9 @@ hephaestus::Sources defineSources() {
   return sources;
 }
 hephaestus::Outputs defineOutputs() {
-  std::map<std::string, mfem::DataCollection *> data_collections;
-  data_collections["ParaViewDataCollection"] =
-      new mfem::ParaViewDataCollection("Team7ParaView");
-  hephaestus::Outputs outputs(data_collections);
+  hephaestus::Outputs outputs;
+  outputs.Register("ParaViewDataCollection",
+                   new mfem::ParaViewDataCollection("Team7ParaView"), true);
   return outputs;
 }
 
@@ -106,6 +105,8 @@ int main(int argc, char *argv[]) {
   std::unique_ptr<hephaestus::SteadyStateProblem> problem =
       problem_builder->ReturnProblem();
   hephaestus::InputParameters exec_params;
+  problem.get()->outputs.EnableGLVis(true);
+
   exec_params.SetParam("VisualisationSteps", int(1));
   exec_params.SetParam("UseGLVis", true);
   exec_params.SetParam("Problem", problem.get());
@@ -113,7 +114,6 @@ int main(int argc, char *argv[]) {
       new hephaestus::SteadyExecutioner(exec_params);
 
   mfem::out << "Created executioner";
-  executioner->Init();
   executioner->Execute();
 
   MPI_Finalize();
