@@ -11,31 +11,53 @@ ThermalExpansionFormulation::ThermalExpansionFormulation() : SteadyStateFormulat
   thermal_expansion_coef_name = std::string("thermal_expansion_coef");
   thermal_conductivity_coef_name = std::string("thermal_conductivity");
   stress_free_temp_coef_name = std::string("stress_free_temp");
+  thermal_expansion_bilin_coef_name = std::string("thermal_expansion_bilin_coef");
+  thermal_expansion_lin_coef_name = std::string("thermal_expansion_lin_coef");
+
 }
 
 void ThermalExpansionFormulation::RegisterCoefficients() {
+  
   hephaestus::Coefficients &coefficients = this->GetProblem()->coefficients;
 
+  if (!coefficients.scalars.Has(lame_param_coef_name)) {
+    MFEM_ABORT(lame_param_coef_name + " coefficient not found.");
+  }
 
-    if (!coefficients.scalars.Has(lame_param_coef_name)) {
-      MFEM_ABORT(lame_param_coef_name + " coefficient not found.");
-    }
+  if (!coefficients.scalars.Has(shear_modulus_coef_name)) {
+    MFEM_ABORT(shear_modulus_coef_name + " coefficient not found.");
+  }
 
-    if (!coefficients.scalars.Has(shear_modulus_coef_name)) {
-      MFEM_ABORT(shear_modulus_coef_name + " coefficient not found.");
-    }
+  if (!coefficients.scalars.Has(stress_free_temp_coef_name)) {
+    MFEM_ABORT(stress_free_temp_coef_name + " coefficient not found.");
+  }
 
-    if (!coefficients.scalars.Has(stress_free_temp_coef_name)) {
-      MFEM_ABORT(stress_free_temp_coef_name + " coefficient not found.");
-    }
+  if (!coefficients.scalars.Has(thermal_expansion_coef_name)) {
+    MFEM_ABORT(thermal_expansion_coef_name + " coefficient not found.");
+  }
 
-    if (!coefficients.scalars.Has(thermal_expansion_coef_name)) {
-      MFEM_ABORT(thermal_expansion_coef_name + " coefficient not found.");
-    }
+  if (!coefficients.scalars.Has(thermal_conductivity_coef_name)) {
+    MFEM_ABORT(thermal_conductivity_coef_name + " coefficient not found.");
+  }
 
-    if (!coefficients.scalars.Has(thermal_conductivity_coef_name)) {
-      MFEM_ABORT(thermal_conductivity_coef_name + " coefficient not found.");
-    }
+  mfem::SumCoefficient materialTerm(*(coefficients.scalars.Get(lame_param_coef_name)),
+                                     *(coefficients.scalars.Get(shear_modulus_coef_name)), 3, 2);
+
+  mfem::SumCoefficient thexpStressFreeTemp(*(coefficients.scalars.Get(thermal_expansion_coef_name)),
+                                            *(coefficients.scalars.Get(stress_free_temp_coef_name)));
+
+  mfem::ProductCoefficient bilinearFormCoefPositive(*(coefficients.scalars.Get(thermal_expansion_coef_name)),
+                                                    materialTerm);
+
+  if (!coefficients.scalars.Has(thermal_expansion_bilin_coef_name)) {
+    coefficients.scalars.Register(thermal_expansion_bilin_coef_name,
+                                    new mfem::ProductCoefficient(-1, bilinearFormCoefPositive), true);
+  }
+
+  if (!coefficients.scalars.Has(thermal_expansion_lin_coef_name)) {
+    coefficients.scalars.Register(thermal_expansion_lin_coef_name,
+                                    new mfem::ProductCoefficient(*(coefficients.scalars.Get(stress_free_temp_coef_name)), materialTerm), true);
+  }
 }
 
 // void ThermalExpansionFormulation::ConstructEquationSystem() {
@@ -69,7 +91,9 @@ void ThermalExpansionFormulation::ConstructOperator() {
       this->problem->coefficients, this->problem->sources,
       this->problem->solver_options);
   // this->problem->eq_sys_operator->SetEquationSystem(
-  //     this->problem->eq_sys.get());
+  //     this->
+  
+  ->eq_sys.get());
   this->problem->eq_sys_operator->SetGridFunctions();
 };
 
@@ -219,6 +243,44 @@ void ThermalExpansionOperator::Solve(mfem::Vector &X) {
   *_gridfunctions.Get(state_var_names.at(1)) = *u_;
 }
 
+// Set up equation system 
+ThermalExpansionEquationSystem::ThermalExpansionEquationSystem(
+  const hephaestus::InputParameters &params)
+  : EquationSystem(params),
+    temp_var_name(params.GetParam<std::string>("TempVarName")), 
+    displacement_var_name(params.GetParam<std::string>("DisplacementVarName")), 
+    stress_free_temp_coef_name(params.GetParam<std::string>("StressFreeTempCoefName")),
+    thermal_conductivity_coef_name(params.GetParam<std::string>("ThermalConductivityCoefName")),
+    lame_param_coef_name(params.GetParam<std::string>("LameParamCoefName")),
+    shear_modulus_coef_name(params.GetParam<std::string>("ShearModulusCoefName")) {}
 
+void ThermalExpansionEquationSystem::Init(hephaestus::GridFunctions &gridfunctions,
+                                  const hephaestus::FESpaces &fespaces,
+                                  hephaestus::BCMap &bc_map,
+                                  hephaestus::Coefficients &coefficients) {
+
+  EquationSystem::Init(gridfunctions, fespaces, bc_map, coefficients);
+}
+
+void ThermalExpansionEquationSystem::addKernels() {
+
+  hephaestus::InputParameters mixedWeakDivergenceParams;
+  mixedWeakDivergenceParams.SetParam("CoefficientName", thermal_expansion_bilin_coef_name);
+  addKernel(temp_var_name, displacement_var_name,
+            new hephaestus::MixedWeakDivergenceKernel(mixedWeakDivergenceParams));
+
+  hephaestus::InputParameters diffusionIntegratorParams;
+  diffusionIntegratorParams.SetParam("CoefficientName", thermal_conductivity_coef_name);
+  addKernel(temp_var_name, new hephaestus::DiffusionKernel(diffusionIntegratorParams));
+
+  hephaestus::InputParameters domainDivergenceLFParams;
+  domainDivergenceLFParams.SetParam("CoefficientName", thermal_expansion_lin_coef_name);
+  addKernel(temp_var_name, new hephaestus::DomainDivergenceLFKernel(domainDivergenceLFParams));
+
+  hephaestus::InputParameters elasticityIntegratorParams;
+  elasticityIntegratorParams.SetParam("LameParameterCoefName", lame_param_coef_name);
+  elasticityIntegratorParams.SetParam("ShearModulusCoefName", shear_modulus_coef_name);
+  addKernel(displacement_var_name, new hephaestus::LinearElasticityKernel(elasticityIntegratorParams));
+}
 
 } //hephaestus

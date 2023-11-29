@@ -1,6 +1,7 @@
 #pragma once
 #include "../common/pfem_extras.hpp"
 #include "formulation.hpp"
+#include "kernels.hpp"
 #include "inputs.hpp"
 #include "sources.hpp"
 #include "integrators.hpp"
@@ -21,24 +22,26 @@ public:
 
 protected:
   std::string temp_var_name, displacement_var_name, 
-                stress_free_temp_coef_name, lame_param_coef_name, shear_modulus_coef_name, thermal_expansion_coef_name, thermal_conductivity_coef_name;
+                stress_free_temp_coef_name, lame_param_coef_name, shear_modulus_coef_name, thermal_expansion_coef_name, thermal_conductivity_coef_name,
+                  thermal_expansion_bilin_coef_name, thermal_expansion_lin_coef_name;
 };
 
 
 // Do this later
-// class ThermalExpansionEquationSystem : public TimeDependentEquationSystem {
-// public:
-//   ThermalExpansionEquationSystem(const hephaestus::InputParameters &params);
+class ThermalExpansionEquationSystem : public EquationSystem {
+public:
+  ThermalExpansionEquationSystem(const hephaestus::InputParameters &params);
 
-//   virtual void Init(hephaestus::GridFunctions &gridfunctions,
-//                     const hephaestus::FESpaces &fespaces,
-//                     hephaestus::BCMap &bc_map,
-//                     hephaestus::Coefficients &coefficients) override;
-//   virtual void addKernels() override;
+  virtual void Init(hephaestus::GridFunctions &gridfunctions,
+                    const hephaestus::FESpaces &fespaces,
+                    hephaestus::BCMap &bc_map,
+                    hephaestus::Coefficients &coefficients) override;
+  virtual void addKernels() override;
 
-//   std::string temp_var_name, displacement_var_name, 
-//                 stress_free_temp_coef_name, lame_param_coef_name, shear_modulus_coef_name;
-// };
+  std::string temp_var_name, displacement_var_name, 
+                stress_free_temp_coef_name, lame_param_coef_name, shear_modulus_coef_name,
+                thermal_conductivity_coef_name, thermal_expansion_bilin_coef_name, thermal_expansion_lin_coef_name;
+};
 
 class ThermalExpansionOperator : public EquationSystemOperator {
 public:
@@ -59,7 +62,9 @@ public:
   void MakeCoefficients();
 
   std::string temp_var_name, displacement_var_name, 
-            stress_free_temp_coef_name, lame_coef_name, shear_modulus_coef_name, thermal_expansion_coef_name, thermal_conductivity_coef_name;
+                stress_free_temp_coef_name, lame_coef_name, shear_modulus_coef_name,
+                  thermal_expansion_coef_name, thermal_conductivity_coef_name,
+                    thermal_expansion_bilin_coef_name, thermal_expansion_lin_coef_name;
   mfem::ParGridFunction *u_, *t_;
   mfem::ParLinearForm *b1_, *b2_;
   mfem::ParBilinearForm *a1_, *a2_;
