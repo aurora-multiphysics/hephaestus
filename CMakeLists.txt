@@ -35,6 +35,11 @@ message(STATUS "MFEM_LIBRARIES is set to: ${MFEM_LIBRARIES}")
 find_library(MFEM_COMMON_LIBRARY mfem-common HINTS ${mfem_DIR}/miniapps/common)
 message(STATUS "MFEM_COMMON_LIBRARY is found in the folder: ${MFEM_COMMON_LIBRARY}")
 
+message(STATUS "Looking for Catch2...")
+find_package(Catch2 3 REQUIRED)
+
+
+
 enable_testing()
 
 ## put all targets in bin
