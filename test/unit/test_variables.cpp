@@ -1,9 +1,9 @@
 #include "problem_builder.hpp"
-#include <gtest/gtest.h>
+#include <catch2/catch_test_macros.hpp>
 
 extern const char *DATA_DIR;
 
-TEST(VariablesTest, CheckSetup) {
+TEST_CASE("VariablesTest", "[CheckSetup]") {
   mfem::Mesh mesh(
       (std::string(DATA_DIR) + std::string("./beam-tet.mesh")).c_str(), 1, 1);
   hephaestus::TimeDomainProblemBuilder *problem_builder =
@@ -22,6 +22,6 @@ TEST(VariablesTest, CheckSetup) {
       problem->gridfunctions.Get("vector_potential");
   mfem::ParFiniteElementSpace *stored_fespace = problem->fespaces.Get("HCurl");
 
-  EXPECT_EQ(stored_fespace->GetVSize(), stored_gf->ParFESpace()->GetVSize());
-  ASSERT_TRUE(stored_fespace->GetVSize() > 0);
+  REQUIRE( stored_fespace->GetVSize() == stored_gf->ParFESpace()->GetVSize() );
+  REQUIRE( stored_fespace->GetVSize() > 0 );
 }

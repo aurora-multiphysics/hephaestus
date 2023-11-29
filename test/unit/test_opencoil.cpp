@@ -1,9 +1,13 @@
 #include "open_coil.hpp"
-#include <gtest/gtest.h>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 extern const char *DATA_DIR;
 
-TEST(OpenCoilTest, CheckData) {
+TEST_CASE("OpenCoilTest", "[CheckData]") {
+
+  // Floating point error tolerance
+  const double eps{1e-10};
 
   int par_ref_lvl = -1;
   int order = 1;
@@ -49,5 +53,5 @@ TEST(OpenCoilTest, CheckData) {
 
   double flux = hephaestus::calcFlux(&j, elec_attrs.first);
 
-  EXPECT_FLOAT_EQ(flux, Ival);
+  REQUIRE_THAT(flux, Catch::Matchers::WithinAbs(Ival, eps));
 }
