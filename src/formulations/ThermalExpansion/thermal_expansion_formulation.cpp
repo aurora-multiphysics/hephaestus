@@ -119,7 +119,7 @@ void ThermalExpansionFormulation::RegisterGridFunctions() {
       }
       AddFESpace(std::string("_DisplacementFESpace"), std::string("H1_"), 3, mfem::Ordering::byVDIM);
       AddGridFunction(displacement_var_name, std::string("_DisplacementFESpace"));
-    };
+  };
     // Register time derivatives
   SteadyStateProblemBuilder::RegisterGridFunctions();
 };
@@ -183,94 +183,7 @@ void ThermalExpansionOperator::Solve(mfem::Vector &X) {
   solver->SetPreconditioner(*preconditioner);
   solver->Mult(trueRhs, trueX);
   _equation_system->RecoverFEMSolution(trueX, _gridfunctions);
-
-//   solver.SetOperator(*A1);
-//   solver.SetPreconditioner(*amg);
-//   solver.SetPrintLevel(2);
-//   solver.Mult(trueRhs, trueX);
 }
-
-// void ThermalExpansionOperator::Solve(mfem::Vector &X) {  
-
-//   mfem::Array2D<mfem::HypreParMatrix *> OpBlocks;
-//   OpBlocks.DeleteAll();
-//   OpBlocks.SetSize(2,2);
-//   OpBlocks(0, 0) = new mfem::HypreParMatrix;
-//   OpBlocks(1, 1) = new mfem::HypreParMatrix;
-//   OpBlocks(1, 0) = new mfem::HypreParMatrix;
-//   OpBlocks(0, 1) = nullptr;
-
-
-//   mfem::Array<int> offsets({0, t_->ParFESpace()->TrueVSize(), 
-//                            t_->ParFESpace()->TrueVSize() + u_->ParFESpace()->TrueVSize()});
-
-//   // Apply dirichlet BC's to temperature and displacement grid functions
-//   _bc_map.applyEssentialBCs(temp_var_name, ess_temp_tdofs_, *t_,
-//                             pmesh_);
-                            
-//   _bc_map.applyEssentialBCs(displacement_var_name, ess_disp_tdofs_, *u_,
-//                             pmesh_);
-
-//   // Set up bilinear forms
-//   aMixed_ = new mfem::ParMixedBilinearForm(t_->ParFESpace(), u_->ParFESpace());
-//   a1_ = new mfem::ParBilinearForm(t_->ParFESpace());
-//   a2_ = new mfem::ParBilinearForm(u_->ParFESpace());
-//   // Set up linear forms
-//   b1_ = new mfem::ParLinearForm(t_->ParFESpace());
-//   b2_ = new mfem::ParLinearForm(u_->ParFESpace());
-
-
-//   // Manipulate existing coefficients to get terms needed for thermal expansion.
-//   // Bilinear Form Coef: - α * (3λ + 2μ)
-//   // Linear Form Coef:  T_{stress free} * α * (3λ + 2μ)
-//   mfem::SumCoefficient materialTerm(*lameCoef_, *shearModulusCoef_, 3, 2);
-//   mfem::SumCoefficient thexpStressFreeTemp(*thermalExpansionCoef_, *stressFreeTempCoef_);
-//   mfem::ProductCoefficient bilinearFormCoefPositive(*thermalExpansionCoef_, materialTerm);
-//   bilinearFormCoef_ = new mfem::ProductCoefficient(-1, bilinearFormCoefPositive); 
-//   linearFormCoef_ = new mfem::ProductCoefficient(*stressFreeTempCoef_, materialTerm);
-  
-//   a1_->AddDomainIntegrator(new mfem::DiffusionIntegrator(*thermalConductivityCoef_));
-//   a2_->AddDomainIntegrator(new mfem::ElasticityIntegrator(*lameCoef_, *shearModulusCoef_));
-//   aMixed_->AddDomainIntegrator(new mfem::MixedWeakDivergenceIntegrator(*bilinearFormCoef_));
-  
-//   b2_->AddDomainIntegrator(new mfem::DomainLFH1DivIntegrator(*linearFormCoef_));
-
-//   a1_->Assemble();
-//   a1_->Finalize();
-
-//   a2_->Assemble();
-//   a2_->Finalize();
-
-//   aMixed_->Assemble();
-//   aMixed_->Finalize();
-
-//   b1_->Assemble();
-//   b2_->Assemble();
- 
-//   a1_->FormLinearSystem(ess_temp_tdofs_, *t_, *b1_, *OpBlocks(0, 0), trueX.GetBlock(0), trueRhs.GetBlock(0));
-//   a2_->FormLinearSystem(ess_disp_tdofs_, *u_, *b2_, *OpBlocks(1, 1), trueX.GetBlock(1), trueRhs.GetBlock(1));
-//   aMixed_->FormRectangularLinearSystem(ess_temp_tdofs_, ess_disp_tdofs_, *t_, *b2_, *OpBlocks(1, 0), trueX.GetBlock(0), trueRhs.GetBlock(1));
-
-//   mfem::HypreParMatrix *A1 = mfem::HypreParMatrixFromBlocks(OpBlocks);
-//   mfem::HypreBoomerAMG *amg = new mfem::HypreBoomerAMG(*A1);
-//   mfem::HyprePCG solver(MPI_COMM_WORLD);
-//   solver.SetOperator(*A1);
-//   solver.SetPreconditioner(*amg);
-//   solver.SetPrintLevel(2);
-//   solver.Mult(trueRhs, trueX);
-
-//   delete(amg);
-//   // delete(A1);
-//   OpBlocks.DeleteAll();
-
-//   a1_->RecoverFEMSolution(trueX.GetBlock(0), *b1_, *t_);
-//   a2_->RecoverFEMSolution(trueX.GetBlock(1), *b2_, *u_);
-  
-//   *_gridfunctions.Get(state_var_names.at(0)) = *t_;
-//   *_gridfunctions.Get(state_var_names.at(1)) = *u_;
-// }
-
-
 
 /**
  * EQUATION SYSTEM
@@ -304,25 +217,25 @@ void ThermalExpansionEquationSystem::Init(hephaestus::GridFunctions &gridfunctio
 void ThermalExpansionEquationSystem::addKernels() {
   // Add missing variable names
   addVariableNameIfMissing(temp_var_name);
-  // addVariableNameIfMissing(displacement_var_name);
+  addVariableNameIfMissing(displacement_var_name);
 
-  // hephaestus::InputParameters mixedWeakDivergenceParams;
-  // mixedWeakDivergenceParams.SetParam("CoefficientName", thermal_expansion_bilin_coef_name);
-  // addKernel(temp_var_name, displacement_var_name,
-  //           new hephaestus::MixedWeakDivergenceKernel(mixedWeakDivergenceParams));
+  hephaestus::InputParameters mixedWeakDivergenceParams;
+  mixedWeakDivergenceParams.SetParam("CoefficientName", thermal_expansion_bilin_coef_name);
+  addKernel(temp_var_name, displacement_var_name,
+            new hephaestus::MixedWeakDivergenceKernel(mixedWeakDivergenceParams));
 
   hephaestus::InputParameters diffusionIntegratorParams;
   diffusionIntegratorParams.SetParam("CoefficientName", thermal_conductivity_coef_name);
   addKernel(temp_var_name, new hephaestus::DiffusionKernel(diffusionIntegratorParams));
 
-  // hephaestus::InputParameters domainDivergenceLFParams;
-  // domainDivergenceLFParams.SetParam("CoefficientName", thermal_expansion_lin_coef_name);
-  // addKernel(temp_var_name, new hephaestus::DomainDivergenceLFKernel(domainDivergenceLFParams));
+  hephaestus::InputParameters domainDivergenceLFParams;
+  domainDivergenceLFParams.SetParam("CoefficientName", thermal_expansion_lin_coef_name);
+  addKernel(temp_var_name, new hephaestus::DomainDivergenceLFKernel(domainDivergenceLFParams));
 
-  // hephaestus::InputParameters elasticityIntegratorParams;
-  // elasticityIntegratorParams.SetParam("LameParameterCoefName", lame_param_coef_name);
-  // elasticityIntegratorParams.SetParam("ShearModulusCoefName", shear_modulus_coef_name);
-  // addKernel(displacement_var_name, new hephaestus::LinearElasticityKernel(elasticityIntegratorParams));
+  hephaestus::InputParameters elasticityIntegratorParams;
+  elasticityIntegratorParams.SetParam("LameParameterCoefName", lame_param_coef_name);
+  elasticityIntegratorParams.SetParam("ShearModulusCoefName", shear_modulus_coef_name);
+  addKernel(displacement_var_name, new hephaestus::LinearElasticityKernel(elasticityIntegratorParams));
 }
 
 } //hephaestus
