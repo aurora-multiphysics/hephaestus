@@ -97,13 +97,6 @@ if(BUILD_TYPE STREQUAL "DEBUG-MEMORY" AND NOT ${CMAKE_CXX_COMPILER} STREQUAL "/u
 endif()
 
 ############################################################
-# Fix issue with tests being built for DEBUG-ADDRESS build type 
-############################################################
-if (BUILD_TYPE STREQUAL "DEBUG-ADDRESS")
-  set(ASAN_OPTIONS "exitcode=0")
-endif()
-
-############################################################
 # Add directories with source files
 ############################################################
 add_subdirectory(src)
