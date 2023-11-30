@@ -39,9 +39,6 @@ public:
   // Solves for the current in the coil region
   void solveCoil();
 
-  // Sets the current such that its flux across the electrode face is 1
-  void normaliseCurrent();
-
   // Resets the domain attributes on the parent mesh to what they were initially
   void restoreAttributes();
 
@@ -91,12 +88,14 @@ private:
 
   // Coil mesh, FE Space, and current
   mfem::ParSubMesh *mesh_coil_;
+  mfem::ParSubMesh *mesh_t_;
   mfem::ParFiniteElementSpace *H1FESpace_coil_;
   mfem::ParGridFunction *Jaux_coil_;
   mfem::ParGridFunction *V_coil_;
 
   // Final LinearForm
   mfem::ParLinearForm *final_lf_;
+
 };
 
 class Plane3D {

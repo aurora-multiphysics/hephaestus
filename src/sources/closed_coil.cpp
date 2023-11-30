@@ -35,9 +35,9 @@ ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters &params,
       J_gf_name_(params.GetParam<std::string>("JGridFunctionName")),
       I_coef_name_(params.GetParam<std::string>("IFuncCoefName")),
       J_transfer_(params.GetOptionalParam<bool>("JTransfer", false)),
-      coil_domains_(coil_dom), mesh_parent_(nullptr),
-      J_parent_(nullptr), HCurlFESpace_parent_(nullptr),
-      H1FESpace_parent_(nullptr), Jt_parent_(nullptr) {
+      coil_domains_(coil_dom), mesh_parent_(nullptr), J_parent_(nullptr),
+      HCurlFESpace_parent_(nullptr), H1FESpace_parent_(nullptr),
+      Jt_parent_(nullptr) {
 
   hephaestus::InputParameters default_pars;
   default_pars.SetParam("Tolerance", float(1e-18));
@@ -55,6 +55,7 @@ ClosedCoilSolver::~ClosedCoilSolver() {
 
   restoreAttributes();
   delete mesh_coil_;
+  delete mesh_t_;
   delete H1FESpace_coil_;
   delete Jaux_coil_;
   delete final_lf_;
@@ -120,7 +121,6 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
   prepareCoilSubmesh();
   solveTransition();
   solveCoil();
-  normaliseCurrent();
 
   if (!fespaces.Has(h1_fespace_name_))
     delete H1FESpace_parent_;
@@ -299,6 +299,10 @@ void ClosedCoilSolver::prepareCoilSubmesh() {
 
   V_coil_ = new mfem::ParGridFunction(H1FESpace_coil_);
   *V_coil_ = 0.0;
+
+  mesh_t_ = new mfem::ParSubMesh(
+      mfem::ParSubMesh::CreateFromDomain(*mesh_parent_, transition_domain_));
+
 }
 
 void ClosedCoilSolver::solveTransition() {
@@ -379,10 +383,10 @@ void ClosedCoilSolver::solveCoil() {
 
   if (J_transfer_)
     Jt_parent_ = new mfem::ParGridFunction(*J_parent_);
-  
+
   *J_parent_ = 0.0;
   mesh_coil_->Transfer(*Jaux_coil_, *J_parent_);
-  
+
   mfem::ParBilinearForm m1(HCurlFESpace_parent_);
   hephaestus::attrToMarker(coil_domains_, coil_markers_,
                            mesh_parent_->attributes.Max());
@@ -390,20 +394,28 @@ void ClosedCoilSolver::solveCoil() {
       new mfem::VectorFEMassIntegrator(new mfem::ConstantCoefficient(1.0)),
       coil_markers_);
   m1.Assemble();
-  m1.AddMult(*J_parent_, *final_lf_, -1.0); 
+  m1.AddMult(*J_parent_, *final_lf_, -1.0);
 
-  if (J_transfer_){
+  // We can't properly calculate the flux of Jaux on the parent mesh, so we
+  // transfer it first to the transition mesh. This will be used in the
+  // normalisation step
+  mfem::ParGridFunction Jaux_t_(new mfem::ParFiniteElementSpace(
+      mesh_t_, new mfem::ND_FECollection(order_hcurl_, mesh_t_->Dimension())));
+  Jaux_t_ = 0.0;
+
+  mesh_t_->Transfer(*J_parent_, Jaux_t_);
+
+  // The total flux across the electrode face is Φ_t-Φ_aux
+  // where Φ_t is the transition flux, already normalised to be 1
+  double flux = 1.0 - calcFlux(&Jaux_t_, elec_attrs_.first);
+
+  if (J_transfer_) {
     *J_parent_ -= *Jt_parent_;
-    *J_parent_ *= -1.0;
+    *J_parent_ /= -flux;
     delete Jt_parent_;
   }
 
-}
-
-void ClosedCoilSolver::normaliseCurrent() {
-
-  double flux = calcFlux(Jaux_coil_, elec_attrs_.first);
-  *Jaux_coil_ /= abs(flux);
+  *final_lf_ /= flux;
 }
 
 void ClosedCoilSolver::restoreAttributes() {
