@@ -12,7 +12,7 @@ class ThermalExpansionFormulation : public SteadyStateFormulation {
 public:
   ThermalExpansionFormulation();
 
-  // virtual void ConstructEquationSystem() override {};
+  virtual void ConstructEquationSystem() override;
 
   virtual void ConstructOperator() override;
 
@@ -27,7 +27,7 @@ protected:
 };
 
 
-// Do this later
+// Equation System
 class ThermalExpansionEquationSystem : public EquationSystem {
 public:
   ThermalExpansionEquationSystem(const hephaestus::InputParameters &params);
@@ -54,7 +54,7 @@ public:
 
   ~ThermalExpansionOperator(){};
 
-  virtual void SetGridFunctions() override;
+  // virtual void SetGridFunctions() override;
   virtual void Init(mfem::Vector &X) override;
   virtual void Solve(mfem::Vector &X) override;
 
@@ -69,6 +69,8 @@ public:
   mfem::ParLinearForm *b1_, *b2_;
   mfem::ParBilinearForm *a1_, *a2_;
   mfem::ParMixedBilinearForm *aMixed_; //  
+  mfem::HypreBoomerAMG *preconditioner;
+  mfem::HyprePCG *solver;
  
   mfem::Coefficient *thermalConductivityCoef_;
   mfem::Coefficient *lameCoef_;  // Lame's first parameter
