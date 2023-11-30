@@ -23,7 +23,7 @@ hephaestus::Coefficients defineCoefficients(){
                                 true);                        
 
   coefficients.scalars.Register("stress_free_temp",
-                                new mfem::ConstantCoefficient(0.02),
+                                new mfem::ConstantCoefficient(0.0),
                                 true);
                                                                             
 
@@ -42,7 +42,6 @@ hephaestus::Outputs defineOutputs() {
 hephaestus::BCMap defineBoundaries() {
 
   hephaestus::BCMap boundaries;
-;
   mfem::ConstantCoefficient *cold = new mfem::ConstantCoefficient(300.00);
   mfem::ConstantCoefficient *hot = new mfem::ConstantCoefficient(500.00);
   // mfem::VectorConstantCoefficient *zero = new mfem::VectorConstantCoefficient(mfem::Vector({0, 0, 0}));
@@ -56,7 +55,7 @@ hephaestus::BCMap defineBoundaries() {
 
   boundaries.Register("thermal_boundary_one", new hephaestus::DirichletBC("temperature", therm_bound_one_arr, cold), true);
   boundaries.Register("thermal_boundary_two", new hephaestus::DirichletBC("temperature", therm_bound_two_arr, hot), true);
-  boundaries.Register("fixed_displacement", new hephaestus::VectorDirichletBC("displacement", fixed_disp_arr,  new mfem::VectorConstantCoefficient(mfem::Vector({0, 0, 0}))), true);
+  boundaries.Register("fixed_displacement", new hephaestus::VectorDirichletBC("displacement", fixed_disp_arr,  new mfem::VectorConstantCoefficient(mfem::Vector({0, 0, 0})), nullptr, hephaestus::VectorDirichletBC::APPLY_TYPE::STANDARD), true);
 
   return boundaries;
 }
@@ -101,7 +100,7 @@ int main(int argc, char *argv[]) {
   problem_builder->SetSolverOptions(solver_options);
 
   hephaestus::ProblemBuildSequencer sequencer(problem_builder);
-  sequencer.ConstructOperatorProblem();
+  sequencer.ConstructEquationSystemProblem();
   std::unique_ptr<hephaestus::SteadyStateProblem> problem =
       problem_builder->ReturnProblem();
   hephaestus::InputParameters exec_params;
