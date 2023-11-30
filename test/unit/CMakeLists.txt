@@ -19,5 +19,5 @@ target_link_libraries(unit_tests ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lib${PROJECT_
 target_link_libraries(unit_tests ${MFEM_LIBRARIES} ${MFEM_COMMON_LIBRARY} -lrt)
 
 include(CTest)
-include(Catch)
+include(Catch2)
 catch_discover_tests(unit_tests WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")

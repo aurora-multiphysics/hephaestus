@@ -19,5 +19,5 @@ target_link_libraries(integration_tests ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lib${P
 target_link_libraries(integration_tests ${MFEM_LIBRARIES} ${MFEM_COMMON_LIBRARY} -lrt)
 
 include(CTest)
-include(Catch)
+include(Catch2)
 catch_discover_tests(integration_tests WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
