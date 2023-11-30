@@ -10,20 +10,20 @@ ExternalProject_Add(
   INSTALL_COMMAND ""
   )
 
-ExternalProject_Get_Property(Catch2 source_dir)
-set(CATCH2_INCLUDE_DIRS ${source_dir}/Catch2/include)
-
-ExternalProject_Get_Property(Catch2 binary_dir)
-set(CATCH2_LIBRARY_PATH  ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}libCatch2.a)
-set(CATCH2_MAIN_LIBRARY_PATH ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}libCatch2Main.a)
-set(CATCH2_LIBRARY CATCH2)
-set(CATCH2_MAIN_LIBRARY CATCH2_main)
-add_library(${CATCH2_LIBRARY} UNKNOWN IMPORTED)
-add_library(${CATCH2_MAIN_LIBRARY} UNKNOWN IMPORTED)
-set_target_properties(${CATCH2_LIBRARY} PROPERTIES IMPORTED_LOCATION ${CATCH2_LIBRARY_PATH})
-set_target_properties(${CATCH2_MAIN_LIBRARY} PROPERTIES IMPORTED_LOCATION ${CATCH2_MAIN_LIBRARY_PATH})
-add_dependencies(${CATCH2_LIBRARY} Catch2)
-add_dependencies(${CATCH2_MAIN_LIBRARY} Catch2)
+#ExternalProject_Get_Property(Catch2 source_dir)
+#set(CATCH2_INCLUDE_DIRS ${source_dir}/Catch2/include)
+#
+#ExternalProject_Get_Property(Catch2 binary_dir)
+#set(CATCH2_LIBRARY_PATH  ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}libCatch2.a)
+#set(CATCH2_MAIN_LIBRARY_PATH ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}libCatch2Main.a)
+#set(CATCH2_LIBRARY CATCH2)
+#set(CATCH2_MAIN_LIBRARY CATCH2_main)
+#add_library(${CATCH2_LIBRARY} UNKNOWN IMPORTED)
+#add_library(${CATCH2_MAIN_LIBRARY} UNKNOWN IMPORTED)
+#set_target_properties(${CATCH2_LIBRARY} PROPERTIES IMPORTED_LOCATION ${CATCH2_LIBRARY_PATH})
+#set_target_properties(${CATCH2_MAIN_LIBRARY} PROPERTIES IMPORTED_LOCATION ${CATCH2_MAIN_LIBRARY_PATH})
+#add_dependencies(${CATCH2_LIBRARY} Catch2)
+#add_dependencies(${CATCH2_MAIN_LIBRARY} Catch2)
 
 # Set up to generate coverage reports
 find_package(PythonInterp REQUIRED)
