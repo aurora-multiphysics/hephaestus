@@ -16,7 +16,7 @@ public:
                     hephaestus::BCMap &bc_map,
                     hephaestus::Coefficients &coefficients) override;
   virtual void Apply(mfem::ParBilinearForm *blf) override;
-  std::string lame_paramter_name, shear_modulus_name;
+  std::string lame_parameter_name, shear_modulus_name;
   mfem::Coefficient *lame_parameter, *shear_modulus;
 
 };
