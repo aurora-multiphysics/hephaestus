@@ -1,5 +1,3 @@
-find_package(Catch2 3 REQUIRED)
-
 file(GLOB_RECURSE src_unit "*.cpp")
 file(GLOB_RECURSE test_src_files "${PROJECT_SOURCE_DIR}/src/*.h" "${PROJECT_SOURCE_DIR}/src/*.hpp" "${PROJECT_SOURCE_DIR}/src/*.cpp")
 
