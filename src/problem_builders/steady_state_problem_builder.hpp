@@ -38,15 +38,15 @@ public:
 
   virtual void RegisterFESpaces() override{};
 
-  virtual void RegisterGridFunctions() override{};
+  virtual void RegisterGridFunctions() override;
 
   virtual void RegisterAuxSolvers() override{};
 
   virtual void RegisterCoefficients() override{};
 
-  virtual void InitializeKernels() override;
+  virtual void ConstructEquationSystem() override;
 
-  virtual void ConstructEquationSystem() override{};
+  virtual void InitializeKernels() override;
 
   virtual void ConstructOperator() override;
 
