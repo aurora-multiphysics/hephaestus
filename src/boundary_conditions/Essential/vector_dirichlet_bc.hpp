@@ -5,7 +5,7 @@ namespace hephaestus {
 
 class VectorDirichletBC : public EssentialBC {
 
-protected:
+public:
   enum APPLY_TYPE
   {
     STANDARD,
