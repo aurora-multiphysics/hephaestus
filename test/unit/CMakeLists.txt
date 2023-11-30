@@ -19,3 +19,7 @@ set_property(TARGET unit_tests PROPERTY CXX_STANDARD 17)
 target_link_libraries(unit_tests Catch2::Catch2)
 target_link_libraries(unit_tests ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lib${PROJECT_NAME}.so)
 target_link_libraries(unit_tests ${MFEM_LIBRARIES} ${MFEM_COMMON_LIBRARY} -lrt)
+
+include(CTest)
+include(Catch)
+catch_discover_tests(unit_tests WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
