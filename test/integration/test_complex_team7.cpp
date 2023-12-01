@@ -89,12 +89,13 @@ protected:
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team7.g")).c_str(),
                     1, 1);
 
-    std::map<std::string, mfem::DataCollection *> data_collections;
-    data_collections["VisItDataCollection"] =
-        new mfem::VisItDataCollection("ComplexMaxwellTeam7VisIt");
-    data_collections["ParaViewDataCollection"] =
-        new mfem::ParaViewDataCollection("ComplexMaxwellTeam7ParaView");
-    hephaestus::Outputs outputs(data_collections);
+    hephaestus::Outputs outputs;
+    outputs.Register("VisItDataCollection",
+                     new mfem::VisItDataCollection("ComplexMaxwellTeam7VisIt"),
+                     true);
+    outputs.Register(
+        "ParaViewDataCollection",
+        new mfem::ParaViewDataCollection("ComplexMaxwellTeam7ParaView"), true);
 
     hephaestus::AuxSolvers postprocessors;
     hephaestus::AuxSolvers preprocessors;
@@ -175,7 +176,8 @@ TEST_F(TestComplexTeam7, CheckRun) {
   hephaestus::SteadyStateProblemBuilder *problem_builder =
       new hephaestus::ComplexAFormulation(
           "magnetic_reluctivity", "electrical_conductivity",
-          "dielectric_permittivity", "frequency", "magnetic_vector_potential");
+          "dielectric_permittivity", "frequency", "magnetic_vector_potential",
+          "magnetic_vector_potential_real", "magnetic_vector_potential_imag");
   problem_builder->SetMesh(pmesh);
   problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P1"));
   problem_builder->AddFESpace(std::string("HDiv"), std::string("RT_3D_P0"));
@@ -202,11 +204,10 @@ TEST_F(TestComplexTeam7, CheckRun) {
       problem_builder->ReturnProblem();
 
   hephaestus::InputParameters exec_params;
-  exec_params.SetParam("UseGLVis", true);
   exec_params.SetParam("Problem", problem.get());
   hephaestus::SteadyExecutioner *executioner =
       new hephaestus::SteadyExecutioner(exec_params);
   std::cout << "Created exec ";
-  executioner->Init();
+
   executioner->Execute();
 }

@@ -114,4 +114,8 @@ void ProblemBuilder::InitializeAuxSolvers() {
                                           this->GetProblem()->coefficients);
 }
 
+void ProblemBuilder::InitializeOutputs() {
+  this->GetProblem()->outputs.Init(this->GetProblem()->gridfunctions);
+}
+
 } // namespace hephaestus

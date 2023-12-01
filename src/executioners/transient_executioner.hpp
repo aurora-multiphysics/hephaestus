@@ -19,8 +19,6 @@ public:
   TransientExecutioner() = default;
   explicit TransientExecutioner(const hephaestus::InputParameters &params);
 
-  void Init() override;
-
   void Step(double dt, int it) const;
 
   void Solve() const override;

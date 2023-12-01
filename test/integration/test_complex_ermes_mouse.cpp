@@ -81,10 +81,10 @@ protected:
         (std::string(DATA_DIR) + std::string("./ermes_mouse_coarse.g")).c_str(),
         1, 1);
 
-    std::map<std::string, mfem::DataCollection *> data_collections;
-    data_collections["VisItDataCollection"] =
-        new mfem::VisItDataCollection("ComplexMaxwellERMESMouse");
-    hephaestus::Outputs outputs(data_collections);
+    hephaestus::Outputs outputs;
+    outputs.Register("VisItDataCollection",
+                     new mfem::VisItDataCollection("ComplexMaxwellERMESMouse"),
+                     true);
 
     hephaestus::FESpaces fespaces;
     hephaestus::GridFunctions gridfunctions;
@@ -95,7 +95,8 @@ protected:
     hephaestus::FrequencyDomainEMFormulation *formulation =
         new hephaestus::ComplexEFormulation(
             "magnetic_reluctivity", "electrical_conductivity",
-            "dielectric_permittivity", "frequency", "electric_field");
+            "dielectric_permittivity", "frequency", "electric_field",
+            "electric_field_real", "electric_field_imag");
 
     hephaestus::InputParameters solver_options;
     solver_options.SetParam("Tolerance", float(1.0e-16));
@@ -128,7 +129,8 @@ TEST_F(TestComplexERMESMouse, CheckRun) {
   hephaestus::SteadyStateProblemBuilder *problem_builder =
       new hephaestus::ComplexEFormulation(
           "magnetic_reluctivity", "electrical_conductivity",
-          "dielectric_permittivity", "frequency", "electric_field");
+          "dielectric_permittivity", "frequency", "electric_field",
+          "electric_field_real", "electric_field_imag");
   hephaestus::BCMap bc_map(
       params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
   hephaestus::Coefficients coefficients(
@@ -158,11 +160,10 @@ TEST_F(TestComplexERMESMouse, CheckRun) {
       problem_builder->ReturnProblem();
 
   hephaestus::InputParameters exec_params;
-  exec_params.SetParam("UseGLVis", true);
   exec_params.SetParam("Problem", problem.get());
   hephaestus::SteadyExecutioner *executioner =
       new hephaestus::SteadyExecutioner(exec_params);
-  executioner->Init();
+
   executioner->Execute();
 
   mfem::Vector zeroVec(3);

@@ -79,10 +79,10 @@ protected:
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./irises.g")).c_str(),
                     1, 1);
 
-    std::map<std::string, mfem::DataCollection *> data_collections;
-    data_collections["VisItDataCollection"] =
-        new mfem::VisItDataCollection("Hertz-AMR-Parallel-VisIt");
-    hephaestus::Outputs outputs(data_collections);
+    hephaestus::Outputs outputs;
+    outputs.Register("VisItDataCollection",
+                     new mfem::VisItDataCollection("Hertz-AMR-Parallel-VisIt"),
+                     true);
 
     hephaestus::FESpaces fespaces;
     hephaestus::GridFunctions gridfunctions;
@@ -118,10 +118,11 @@ TEST_F(TestComplexIrisWaveguide, CheckRun) {
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
 
-  hephaestus::SteadyStateProblemBuilder *problem_builder =
+  hephaestus::ComplexEFormulation *problem_builder =
       new hephaestus::ComplexEFormulation(
           "magnetic_reluctivity", "electrical_conductivity",
-          "dielectric_permittivity", "frequency", "electric_field");
+          "dielectric_permittivity", "frequency", "electric_field",
+          "electric_field_real", "electric_field_imag");
   hephaestus::BCMap bc_map(
       params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
   hephaestus::Coefficients coefficients(
@@ -139,6 +140,25 @@ TEST_F(TestComplexIrisWaveguide, CheckRun) {
   problem_builder->SetMesh(pmesh);
   problem_builder->SetBoundaryConditions(bc_map);
   problem_builder->SetAuxSolvers(preprocessors);
+
+  problem_builder->AddFESpace("HDiv", "RT_3D_P0");
+  problem_builder->AddFESpace("Scalar_L2", "L2Int_3D_P0");
+
+  problem_builder->AddGridFunction("magnetic_flux_density_real", "HDiv");
+  problem_builder->AddGridFunction("magnetic_flux_density_imag", "HDiv");
+  problem_builder->registerMagneticFluxDensityAux("magnetic_flux_density_real",
+                                                  "magnetic_flux_density_imag");
+
+  problem_builder->AddGridFunction("current_density_real", "HDiv");
+  problem_builder->AddGridFunction("current_density_imag", "HDiv");
+  problem_builder->registerCurrentDensityAux("current_density_real",
+                                             "current_density_imag");
+
+  problem_builder->AddGridFunction("joule_heating_density", "Scalar_L2");
+  problem_builder->registerJouleHeatingDensityAux(
+      "joule_heating_density", "electric_field_real", "electric_field_imag",
+      "electrical_conductivity");
+
   problem_builder->SetCoefficients(coefficients);
   problem_builder->SetPostprocessors(postprocessors);
   problem_builder->SetSources(sources);
@@ -151,11 +171,10 @@ TEST_F(TestComplexIrisWaveguide, CheckRun) {
       problem_builder->ReturnProblem();
 
   hephaestus::InputParameters exec_params;
-  exec_params.SetParam("UseGLVis", true);
   exec_params.SetParam("Problem", problem.get());
   hephaestus::SteadyExecutioner *executioner =
       new hephaestus::SteadyExecutioner(exec_params);
-  executioner->Init();
+
   executioner->Execute();
 
   mfem::Vector zeroVec(3);

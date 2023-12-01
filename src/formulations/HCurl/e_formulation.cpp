@@ -58,8 +58,9 @@ void EFormulation::registerJouleHeatingDensityAux(
   hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
   auxsolvers.Register(p_field_name,
                       new hephaestus::VectorGridFunctionDotProductAux(
-                          p_field_name, p_field_name, e_field_name,
-                          e_field_name, _electric_conductivity_name),
+                          p_field_name, p_field_name,
+                          _electric_conductivity_name, e_field_name,
+                          e_field_name),
                       true);
   auxsolvers.Get(p_field_name)->SetPriority(2);
 }
