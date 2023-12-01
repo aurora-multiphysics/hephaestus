@@ -45,10 +45,10 @@ hephaestus::Sources defineSources() {
   return sources;
 }
 hephaestus::Outputs defineOutputs() {
-  
+
   hephaestus::Outputs outputs;
     outputs.Register("ParaViewDataCollection",
-                     new mfem::ParaViewDataCollection("MagnetostaticParaView"),
+                     new mfem::ParaViewDataCollection("ClosedCoilParaView"),
                      true);
     return outputs;
 }
