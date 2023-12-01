@@ -2,10 +2,10 @@
 
 namespace hephaestus {
 
+///// THESE FUNCTIONS WILL EVENTUALLY GO INTO A UTILS FILE ///////////
+
 double highV(const mfem::Vector &x, double t) { return 1.0; }
 double lowV(const mfem::Vector &x, double t) { return 0.0; }
-
-///// THESE FUNCTIONS WILL EVENTUALLY GO INTO A UTILS FILE ///////////
 
 double calcFlux(mfem::GridFunction *v_field, int face_attr) {
 
@@ -106,17 +106,44 @@ void inheritBdrAttributes(const mfem::ParMesh *parent_mesh,
   child_mesh->SetAttributes();
 }
 
-void cleanDivergence(hephaestus::GridFunctions *gridfunctions,
-                     std::string J_name, std::string V_name,
-                     hephaestus::BCMap *bc_map) {
+void attrToMarker(const mfem::Array<int> attr_list,
+                  mfem::Array<int> &marker_list, int max_attr) {
+
+  marker_list.SetSize(max_attr);
+  marker_list = 0;
+
+  for (auto a : attr_list)
+    marker_list[a - 1] = 1;
+}
+
+void cleanDivergence(mfem::ParGridFunction &Vec_GF,
+                     hephaestus::InputParameters solve_pars) {
+
+  hephaestus::InputParameters pars;
+  hephaestus::GridFunctions gfs;
+  hephaestus::FESpaces fes;
+  hephaestus::BCMap bcs;
+
+  gfs.Register("Vector_GF", &Vec_GF, false);
+  pars.SetParam("VectorGridFunctionName", std::string("Vector_GF"));
+  pars.SetParam("SolverOptions", solve_pars);
+  hephaestus::HelmholtzProjector projector(pars);
+  projector.Project(gfs, fes, bcs);
+}
+
+void cleanDivergence(hephaestus::GridFunctions &gfs, hephaestus::BCMap &bcs,
+                     const std::string vec_gf_name,
+                     const std::string scalar_gf_name,
+                     hephaestus::InputParameters solve_pars) {
 
   hephaestus::InputParameters pars;
   hephaestus::FESpaces fes;
 
-  pars.SetParam("VectorGridFunctionName", J_name);
-  pars.SetParam("ScalarGridFunctionName", V_name);
+  pars.SetParam("VectorGridFunctionName", vec_gf_name);
+  pars.SetParam("ScalarGridFunctionName", scalar_gf_name);
+  pars.SetParam("SolverOptions", solve_pars);
   hephaestus::HelmholtzProjector projector(pars);
-  projector.Project(*gridfunctions, fes, *bc_map);
+  projector.Project(gfs, fes, bcs);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -129,9 +156,19 @@ OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters &params,
       I_coef_name_(params.GetParam<std::string>("IFuncCoefName")),
       coil_domains_(coil_dom), elec_attrs_(electrodes), coef1_(1.0),
       mesh_parent_(nullptr), mesh_(nullptr), H1FESpace_(nullptr),
-      HCurlFESpace_(nullptr), J_parent_(nullptr), V_parent_(nullptr),
-      J_(nullptr), V_(nullptr), high_src_(highV), low_src_(lowV),
+      HCurlFESpace_(nullptr), J_parent_(nullptr), Jt_parent_(nullptr),
+      V_parent_(nullptr), Vt_parent_(nullptr), J_(nullptr), V_(nullptr),
+      m1_(nullptr), final_lf_(nullptr), high_src_(highV), low_src_(lowV),
       high_terminal_(1), low_terminal_(1) {
+
+  hephaestus::InputParameters default_pars;
+  default_pars.SetParam("Tolerance", float(1.0e-20));
+  default_pars.SetParam("AbsTolerance", float(1.0e-20));
+  default_pars.SetParam("MaxIter", (unsigned int)1000);
+  default_pars.SetParam("PrintLevel", 1);
+
+  solver_options_ = params.GetOptionalParam<hephaestus::InputParameters>(
+      "SolverOptions", default_pars);
 
   ref_face_ = elec_attrs_.first;
 }
@@ -139,10 +176,14 @@ OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters &params,
 OpenCoilSolver::~OpenCoilSolver() {
 
   ifDelete(mesh_);
+  ifDelete(m1_);
   ifDelete(H1FESpace_);
   ifDelete(HCurlFESpace_);
   ifDelete(J_);
   ifDelete(V_);
+  ifDelete(Jt_parent_);
+  ifDelete(Vt_parent_);
+  ifDelete(final_lf_);
 }
 
 void OpenCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
@@ -180,6 +221,7 @@ void OpenCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
     mfem::mfem_error("V GridFunction must be of H1 type.");
   } else {
     order_h1_ = V_parent_->ParFESpace()->FEColl()->GetOrder();
+    Vt_parent_ = new mfem::ParGridFunction(*V_parent_);
   }
 
   mesh_parent_ = J_parent_->ParFESpace()->GetParMesh();
@@ -201,17 +243,15 @@ void OpenCoilSolver::Apply(mfem::ParLinearForm *lf) {
           .IntPoint(0);
 
   double I = Itotal_->Eval(*Tr, ip);
-  *J_ *= I;
-  mesh_->Transfer(*J_, *J_parent_);
-  *J_ /= I;
 
+  *J_parent_ = 0.0;
+  J_parent_->Add(I, *Jt_parent_);
   if (V_parent_ != nullptr) {
-    *V_ *= I;
-    mesh_->Transfer(*V_, *V_parent_);
-    *V_ /= I;
+    *V_parent_ = 0.0;
+    V_parent_->Add(I, *Vt_parent_);
   }
 
-  lf->Add(1.0, *J_parent_);
+  lf->Add(I, *final_lf_);
 }
 
 void OpenCoilSolver::SubtractSource(mfem::ParGridFunction *gf) {}
@@ -241,9 +281,13 @@ void OpenCoilSolver::makeGridFunctions() {
 
   if (J_ == nullptr)
     J_ = new mfem::ParGridFunction(HCurlFESpace_);
+  
+  if (Jt_parent_ == nullptr)
+    Jt_parent_ = new mfem::ParGridFunction(*J_parent_);
 
   *V_ = 0.0;
   *J_ = 0.0;
+  *Jt_parent_ = 0.0;
 }
 
 void OpenCoilSolver::setBCs() {
@@ -254,16 +298,15 @@ void OpenCoilSolver::setBCs() {
 
 void OpenCoilSolver::SPSCurrent() {
 
-  hephaestus::BCMap bc_maps;
   bc_maps.Register("high_potential",
-                    new hephaestus::ScalarDirichletBC(
-                        std::string("V"), high_terminal_, &high_src_),
-                    true);
+                   new hephaestus::ScalarDirichletBC(
+                       std::string("V"), high_terminal_, &high_src_),
+                   true);
 
   bc_maps.Register("low_potential",
-                    new hephaestus::ScalarDirichletBC(
-                      std::string("V"), low_terminal_, &low_src_),
-                    true);
+                   new hephaestus::ScalarDirichletBC(std::string("V"),
+                                                     low_terminal_, &low_src_),
+                   true);
 
   hephaestus::FESpaces fespaces;
   fespaces.Register(std::string("HCurl"), HCurlFESpace_, true);
@@ -273,17 +316,12 @@ void OpenCoilSolver::SPSCurrent() {
   gridfunctions.Register(std::string("source"), J_, true);
   gridfunctions.Register(std::string("V"), V_, true);
 
-  hephaestus::InputParameters current_solver_options;
-  current_solver_options.SetParam("Tolerance", float(1.0e-9));
-  current_solver_options.SetParam("MaxIter", (unsigned int)1000);
-  current_solver_options.SetParam("PrintLevel", 1);
-
   hephaestus::InputParameters sps_params;
   sps_params.SetParam("SourceName", std::string("source"));
   sps_params.SetParam("PotentialName", std::string("V"));
   sps_params.SetParam("HCurlFESpaceName", std::string("HCurl"));
   sps_params.SetParam("H1FESpaceName", std::string("H1"));
-  sps_params.SetParam("SolverOptions", current_solver_options);
+  sps_params.SetParam("SolverOptions", solver_options_);
   sps_params.SetParam("ConductivityCoefName",
                       std::string("magnetic_permeability"));
 
@@ -301,6 +339,31 @@ void OpenCoilSolver::SPSCurrent() {
   *J_ /= abs(flux);
   if (V_)
     *V_ /= abs(flux);
+
+  mesh_->Transfer(*J_, *Jt_parent_);
+  if (V_parent_)
+    mesh_->Transfer(*V_,*Vt_parent_);
+
+  buildM1();
+
+  final_lf_ = new mfem::ParLinearForm(Jt_parent_->ParFESpace());
+  *final_lf_ = 0.0;
+  m1_->AddMult(*Jt_parent_, *final_lf_, 1.0);
+}
+
+void OpenCoilSolver::buildM1() {
+
+  if (m1_ == nullptr) {
+
+    m1_ = new mfem::ParBilinearForm(J_parent_->ParFESpace());
+    hephaestus::attrToMarker(coil_domains_, coil_markers_,
+                             mesh_parent_->attributes.Max());
+    m1_->AddDomainIntegrator(
+        new mfem::VectorFEMassIntegrator(new mfem::ConstantCoefficient(1.0)),
+        coil_markers_);
+    m1_->Assemble();
+    m1_->Finalize();
+  }
 }
 
 void OpenCoilSolver::setRefFace(const int face) { ref_face_ = face; }

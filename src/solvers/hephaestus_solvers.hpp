@@ -10,17 +10,20 @@ public:
                      const mfem::HypreParMatrix &M)
       : mfem::HyprePCG(M), amg(M),
         tol(params.GetOptionalParam<float>("Tolerance", 1.0e-9)),
+        abstol(params.GetOptionalParam<float>("AbsTolerance", 1e-16)),
         max_iter(params.GetOptionalParam<unsigned int>("MaxIter", 1000)),
         print_level(params.GetOptionalParam<int>("PrintLevel", 2)) {
 
     amg.SetPrintLevel(print_level);
     SetTol(tol);
+    SetAbsTol(abstol);
     SetMaxIter(max_iter);
     SetPrintLevel(print_level);
     SetPreconditioner(amg);
   }
   mfem::HypreBoomerAMG amg;
   double tol;
+  double abstol;
   int max_iter;
   int print_level;
 };
@@ -31,16 +34,19 @@ public:
                          const mfem::HypreParMatrix &M)
       : mfem::HyprePCG(M), jacobi(M),
         tol(params.GetOptionalParam<float>("Tolerance", 1.0e-9)),
+        abstol(params.GetOptionalParam<float>("AbsTolerance", 1e-16)),
         max_iter(params.GetOptionalParam<unsigned int>("MaxIter", 1000)),
         print_level(params.GetOptionalParam<int>("PrintLevel", 2)) {
 
     SetTol(tol);
+    SetAbsTol(abstol);
     SetMaxIter(max_iter);
     SetPrintLevel(print_level);
     SetPreconditioner(jacobi);
   }
   mfem::HypreDiagScale jacobi;
   double tol;
+  double abstol;
   int max_iter;
   int print_level;
 };
@@ -52,18 +58,21 @@ public:
                         mfem::ParFiniteElementSpace *edge_fespace)
       : mfem::HyprePCG(M), ams(M, edge_fespace),
         tol(params.GetOptionalParam<float>("Tolerance", 1.0e-16)),
+        abstol(params.GetOptionalParam<float>("AbsTolerance", 1e-16)),
         max_iter(params.GetOptionalParam<unsigned int>("MaxIter", 1000)),
         print_level(params.GetOptionalParam<int>("PrintLevel", -1)) {
 
     ams.SetSingularProblem();
     ams.SetPrintLevel(print_level);
     SetTol(tol);
+    SetAbsTol(abstol);
     SetMaxIter(max_iter);
     SetPrintLevel(print_level);
     SetPreconditioner(ams);
   }
   mfem::HypreAMS ams;
   double tol;
+  double abstol;
   int max_iter;
   int print_level;
 };
@@ -93,17 +102,20 @@ public:
                      const mfem::HypreParMatrix &M)
       : mfem::HypreGMRES(M), amg(M),
         tol(params.GetOptionalParam<float>("Tolerance", 1e-16)),
+        abstol(params.GetOptionalParam<float>("AbsTolerance", 1e-16)),
         max_iter(params.GetOptionalParam<unsigned int>("MaxIter", 1000)),
         print_level(params.GetOptionalParam<int>("PrintLevel", -1)) {
 
     amg.SetPrintLevel(print_level);
     SetTol(tol);
+    SetAbsTol(abstol);
     SetMaxIter(max_iter);
     SetPrintLevel(print_level);
     SetPreconditioner(amg);
   }
   mfem::HypreBoomerAMG amg;
   double tol;
+  double abstol;
   int max_iter;
   int print_level;
 };
