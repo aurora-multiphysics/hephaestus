@@ -43,10 +43,10 @@ hephaestus::Sources defineSources(std::pair<int, int> elec,
 }
 
 hephaestus::Outputs defineOutputs() {
-  
+
   hephaestus::Outputs outputs;
     outputs.Register("ParaViewDataCollection",
-                     new mfem::ParaViewDataCollection("MagnetostaticParaView"),
+                     new mfem::ParaViewDataCollection("OpenCoilParaView"),
                      true);
     return outputs;
 }
@@ -162,8 +162,8 @@ int main(int argc, char *argv[]) {
   problem_builder->SetOutputs(outputs);
 
   hephaestus::InputParameters solver_options;
-  solver_options.SetParam("Tolerance", float(1.0e-11));
-  solver_options.SetParam("AbsTolerance", float(1.0e-11));
+  solver_options.SetParam("Tolerance", float(1.0e-10));
+  solver_options.SetParam("AbsTolerance", float(1.0e-10));
   solver_options.SetParam("MaxIter", (unsigned int)1000);
   solver_options.SetParam("PrintLevel", 2);
   problem_builder->SetSolverOptions(solver_options);
