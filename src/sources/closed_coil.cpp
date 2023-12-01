@@ -60,6 +60,9 @@ ClosedCoilSolver::~ClosedCoilSolver() {
   delete Jaux_coil_;
   delete final_lf_;
   delete V_coil_;
+
+  if (J_transfer_)
+    delete Jt_parent_;
 }
 
 void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
@@ -140,6 +143,12 @@ void ClosedCoilSolver::Apply(mfem::ParLinearForm *lf) {
 
   double I = Itotal_->Eval(*Tr, ip);
   lf->Add(I, *final_lf_);
+
+  if (J_transfer_){
+    *J_parent_ = 0.0;
+    J_parent_->Add(I, *Jt_parent_);
+  }
+  
 }
 
 void ClosedCoilSolver::SubtractSource(mfem::ParGridFunction *gf) {}
@@ -412,7 +421,7 @@ void ClosedCoilSolver::solveCoil() {
   if (J_transfer_) {
     *J_parent_ -= *Jt_parent_;
     *J_parent_ /= -flux;
-    delete Jt_parent_;
+    *Jt_parent_ = *J_parent_;
   }
 
   *final_lf_ /= flux;
