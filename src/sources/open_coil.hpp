@@ -90,7 +90,9 @@ private:
   // Parent mesh, FE space, and current
   mfem::ParMesh *mesh_parent_;
   mfem::ParGridFunction *J_parent_;
+  mfem::ParGridFunction *Jt_parent_;
   mfem::ParGridFunction *V_parent_;
+  mfem::ParGridFunction *Vt_parent_;
 
   // Child mesh and FE spaces
   mfem::ParSubMesh *mesh_;
@@ -112,6 +114,10 @@ private:
 
   // BC Map
   hephaestus::BCMap bc_maps;
+
+  // Final LinearForm
+  mfem::ParLinearForm *final_lf_;
+
 };
 
 } // namespace hephaestus

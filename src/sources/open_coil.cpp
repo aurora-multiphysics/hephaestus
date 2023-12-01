@@ -156,8 +156,9 @@ OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters &params,
       I_coef_name_(params.GetParam<std::string>("IFuncCoefName")),
       coil_domains_(coil_dom), elec_attrs_(electrodes), coef1_(1.0),
       mesh_parent_(nullptr), mesh_(nullptr), H1FESpace_(nullptr),
-      HCurlFESpace_(nullptr), J_parent_(nullptr), V_parent_(nullptr),
-      J_(nullptr), V_(nullptr), m1_(nullptr), high_src_(highV), low_src_(lowV),
+      HCurlFESpace_(nullptr), J_parent_(nullptr), Jt_parent_(nullptr),
+      V_parent_(nullptr), Vt_parent_(nullptr), J_(nullptr), V_(nullptr),
+      m1_(nullptr), final_lf_(nullptr), high_src_(highV), low_src_(lowV),
       high_terminal_(1), low_terminal_(1) {
 
   hephaestus::InputParameters default_pars;
@@ -180,6 +181,9 @@ OpenCoilSolver::~OpenCoilSolver() {
   ifDelete(HCurlFESpace_);
   ifDelete(J_);
   ifDelete(V_);
+  ifDelete(Jt_parent_);
+  ifDelete(Vt_parent_);
+  ifDelete(final_lf_);
 }
 
 void OpenCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
@@ -217,6 +221,7 @@ void OpenCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
     mfem::mfem_error("V GridFunction must be of H1 type.");
   } else {
     order_h1_ = V_parent_->ParFESpace()->FEColl()->GetOrder();
+    Vt_parent_ = new mfem::ParGridFunction(*V_parent_);
   }
 
   mesh_parent_ = J_parent_->ParFESpace()->GetParMesh();
@@ -226,7 +231,6 @@ void OpenCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
   makeGridFunctions();
   setBCs();
   SPSCurrent();
-  buildM1();
 }
 
 void OpenCoilSolver::Apply(mfem::ParLinearForm *lf) {
@@ -239,21 +243,16 @@ void OpenCoilSolver::Apply(mfem::ParLinearForm *lf) {
           .IntPoint(0);
 
   double I = Itotal_->Eval(*Tr, ip);
-  *J_ *= I;
-  *J_parent_ = 0.0;
-  mesh_->Transfer(*J_, *J_parent_);
-  *J_ /= I;
 
+  *J_parent_ = 0.0;
+  J_parent_->Add(I, *Jt_parent_);
   if (V_parent_ != nullptr) {
-    *V_ *= I;
-    mesh_->Transfer(*V_, *V_parent_);
-    *V_ /= I;
+    *V_parent_ = 0.0;
+    V_parent_->Add(I, *Vt_parent_);
   }
 
-  m1_->Update();
-  m1_->Assemble();
-  m1_->Finalize();
-  m1_->AddMult(*J_parent_, *lf, 1.0);
+  *lf = 0.0;
+  lf->Add(I, *final_lf_);
 }
 
 void OpenCoilSolver::SubtractSource(mfem::ParGridFunction *gf) {}
@@ -283,9 +282,13 @@ void OpenCoilSolver::makeGridFunctions() {
 
   if (J_ == nullptr)
     J_ = new mfem::ParGridFunction(HCurlFESpace_);
+  
+  if (Jt_parent_ == nullptr)
+    Jt_parent_ = new mfem::ParGridFunction(*J_parent_);
 
   *V_ = 0.0;
   *J_ = 0.0;
+  *Jt_parent_ = 0.0;
 }
 
 void OpenCoilSolver::setBCs() {
@@ -337,6 +340,16 @@ void OpenCoilSolver::SPSCurrent() {
   *J_ /= abs(flux);
   if (V_)
     *V_ /= abs(flux);
+
+  mesh_->Transfer(*J_, *Jt_parent_);
+  if (V_parent_)
+    mesh_->Transfer(*V_,*Vt_parent_);
+
+  buildM1();
+
+  final_lf_ = new mfem::ParLinearForm(Jt_parent_->ParFESpace());
+  *final_lf_ = 0.0;
+  m1_->AddMult(*Jt_parent_, *final_lf_, 1.0);
 }
 
 void OpenCoilSolver::buildM1() {
@@ -350,6 +363,7 @@ void OpenCoilSolver::buildM1() {
         new mfem::VectorFEMassIntegrator(new mfem::ConstantCoefficient(1.0)),
         coil_markers_);
     m1_->Assemble();
+    m1_->Finalize();
   }
 }
 
