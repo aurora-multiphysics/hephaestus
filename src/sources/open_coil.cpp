@@ -251,7 +251,6 @@ void OpenCoilSolver::Apply(mfem::ParLinearForm *lf) {
     V_parent_->Add(I, *Vt_parent_);
   }
 
-  *lf = 0.0;
   lf->Add(I, *final_lf_);
 }
 
