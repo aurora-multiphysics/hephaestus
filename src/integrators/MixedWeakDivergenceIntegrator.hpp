@@ -9,7 +9,7 @@
 
 
 namespace mfem {
-
+    
 class MixedWeakDivergenceIntegrator : public mfem::BilinearFormIntegrator
 {
 protected:
@@ -31,14 +31,14 @@ public:
 
     MixedWeakDivergenceIntegrator(mfem::Coefficient &a) :
         a(&a), trial_maps(NULL), test_maps(NULL), geom(NULL) 
-        {;}        
+        {}        
 
     ~MixedWeakDivergenceIntegrator() {;}
 
     void AssembleElementMatrix2(const mfem::FiniteElement &trial_fe,
                                 const mfem::FiniteElement &test_fe,
                                 mfem::ElementTransformation &Trans,
-                                mfem::DenseMatrix &elmat);
+                                mfem::DenseMatrix &elmat) override;
 
     const mfem::IntegrationRule& GetIntRule(const mfem::FiniteElement &trial_fe,
                                     const mfem::FiniteElement &test_fe,

@@ -12,7 +12,7 @@ void MixedWeakDivergenceIntegrator::AssembleElementMatrix2(const mfem::FiniteEle
     dim = trial_fe.GetDim();
     int trial_dof = trial_fe.GetDof();
     int test_dof = test_fe.GetDof();
-    double w, coeff, lambda, mu, alpha;
+    double w, coeff;
     Jadj.SetSize(dim);
 
     // vector to store values of basis functions
@@ -44,11 +44,8 @@ void MixedWeakDivergenceIntegrator::AssembleElementMatrix2(const mfem::FiniteEle
 
         if (a)
         {
-            alpha = a -> Eval (Trans, ip);
+            coeff = a -> Eval(Trans, ip);
         }
-
-        alpha *= -1;
-        
         Mult(test_d_shape, Trans.AdjugateJacobian(), test_g_shape);
         trial_shape *= w;
         trial_shape *= coeff;
