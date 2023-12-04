@@ -1,5 +1,6 @@
 #pragma once
 #include "kernel_base.hpp"
+#include "MixedWeakDivergenceIntegrator.hpp"
 
 namespace hephaestus {
 

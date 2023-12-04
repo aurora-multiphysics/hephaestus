@@ -16,7 +16,7 @@ void MixedWeakDivergenceKernel::Init(hephaestus::GridFunctions &gridfunctions,
 }
 
 void MixedWeakDivergenceKernel::Apply(mfem::ParMixedBilinearForm *mblf) {
-  mblf->AddDomainIntegrator(new mfem::MixedVectorGradientIntegrator(*coef));
+  mblf->AddDomainIntegrator(new mfem::MixedWeakDivergenceIntegrator(*coef));
 }
 
 } // namespace hephaestus
