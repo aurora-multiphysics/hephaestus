@@ -7,7 +7,7 @@ hephaestus::Coefficients defineCoefficients(){
   hephaestus::Coefficients coefficients;
 
   coefficients.scalars.Register("thermal_expansion_coef",
-                                new mfem::ConstantCoefficient(0.02),
+                                new mfem::ConstantCoefficient(1e-04),
                                 true);
 
   coefficients.scalars.Register("thermal_conductivity",
@@ -15,14 +15,18 @@ hephaestus::Coefficients defineCoefficients(){
                                 true);
 
   coefficients.scalars.Register("lame_param",
-                                new mfem::ConstantCoefficient(0.02),
+                                new mfem::ConstantCoefficient(10),
                                 true);
 
   coefficients.scalars.Register("shear_modulus",
-                                new mfem::ConstantCoefficient(0.02),
+                                new mfem::ConstantCoefficient(10),
                                 true);                        
 
   coefficients.scalars.Register("stress_free_temp",
+                                new mfem::ConstantCoefficient(250),
+                                true);
+
+  coefficients.scalars.Register("zero",
                                 new mfem::ConstantCoefficient(0.0),
                                 true);
                                                                             
@@ -31,10 +35,11 @@ hephaestus::Coefficients defineCoefficients(){
 }
 
 hephaestus::Outputs defineOutputs() {
-  std::map<std::string, mfem::DataCollection *> data_collections;
-  data_collections["ParaViewDataCollection"] =
-      new mfem::ParaViewDataCollection("ThermalExpansionExample");
-  hephaestus::Outputs outputs(data_collections);
+  // std::map<std::string, mfem::DataCollection *> data_collections;
+  // data_collections["ParaViewDataCollection"] =
+  //     new mfem::ParaViewDataCollection("ThermalExpansionExample");
+  hephaestus::Outputs outputs;
+  outputs.Register("Paraview", new mfem::ParaViewDataCollection("ThermalExpansionExample"), true);
   return outputs;
 }
 
@@ -109,7 +114,6 @@ int main(int argc, char *argv[]) {
       new hephaestus::SteadyExecutioner(exec_params);
 
   mfem::out << "Created executioner";
-  executioner->Init();
   executioner->Execute();
 
   MPI_Finalize();
