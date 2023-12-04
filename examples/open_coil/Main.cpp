@@ -32,7 +32,6 @@ hephaestus::Sources defineSources(std::pair<int, int> elec,
   coilsolver_pars.SetParam("SourceName", std::string("source_current_density"));
   coilsolver_pars.SetParam("PotentialName", std::string("auxiliary_potential"));
   coilsolver_pars.SetParam("IFuncCoefName", std::string("I"));
-  coilsolver_pars.SetParam("HelmholtzProjection", false);
 
   hephaestus::Sources sources;
   sources.Register(
