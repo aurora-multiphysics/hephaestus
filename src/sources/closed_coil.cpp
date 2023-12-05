@@ -37,7 +37,7 @@ ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters &params,
       J_transfer_(params.GetOptionalParam<bool>("JTransfer", false)),
       coil_domains_(coil_dom), mesh_parent_(nullptr), J_parent_(nullptr),
       HCurlFESpace_parent_(nullptr), H1FESpace_parent_(nullptr),
-      Jt_parent_(nullptr) {
+      Jt_parent_(nullptr), final_lf_(nullptr) {
 
   hephaestus::InputParameters default_pars;
   default_pars.SetParam("Tolerance", float(1e-18));
@@ -53,7 +53,6 @@ ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters &params,
 
 ClosedCoilSolver::~ClosedCoilSolver() {
 
-  restoreAttributes();
   delete mesh_coil_;
   delete mesh_t_;
   delete H1FESpace_coil_;
@@ -124,6 +123,7 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
   prepareCoilSubmesh();
   solveTransition();
   solveCoil();
+  restoreAttributes();
 
   if (!fespaces.Has(h1_fespace_name_))
     delete H1FESpace_parent_;
