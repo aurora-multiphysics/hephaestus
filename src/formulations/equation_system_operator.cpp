@@ -3,6 +3,7 @@
 namespace hephaestus {
 
 void EquationSystemOperator::SetGridFunctions() {
+  state_var_names = _equation_system->var_names;
   local_test_vars = populateVectorFromNamedFieldsMap<mfem::ParGridFunction>(
       _gridfunctions, state_var_names);
 
@@ -36,6 +37,12 @@ void EquationSystemOperator::SetGridFunctions() {
   }
 };
 
+void EquationSystemOperator::SetEquationSystem(
+  hephaestus::EquationSystem *equation_system) {
+    _equation_system = equation_system;
+  
+}
+
 void EquationSystemOperator::Init(mfem::Vector &X) {
   // Define material property coefficients
   for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
@@ -43,6 +50,7 @@ void EquationSystemOperator::Init(mfem::Vector &X) {
                                      const_cast<mfem::Vector &>(X),
                                      true_offsets[ind]);
   }
+  _equation_system->buildEquationSystem(_bc_map, _sources);
 }
 
 void EquationSystemOperator::Solve(mfem::Vector &X) {}

@@ -20,8 +20,9 @@ public:
         _coefficients(coefficients), _solver_options(solver_options){};
 
   ~EquationSystemOperator(){};
-
+  
   virtual void SetGridFunctions();
+  virtual void SetEquationSystem(hephaestus::EquationSystem *equation_system);
   virtual void Init(mfem::Vector &X);
   virtual void Solve(mfem::Vector &X);
   void Mult(const mfem::Vector &x, mfem::Vector &y) const override{};
@@ -38,6 +39,8 @@ public:
   std::vector<std::string> active_aux_var_names;
 
   std::vector<mfem::ParGridFunction *> local_test_vars;
+
+  hephaestus::EquationSystem *_equation_system;
 
   int myid_;
   int num_procs_;
