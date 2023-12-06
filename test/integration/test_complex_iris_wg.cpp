@@ -1,9 +1,10 @@
 #include "hephaestus.hpp"
-#include <gtest/gtest.h>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 extern const char *DATA_DIR;
 
-class TestComplexIrisWaveguide : public testing::Test {
+class TestComplexIrisWaveguide{
 protected:
   static void e_bc_r(const mfem::Vector &x, mfem::Vector &E) {
     E.SetSize(3);
@@ -113,7 +114,7 @@ protected:
   }
 };
 
-TEST_F(TestComplexIrisWaveguide, CheckRun) {
+TEST_CASE_METHOD(TestComplexIrisWaveguide, "TestComplexIrisWaveguide", "[CheckRun]") {
   hephaestus::InputParameters params(test_params());
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
@@ -187,6 +188,6 @@ TEST_F(TestComplexIrisWaveguide, CheckRun) {
   double norm_i =
       executioner->problem->gridfunctions.Get("electric_field_imag")
           ->ComputeMaxError(zeroCoef);
-  ASSERT_NEAR(norm_r, 4896.771, 0.001);
-  ASSERT_NEAR(norm_i, 5357.650, 0.001);
+  REQUIRE_THAT(norm_r, Catch::Matchers::WithinAbs(4896.771, 0.001));
+  REQUIRE_THAT(norm_i, Catch::Matchers::WithinAbs(5357.650, 0.001));
 }
