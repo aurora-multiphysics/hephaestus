@@ -47,9 +47,6 @@ void ScalarPotentialSource::Init(hephaestus::GridFunctions &gridfunctions,
 
   grad_p_ = gridfunctions.Get(src_gf_name);
   if (grad_p_ == NULL) {
-    std::cout << potential_gf_name + " not found in gridfunctions when "
-                                     "creating ScalarPotentialSource. "
-                                     "Creating new ParGridFunction\n";
     grad_p_ = new mfem::ParGridFunction(HCurlFESpace_);
     gridfunctions.Register(src_gf_name, grad_p_, false);
   }
