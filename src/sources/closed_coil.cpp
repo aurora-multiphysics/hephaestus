@@ -138,7 +138,7 @@ void ClosedCoilSolver::Apply(mfem::ParLinearForm *lf) {
   // just so we can call Eval
   mfem::ElementTransformation *Tr = mesh_parent_->GetElementTransformation(0);
   const mfem::IntegrationPoint &ip =
-      mfem::IntRules.Get(Jaux_coil_->ParFESpace()->GetFE(0)->GetGeomType(), 1)
+      mfem::IntRules.Get(HCurlFESpace_parent_->GetFE(0)->GetGeomType(), 1)
           .IntPoint(0);
 
   double I = Itotal_->Eval(*Tr, ip);
@@ -176,7 +176,7 @@ void ClosedCoilSolver::makeWedge() {
   Plane3D plane;
 
   if (bdr_els.size() > 0) {
-    plane.make3DPlane(mesh_parent_, mesh_parent_->GetBdrFace(bdr_els[0]));
+    plane.make3DPlane(mesh_parent_, mesh_parent_->GetBdrElementFaceIndex(bdr_els[0]));
   }
 
   std::vector<int> elec_vtx;
@@ -184,7 +184,7 @@ void ClosedCoilSolver::makeWedge() {
   for (auto b_fc : bdr_els) {
 
     mfem::Array<int> face_vtx;
-    mesh_parent_->GetFaceVertices(mesh_parent_->GetBdrFace(b_fc), face_vtx);
+    mesh_parent_->GetFaceVertices(mesh_parent_->GetBdrElementFaceIndex(b_fc), face_vtx);
 
     for (auto v : face_vtx)
       pushIfUnique(elec_vtx, v);
@@ -264,7 +264,7 @@ void ClosedCoilSolver::makeWedge() {
     // If the face is part of the first electrode
     test1 = false;
     for (auto b_fc : bdr_els) {
-      if (wf == mesh_parent_->GetBdrFace(b_fc)) {
+      if (wf == mesh_parent_->GetBdrElementFaceIndex(b_fc)) {
         test1 = true;
         break;
       }
