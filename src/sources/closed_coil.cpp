@@ -144,11 +144,10 @@ void ClosedCoilSolver::Apply(mfem::ParLinearForm *lf) {
   double I = Itotal_->Eval(*Tr, ip);
   lf->Add(I, *final_lf_);
 
-  if (J_transfer_){
+  if (J_transfer_) {
     *J_parent_ = 0.0;
     J_parent_->Add(I, *Jt_parent_);
   }
-  
 }
 
 void ClosedCoilSolver::SubtractSource(mfem::ParGridFunction *gf) {}
@@ -311,7 +310,6 @@ void ClosedCoilSolver::prepareCoilSubmesh() {
 
   mesh_t_ = new mfem::ParSubMesh(
       mfem::ParSubMesh::CreateFromDomain(*mesh_parent_, transition_domain_));
-
 }
 
 void ClosedCoilSolver::solveTransition() {
@@ -369,7 +367,24 @@ void ClosedCoilSolver::solveCoil() {
   a_coil.Assemble();
 
   mfem::Array<int> ess_bdr_tdofs_coil;
-  if (H1FESpace_coil_->GetMyRank() == 0) {
+
+  // This creates a binary representation of which MPI ranks contain at
+  // least one element
+  int ref_rank = 0;
+  int has_els =
+      (bool)mesh_coil_->GetNE() ? 1<<mfem::Mpi::WorldRank() : 0;
+  int has_els_sum;
+  MPI_Allreduce(&has_els, &has_els_sum, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+  MFEM_ASSERT(has_els_sum != 0, "Empty coil submesh!");
+
+  for (int i=0; i < mfem::Mpi::WorldSize(); ++i){
+    if ((1<<i & has_els_sum) != 0){
+      ref_rank = i;
+      break;
+    }
+  }
+
+  if (mfem::Mpi::WorldRank() == ref_rank) {
     ess_bdr_tdofs_coil.SetSize(1);
     ess_bdr_tdofs_coil[0] = 0;
   }
