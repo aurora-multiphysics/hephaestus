@@ -37,7 +37,7 @@ ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters &params,
       J_transfer_(params.GetOptionalParam<bool>("JTransfer", false)),
       coil_domains_(coil_dom), mesh_parent_(nullptr), J_parent_(nullptr),
       HCurlFESpace_parent_(nullptr), H1FESpace_parent_(nullptr),
-      Jt_parent_(nullptr) {
+      Jt_parent_(nullptr), final_lf_(nullptr) {
 
   hephaestus::InputParameters default_pars;
   default_pars.SetParam("Tolerance", float(1e-18));
@@ -53,7 +53,6 @@ ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters &params,
 
 ClosedCoilSolver::~ClosedCoilSolver() {
 
-  restoreAttributes();
   delete mesh_coil_;
   delete mesh_t_;
   delete H1FESpace_coil_;
@@ -124,6 +123,7 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
   prepareCoilSubmesh();
   solveTransition();
   solveCoil();
+  restoreAttributes();
 
   if (!fespaces.Has(h1_fespace_name_))
     delete H1FESpace_parent_;
@@ -138,17 +138,16 @@ void ClosedCoilSolver::Apply(mfem::ParLinearForm *lf) {
   // just so we can call Eval
   mfem::ElementTransformation *Tr = mesh_parent_->GetElementTransformation(0);
   const mfem::IntegrationPoint &ip =
-      mfem::IntRules.Get(Jaux_coil_->ParFESpace()->GetFE(0)->GetGeomType(), 1)
+      mfem::IntRules.Get(HCurlFESpace_parent_->GetFE(0)->GetGeomType(), 1)
           .IntPoint(0);
 
   double I = Itotal_->Eval(*Tr, ip);
   lf->Add(I, *final_lf_);
 
-  if (J_transfer_){
+  if (J_transfer_) {
     *J_parent_ = 0.0;
     J_parent_->Add(I, *Jt_parent_);
   }
-  
 }
 
 void ClosedCoilSolver::SubtractSource(mfem::ParGridFunction *gf) {}
@@ -177,7 +176,7 @@ void ClosedCoilSolver::makeWedge() {
   Plane3D plane;
 
   if (bdr_els.size() > 0) {
-    plane.make3DPlane(mesh_parent_, mesh_parent_->GetBdrFace(bdr_els[0]));
+    plane.make3DPlane(mesh_parent_, mesh_parent_->GetBdrElementFaceIndex(bdr_els[0]));
   }
 
   std::vector<int> elec_vtx;
@@ -185,7 +184,7 @@ void ClosedCoilSolver::makeWedge() {
   for (auto b_fc : bdr_els) {
 
     mfem::Array<int> face_vtx;
-    mesh_parent_->GetFaceVertices(mesh_parent_->GetBdrFace(b_fc), face_vtx);
+    mesh_parent_->GetFaceVertices(mesh_parent_->GetBdrElementFaceIndex(b_fc), face_vtx);
 
     for (auto v : face_vtx)
       pushIfUnique(elec_vtx, v);
@@ -265,7 +264,7 @@ void ClosedCoilSolver::makeWedge() {
     // If the face is part of the first electrode
     test1 = false;
     for (auto b_fc : bdr_els) {
-      if (wf == mesh_parent_->GetBdrFace(b_fc)) {
+      if (wf == mesh_parent_->GetBdrElementFaceIndex(b_fc)) {
         test1 = true;
         break;
       }
@@ -311,7 +310,6 @@ void ClosedCoilSolver::prepareCoilSubmesh() {
 
   mesh_t_ = new mfem::ParSubMesh(
       mfem::ParSubMesh::CreateFromDomain(*mesh_parent_, transition_domain_));
-
 }
 
 void ClosedCoilSolver::solveTransition() {
@@ -369,7 +367,24 @@ void ClosedCoilSolver::solveCoil() {
   a_coil.Assemble();
 
   mfem::Array<int> ess_bdr_tdofs_coil;
-  if (H1FESpace_coil_->GetMyRank() == 0) {
+
+  // This creates a binary representation of which MPI ranks contain at
+  // least one element
+  int ref_rank = 0;
+  int has_els =
+      (bool)mesh_coil_->GetNE() ? 1<<mfem::Mpi::WorldRank() : 0;
+  int has_els_sum;
+  MPI_Allreduce(&has_els, &has_els_sum, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+  MFEM_ASSERT(has_els_sum != 0, "Empty coil submesh!");
+
+  for (int i=0; i < mfem::Mpi::WorldSize(); ++i){
+    if ((1<<i & has_els_sum) != 0){
+      ref_rank = i;
+      break;
+    }
+  }
+
+  if (mfem::Mpi::WorldRank() == ref_rank) {
     ess_bdr_tdofs_coil.SetSize(1);
     ess_bdr_tdofs_coil[0] = 0;
   }
