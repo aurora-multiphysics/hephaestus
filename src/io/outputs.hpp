@@ -25,7 +25,8 @@ public:
   // Enable GLVis streams for visualisation
   void EnableGLVis(const bool &use_glvis) {
     _use_glvis = use_glvis;
-    InitializeGLVis(_my_rank);
+    if (_use_glvis)
+      InitializeGLVis(_my_rank);
   }
 
   // Reset Outputs and re-register output fields from GridFunctions
