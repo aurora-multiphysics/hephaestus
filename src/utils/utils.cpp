@@ -74,11 +74,6 @@ void SubdomainToArray(const hephaestus::Subdomain &sd, mfem::Array<int> &arr) {
   arr.Append(sd.id);
 }
 
-//template <typename T> void ifDelete(T *ptr) {
-//  if (ptr != nullptr)
-//    delete ptr;
-//}
-
 void inheritBdrAttributes(const mfem::ParMesh *parent_mesh,
                           mfem::ParSubMesh *child_mesh) {
 
@@ -139,6 +134,12 @@ void cleanDivergence(hephaestus::GridFunctions &gfs, hephaestus::BCMap &bcs,
   pars.SetParam("SolverOptions", solve_pars);
   hephaestus::HelmholtzProjector projector(pars);
   projector.Project(gfs, fes, bcs);
+}
+
+template <typename T> 
+void ifDelete(T *ptr) {
+  if (ptr != nullptr)
+    delete ptr;
 }
 
 } // namespace hephaestus

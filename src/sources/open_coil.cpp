@@ -32,15 +32,15 @@ OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters &params,
 
 OpenCoilSolver::~OpenCoilSolver() {
 
-  //ifDelete(mesh_);
-  //ifDelete(m1_);
-  //ifDelete(H1FESpace_);
-  //ifDelete(HCurlFESpace_);
-  //ifDelete(J_);
-  //ifDelete(V_);
-  //ifDelete(Jt_parent_);
-  //ifDelete(Vt_parent_);
-  //ifDelete(final_lf_);
+  ifDelete(mesh_);
+  ifDelete(m1_);
+  ifDelete(H1FESpace_);
+  ifDelete(HCurlFESpace_);
+  ifDelete(J_);
+  ifDelete(V_);
+  ifDelete(Jt_parent_);
+  ifDelete(Vt_parent_);
+  ifDelete(final_lf_);
 }
 
 void OpenCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,

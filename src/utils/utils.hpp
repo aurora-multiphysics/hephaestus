@@ -16,8 +16,6 @@ void SubdomainToArray(const std::vector<hephaestus::Subdomain> &sd,
 
 void SubdomainToArray(const hephaestus::Subdomain &sd, mfem::Array<int> &arr);
 
-//template <typename T> void ifDelete(T *ptr);
-
 void inheritBdrAttributes(const mfem::ParMesh *parent_mesh,
                           mfem::ParSubMesh *child_mesh);
 
@@ -31,5 +29,9 @@ void cleanDivergence(hephaestus::GridFunctions &gfs, hephaestus::BCMap &bcs,
                      const std::string vec_gf_name,
                      const std::string scalar_gf_name,
                      hephaestus::InputParameters solve_pars);
+
+template <typename T> 
+void ifDelete(T *ptr);
+
 
 } // namespace hephaestus
