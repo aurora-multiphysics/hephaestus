@@ -136,10 +136,4 @@ void cleanDivergence(hephaestus::GridFunctions &gfs, hephaestus::BCMap &bcs,
   projector.Project(gfs, fes, bcs);
 }
 
-template <typename T> 
-void ifDelete(T *ptr) {
-  if (ptr != nullptr)
-    delete ptr;
-}
-
 } // namespace hephaestus

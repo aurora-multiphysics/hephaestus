@@ -9,6 +9,12 @@ namespace hephaestus {
 
 // Useful functions available to all classes
 
+template <typename T> 
+void ifDelete(T *ptr) {
+  if (ptr != nullptr)
+    delete ptr;
+}
+
 double calcFlux(mfem::GridFunction *v_field, int face_attr);
 
 void SubdomainToArray(const std::vector<hephaestus::Subdomain> &sd,
@@ -29,9 +35,5 @@ void cleanDivergence(hephaestus::GridFunctions &gfs, hephaestus::BCMap &bcs,
                      const std::string vec_gf_name,
                      const std::string scalar_gf_name,
                      hephaestus::InputParameters solve_pars);
-
-template <typename T> 
-void ifDelete(T *ptr);
-
 
 } // namespace hephaestus

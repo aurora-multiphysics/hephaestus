@@ -1,4 +1,5 @@
 #include "open_coil.hpp"
+#include "utils.hpp"
 
 namespace hephaestus {
 
