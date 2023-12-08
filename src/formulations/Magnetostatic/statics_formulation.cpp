@@ -118,14 +118,16 @@ void StaticsOperator::Solve(mfem::Vector &X) {
   mfem::ParBilinearForm a1_(a_.ParFESpace());
   a1_.AddDomainIntegrator(new mfem::CurlCurlIntegrator(*stiffCoef_));
   a1_.Assemble();
-
+  a1_.Finalize();
   mfem::HypreParMatrix CurlMuInvCurl;
-  mfem::Vector &A(trueX.GetBlock(0));
-  mfem::Vector &RHS(trueRhs.GetBlock(0));
+  mfem::HypreParVector A(a_.ParFESpace());
+  mfem::HypreParVector RHS(a_.ParFESpace());
   a1_.FormLinearSystem(ess_bdr_tdofs_, a_, b1_, CurlMuInvCurl, A, RHS);
 
-  hephaestus::DefaultHCurlPCGSolver a1_solver(_solver_options, CurlMuInvCurl,
-                                              a_.ParFESpace());
+  // Define and apply a parallel FGMRES solver for AX=B with the AMS
+  // preconditioner from hypre.
+  hephaestus::DefaultHCurlFGMRESSolver a1_solver(_solver_options, CurlMuInvCurl,
+                                                 a_.ParFESpace());
   a1_solver.Mult(RHS, A);
   a1_.RecoverFEMSolution(A, b1_, a_);
 }
