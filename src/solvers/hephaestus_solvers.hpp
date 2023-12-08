@@ -77,24 +77,31 @@ public:
   int print_level;
 };
 
-// class DefaultGMRESSolver : public mfem::GMRESSolver {
-// public:
-//   DefaultGMRESSolver(const hephaestus::InputParameters &params,
-//                      const mfem::HypreParMatrix &M)
-//       : mfem::GMRESSolver(M.GetComm()),
-//         atol(params.GetOptionalParam<float>("AbsoluteTolerance", 1.0e-16)),
-//         max_iter(params.GetOptionalParam<unsigned int>("MaxIter", 1000)),
-//         print_level(params.GetOptionalParam<int>("PrintLevel", -1)) {
+class DefaultHCurlFGMRESSolver : public mfem::HypreFGMRES {
+public:
+  DefaultHCurlFGMRESSolver(const hephaestus::InputParameters &params,
+                           const mfem::HypreParMatrix &M,
+                           mfem::ParFiniteElementSpace *edge_fespace)
+      : mfem::HypreFGMRES(M), ams(M, edge_fespace),
+        tol(params.GetOptionalParam<float>("Tolerance", 1e-16)),
+        max_iter(params.GetOptionalParam<unsigned int>("MaxIter", 100)),
+        k_dim(params.GetOptionalParam<unsigned int>("KDim", 10)),
+        print_level(params.GetOptionalParam<int>("PrintLevel", -1)) {
 
-//     SetOperator(M);
-//     SetAbsTol(atol);
-//     SetMaxIter(max_iter);
-//     SetPrintLevel(print_level);
-//   }
-//   double atol;
-//   int max_iter;
-//   int print_level;
-// };
+    ams.SetSingularProblem();
+    ams.SetPrintLevel(print_level);
+    SetTol(tol);
+    SetMaxIter(max_iter);
+    SetKDim(k_dim);
+    SetPrintLevel(print_level);
+    SetPreconditioner(ams);
+  }
+  mfem::HypreAMS ams;
+  double tol;
+  int max_iter;
+  int k_dim;
+  int print_level;
+};
 
 class DefaultGMRESSolver : public mfem::HypreGMRES {
 public:
