@@ -67,7 +67,7 @@ void DualFormulation::ConstructJacobianPreconditioner() {
       problem->GetEquationSystem()->test_pfespaces.at(0))};
   precond->SetSingularProblem();
   precond->SetPrintLevel(-1);
-  problem->_jacobian_preconditioner = precond;
+  problem->jacobian_preconditioner = precond;
 }
 
 void DualFormulation::ConstructJacobianSolver() {
@@ -77,8 +77,8 @@ void DualFormulation::ConstructJacobianSolver() {
   solver->SetMaxIter(1000);
   solver->SetPrintLevel(-1);
   solver->SetPreconditioner(*std::dynamic_pointer_cast<mfem::HypreSolver>(
-      problem->_jacobian_preconditioner));
-  problem->_jacobian_solver = solver;
+      problem->jacobian_preconditioner));
+  problem->jacobian_solver = solver;
 }
 
 void DualFormulation::ConstructOperator() {

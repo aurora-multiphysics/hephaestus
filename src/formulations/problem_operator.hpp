@@ -15,13 +15,6 @@ public:
   virtual void Solve(mfem::Vector &X){};
   void Mult(const mfem::Vector &x, mfem::Vector &y) const override{};
 
-  virtual mfem::Solver *getJacobianSolver() {
-    return _problem._jacobian_solver.get();
-  };
-  virtual mfem::NewtonSolver *getNonlinearSolver() {
-    return _problem._nonlinear_solver.get();
-  };
-
   mfem::Array<int> true_offsets, block_trueOffsets;
 
   // Vector of names of state gridfunctions used in formulation, ordered by

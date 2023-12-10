@@ -10,7 +10,7 @@ std::string GetTimeDerivativeName(const std::string &name);
 std::vector<std::string>
 GetTimeDerivativeNames(std::vector<std::string> gridfunction_names);
 
-// Specifies output interfaces of a time-domain EM formulation.
+// Specifies output interfaces of a time-domain formulation.
 class TimeDomainProblemOperator : public mfem::TimeDependentOperator {
 public:
   TimeDomainProblemOperator(hephaestus::Problem &problem) : _problem(problem) {
@@ -28,13 +28,6 @@ public:
 
   void
   SetEquationSystem(hephaestus::TimeDependentEquationSystem *equation_system);
-
-  virtual mfem::Solver *getJacobianSolver() {
-    return _problem._jacobian_solver.get();
-  };
-  virtual mfem::NewtonSolver *getNonlinearSolver() {
-    return _problem._nonlinear_solver.get();
-  };
 
   mfem::Array<int> true_offsets, block_trueOffsets;
 

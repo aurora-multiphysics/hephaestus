@@ -24,9 +24,9 @@ public:
   mfem::ODESolver *ode_solver;
   mfem::BlockVector *F;
 
-  std::shared_ptr<mfem::Solver> _jacobian_preconditioner;
-  std::shared_ptr<mfem::Solver> _jacobian_solver;
-  std::shared_ptr<mfem::NewtonSolver> _nonlinear_solver;
+  std::shared_ptr<mfem::Solver> jacobian_preconditioner;
+  std::shared_ptr<mfem::Solver> jacobian_solver;
+  std::shared_ptr<mfem::NewtonSolver> nonlinear_solver;
 
   hephaestus::FECollections fecs;
   hephaestus::FESpaces fespaces;

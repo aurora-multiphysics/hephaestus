@@ -39,7 +39,7 @@ void StaticsFormulation::ConstructJacobianPreconditioner() {
       problem->gridfunctions.Get(_h_curl_var_name)->ParFESpace())};
   precond->SetSingularProblem();
   precond->SetPrintLevel(-1);
-  problem->_jacobian_preconditioner = precond;
+  problem->jacobian_preconditioner = precond;
 }
 
 void StaticsFormulation::ConstructJacobianSolver() {
@@ -50,8 +50,8 @@ void StaticsFormulation::ConstructJacobianSolver() {
   solver->SetKDim(10);
   solver->SetPrintLevel(-1);
   solver->SetPreconditioner(*std::dynamic_pointer_cast<mfem::HypreSolver>(
-      problem->_jacobian_preconditioner));
-  problem->_jacobian_solver = solver;
+      problem->jacobian_preconditioner));
+  problem->jacobian_solver = solver;
 }
 
 void StaticsFormulation::ConstructOperator() {
@@ -131,12 +131,12 @@ void StaticsOperator::Solve(mfem::Vector &X) {
   mfem::HypreParVector RHS(a_.ParFESpace());
   a1_.FormLinearSystem(ess_bdr_tdofs_, a_, b1_, CurlMuInvCurl, A, RHS);
 
-  // getNonlinearSolver()->SetSolver(*getJacobianSolver());
-  // getNonlinearSolver()->SetOperator(CurlMuInvCurl);
-  // getNonlinearSolver()->Mult(RHS, A);
+  // nonlinear_solver->SetSolver(*jacobian_solver);
+  // nonlinear_solver->SetOperator(CurlMuInvCurl);
+  // nonlinear_solver->Mult(RHS, A);
 
-  getJacobianSolver()->SetOperator(CurlMuInvCurl);
-  getJacobianSolver()->Mult(RHS, A);
+  _problem.jacobian_solver->SetOperator(CurlMuInvCurl);
+  _problem.jacobian_solver->Mult(RHS, A);
   a1_.RecoverFEMSolution(A, b1_, a_);
 }
 

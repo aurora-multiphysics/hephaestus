@@ -39,12 +39,12 @@ void ProblemBuilder::SetOutputs(hephaestus::Outputs &outputs) {
 
 void ProblemBuilder::SetJacobianPreconditioner(
     std::shared_ptr<mfem::Solver> preconditioner) {
-  GetProblem()->_jacobian_preconditioner = preconditioner;
+  GetProblem()->jacobian_preconditioner = preconditioner;
 }
 
 void ProblemBuilder::SetJacobianSolver(
     std::shared_ptr<mfem::Solver> jacobian_solver) {
-  GetProblem()->_jacobian_solver = jacobian_solver;
+  GetProblem()->jacobian_solver = jacobian_solver;
 }
 
 void ProblemBuilder::SetSolverOptions(
@@ -123,7 +123,7 @@ void ProblemBuilder::ConstructJacobianPreconditioner() {
   std::shared_ptr<mfem::HypreBoomerAMG> precond{
       std::make_shared<mfem::HypreBoomerAMG>()};
   precond->SetPrintLevel(-1);
-  GetProblem()->_jacobian_preconditioner = precond;
+  GetProblem()->jacobian_preconditioner = precond;
 }
 
 void ProblemBuilder::ConstructJacobianSolver() {
@@ -133,8 +133,8 @@ void ProblemBuilder::ConstructJacobianSolver() {
   solver->SetMaxIter(1000);
   solver->SetPrintLevel(-1);
   solver->SetPreconditioner(*std::dynamic_pointer_cast<mfem::HypreSolver>(
-      GetProblem()->_jacobian_preconditioner));
-  GetProblem()->_jacobian_solver = solver;
+      GetProblem()->jacobian_preconditioner));
+  GetProblem()->jacobian_solver = solver;
 }
 
 void ProblemBuilder::ConstructNonlinearSolver() {
@@ -144,7 +144,7 @@ void ProblemBuilder::ConstructNonlinearSolver() {
   nl_solver->SetRelTol(0.0);
   nl_solver->SetAbsTol(0.0);
   nl_solver->SetMaxIter(1);
-  GetProblem()->_nonlinear_solver = nl_solver;
+  GetProblem()->nonlinear_solver = nl_solver;
 }
 
 void ProblemBuilder::InitializeAuxSolvers() {
