@@ -34,6 +34,12 @@ StaticsFormulation::StaticsFormulation(const std::string &alpha_coef_name,
     : SteadyStateEMFormulation(), _alpha_coef_name(alpha_coef_name),
       _h_curl_var_name(h_curl_var_name) {}
 
+// // Define and apply a parallel FGMRES solver for AX=B with the AMS
+// // preconditioner from hypre.
+// hephaestus::DefaultHCurlFGMRESSolver a1_solver(_solver_options,
+// CurlMuInvCurl,
+//                                                a_.ParFESpace());
+
 void StaticsFormulation::ConstructJacobianPreconditioner() {
   std::shared_ptr<mfem::HypreAMS> precond{std::make_shared<mfem::HypreAMS>(
       this->problem->gridfunctions.Get(_h_curl_var_name)->ParFESpace())};
@@ -43,10 +49,11 @@ void StaticsFormulation::ConstructJacobianPreconditioner() {
 }
 
 void StaticsFormulation::ConstructJacobianSolver() {
-  std::shared_ptr<mfem::HyprePCG> solver{
-      std::make_shared<mfem::HyprePCG>(this->problem->comm)};
+  std::shared_ptr<mfem::HypreFGMRES> solver{
+      std::make_shared<mfem::HypreFGMRES>(this->problem->comm)};
   solver->SetTol(1e-16);
-  solver->SetMaxIter(1000);
+  solver->SetMaxIter(100);
+  solver->SetKDim(10);
   solver->SetPrintLevel(-1);
   solver->SetPreconditioner(*std::dynamic_pointer_cast<mfem::HypreSolver>(
       this->problem->_jacobian_preconditioner));
@@ -130,15 +137,14 @@ void StaticsOperator::Solve(mfem::Vector &X) {
   mfem::ParBilinearForm a1_(a_.ParFESpace());
   a1_.AddDomainIntegrator(new mfem::CurlCurlIntegrator(*stiffCoef_));
   a1_.Assemble();
-
+  a1_.Finalize();
   mfem::HypreParMatrix CurlMuInvCurl;
-  mfem::Vector &A(trueX.GetBlock(0));
-  mfem::Vector &RHS(trueRhs.GetBlock(0));
+  mfem::HypreParVector A(a_.ParFESpace());
+  mfem::HypreParVector RHS(a_.ParFESpace());
   a1_.FormLinearSystem(ess_bdr_tdofs_, a_, b1_, CurlMuInvCurl, A, RHS);
 
   getJacobianSolver()->SetOperator(CurlMuInvCurl);
   getJacobianSolver()->Mult(RHS, A);
-
   a1_.RecoverFEMSolution(A, b1_, a_);
 }
 
