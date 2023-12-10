@@ -82,10 +82,7 @@ void DualFormulation::ConstructJacobianSolver() {
 }
 
 void DualFormulation::ConstructOperator() {
-  problem->td_operator = std::make_unique<hephaestus::DualOperator>(
-      *(problem->pmesh), problem->fespaces, problem->gridfunctions,
-      problem->bc_map, problem->coefficients, problem->sources,
-      *(problem->_jacobian_solver), *(problem->_nonlinear_solver));
+  problem->td_operator = std::make_unique<hephaestus::DualOperator>(*problem);
   problem->td_operator->SetEquationSystem(problem->td_equation_system.get());
   problem->td_operator->SetGridFunctions();
 };
@@ -175,25 +172,14 @@ void WeakCurlEquationSystem::addKernels() {
             new hephaestus::VectorFEMassKernel(vectorFEMassParams));
 }
 
-DualOperator::DualOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
-                           hephaestus::GridFunctions &gridfunctions,
-                           hephaestus::BCMap &bc_map,
-                           hephaestus::Coefficients &coefficients,
-                           hephaestus::Sources &sources,
-                           mfem::Solver &jacobian_solver,
-                           mfem::NewtonSolver &nonlinear_solver)
-    : TimeDomainProblemOperator(pmesh, fespaces, gridfunctions, bc_map,
-                                coefficients, sources, jacobian_solver,
-                                nonlinear_solver) {}
-
 void DualOperator::Init(mfem::Vector &X) {
   TimeDomainProblemOperator::Init(X);
   hephaestus::WeakCurlEquationSystem *eqs =
       dynamic_cast<hephaestus::WeakCurlEquationSystem *>(_equation_system);
   _h_curl_var_name = eqs->_h_curl_var_name;
   _h_div_var_name = eqs->_h_div_var_name;
-  u_ = _gridfunctions.Get(_h_curl_var_name);
-  dv_ = _gridfunctions.Get(GetTimeDerivativeName(_h_div_var_name));
+  u_ = _problem.gridfunctions.Get(_h_curl_var_name);
+  dv_ = _problem.gridfunctions.Get(GetTimeDerivativeName(_h_div_var_name));
   HCurlFESpace_ = u_->ParFESpace();
   HDivFESpace_ = dv_->ParFESpace();
   curl = new mfem::ParDiscreteLinearOperator(HCurlFESpace_, HDivFESpace_);
@@ -205,7 +191,7 @@ void DualOperator::ImplicitSolve(const double dt, const mfem::Vector &X,
                                  mfem::Vector &dX_dt) {
   TimeDomainProblemOperator::ImplicitSolve(dt, X, dX_dt);
   // Subtract off contribution from source
-  _sources.SubtractSources(u_);
+  _problem.sources.SubtractSources(u_);
   // dv/dt_{n+1} = -∇×u
   curl->Mult(*u_, *dv_);
   *dv_ *= -1.0;

@@ -18,10 +18,11 @@ GetTimeDerivativeNames(std::vector<std::string> gridfunction_names) {
 void TimeDomainProblemOperator::SetGridFunctions() {
   trial_var_names = _equation_system->trial_var_names;
   trial_variables = populateVectorFromNamedFieldsMap<mfem::ParGridFunction>(
-      _gridfunctions, _equation_system->trial_var_names);
+      _problem.gridfunctions, _equation_system->trial_var_names);
   trial_variable_time_derivatives =
       populateVectorFromNamedFieldsMap<mfem::ParGridFunction>(
-          _gridfunctions, _equation_system->trial_var_time_derivative_names);
+          _problem.gridfunctions,
+          _equation_system->trial_var_time_derivative_names);
 
   // Set operator size and block structure
   block_trueOffsets.SetSize(trial_variables.size() + 1);
@@ -55,7 +56,7 @@ void TimeDomainProblemOperator::Init(mfem::Vector &X) {
     *(trial_variable_time_derivatives.at(ind)) = 0.0;
   }
 
-  _equation_system->buildEquationSystem(_bc_map, _sources);
+  _equation_system->buildEquationSystem(_problem.bc_map, _problem.sources);
 };
 
 void TimeDomainProblemOperator::ImplicitSolve(const double dt,
@@ -70,18 +71,18 @@ void TimeDomainProblemOperator::ImplicitSolve(const double dt,
         trial_variable_time_derivatives.at(ind)->ParFESpace(), dX_dt,
         true_offsets[ind]);
   }
-  _coefficients.SetTime(GetTime());
+  _problem.coefficients.SetTime(GetTime());
   buildEquationSystemOperator(dt);
 
   getNonlinearSolver()->SetSolver(*getJacobianSolver());
   getNonlinearSolver()->SetOperator(*_equation_system);
   getNonlinearSolver()->Mult(trueRhs, trueX);
 
-  _equation_system->RecoverFEMSolution(trueX, _gridfunctions);
+  _equation_system->RecoverFEMSolution(trueX, _problem.gridfunctions);
 }
 void TimeDomainProblemOperator::buildEquationSystemOperator(double dt) {
   _equation_system->setTimeStep(dt);
-  _equation_system->updateEquationSystem(_bc_map, _sources);
+  _equation_system->updateEquationSystem(_problem.bc_map, _problem.sources);
   _equation_system->buildJacobian(trueX, trueRhs);
 }
 
