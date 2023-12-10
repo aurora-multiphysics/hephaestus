@@ -47,13 +47,13 @@ void AVFormulation::ConstructEquationSystem() {
   av_system_params.SetParam("ScalarPotentialName", _scalar_potential_name);
   av_system_params.SetParam("AlphaCoefName", _alpha_coef_name);
   av_system_params.SetParam("BetaCoefName", _beta_coef_name);
-  this->GetProblem()->td_equation_system =
+  GetProblem()->td_equation_system =
       std::make_unique<hephaestus::AVEquationSystem>(av_system_params);
 }
 
 void AVFormulation::RegisterGridFunctions() {
-  int &myid = this->GetProblem()->myid_;
-  hephaestus::GridFunctions &gridfunctions = this->GetProblem()->gridfunctions;
+  int &myid = GetProblem()->myid_;
+  hephaestus::GridFunctions &gridfunctions = GetProblem()->gridfunctions;
 
   // Register default ParGridFunctions of state gridfunctions if not provided
   if (!gridfunctions.Has(_vector_potential_name)) {
@@ -82,7 +82,7 @@ void AVFormulation::RegisterGridFunctions() {
 };
 
 void AVFormulation::RegisterCoefficients() {
-  hephaestus::Coefficients &coefficients = this->GetProblem()->coefficients;
+  hephaestus::Coefficients &coefficients = GetProblem()->coefficients;
   if (!coefficients.scalars.Has(_inv_alpha_coef_name)) {
     MFEM_ABORT(_inv_alpha_coef_name + " coefficient not found.");
   }

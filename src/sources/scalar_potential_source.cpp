@@ -59,8 +59,8 @@ void ScalarPotentialSource::Init(hephaestus::GridFunctions &gridfunctions,
   a0->AddDomainIntegrator(new mfem::DiffusionIntegrator(*betaCoef));
   a0->Assemble();
 
-  this->buildGrad();
-  this->buildM1(betaCoef);
+  buildGrad();
+  buildM1(betaCoef);
   // a0(p, p') = (β ∇ p, ∇ p')
   b0 = new mfem::ParLinearForm(H1FESpace_);
   A0 = new mfem::HypreParMatrix;

@@ -66,9 +66,8 @@ public:
   void AddGridFunction(std::string gridfunction_name, std::string fespace_name);
   template <class T>
   void AddKernel(std::string var_name, hephaestus::Kernel<T> *kernel) {
-    this->GetProblem()->GetEquationSystem()->addTrialVariableNameIfMissing(
-        var_name);
-    this->GetProblem()->GetEquationSystem()->addKernel(var_name, kernel);
+    GetProblem()->GetEquationSystem()->addTrialVariableNameIfMissing(var_name);
+    GetProblem()->GetEquationSystem()->addKernel(var_name, kernel);
   };
   void AddBoundaryCondition(std::string bc_name,
                             hephaestus::BoundaryCondition *bc, bool own_data);
@@ -119,34 +118,34 @@ public:
    */
   void ConstructOperatorProblem() {
     // SteadyStateProblem
-    this->problem_builder->RegisterFESpaces();
-    this->problem_builder->RegisterGridFunctions();
-    this->problem_builder->RegisterAuxSolvers();
-    this->problem_builder->RegisterCoefficients();
-    this->problem_builder->InitializeKernels();
-    this->problem_builder->ConstructJacobianPreconditioner();
-    this->problem_builder->ConstructJacobianSolver();
-    this->problem_builder->ConstructNonlinearSolver();
-    this->problem_builder->ConstructOperator();
-    this->problem_builder->ConstructState();
-    this->problem_builder->InitializeAuxSolvers();
-    this->problem_builder->InitializeOutputs();
+    problem_builder->RegisterFESpaces();
+    problem_builder->RegisterGridFunctions();
+    problem_builder->RegisterAuxSolvers();
+    problem_builder->RegisterCoefficients();
+    problem_builder->InitializeKernels();
+    problem_builder->ConstructJacobianPreconditioner();
+    problem_builder->ConstructJacobianSolver();
+    problem_builder->ConstructNonlinearSolver();
+    problem_builder->ConstructOperator();
+    problem_builder->ConstructState();
+    problem_builder->InitializeAuxSolvers();
+    problem_builder->InitializeOutputs();
   }
   void ConstructEquationSystemProblem() {
-    this->problem_builder->RegisterFESpaces();
-    this->problem_builder->RegisterGridFunctions();
-    this->problem_builder->RegisterAuxSolvers();
-    this->problem_builder->RegisterCoefficients();
-    this->problem_builder->ConstructEquationSystem();
-    this->problem_builder->InitializeKernels();
-    this->problem_builder->ConstructJacobianPreconditioner();
-    this->problem_builder->ConstructJacobianSolver();
-    this->problem_builder->ConstructNonlinearSolver();
-    this->problem_builder->ConstructOperator();
-    this->problem_builder->ConstructState();
-    this->problem_builder->ConstructTimestepper();
-    this->problem_builder->InitializeAuxSolvers();
-    this->problem_builder->InitializeOutputs();
+    problem_builder->RegisterFESpaces();
+    problem_builder->RegisterGridFunctions();
+    problem_builder->RegisterAuxSolvers();
+    problem_builder->RegisterCoefficients();
+    problem_builder->ConstructEquationSystem();
+    problem_builder->InitializeKernels();
+    problem_builder->ConstructJacobianPreconditioner();
+    problem_builder->ConstructJacobianSolver();
+    problem_builder->ConstructNonlinearSolver();
+    problem_builder->ConstructOperator();
+    problem_builder->ConstructState();
+    problem_builder->ConstructTimestepper();
+    problem_builder->InitializeAuxSolvers();
+    problem_builder->InitializeOutputs();
   }
 };
 

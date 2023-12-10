@@ -108,22 +108,19 @@ ComplexMaxwellFormulation::ComplexMaxwellFormulation(
       _loss_coef_name(std::string("maxwell_loss")) {}
 
 void ComplexMaxwellFormulation::ConstructOperator() {
-  this->problem->ss_operator =
-      std::make_unique<hephaestus::ComplexMaxwellOperator>(
-          *(this->problem->pmesh), this->problem->fespaces,
-          this->problem->gridfunctions, this->problem->bc_map,
-          this->problem->coefficients, this->problem->sources,
-          *(this->problem->_jacobian_solver),
-          *(this->problem->_nonlinear_solver), _h_curl_var_complex_name,
-          _h_curl_var_real_name, _h_curl_var_imag_name, _alpha_coef_name,
-          _mass_coef_name, _loss_coef_name);
-  this->problem->GetOperator()->SetGridFunctions();
+  problem->ss_operator = std::make_unique<hephaestus::ComplexMaxwellOperator>(
+      *(problem->pmesh), problem->fespaces, problem->gridfunctions,
+      problem->bc_map, problem->coefficients, problem->sources,
+      *(problem->_jacobian_solver), *(problem->_nonlinear_solver),
+      _h_curl_var_complex_name, _h_curl_var_real_name, _h_curl_var_imag_name,
+      _alpha_coef_name, _mass_coef_name, _loss_coef_name);
+  problem->GetOperator()->SetGridFunctions();
 }
 
 void ComplexMaxwellFormulation::RegisterGridFunctions() {
-  int &myid = this->GetProblem()->myid_;
-  hephaestus::GridFunctions &gridfunctions = this->GetProblem()->gridfunctions;
-  hephaestus::FESpaces &fespaces = this->GetProblem()->fespaces;
+  int &myid = GetProblem()->myid_;
+  hephaestus::GridFunctions &gridfunctions = GetProblem()->gridfunctions;
+  hephaestus::FESpaces &fespaces = GetProblem()->fespaces;
 
   // Register default ParGridFunctions of state gridfunctions if not provided
   if (!gridfunctions.Has(_h_curl_var_real_name)) {
@@ -139,7 +136,7 @@ void ComplexMaxwellFormulation::RegisterGridFunctions() {
 }
 
 void ComplexMaxwellFormulation::RegisterCoefficients() {
-  hephaestus::Coefficients &coefficients = this->GetProblem()->coefficients;
+  hephaestus::Coefficients &coefficients = GetProblem()->coefficients;
 
   if (!coefficients.scalars.Has(_frequency_coef_name)) {
     MFEM_ABORT(_frequency_coef_name + " coefficient not found.");

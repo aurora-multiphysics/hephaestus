@@ -15,8 +15,8 @@ ScalarDirichletBC::ScalarDirichletBC(const std::string &name_,
 void ScalarDirichletBC::applyBC(mfem::GridFunction &gridfunc,
                                 mfem::Mesh *mesh_) {
   mfem::Array<int> ess_bdrs(mesh_->bdr_attributes.Max());
-  ess_bdrs = this->getMarkers(*mesh_);
-  gridfunc.ProjectBdrCoefficient(*(this->coeff), ess_bdrs);
+  ess_bdrs = getMarkers(*mesh_);
+  gridfunc.ProjectBdrCoefficient(*(coeff), ess_bdrs);
 }
 
 } // namespace hephaestus

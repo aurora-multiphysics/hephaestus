@@ -166,8 +166,8 @@ void EquationSystem::FormLinearSystem(mfem::OperatorHandle &op,
 
 void EquationSystem::buildJacobian(mfem::BlockVector &trueX,
                                    mfem::BlockVector &trueRHS) {
-  this->height = trueX.Size();
-  this->width = trueRHS.Size();
+  height = trueX.Size();
+  width = trueRHS.Size();
   FormLinearSystem(jacobian, trueX, trueRHS);
 }
 

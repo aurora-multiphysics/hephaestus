@@ -36,38 +36,37 @@ StaticsFormulation::StaticsFormulation(const std::string &alpha_coef_name,
 
 void StaticsFormulation::ConstructJacobianPreconditioner() {
   std::shared_ptr<mfem::HypreAMS> precond{std::make_shared<mfem::HypreAMS>(
-      this->problem->gridfunctions.Get(_h_curl_var_name)->ParFESpace())};
+      problem->gridfunctions.Get(_h_curl_var_name)->ParFESpace())};
   precond->SetSingularProblem();
   precond->SetPrintLevel(-1);
-  this->problem->_jacobian_preconditioner = precond;
+  problem->_jacobian_preconditioner = precond;
 }
 
 void StaticsFormulation::ConstructJacobianSolver() {
   std::shared_ptr<mfem::HypreFGMRES> solver{
-      std::make_shared<mfem::HypreFGMRES>(this->problem->comm)};
+      std::make_shared<mfem::HypreFGMRES>(problem->comm)};
   solver->SetTol(1e-16);
   solver->SetMaxIter(100);
   solver->SetKDim(10);
   solver->SetPrintLevel(-1);
   solver->SetPreconditioner(*std::dynamic_pointer_cast<mfem::HypreSolver>(
-      this->problem->_jacobian_preconditioner));
-  this->problem->_jacobian_solver = solver;
+      problem->_jacobian_preconditioner));
+  problem->_jacobian_solver = solver;
 }
 
 void StaticsFormulation::ConstructOperator() {
-  this->problem->ss_operator = std::make_unique<hephaestus::StaticsOperator>(
-      *(this->problem->pmesh), this->problem->fespaces,
-      this->problem->gridfunctions, this->problem->bc_map,
-      this->problem->coefficients, this->problem->sources,
-      *(this->problem->_jacobian_solver), *(this->problem->_nonlinear_solver),
+  problem->ss_operator = std::make_unique<hephaestus::StaticsOperator>(
+      *(problem->pmesh), problem->fespaces, problem->gridfunctions,
+      problem->bc_map, problem->coefficients, problem->sources,
+      *(problem->_jacobian_solver), *(problem->_nonlinear_solver),
       _h_curl_var_name, _alpha_coef_name);
-  this->problem->GetOperator()->SetGridFunctions();
+  problem->GetOperator()->SetGridFunctions();
 };
 
 void StaticsFormulation::RegisterGridFunctions() {
-  int &myid = this->GetProblem()->myid_;
-  hephaestus::GridFunctions &gridfunctions = this->GetProblem()->gridfunctions;
-  hephaestus::FESpaces &fespaces = this->GetProblem()->fespaces;
+  int &myid = GetProblem()->myid_;
+  hephaestus::GridFunctions &gridfunctions = GetProblem()->gridfunctions;
+  hephaestus::FESpaces &fespaces = GetProblem()->fespaces;
 
   // Register default ParGridFunctions of state gridfunctions if not provided
   if (!gridfunctions.Has(_h_curl_var_name)) {
@@ -81,7 +80,7 @@ void StaticsFormulation::RegisterGridFunctions() {
 };
 
 void StaticsFormulation::RegisterCoefficients() {
-  hephaestus::Coefficients &coefficients = this->GetProblem()->coefficients;
+  hephaestus::Coefficients &coefficients = GetProblem()->coefficients;
   if (!coefficients.scalars.Has(_alpha_coef_name)) {
     MFEM_ABORT(_alpha_coef_name + " coefficient not found.");
   }

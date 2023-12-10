@@ -3,26 +3,22 @@
 namespace hephaestus {
 
 void SteadyStateProblemBuilder::InitializeKernels() {
-  this->problem->preprocessors.Init(this->problem->gridfunctions,
-                                    this->problem->coefficients);
-  this->problem->sources.Init(this->problem->gridfunctions,
-                              this->problem->fespaces, this->problem->bc_map,
-                              this->problem->coefficients);
+  problem->preprocessors.Init(problem->gridfunctions, problem->coefficients);
+  problem->sources.Init(problem->gridfunctions, problem->fespaces,
+                        problem->bc_map, problem->coefficients);
 }
 
 void SteadyStateProblemBuilder::ConstructOperator() {
-  this->problem->ss_operator = std::make_unique<hephaestus::ProblemOperator>(
-      *(this->problem->pmesh), this->problem->fespaces,
-      this->problem->gridfunctions, this->problem->bc_map,
-      this->problem->coefficients, this->problem->sources,
-      *(this->problem->_jacobian_solver), *(this->problem->_nonlinear_solver));
-  this->problem->ss_operator->SetGridFunctions();
+  problem->ss_operator = std::make_unique<hephaestus::ProblemOperator>(
+      *(problem->pmesh), problem->fespaces, problem->gridfunctions,
+      problem->bc_map, problem->coefficients, problem->sources,
+      *(problem->_jacobian_solver), *(problem->_nonlinear_solver));
+  problem->ss_operator->SetGridFunctions();
 }
 
 void SteadyStateProblemBuilder::ConstructState() {
-  this->problem->F = new mfem::BlockVector(
-      this->problem->ss_operator->true_offsets); // Vector of dofs
-  this->problem->ss_operator->Init(
-      *(this->problem->F)); // Set up initial conditions
+  problem->F = new mfem::BlockVector(
+      problem->ss_operator->true_offsets);   // Vector of dofs
+  problem->ss_operator->Init(*(problem->F)); // Set up initial conditions
 }
 } // namespace hephaestus

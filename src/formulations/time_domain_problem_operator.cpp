@@ -39,8 +39,8 @@ void TimeDomainProblemOperator::SetGridFunctions() {
   }
   true_offsets.PartialSum();
 
-  this->height = true_offsets[trial_variables.size()];
-  this->width = true_offsets[trial_variables.size()];
+  height = true_offsets[trial_variables.size()];
+  width = true_offsets[trial_variables.size()];
   trueX.Update(block_trueOffsets);
   trueRhs.Update(block_trueOffsets);
 };
@@ -70,7 +70,7 @@ void TimeDomainProblemOperator::ImplicitSolve(const double dt,
         trial_variable_time_derivatives.at(ind)->ParFESpace(), dX_dt,
         true_offsets[ind]);
   }
-  _coefficients.SetTime(this->GetTime());
+  _coefficients.SetTime(GetTime());
   buildEquationSystemOperator(dt);
 
   getNonlinearSolver()->SetSolver(*getJacobianSolver());
