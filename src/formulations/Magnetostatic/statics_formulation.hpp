@@ -28,12 +28,7 @@ protected:
 
 class StaticsOperator : public ProblemOperator {
 public:
-  StaticsOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
-                  hephaestus::GridFunctions &gridfunctions,
-                  hephaestus::BCMap &bc_map,
-                  hephaestus::Coefficients &coefficients,
-                  hephaestus::Sources &sources, mfem::Solver &jacobian_solver,
-                  mfem::NewtonSolver &nonlinear_solver,
+  StaticsOperator(hephaestus::Problem &problem,
                   const std::string &h_curl_var_name,
                   const std::string &stiffness_coef_name);
 

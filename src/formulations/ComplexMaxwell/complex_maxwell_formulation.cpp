@@ -3,17 +3,12 @@
 namespace hephaestus {
 
 ComplexMaxwellOperator::ComplexMaxwellOperator(
-    mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
-    hephaestus::GridFunctions &gridfunctions, hephaestus::BCMap &bc_map,
-    hephaestus::Coefficients &coefficients, hephaestus::Sources &sources,
-    mfem::Solver &jacobian_solver, mfem::NewtonSolver &nonlinear_solver,
-    const std::string &h_curl_var_complex_name,
+    hephaestus::Problem &problem, const std::string &h_curl_var_complex_name,
     const std::string &h_curl_var_real_name,
     const std::string &h_curl_var_imag_name,
     const std::string &stiffness_coef_name, const std::string &mass_coef_name,
     const std::string &loss_coef_name)
-    : ProblemOperator(pmesh, fespaces, gridfunctions, bc_map, coefficients,
-                      sources, jacobian_solver, nonlinear_solver),
+    : ProblemOperator(problem),
       _h_curl_var_complex_name(h_curl_var_complex_name),
       _h_curl_var_real_name(h_curl_var_real_name),
       _h_curl_var_imag_name(h_curl_var_imag_name),
@@ -33,9 +28,9 @@ void ComplexMaxwellOperator::SetGridFunctions() {
 void ComplexMaxwellOperator::Init(mfem::Vector &X) {
   ProblemOperator::Init(X);
 
-  stiffCoef_ = _coefficients.scalars.Get(_stiffness_coef_name);
-  massCoef_ = _coefficients.scalars.Get(_mass_coef_name);
-  lossCoef_ = _coefficients.scalars.Get(_loss_coef_name);
+  stiffCoef_ = _problem.coefficients.scalars.Get(_stiffness_coef_name);
+  massCoef_ = _problem.coefficients.scalars.Get(_mass_coef_name);
+  lossCoef_ = _problem.coefficients.scalars.Get(_loss_coef_name);
 }
 
 void ComplexMaxwellOperator::Solve(mfem::Vector &X) {
@@ -61,13 +56,15 @@ void ComplexMaxwellOperator::Solve(mfem::Vector &X) {
   b1_real_ = 0.0;
   b1_imag_ = 0.0;
 
-  _sources.Apply(&b1_real_);
+  _problem.sources.Apply(&b1_real_);
 
   mfem::ParComplexLinearForm b1_(u_->ParFESpace(), conv_);
-  _bc_map.applyEssentialBCs(_h_curl_var_complex_name, ess_bdr_tdofs_, *u_,
-                            pmesh_);
-  _bc_map.applyIntegratedBCs(_h_curl_var_complex_name, b1_, pmesh_);
-  _bc_map.applyIntegratedBCs(_h_curl_var_complex_name, a1_, pmesh_);
+  _problem.bc_map.applyEssentialBCs(_h_curl_var_complex_name, ess_bdr_tdofs_,
+                                    *u_, _problem.pmesh.get());
+  _problem.bc_map.applyIntegratedBCs(_h_curl_var_complex_name, b1_,
+                                     _problem.pmesh.get());
+  _problem.bc_map.applyIntegratedBCs(_h_curl_var_complex_name, a1_,
+                                     _problem.pmesh.get());
 
   a1_.Assemble();
   a1_.Finalize();
@@ -88,8 +85,8 @@ void ComplexMaxwellOperator::Solve(mfem::Vector &X) {
 
   a1_.RecoverFEMSolution(U, b1_, *u_);
 
-  *_gridfunctions.Get(trial_var_names.at(0)) = u_->real();
-  *_gridfunctions.Get(trial_var_names.at(1)) = u_->imag();
+  *_problem.gridfunctions.Get(trial_var_names.at(0)) = u_->real();
+  *_problem.gridfunctions.Get(trial_var_names.at(1)) = u_->imag();
 }
 
 ComplexMaxwellFormulation::ComplexMaxwellFormulation(
@@ -109,11 +106,9 @@ ComplexMaxwellFormulation::ComplexMaxwellFormulation(
 
 void ComplexMaxwellFormulation::ConstructOperator() {
   problem->ss_operator = std::make_unique<hephaestus::ComplexMaxwellOperator>(
-      *(problem->pmesh), problem->fespaces, problem->gridfunctions,
-      problem->bc_map, problem->coefficients, problem->sources,
-      *(problem->_jacobian_solver), *(problem->_nonlinear_solver),
-      _h_curl_var_complex_name, _h_curl_var_real_name, _h_curl_var_imag_name,
-      _alpha_coef_name, _mass_coef_name, _loss_coef_name);
+      *problem, _h_curl_var_complex_name, _h_curl_var_real_name,
+      _h_curl_var_imag_name, _alpha_coef_name, _mass_coef_name,
+      _loss_coef_name);
   problem->GetOperator()->SetGridFunctions();
 }
 

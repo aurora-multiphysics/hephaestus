@@ -9,10 +9,8 @@ void SteadyStateProblemBuilder::InitializeKernels() {
 }
 
 void SteadyStateProblemBuilder::ConstructOperator() {
-  problem->ss_operator = std::make_unique<hephaestus::ProblemOperator>(
-      *(problem->pmesh), problem->fespaces, problem->gridfunctions,
-      problem->bc_map, problem->coefficients, problem->sources,
-      *(problem->_jacobian_solver), *(problem->_nonlinear_solver));
+  problem->ss_operator =
+      std::make_unique<hephaestus::ProblemOperator>(*problem);
   problem->ss_operator->SetGridFunctions();
 }
 

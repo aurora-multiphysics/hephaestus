@@ -56,10 +56,7 @@ void StaticsFormulation::ConstructJacobianSolver() {
 
 void StaticsFormulation::ConstructOperator() {
   problem->ss_operator = std::make_unique<hephaestus::StaticsOperator>(
-      *(problem->pmesh), problem->fespaces, problem->gridfunctions,
-      problem->bc_map, problem->coefficients, problem->sources,
-      *(problem->_jacobian_solver), *(problem->_nonlinear_solver),
-      _h_curl_var_name, _alpha_coef_name);
+      *problem, _h_curl_var_name, _alpha_coef_name);
   problem->GetOperator()->SetGridFunctions();
 };
 
@@ -86,15 +83,10 @@ void StaticsFormulation::RegisterCoefficients() {
   }
 }
 
-StaticsOperator::StaticsOperator(
-    mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
-    hephaestus::GridFunctions &gridfunctions, hephaestus::BCMap &bc_map,
-    hephaestus::Coefficients &coefficients, hephaestus::Sources &sources,
-    mfem::Solver &jacobian_solver, mfem::NewtonSolver &nonlinear_solver,
-    const std::string &h_curl_var_name, const std::string &stiffness_coef_name)
-    : ProblemOperator(pmesh, fespaces, gridfunctions, bc_map, coefficients,
-                      sources, jacobian_solver, nonlinear_solver),
-      _h_curl_var_name(h_curl_var_name),
+StaticsOperator::StaticsOperator(hephaestus::Problem &problem,
+                                 const std::string &h_curl_var_name,
+                                 const std::string &stiffness_coef_name)
+    : ProblemOperator(problem), _h_curl_var_name(h_curl_var_name),
       _stiffness_coef_name(stiffness_coef_name) {}
 
 void StaticsOperator::SetGridFunctions() {
@@ -104,7 +96,7 @@ void StaticsOperator::SetGridFunctions() {
 
 void StaticsOperator::Init(mfem::Vector &X) {
   ProblemOperator::Init(X);
-  stiffCoef_ = _coefficients.scalars.Get(_stiffness_coef_name);
+  stiffCoef_ = _problem.coefficients.scalars.Get(_stiffness_coef_name);
 }
 
 /*
@@ -123,10 +115,12 @@ void StaticsOperator::Solve(mfem::Vector &X) {
   mfem::ParLinearForm b1_(a_.ParFESpace());
   b1_ = 0.0;
   mfem::Array<int> ess_bdr_tdofs_;
-  _bc_map.applyEssentialBCs(_h_curl_var_name, ess_bdr_tdofs_, a_, pmesh_);
-  _bc_map.applyIntegratedBCs(_h_curl_var_name, b1_, pmesh_);
+  _problem.bc_map.applyEssentialBCs(_h_curl_var_name, ess_bdr_tdofs_, a_,
+                                    _problem.pmesh.get());
+  _problem.bc_map.applyIntegratedBCs(_h_curl_var_name, b1_,
+                                     _problem.pmesh.get());
   b1_.Assemble();
-  _sources.Apply(&b1_);
+  _problem.sources.Apply(&b1_);
 
   mfem::ParBilinearForm a1_(a_.ParFESpace());
   a1_.AddDomainIntegrator(new mfem::CurlCurlIntegrator(*stiffCoef_));

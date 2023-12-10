@@ -4,7 +4,7 @@ namespace hephaestus {
 
 void ProblemOperator::SetGridFunctions() {
   trial_variables = populateVectorFromNamedFieldsMap<mfem::ParGridFunction>(
-      _gridfunctions, trial_var_names);
+      _problem.gridfunctions, trial_var_names);
 
   // Set operator size and block structure
   block_trueOffsets.SetSize(trial_variables.size() + 1);

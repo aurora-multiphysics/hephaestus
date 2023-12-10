@@ -4,6 +4,7 @@ namespace hephaestus {
 void ProblemBuilder::SetMesh(std::shared_ptr<mfem::ParMesh> pmesh) {
   GetProblem()->pmesh = pmesh;
   GetProblem()->comm = pmesh->GetComm();
+  MPI_Comm_size(pmesh->GetComm(), &(GetProblem()->num_procs_));
   MPI_Comm_rank(pmesh->GetComm(), &(GetProblem()->myid_));
 }
 

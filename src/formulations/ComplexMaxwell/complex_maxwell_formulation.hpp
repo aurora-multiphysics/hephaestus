@@ -26,16 +26,13 @@ should be performed on g before use in this operator.
 */
 class ComplexMaxwellOperator : public ProblemOperator {
 public:
-  ComplexMaxwellOperator(
-      mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
-      hephaestus::GridFunctions &gridfunctions, hephaestus::BCMap &bc_map,
-      hephaestus::Coefficients &coefficients, hephaestus::Sources &sources,
-      mfem::Solver &jacobian_solver, mfem::NewtonSolver &nonlinear_solver,
-      const std::string &h_curl_var_complex_name,
-      const std::string &h_curl_var_real_name,
-      const std::string &h_curl_var_imag_name,
-      const std::string &stiffness_coef_name, const std::string &mass_coef_name,
-      const std::string &loss_coef_name);
+  ComplexMaxwellOperator(hephaestus::Problem &problem,
+                         const std::string &h_curl_var_complex_name,
+                         const std::string &h_curl_var_real_name,
+                         const std::string &h_curl_var_imag_name,
+                         const std::string &stiffness_coef_name,
+                         const std::string &mass_coef_name,
+                         const std::string &loss_coef_name);
 
   ~ComplexMaxwellOperator(){};
 
