@@ -86,9 +86,9 @@ public:
 
   virtual void InitializeKernels() = 0;
   virtual void ConstructEquationSystem() = 0;
-  virtual void ConstructJacobianPreconditioner() = 0;
-  virtual void ConstructJacobianSolver() = 0;
-  virtual void ConstructNonlinearSolver() = 0;
+  virtual void ConstructJacobianPreconditioner();
+  virtual void ConstructJacobianSolver();
+  virtual void ConstructNonlinearSolver();
   virtual void ConstructOperator() = 0;
   virtual void ConstructState() = 0;
   virtual void ConstructTimestepper() = 0;

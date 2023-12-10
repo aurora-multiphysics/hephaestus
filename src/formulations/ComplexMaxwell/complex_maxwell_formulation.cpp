@@ -6,13 +6,14 @@ ComplexMaxwellOperator::ComplexMaxwellOperator(
     mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
     hephaestus::GridFunctions &gridfunctions, hephaestus::BCMap &bc_map,
     hephaestus::Coefficients &coefficients, hephaestus::Sources &sources,
-    mfem::Solver &jacobian_solver, const std::string &h_curl_var_complex_name,
+    mfem::Solver &jacobian_solver, mfem::NewtonSolver &nonlinear_solver,
+    const std::string &h_curl_var_complex_name,
     const std::string &h_curl_var_real_name,
     const std::string &h_curl_var_imag_name,
     const std::string &stiffness_coef_name, const std::string &mass_coef_name,
     const std::string &loss_coef_name)
     : ProblemOperator(pmesh, fespaces, gridfunctions, bc_map, coefficients,
-                      sources, jacobian_solver),
+                      sources, jacobian_solver, nonlinear_solver),
       _h_curl_var_complex_name(h_curl_var_complex_name),
       _h_curl_var_real_name(h_curl_var_real_name),
       _h_curl_var_imag_name(h_curl_var_imag_name),
@@ -112,7 +113,8 @@ void ComplexMaxwellFormulation::ConstructOperator() {
           *(this->problem->pmesh), this->problem->fespaces,
           this->problem->gridfunctions, this->problem->bc_map,
           this->problem->coefficients, this->problem->sources,
-          *(this->problem->_jacobian_solver), _h_curl_var_complex_name,
+          *(this->problem->_jacobian_solver),
+          *(this->problem->_nonlinear_solver), _h_curl_var_complex_name,
           _h_curl_var_real_name, _h_curl_var_imag_name, _alpha_coef_name,
           _mass_coef_name, _loss_coef_name);
   this->problem->GetOperator()->SetGridFunctions();

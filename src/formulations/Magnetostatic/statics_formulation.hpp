@@ -33,6 +33,7 @@ public:
                   hephaestus::BCMap &bc_map,
                   hephaestus::Coefficients &coefficients,
                   hephaestus::Sources &sources, mfem::Solver &jacobian_solver,
+                  mfem::NewtonSolver &nonlinear_solver,
                   const std::string &h_curl_var_name,
                   const std::string &stiffness_coef_name);
 

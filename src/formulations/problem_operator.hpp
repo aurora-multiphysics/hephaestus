@@ -13,10 +13,15 @@ public:
                   hephaestus::GridFunctions &gridfunctions,
                   hephaestus::BCMap &bc_map,
                   hephaestus::Coefficients &coefficients,
-                  hephaestus::Sources &sources, mfem::Solver &jacobian_solver)
+                  hephaestus::Sources &sources, mfem::Solver &jacobian_solver,
+                  mfem::NewtonSolver &nonlinear_solver)
       : myid_(0), num_procs_(1), pmesh_(&pmesh), _fespaces(fespaces),
         _gridfunctions(gridfunctions), _bc_map(bc_map), _sources(sources),
-        _coefficients(coefficients), _jacobian_solver(&jacobian_solver){};
+        _coefficients(coefficients), _jacobian_solver(&jacobian_solver),
+        _nonlinear_solver(nonlinear_solver) {
+    MPI_Comm_size(pmesh.GetComm(), &num_procs_);
+    MPI_Comm_rank(pmesh.GetComm(), &myid_);
+  };
 
   ~ProblemOperator(){};
 
@@ -24,9 +29,13 @@ public:
   virtual void Init(mfem::Vector &X);
   virtual void Solve(mfem::Vector &X){};
   virtual mfem::Solver *getJacobianSolver() { return _jacobian_solver; };
+  virtual mfem::NewtonSolver *getNonlinearSolver() {
+    return &_nonlinear_solver;
+  };
   void Mult(const mfem::Vector &x, mfem::Vector &y) const override{};
 
   mfem::Array<int> true_offsets, block_trueOffsets;
+
   // Vector of names of state gridfunctions used in formulation, ordered by
   // appearance in block vector during solve.
   std::vector<std::string> trial_var_names;
@@ -40,10 +49,12 @@ public:
   hephaestus::BCMap &_bc_map;
   hephaestus::Sources &_sources;
   hephaestus::Coefficients &_coefficients;
-  mfem::Solver *_jacobian_solver;
-
-  mfem::OperatorHandle _equation_system_operator;
   mfem::BlockVector trueX, trueRhs;
+  mfem::OperatorHandle _equation_system_operator;
+
+private:
+  mfem::Solver *_jacobian_solver;
+  mfem::NewtonSolver &_nonlinear_solver;
 };
 
 } // namespace hephaestus

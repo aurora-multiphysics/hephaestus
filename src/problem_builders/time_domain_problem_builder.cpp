@@ -47,34 +47,6 @@ void TimeDomainProblemBuilder::InitializeKernels() {
                               this->problem->coefficients);
 }
 
-void TimeDomainProblemBuilder::ConstructJacobianPreconditioner() {
-  std::shared_ptr<mfem::HypreBoomerAMG> precond{
-      std::make_shared<mfem::HypreBoomerAMG>()};
-  precond->SetPrintLevel(-1);
-  this->problem->_jacobian_preconditioner = precond;
-}
-
-void TimeDomainProblemBuilder::ConstructJacobianSolver() {
-  std::shared_ptr<mfem::HypreGMRES> solver{
-      std::make_shared<mfem::HypreGMRES>(this->problem->comm)};
-  solver->SetTol(1e-16);
-  solver->SetMaxIter(1000);
-  solver->SetPrintLevel(-1);
-  solver->SetPreconditioner(*std::dynamic_pointer_cast<mfem::HypreSolver>(
-      this->problem->_jacobian_preconditioner));
-  this->problem->_jacobian_solver = solver;
-}
-
-void TimeDomainProblemBuilder::ConstructNonlinearSolver() {
-  std::shared_ptr<mfem::NewtonSolver> nl_solver{
-      std::make_shared<mfem::NewtonSolver>(this->problem->comm)};
-  // Defaults to one iteration, without further nonlinear iterations
-  nl_solver->SetRelTol(0.0);
-  nl_solver->SetAbsTol(0.0);
-  nl_solver->SetMaxIter(1);
-  this->problem->_nonlinear_solver = nl_solver;
-}
-
 void TimeDomainProblemBuilder::ConstructOperator() {
   this->problem->td_operator =
       std::make_unique<hephaestus::TimeDomainProblemOperator>(

@@ -34,12 +34,6 @@ StaticsFormulation::StaticsFormulation(const std::string &alpha_coef_name,
     : SteadyStateEMFormulation(), _alpha_coef_name(alpha_coef_name),
       _h_curl_var_name(h_curl_var_name) {}
 
-// // Define and apply a parallel FGMRES solver for AX=B with the AMS
-// // preconditioner from hypre.
-// hephaestus::DefaultHCurlFGMRESSolver a1_solver(_solver_options,
-// CurlMuInvCurl,
-//                                                a_.ParFESpace());
-
 void StaticsFormulation::ConstructJacobianPreconditioner() {
   std::shared_ptr<mfem::HypreAMS> precond{std::make_shared<mfem::HypreAMS>(
       this->problem->gridfunctions.Get(_h_curl_var_name)->ParFESpace())};
@@ -65,7 +59,8 @@ void StaticsFormulation::ConstructOperator() {
       *(this->problem->pmesh), this->problem->fespaces,
       this->problem->gridfunctions, this->problem->bc_map,
       this->problem->coefficients, this->problem->sources,
-      *(this->problem->_jacobian_solver), _h_curl_var_name, _alpha_coef_name);
+      *(this->problem->_jacobian_solver), *(this->problem->_nonlinear_solver),
+      _h_curl_var_name, _alpha_coef_name);
   this->problem->GetOperator()->SetGridFunctions();
 };
 
@@ -96,10 +91,10 @@ StaticsOperator::StaticsOperator(
     mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
     hephaestus::GridFunctions &gridfunctions, hephaestus::BCMap &bc_map,
     hephaestus::Coefficients &coefficients, hephaestus::Sources &sources,
-    mfem::Solver &jacobian_solver, const std::string &h_curl_var_name,
-    const std::string &stiffness_coef_name)
+    mfem::Solver &jacobian_solver, mfem::NewtonSolver &nonlinear_solver,
+    const std::string &h_curl_var_name, const std::string &stiffness_coef_name)
     : ProblemOperator(pmesh, fespaces, gridfunctions, bc_map, coefficients,
-                      sources, jacobian_solver),
+                      sources, jacobian_solver, nonlinear_solver),
       _h_curl_var_name(h_curl_var_name),
       _stiffness_coef_name(stiffness_coef_name) {}
 
@@ -142,6 +137,10 @@ void StaticsOperator::Solve(mfem::Vector &X) {
   mfem::HypreParVector A(a_.ParFESpace());
   mfem::HypreParVector RHS(a_.ParFESpace());
   a1_.FormLinearSystem(ess_bdr_tdofs_, a_, b1_, CurlMuInvCurl, A, RHS);
+
+  // getNonlinearSolver()->SetSolver(*getJacobianSolver());
+  // getNonlinearSolver()->SetOperator(CurlMuInvCurl);
+  // getNonlinearSolver()->Mult(RHS, A);
 
   getJacobianSolver()->SetOperator(CurlMuInvCurl);
   getJacobianSolver()->Mult(RHS, A);

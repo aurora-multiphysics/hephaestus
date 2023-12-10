@@ -118,6 +118,34 @@ void ProblemBuilder::AddSource(std::string source_name,
   this->GetProblem()->sources.Register(source_name, source, own_data);
 }
 
+void ProblemBuilder::ConstructJacobianPreconditioner() {
+  std::shared_ptr<mfem::HypreBoomerAMG> precond{
+      std::make_shared<mfem::HypreBoomerAMG>()};
+  precond->SetPrintLevel(-1);
+  GetProblem()->_jacobian_preconditioner = precond;
+}
+
+void ProblemBuilder::ConstructJacobianSolver() {
+  std::shared_ptr<mfem::HypreGMRES> solver{
+      std::make_shared<mfem::HypreGMRES>(GetProblem()->comm)};
+  solver->SetTol(1e-16);
+  solver->SetMaxIter(1000);
+  solver->SetPrintLevel(-1);
+  solver->SetPreconditioner(*std::dynamic_pointer_cast<mfem::HypreSolver>(
+      GetProblem()->_jacobian_preconditioner));
+  GetProblem()->_jacobian_solver = solver;
+}
+
+void ProblemBuilder::ConstructNonlinearSolver() {
+  std::shared_ptr<mfem::NewtonSolver> nl_solver{
+      std::make_shared<mfem::NewtonSolver>(GetProblem()->comm)};
+  // Defaults to one iteration, without further nonlinear iterations
+  nl_solver->SetRelTol(0.0);
+  nl_solver->SetAbsTol(0.0);
+  nl_solver->SetMaxIter(1);
+  GetProblem()->_nonlinear_solver = nl_solver;
+}
+
 void ProblemBuilder::InitializeAuxSolvers() {
   this->GetProblem()->preprocessors.Init(this->GetProblem()->gridfunctions,
                                          this->GetProblem()->coefficients);

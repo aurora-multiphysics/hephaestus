@@ -15,7 +15,7 @@ void SteadyStateProblemBuilder::ConstructOperator() {
       *(this->problem->pmesh), this->problem->fespaces,
       this->problem->gridfunctions, this->problem->bc_map,
       this->problem->coefficients, this->problem->sources,
-      *(this->problem->_jacobian_solver));
+      *(this->problem->_jacobian_solver), *(this->problem->_nonlinear_solver));
   this->problem->ss_operator->SetGridFunctions();
 }
 
