@@ -3,7 +3,7 @@
 
 namespace hephaestus {
 /*
-Operator for solving:
+Forumulation for solving:
 ∇×(α∇×u) + iωβu - ω²γu = g
 
 via the weak form:
@@ -24,6 +24,37 @@ Robin boundaries weakly constrain (α∇×u)×n + γ(n×n×u) = F
 Divergence cleaning (such as via Helmholtz projection)
 should be performed on g before use in this operator.
 */
+class ComplexMaxwellFormulation
+    : public hephaestus::FrequencyDomainEMFormulation {
+protected:
+  const std::string _alpha_coef_name;
+  const std::string _beta_coef_name;
+  const std::string _zeta_coef_name;
+  const std::string _frequency_coef_name;
+  const std::string _h_curl_var_complex_name;
+  const std::string _h_curl_var_real_name;
+  const std::string _h_curl_var_imag_name;
+  const std::string _mass_coef_name;
+  const std::string _loss_coef_name;
+
+public:
+  ComplexMaxwellFormulation(const std::string &frequency_coef_name,
+                            const std::string &alpha_coef_name,
+                            const std::string &beta_coef_name,
+                            const std::string &zeta_coef_name,
+                            const std::string &h_curl_var_complex_name,
+                            const std::string &h_curl_var_real_name,
+                            const std::string &h_curl_var_imag_name);
+
+  virtual void ConstructJacobianSolver() override;
+
+  virtual void ConstructOperator() override;
+
+  virtual void RegisterGridFunctions() override;
+
+  virtual void RegisterCoefficients() override;
+};
+
 class ComplexMaxwellOperator : public ProblemOperator {
 public:
   ComplexMaxwellOperator(hephaestus::Problem &problem,
@@ -53,36 +84,4 @@ public:
   mfem::Array<int> ess_bdr_tdofs_;
 };
 
-//
-// Specifies output interfaces of a time-domain EM formulation.
-class ComplexMaxwellFormulation
-    : public hephaestus::FrequencyDomainEMFormulation {
-  // std::vector<mfem::ParGridFunction *> trial_variable_time_derivatives,
-  // trial_variables;
-protected:
-  const std::string _alpha_coef_name;
-  const std::string _beta_coef_name;
-  const std::string _zeta_coef_name;
-  const std::string _frequency_coef_name;
-  const std::string _h_curl_var_complex_name;
-  const std::string _h_curl_var_real_name;
-  const std::string _h_curl_var_imag_name;
-  const std::string _mass_coef_name;
-  const std::string _loss_coef_name;
-
-public:
-  ComplexMaxwellFormulation(const std::string &frequency_coef_name,
-                            const std::string &alpha_coef_name,
-                            const std::string &beta_coef_name,
-                            const std::string &zeta_coef_name,
-                            const std::string &h_curl_var_complex_name,
-                            const std::string &h_curl_var_real_name,
-                            const std::string &h_curl_var_imag_name);
-
-  virtual void ConstructOperator() override;
-
-  virtual void RegisterGridFunctions() override;
-
-  virtual void RegisterCoefficients() override;
-};
 } // namespace hephaestus
