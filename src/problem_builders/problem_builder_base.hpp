@@ -19,7 +19,6 @@ public:
   hephaestus::AuxSolvers postprocessors;
   hephaestus::Sources sources;
   hephaestus::Outputs outputs;
-  hephaestus::InputParameters solver_options;
 
   mfem::ODESolver *ode_solver;
   mfem::BlockVector *F;
@@ -58,7 +57,6 @@ public:
   void SetOutputs(hephaestus::Outputs &outputs);
   void SetJacobianPreconditioner(std::shared_ptr<mfem::Solver> preconditioner);
   void SetJacobianSolver(std::shared_ptr<mfem::Solver> solver);
-  void SetSolverOptions(hephaestus::InputParameters &solver_options);
   void SetCoefficients(hephaestus::Coefficients &coefficients);
 
   void AddFESpace(std::string fespace_name, std::string fec_name, int vdim = 1,

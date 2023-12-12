@@ -83,11 +83,6 @@ protected:
     outputs.Register("ParaViewDataCollection",
                      new mfem::ParaViewDataCollection("HFormParaView"), true);
 
-    hephaestus::InputParameters solver_options;
-    solver_options.SetParam("Tolerance", float(1.0e-16));
-    solver_options.SetParam("MaxIter", (unsigned int)1000);
-    solver_options.SetParam("PrintLevel", 0);
-
     hephaestus::GridFunctions gridfunctions;
     hephaestus::AuxSolvers preprocessors;
     hephaestus::AuxSolvers postprocessors;
@@ -122,7 +117,6 @@ protected:
     params.SetParam("PostProcessors", postprocessors);
     params.SetParam("Outputs", outputs);
     params.SetParam("Sources", sources);
-    params.SetParam("SolverOptions", solver_options);
 
     return params;
   }
@@ -147,9 +141,6 @@ TEST_F(TestHFormRod, CheckRun) {
       params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
   hephaestus::Sources sources(params.GetParam<hephaestus::Sources>("Sources"));
   hephaestus::Outputs outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
-  hephaestus::InputParameters solver_options(
-      params.GetOptionalParam<hephaestus::InputParameters>(
-          "SolverOptions", hephaestus::InputParameters()));
 
   problem_builder->SetMesh(pmesh);
   problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P2"));
@@ -159,7 +150,6 @@ TEST_F(TestHFormRod, CheckRun) {
   problem_builder->SetPostprocessors(postprocessors);
   problem_builder->SetSources(sources);
   problem_builder->SetOutputs(outputs);
-  problem_builder->SetSolverOptions(solver_options);
 
   hephaestus::ProblemBuildSequencer sequencer(problem_builder);
   sequencer.ConstructEquationSystemProblem();

@@ -111,11 +111,6 @@ protected:
         new hephaestus::ScalarPotentialSource(scalar_potential_source_params),
         true);
 
-    hephaestus::InputParameters solver_options;
-    solver_options.SetParam("Tolerance", float(1.0e-9));
-    solver_options.SetParam("MaxIter", (unsigned int)1000);
-    solver_options.SetParam("PrintLevel", 0);
-
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("BoundaryConditions", bc_map);
@@ -125,7 +120,6 @@ protected:
     params.SetParam("PostProcessors", postprocessors);
     params.SetParam("Sources", sources);
     params.SetParam("Outputs", outputs);
-    params.SetParam("SolverOptions", solver_options);
 
     return params;
   }
@@ -147,9 +141,6 @@ TEST_F(TestEBFormRod, CheckRun) {
       params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
   hephaestus::Sources sources(params.GetParam<hephaestus::Sources>("Sources"));
   hephaestus::Outputs outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
-  hephaestus::InputParameters solver_options(
-      params.GetOptionalParam<hephaestus::InputParameters>(
-          "SolverOptions", hephaestus::InputParameters()));
 
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
@@ -164,7 +155,6 @@ TEST_F(TestEBFormRod, CheckRun) {
   problem_builder->SetPostprocessors(postprocessors);
   problem_builder->SetSources(sources);
   problem_builder->SetOutputs(outputs);
-  problem_builder->SetSolverOptions(solver_options);
 
   hephaestus::ProblemBuildSequencer sequencer(problem_builder);
   sequencer.ConstructEquationSystemProblem();

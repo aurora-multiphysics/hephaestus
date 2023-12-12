@@ -47,10 +47,10 @@ hephaestus::Sources defineSources() {
 hephaestus::Outputs defineOutputs() {
 
   hephaestus::Outputs outputs;
-    outputs.Register("ParaViewDataCollection",
-                     new mfem::ParaViewDataCollection("ClosedCoilParaView"),
-                     true);
-    return outputs;
+  outputs.Register("ParaViewDataCollection",
+                   new mfem::ParaViewDataCollection("ClosedCoilParaView"),
+                   true);
+  return outputs;
 }
 
 int main(int argc, char *argv[]) {
@@ -95,17 +95,18 @@ int main(int argc, char *argv[]) {
   hephaestus::Outputs outputs = defineOutputs();
   problem_builder->SetOutputs(outputs);
 
-  hephaestus::InputParameters solver_options;
-  solver_options.SetParam("Tolerance", float(1.0e-13));
-  solver_options.SetParam("AbsTolerance", float(1.0e-16));
-  solver_options.SetParam("MaxIter", (unsigned int)500);
-  solver_options.SetParam("PrintLevel", 2);
-  problem_builder->SetSolverOptions(solver_options);
-
   hephaestus::ProblemBuildSequencer sequencer(problem_builder);
   sequencer.ConstructEquationSystemProblem();
   std::unique_ptr<hephaestus::SteadyStateProblem> problem =
       problem_builder->ReturnProblem();
+
+  std::shared_ptr<mfem::HyprePCG> hypre_solver{
+      std::dynamic_pointer_cast<mfem::HyprePCG>(problem->jacobian_solver)};
+  hypre_solver->SetTol(1e-13);
+  hypre_solver->SetAbsTol(1e-16);
+  hypre_solver->SetMaxIter(500);
+  hypre_solver->SetPrintLevel(2);
+
   hephaestus::InputParameters exec_params;
   exec_params.SetParam("VisualisationSteps", int(1));
   exec_params.SetParam("UseGLVis", true);

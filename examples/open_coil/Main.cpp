@@ -44,10 +44,9 @@ hephaestus::Sources defineSources(std::pair<int, int> elec,
 hephaestus::Outputs defineOutputs() {
 
   hephaestus::Outputs outputs;
-    outputs.Register("ParaViewDataCollection",
-                     new mfem::ParaViewDataCollection("OpenCoilParaView"),
-                     true);
-    return outputs;
+  outputs.Register("ParaViewDataCollection",
+                   new mfem::ParaViewDataCollection("OpenCoilParaView"), true);
+  return outputs;
 }
 
 int main(int argc, char *argv[]) {
@@ -146,11 +145,11 @@ int main(int argc, char *argv[]) {
   A_DBC_bdr[0] = 1;
   A_DBC_bdr[1] = 2;
   A_DBC_bdr[2] = 4;
-  hephaestus::VectorDirichletBC A_DBC("magnetic_vector_potential", A_DBC_bdr,
-                                      new mfem::VectorFunctionCoefficient(3, zeroVec));
+  hephaestus::VectorDirichletBC A_DBC(
+      "magnetic_vector_potential", A_DBC_bdr,
+      new mfem::VectorFunctionCoefficient(3, zeroVec));
 
-  problem_builder->AddBoundaryCondition("A_DBC", &A_DBC,
-                                        true);
+  problem_builder->AddBoundaryCondition("A_DBC", &A_DBC, true);
 
   problem_builder->SetCoefficients(coefficients);
 
@@ -160,17 +159,18 @@ int main(int argc, char *argv[]) {
   hephaestus::Outputs outputs = defineOutputs();
   problem_builder->SetOutputs(outputs);
 
-  hephaestus::InputParameters solver_options;
-  solver_options.SetParam("Tolerance", float(1.0e-10));
-  solver_options.SetParam("AbsTolerance", float(1.0e-10));
-  solver_options.SetParam("MaxIter", (unsigned int)1000);
-  solver_options.SetParam("PrintLevel", 2);
-  problem_builder->SetSolverOptions(solver_options);
-
   hephaestus::ProblemBuildSequencer sequencer(problem_builder);
   sequencer.ConstructEquationSystemProblem();
   std::unique_ptr<hephaestus::SteadyStateProblem> problem =
       problem_builder->ReturnProblem();
+
+  std::shared_ptr<mfem::HyprePCG> hypre_solver{
+      std::dynamic_pointer_cast<mfem::HyprePCG>(problem->jacobian_solver)};
+  hypre_solver->SetTol(1e-10);
+  hypre_solver->SetAbsTol(1e-10);
+  hypre_solver->SetMaxIter(1000);
+  hypre_solver->SetPrintLevel(2);
+
   hephaestus::InputParameters exec_params;
   exec_params.SetParam("VisualisationSteps", int(1));
   exec_params.SetParam("UseGLVis", true);

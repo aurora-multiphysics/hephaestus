@@ -176,9 +176,6 @@ TEST_F(TestAVFormSource, CheckRun) {
         params.GetParam<hephaestus::Sources>("Sources"));
     hephaestus::Outputs outputs(
         params.GetParam<hephaestus::Outputs>("Outputs"));
-    hephaestus::InputParameters solver_options(
-        params.GetOptionalParam<hephaestus::InputParameters>(
-            "SolverOptions", hephaestus::InputParameters()));
 
     problem_builder->SetMesh(pmesh);
     problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P2"));
@@ -191,7 +188,6 @@ TEST_F(TestAVFormSource, CheckRun) {
     problem_builder->SetPostprocessors(postprocessors);
     problem_builder->SetSources(sources);
     problem_builder->SetOutputs(outputs);
-    problem_builder->SetSolverOptions(solver_options);
 
     hephaestus::ProblemBuildSequencer sequencer(problem_builder);
     sequencer.ConstructEquationSystemProblem();

@@ -47,11 +47,6 @@ void ProblemBuilder::SetJacobianSolver(
   GetProblem()->jacobian_solver = jacobian_solver;
 }
 
-void ProblemBuilder::SetSolverOptions(
-    hephaestus::InputParameters &solver_options) {
-  GetProblem()->solver_options = solver_options;
-}
-
 void ProblemBuilder::SetCoefficients(hephaestus::Coefficients &coefficients) {
   GetProblem()->coefficients = coefficients;
 }

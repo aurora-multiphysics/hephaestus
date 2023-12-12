@@ -115,11 +115,6 @@ protected:
     sources.Register(
         "source", new hephaestus::DivFreeSource(div_free_source_params), true);
 
-    hephaestus::InputParameters solver_options;
-    solver_options.SetParam("Tolerance", float(1.0e-16));
-    solver_options.SetParam("MaxIter", (unsigned int)1000);
-    solver_options.SetParam("PrintLevel", 0);
-
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("BoundaryConditions", bc_map);
@@ -127,7 +122,6 @@ protected:
     params.SetParam("PostProcessors", postprocessors);
     params.SetParam("Outputs", outputs);
     params.SetParam("Sources", sources);
-    params.SetParam("SolverOptions", solver_options);
 
     return params;
   }
@@ -179,7 +173,6 @@ TEST_F(TestAFormSource, CheckRun) {
     problem_builder->SetPostprocessors(postprocessors);
     problem_builder->SetSources(sources);
     problem_builder->SetOutputs(outputs);
-    problem_builder->SetSolverOptions(solver_options);
 
     hephaestus::ProblemBuildSequencer sequencer(problem_builder);
     sequencer.ConstructEquationSystemProblem();

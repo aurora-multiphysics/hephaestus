@@ -160,12 +160,6 @@ int main(int argc, char *argv[]) {
   hephaestus::Outputs outputs = defineOutputs();
   problem_builder->SetOutputs(outputs);
 
-  hephaestus::InputParameters solver_options;
-  solver_options.SetParam("Tolerance", float(1.0e-16));
-  solver_options.SetParam("MaxIter", (unsigned int)1000);
-  solver_options.SetParam("PrintLevel", 0);
-  problem_builder->SetSolverOptions(solver_options);
-
   hephaestus::ProblemBuildSequencer sequencer(problem_builder);
   sequencer.ConstructEquationSystemProblem();
   std::unique_ptr<hephaestus::TimeDomainProblem> problem =
