@@ -169,10 +169,10 @@ OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters &params,
       high_terminal_(1), low_terminal_(1) {
 
   hephaestus::InputParameters default_pars;
-  default_pars.SetParam("Tolerance", 0.0);
-  default_pars.SetParam("AbsTolerance", 0.0);
-  default_pars.SetParam("MaxIter", (unsigned int)10000);
-  default_pars.SetParam("PrintLevel", 2);
+  default_pars.SetParam("Tolerance", float(1.0e-20));
+  default_pars.SetParam("AbsTolerance", float(1.0e-20));
+  default_pars.SetParam("MaxIter", (unsigned int)1000);
+  default_pars.SetParam("PrintLevel", 1);
 
   solver_options_ = params.GetOptionalParam<hephaestus::InputParameters>(
       "SolverOptions", default_pars);
