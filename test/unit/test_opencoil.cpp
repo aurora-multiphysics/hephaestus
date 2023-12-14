@@ -37,6 +37,7 @@ TEST(OpenCoilTest, CheckData) {
   ocs_params.SetParam("SourceName", std::string("J"));
   ocs_params.SetParam("IFuncCoefName", std::string("Itotal"));
   ocs_params.SetParam("PotentialName", std::string("V"));
+  ocs_params.SetParam("ConductivityCoefName", std::string("dummy"));
 
   std::pair<int, int> elec_attrs{1, 2};
   mfem::Array<int> submesh_domains;

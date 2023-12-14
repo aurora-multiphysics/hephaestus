@@ -4,10 +4,11 @@ namespace hephaestus {
 
 ///// THESE FUNCTIONS WILL EVENTUALLY GO INTO A UTILS FILE ///////////
 
-double highV(const mfem::Vector &x, double t) { return 1.0; }
-double lowV(const mfem::Vector &x, double t) { return 0.0; }
+double highV(const mfem::Vector &x, double t) { return 0.5; }
+double lowV(const mfem::Vector &x, double t) { return -0.5; }
 
-double calcFlux(mfem::GridFunction *v_field, int face_attr) {
+double calcFlux(mfem::GridFunction *v_field, int face_attr,
+                mfem::Coefficient &q) {
 
   double flux = 0.0;
   double area = 0.0;
@@ -57,7 +58,7 @@ double calcFlux(mfem::GridFunction *v_field, int face_attr) {
       area += ip.weight * face_weight;
 
       // Integrate alpha * n.Grad(x) + beta * x
-      flux += val * ip.weight * face_weight;
+      flux += q.Eval(*FTr, ip) * val * ip.weight * face_weight;
     }
   }
 
@@ -65,6 +66,11 @@ double calcFlux(mfem::GridFunction *v_field, int face_attr) {
   MPI_Allreduce(&flux, &total_flux, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
   return total_flux;
+}
+
+double calcFlux(mfem::GridFunction *v_field, int face_attr) {
+  mfem::ConstantCoefficient one_coef(1.0);
+  return calcFlux(v_field, face_attr, one_coef);
 }
 
 void SubdomainToArray(const std::vector<hephaestus::Subdomain> &sd,
@@ -154,7 +160,8 @@ OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters &params,
     : J_gf_name_(params.GetParam<std::string>("SourceName")),
       V_gf_name_(params.GetParam<std::string>("PotentialName")),
       I_coef_name_(params.GetParam<std::string>("IFuncCoefName")),
-      coil_domains_(coil_dom), elec_attrs_(electrodes), coef1_(1.0),
+      cond_coef_name_(params.GetParam<std::string>("ConductivityCoefName")),
+      coil_domains_(coil_dom), elec_attrs_(electrodes), coef1_(nullptr),
       mesh_parent_(nullptr), mesh_(nullptr), H1FESpace_(nullptr),
       HCurlFESpace_(nullptr), J_parent_(nullptr), Jt_parent_(nullptr),
       V_parent_(nullptr), Vt_parent_(nullptr), J_(nullptr), V_(nullptr),
@@ -162,10 +169,10 @@ OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters &params,
       high_terminal_(1), low_terminal_(1) {
 
   hephaestus::InputParameters default_pars;
-  default_pars.SetParam("Tolerance", float(1.0e-20));
-  default_pars.SetParam("AbsTolerance", float(1.0e-20));
-  default_pars.SetParam("MaxIter", (unsigned int)1000);
-  default_pars.SetParam("PrintLevel", 1);
+  default_pars.SetParam("Tolerance", 0.0);
+  default_pars.SetParam("AbsTolerance", 0.0);
+  default_pars.SetParam("MaxIter", (unsigned int)10000);
+  default_pars.SetParam("PrintLevel", 2);
 
   solver_options_ = params.GetOptionalParam<hephaestus::InputParameters>(
       "SolverOptions", default_pars);
@@ -197,6 +204,14 @@ void OpenCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
                                 "creating OpenCoilSolver. "
                                 "Assuming unit current.\n";
     Itotal_ = new mfem::ConstantCoefficient(1.0);
+  }
+
+  coef1_ = coefficients.scalars.Get(cond_coef_name_);
+  if (coef1_ == nullptr) {
+    std::cout << cond_coef_name_ + " not found in coefficients when "
+                                   "creating OpenCoilSolver. "
+                                   "Assuming unit conductivity.\n";
+    coef1_ = new mfem::ConstantCoefficient(1.0);
   }
 
   J_parent_ = gridfunctions.Get(J_gf_name_);
@@ -281,7 +296,7 @@ void OpenCoilSolver::makeGridFunctions() {
 
   if (J_ == nullptr)
     J_ = new mfem::ParGridFunction(HCurlFESpace_);
-  
+
   if (Jt_parent_ == nullptr)
     Jt_parent_ = new mfem::ParGridFunction(*J_parent_);
 
@@ -323,10 +338,10 @@ void OpenCoilSolver::SPSCurrent() {
   sps_params.SetParam("H1FESpaceName", std::string("H1"));
   sps_params.SetParam("SolverOptions", solver_options_);
   sps_params.SetParam("ConductivityCoefName",
-                      std::string("magnetic_permeability"));
+                      std::string("electric_conductivity"));
 
   hephaestus::Coefficients coefs;
-  coefs.scalars.Register("magnetic_permeability", &coef1_, false);
+  coefs.scalars.Register("electric_conductivity", coef1_, false);
 
   hephaestus::ScalarPotentialSource sps(sps_params);
   sps.Init(gridfunctions, fespaces, bc_maps, coefs);
@@ -335,14 +350,14 @@ void OpenCoilSolver::SPSCurrent() {
   sps.Apply(&dummy);
 
   // Normalise the current through the wedges and use them as a reference
-  double flux = calcFlux(J_, ref_face_);
+  double flux = calcFlux(J_, ref_face_, *coef1_);
   *J_ /= abs(flux);
   if (V_)
     *V_ /= abs(flux);
 
   mesh_->Transfer(*J_, *Jt_parent_);
   if (V_parent_)
-    mesh_->Transfer(*V_,*Vt_parent_);
+    mesh_->Transfer(*V_, *Vt_parent_);
 
   buildM1();
 
@@ -358,9 +373,8 @@ void OpenCoilSolver::buildM1() {
     m1_ = new mfem::ParBilinearForm(J_parent_->ParFESpace());
     hephaestus::attrToMarker(coil_domains_, coil_markers_,
                              mesh_parent_->attributes.Max());
-    m1_->AddDomainIntegrator(
-        new mfem::VectorFEMassIntegrator(new mfem::ConstantCoefficient(1.0)),
-        coil_markers_);
+    m1_->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(coef1_),
+                             coil_markers_);
     m1_->Assemble();
     m1_->Finalize();
   }

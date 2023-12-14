@@ -62,6 +62,7 @@ void TimeDomainProblemBuilder::ConstructOperator() {
 void TimeDomainProblemBuilder::ConstructState() {
   this->problem->F = new mfem::BlockVector(
       this->problem->td_operator->true_offsets); // Vector of dofs
+  *(problem->F) = 0.0;                           // give initial value
   this->problem->td_operator->Init(
       *(this->problem->F)); // Set up initial conditions
   this->problem->td_operator->SetTime(0.0);

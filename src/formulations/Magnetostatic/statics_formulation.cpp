@@ -114,7 +114,6 @@ void StaticsOperator::Solve(mfem::Vector &X) {
   _bc_map.applyIntegratedBCs(h_curl_var_name, b1_, pmesh_);
   b1_.Assemble();
   _sources.Apply(&b1_);
-
   mfem::ParBilinearForm a1_(a_.ParFESpace());
   a1_.AddDomainIntegrator(new mfem::CurlCurlIntegrator(*stiffCoef_));
   a1_.Assemble();
