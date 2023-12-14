@@ -10,6 +10,9 @@ double lowV(const mfem::Vector &x, double t);
 
 double calcFlux(mfem::GridFunction *v_field, int face_attr);
 
+double calcFlux(mfem::GridFunction *v_field, int face_attr,
+                mfem::Coefficient &q);
+
 template <typename T> void ifDelete(T *ptr);
 
 void inheritBdrAttributes(const mfem::ParMesh *parent_mesh,
@@ -78,7 +81,7 @@ private:
   std::pair<int, int> elec_attrs_;
   mfem::Array<int> coil_domains_;
   mfem::Array<int> coil_markers_;
-  mfem::ConstantCoefficient coef1_;
+  mfem::Coefficient *coef1_;
   mfem::Coefficient *Itotal_;
   hephaestus::InputParameters solver_options_;
 
@@ -86,6 +89,7 @@ private:
   std::string J_gf_name_;
   std::string V_gf_name_;
   std::string I_coef_name_;
+  std::string cond_coef_name_;
 
   // Parent mesh, FE space, and current
   mfem::ParMesh *mesh_parent_;
@@ -117,7 +121,6 @@ private:
 
   // Final LinearForm
   mfem::ParLinearForm *final_lf_;
-
 };
 
 } // namespace hephaestus

@@ -184,7 +184,6 @@ void DualOperator::Init(mfem::Vector &X) {
 
 void DualOperator::ImplicitSolve(const double dt, const mfem::Vector &X,
                                  mfem::Vector &dX_dt) {
-  dX_dt = 0.0;
   for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
     local_test_vars.at(ind)->MakeRef(local_test_vars.at(ind)->ParFESpace(),
                                      const_cast<mfem::Vector &>(X),
