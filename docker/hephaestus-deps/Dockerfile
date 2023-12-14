@@ -104,9 +104,9 @@ RUN cd /$WORKDIR/petsc/petsc-3.19.3 && \
 
 # Build MFEM and common miniapp
 RUN cd /$WORKDIR && \
-    git clone https://github.com/mfem/mfem.git && \
+    git clone https://github.com/Heinrich-BR/mfem.git && \
     cd mfem && \
-    git checkout master && \
+    git checkout SubmeshBoundary && \
     mkdir build && \
     cd build && \
     cmake .. \
