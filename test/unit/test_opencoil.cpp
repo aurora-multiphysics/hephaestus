@@ -20,13 +20,17 @@ TEST(OpenCoilTest, CheckData) {
   mfem::ParGridFunction j(&HCurlFESpace);
 
   double Ival = 10.0;
+  double cond_val = 1e6;
   mfem::ConstantCoefficient Itot(Ival);
+  mfem::ConstantCoefficient Conductivity(cond_val);
 
   hephaestus::InputParameters ocs_params;
   hephaestus::BCMap bc_maps;
 
   hephaestus::Coefficients coefficients;
   coefficients.scalars.Register(std::string("Itotal"), &Itot, true);
+  coefficients.scalars.Register(std::string("Conductivity"), &Conductivity,
+                                true);
 
   hephaestus::FESpaces fespaces;
   fespaces.Register(std::string("HCurl"), &HCurlFESpace, true);
@@ -37,7 +41,7 @@ TEST(OpenCoilTest, CheckData) {
   ocs_params.SetParam("SourceName", std::string("J"));
   ocs_params.SetParam("IFuncCoefName", std::string("Itotal"));
   ocs_params.SetParam("PotentialName", std::string("V"));
-  ocs_params.SetParam("ConductivityCoefName", std::string("dummy"));
+  ocs_params.SetParam("ConductivityCoefName", std::string("Conductivity"));
 
   std::pair<int, int> elec_attrs{1, 2};
   mfem::Array<int> submesh_domains;
@@ -48,7 +52,7 @@ TEST(OpenCoilTest, CheckData) {
   mfem::ParLinearForm dummy(&HCurlFESpace);
   opencoil.Apply(&dummy);
 
-  double flux = hephaestus::calcFlux(&j, elec_attrs.first);
+  double flux = hephaestus::calcFlux(&j, elec_attrs.first, Conductivity);
 
   EXPECT_FLOAT_EQ(flux, Ival);
 }
