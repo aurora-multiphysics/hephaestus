@@ -16,5 +16,5 @@ void SteadyExecutioner::Solve() const {
   // Output timestep summary to console
   problem->outputs.Write();
 }
-void SteadyExecutioner::Execute() const { this->Solve(); }
+void SteadyExecutioner::Execute() const { Solve(); }
 } // namespace hephaestus

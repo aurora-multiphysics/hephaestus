@@ -62,7 +62,7 @@ void DivFreeSource::Init(hephaestus::GridFunctions &gridfunctions,
   gridfunctions_ = &gridfunctions;
   fespaces_ = &fespaces;
 
-  this->buildHCurlMass();
+  buildHCurlMass();
 }
 
 void DivFreeSource::buildHCurlMass() {

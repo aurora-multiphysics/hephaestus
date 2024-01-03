@@ -25,7 +25,7 @@ protected:
   mfem::ConstantCoefficient oneCoef{1.0};
 
   virtual hephaestus::SteadyStateProblem *GetProblem() override {
-    return this->problem.get();
+    return problem.get();
   };
 
 public:
@@ -33,7 +33,7 @@ public:
       : problem(std::make_unique<hephaestus::SteadyStateProblem>()){};
 
   virtual std::unique_ptr<hephaestus::SteadyStateProblem> ReturnProblem() {
-    return std::move(this->problem);
+    return std::move(problem);
   };
 
   virtual void RegisterFESpaces() override{};

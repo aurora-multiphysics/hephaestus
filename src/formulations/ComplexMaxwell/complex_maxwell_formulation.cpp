@@ -108,27 +108,25 @@ ComplexMaxwellFormulation::ComplexMaxwellFormulation(
       _loss_coef_name(std::string("maxwell_loss")) {}
 
 void ComplexMaxwellFormulation::ConstructOperator() {
-  hephaestus::InputParameters &solver_options =
-      this->GetProblem()->solver_options;
+  hephaestus::InputParameters &solver_options = GetProblem()->solver_options;
   solver_options.SetParam("HCurlVarComplexName", _h_curl_var_complex_name);
   solver_options.SetParam("HCurlVarRealName", _h_curl_var_real_name);
   solver_options.SetParam("HCurlVarImagName", _h_curl_var_imag_name);
   solver_options.SetParam("StiffnessCoefName", _alpha_coef_name);
   solver_options.SetParam("MassCoefName", _mass_coef_name);
   solver_options.SetParam("LossCoefName", _loss_coef_name);
-  this->problem->eq_sys_operator =
+  problem->eq_sys_operator =
       std::make_unique<hephaestus::ComplexMaxwellOperator>(
-          *(this->problem->pmesh), this->problem->fespaces,
-          this->problem->gridfunctions, this->problem->bc_map,
-          this->problem->coefficients, this->problem->sources,
-          this->problem->solver_options);
-  this->problem->GetOperator()->SetGridFunctions();
+          *(problem->pmesh), problem->fespaces, problem->gridfunctions,
+          problem->bc_map, problem->coefficients, problem->sources,
+          problem->solver_options);
+  problem->GetOperator()->SetGridFunctions();
 }
 
 void ComplexMaxwellFormulation::RegisterGridFunctions() {
-  int &myid = this->GetProblem()->myid_;
-  hephaestus::GridFunctions &gridfunctions = this->GetProblem()->gridfunctions;
-  hephaestus::FESpaces &fespaces = this->GetProblem()->fespaces;
+  int &myid = GetProblem()->myid_;
+  hephaestus::GridFunctions &gridfunctions = GetProblem()->gridfunctions;
+  hephaestus::FESpaces &fespaces = GetProblem()->fespaces;
 
   // Register default ParGridFunctions of state gridfunctions if not provided
   if (!gridfunctions.Has(_h_curl_var_real_name)) {
@@ -144,7 +142,7 @@ void ComplexMaxwellFormulation::RegisterGridFunctions() {
 }
 
 void ComplexMaxwellFormulation::RegisterCoefficients() {
-  hephaestus::Coefficients &coefficients = this->GetProblem()->coefficients;
+  hephaestus::Coefficients &coefficients = GetProblem()->coefficients;
 
   if (!coefficients.scalars.Has(_frequency_coef_name)) {
     MFEM_ABORT(_frequency_coef_name + " coefficient not found.");
