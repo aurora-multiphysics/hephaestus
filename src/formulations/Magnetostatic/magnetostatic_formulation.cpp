@@ -27,7 +27,7 @@ MagnetostaticFormulation::MagnetostaticFormulation(
 void MagnetostaticFormulation::registerMagneticFluxDensityAux(
     const std::string &b_field_name) {
   //* Magnetic flux density, B = ∇×A
-  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  hephaestus::AuxSolvers &auxsolvers = GetProblem()->postprocessors;
   auxsolvers.Register(
       b_field_name,
       new hephaestus::CurlAuxSolver(_h_curl_var_name, b_field_name), true);
@@ -36,7 +36,7 @@ void MagnetostaticFormulation::registerMagneticFluxDensityAux(
 void MagnetostaticFormulation::registerMagneticFieldAux(
     const std::string &h_field_name) {
   //* Magnetic field H = ν∇×A
-  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  hephaestus::AuxSolvers &auxsolvers = GetProblem()->postprocessors;
   auxsolvers.Register(
       h_field_name,
       new hephaestus::ScaledCurlVectorGridFunctionAux(
@@ -48,7 +48,7 @@ void MagnetostaticFormulation::registerLorentzForceDensityAux(
     const std::string &f_field_name, const std::string &b_field_name,
     const std::string &j_field_name) {
   //* Lorentz force density = J x B
-  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  hephaestus::AuxSolvers &auxsolvers = GetProblem()->postprocessors;
   auxsolvers.Register(
       f_field_name,
       new hephaestus::VectorGridFunctionCrossProductAux(
@@ -58,7 +58,7 @@ void MagnetostaticFormulation::registerLorentzForceDensityAux(
 }
 
 void MagnetostaticFormulation::RegisterCoefficients() {
-  hephaestus::Coefficients &coefficients = this->GetProblem()->coefficients;
+  hephaestus::Coefficients &coefficients = GetProblem()->coefficients;
   if (!coefficients.scalars.Has(_magnetic_permeability_name)) {
     MFEM_ABORT(_magnetic_permeability_name + " coefficient not found.");
   }

@@ -23,7 +23,7 @@ void ComplexAFormulation::registerCurrentDensityAux(
     const std::string &j_field_imag_name) {
   //* Current density J = Jᵉ + σE
   //* Induced current density Jind = σE = -iωσA
-  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  hephaestus::AuxSolvers &auxsolvers = GetProblem()->postprocessors;
   auxsolvers.Register(j_field_imag_name,
                       new hephaestus::ScaledVectorGridFunctionAux(
                           _magnetic_vector_potential_real_name,
@@ -40,7 +40,7 @@ void ComplexAFormulation::registerMagneticFluxDensityAux(
     const std::string &b_field_real_name,
     const std::string &b_field_imag_name) {
   //* Magnetic flux density B = curl A
-  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  hephaestus::AuxSolvers &auxsolvers = GetProblem()->postprocessors;
   auxsolvers.Register(
       b_field_real_name,
       new hephaestus::CurlAuxSolver(_magnetic_vector_potential_real_name,
@@ -57,7 +57,7 @@ void ComplexAFormulation::registerElectricFieldAux(
     const std::string &e_field_real_name,
     const std::string &e_field_imag_name) {
   //* Electric field E =-dA/dt=-iωA
-  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  hephaestus::AuxSolvers &auxsolvers = GetProblem()->postprocessors;
   auxsolvers.Register(e_field_imag_name,
                       new hephaestus::ScaledVectorGridFunctionAux(
                           _magnetic_vector_potential_real_name,
@@ -77,7 +77,7 @@ void ComplexAFormulation::registerJouleHeatingDensityAux(
     const std::string &e_field_imag_name,
     const std::string &conductivity_coef_name) {
   //* Time averaged Joule heating density = E.J
-  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  hephaestus::AuxSolvers &auxsolvers = GetProblem()->postprocessors;
   auxsolvers.Register(p_field_name,
                       new hephaestus::VectorGridFunctionDotProductAux(
                           p_field_name, p_field_name, _loss_coef_name,

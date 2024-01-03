@@ -22,8 +22,8 @@ void EquationSystemOperator::SetGridFunctions() {
   }
   true_offsets.PartialSum();
 
-  this->height = true_offsets[local_test_vars.size()];
-  this->width = true_offsets[local_test_vars.size()];
+  height = true_offsets[local_test_vars.size()];
+  width = true_offsets[local_test_vars.size()];
   trueX.Update(block_trueOffsets);
   trueRhs.Update(block_trueOffsets);
 

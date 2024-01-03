@@ -20,7 +20,7 @@ void ComplexEFormulation::registerCurrentDensityAux(
     const std::string &j_field_imag_name) {
   //* Current density J = Jᵉ + σE
   //* Induced electric current, Jind = σE
-  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  hephaestus::AuxSolvers &auxsolvers = GetProblem()->postprocessors;
   auxsolvers.Register(j_field_real_name,
                       new hephaestus::ScaledVectorGridFunctionAux(
                           _electric_field_real_name, j_field_real_name,
@@ -38,7 +38,7 @@ void ComplexEFormulation::registerMagneticFluxDensityAux(
     const std::string &b_field_imag_name) {
   //* Magnetic flux density B = (i/ω) curl E
   //* (∇×E = -dB/dt = -iωB)
-  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  hephaestus::AuxSolvers &auxsolvers = GetProblem()->postprocessors;
   auxsolvers.Register(b_field_imag_name,
                       new hephaestus::ScaledCurlVectorGridFunctionAux(
                           _electric_field_real_name, b_field_imag_name,
@@ -57,7 +57,7 @@ void ComplexEFormulation::registerJouleHeatingDensityAux(
     const std::string &e_field_imag_name,
     const std::string &conductivity_coef_name) {
   //* Time averaged Joule heating density = E.J
-  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  hephaestus::AuxSolvers &auxsolvers = GetProblem()->postprocessors;
   auxsolvers.Register(
       p_field_name,
       new hephaestus::VectorGridFunctionDotProductAux(
