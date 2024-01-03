@@ -15,7 +15,7 @@ void EBDualFormulation::registerCurrentDensityAux(
     const std::string &j_field_name) {
   //* Current density J = Jᵉ + σE
   //* Induced electric field, Jind = σE
-  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  hephaestus::AuxSolvers &auxsolvers = GetProblem()->postprocessors;
   auxsolvers.Register(
       j_field_name,
       new hephaestus::ScaledVectorGridFunctionAux(
@@ -27,7 +27,7 @@ void EBDualFormulation::registerLorentzForceDensityAux(
     const std::string &f_field_name, const std::string &b_field_name,
     const std::string &j_field_name) {
   //* Lorentz force density = J x B
-  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  hephaestus::AuxSolvers &auxsolvers = GetProblem()->postprocessors;
   auxsolvers.Register(
       f_field_name,
       new hephaestus::VectorGridFunctionCrossProductAux(
@@ -40,7 +40,7 @@ void EBDualFormulation::registerJouleHeatingDensityAux(
     const std::string &p_field_name, const std::string &e_field_name,
     const std::string &conductivity_coef_name) {
   //* Joule heating density = E.J
-  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  hephaestus::AuxSolvers &auxsolvers = GetProblem()->postprocessors;
   auxsolvers.Register(p_field_name,
                       new hephaestus::VectorGridFunctionDotProductAux(
                           p_field_name, p_field_name,
@@ -51,7 +51,7 @@ void EBDualFormulation::registerJouleHeatingDensityAux(
 }
 
 void EBDualFormulation::RegisterCoefficients() {
-  hephaestus::Coefficients &coefficients = this->GetProblem()->coefficients;
+  hephaestus::Coefficients &coefficients = GetProblem()->coefficients;
   if (!coefficients.scalars.Has(_magnetic_permeability_name)) {
     MFEM_ABORT(_magnetic_permeability_name + " coefficient not found.");
   }

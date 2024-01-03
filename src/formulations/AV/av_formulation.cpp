@@ -47,24 +47,22 @@ void AVFormulation::ConstructEquationSystem() {
   av_system_params.SetParam("ScalarPotentialName", _scalar_potential_name);
   av_system_params.SetParam("AlphaCoefName", _alpha_coef_name);
   av_system_params.SetParam("BetaCoefName", _beta_coef_name);
-  this->GetProblem()->td_equation_system =
+  GetProblem()->td_equation_system =
       std::make_unique<hephaestus::AVEquationSystem>(av_system_params);
 }
 
 void AVFormulation::ConstructOperator() {
-  this->problem->td_operator = std::make_unique<hephaestus::AVOperator>(
-      *(this->problem->pmesh), this->problem->fespaces,
-      this->problem->gridfunctions, this->problem->bc_map,
-      this->problem->coefficients, this->problem->sources,
-      this->problem->solver_options);
-  this->problem->td_operator->SetEquationSystem(
-      this->problem->td_equation_system.get());
-  this->problem->td_operator->SetGridFunctions();
+  problem->td_operator = std::make_unique<hephaestus::AVOperator>(
+      *(problem->pmesh), problem->fespaces, problem->gridfunctions,
+      problem->bc_map, problem->coefficients, problem->sources,
+      problem->solver_options);
+  problem->td_operator->SetEquationSystem(problem->td_equation_system.get());
+  problem->td_operator->SetGridFunctions();
 };
 
 void AVFormulation::RegisterGridFunctions() {
-  int &myid = this->GetProblem()->myid_;
-  hephaestus::GridFunctions &gridfunctions = this->GetProblem()->gridfunctions;
+  int &myid = GetProblem()->myid_;
+  hephaestus::GridFunctions &gridfunctions = GetProblem()->gridfunctions;
 
   // Register default ParGridFunctions of state gridfunctions if not provided
   if (!gridfunctions.Has(_vector_potential_name)) {
@@ -93,7 +91,7 @@ void AVFormulation::RegisterGridFunctions() {
 };
 
 void AVFormulation::RegisterCoefficients() {
-  hephaestus::Coefficients &coefficients = this->GetProblem()->coefficients;
+  hephaestus::Coefficients &coefficients = GetProblem()->coefficients;
   if (!coefficients.scalars.Has(_inv_alpha_coef_name)) {
     MFEM_ABORT(_inv_alpha_coef_name + " coefficient not found.");
   }
@@ -222,7 +220,7 @@ void AVOperator::ImplicitSolve(const double dt, const mfem::Vector &X,
     local_trial_vars.at(ind)->MakeRef(local_trial_vars.at(ind)->ParFESpace(),
                                       dX_dt, true_offsets[ind]);
   }
-  _coefficients.SetTime(this->GetTime());
+  _coefficients.SetTime(GetTime());
   _equation_system->setTimeStep(dt);
   _equation_system->updateEquationSystem(_bc_map, _sources);
 

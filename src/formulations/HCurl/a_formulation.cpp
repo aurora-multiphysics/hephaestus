@@ -28,7 +28,7 @@ AFormulation::AFormulation(const std::string &magnetic_reluctivity_name,
 void AFormulation::registerCurrentDensityAux(const std::string &j_field_name) {
   //* Current density J = Jᵉ -σdA/dt
   //* Induced electric field, Jind = -σdA/dt
-  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  hephaestus::AuxSolvers &auxsolvers = GetProblem()->postprocessors;
   auxsolvers.Register(j_field_name,
                       new hephaestus::ScaledVectorGridFunctionAux(
                           GetTimeDerivativeName(_h_curl_var_name), j_field_name,
@@ -39,7 +39,7 @@ void AFormulation::registerCurrentDensityAux(const std::string &j_field_name) {
 void AFormulation::registerMagneticFluxDensityAux(
     const std::string &b_field_name) {
   //* Magnetic flux density, B = ∇×A
-  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  hephaestus::AuxSolvers &auxsolvers = GetProblem()->postprocessors;
   auxsolvers.Register(
       b_field_name,
       new hephaestus::CurlAuxSolver(_h_curl_var_name, b_field_name), true);
@@ -48,7 +48,7 @@ void AFormulation::registerMagneticFluxDensityAux(
 void AFormulation::registerElectricFieldAux(const std::string &e_field_name) {
   //* Total electric field, E = ρJᵉ -dA/dt
   //* Induced electric field, Eind = -dA/dt
-  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  hephaestus::AuxSolvers &auxsolvers = GetProblem()->postprocessors;
   auxsolvers.Register(
       e_field_name,
       new hephaestus::ScaledVectorGridFunctionAux(
@@ -58,7 +58,7 @@ void AFormulation::registerElectricFieldAux(const std::string &e_field_name) {
 
 void AFormulation::registerMagneticFieldAux(const std::string &h_field_name) {
   //* Magnetic field H = ν∇×A
-  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  hephaestus::AuxSolvers &auxsolvers = GetProblem()->postprocessors;
   auxsolvers.Register(
       h_field_name,
       new hephaestus::ScaledCurlVectorGridFunctionAux(
@@ -70,7 +70,7 @@ void AFormulation::registerLorentzForceDensityAux(
     const std::string &f_field_name, const std::string &b_field_name,
     const std::string &j_field_name) {
   //* Lorentz force density = J x B
-  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  hephaestus::AuxSolvers &auxsolvers = GetProblem()->postprocessors;
   auxsolvers.Register(
       f_field_name,
       new hephaestus::VectorGridFunctionCrossProductAux(
@@ -83,7 +83,7 @@ void AFormulation::registerJouleHeatingDensityAux(
     const std::string &p_field_name, const std::string &e_field_name,
     const std::string &conductivity_coef_name) {
   //* Joule heating density = E.J
-  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  hephaestus::AuxSolvers &auxsolvers = GetProblem()->postprocessors;
   auxsolvers.Register(p_field_name,
                       new hephaestus::VectorGridFunctionDotProductAux(
                           p_field_name, p_field_name,
@@ -94,7 +94,7 @@ void AFormulation::registerJouleHeatingDensityAux(
 }
 
 void AFormulation::RegisterCoefficients() {
-  hephaestus::Coefficients &coefficients = this->GetProblem()->coefficients;
+  hephaestus::Coefficients &coefficients = GetProblem()->coefficients;
   if (!coefficients.scalars.Has(_magnetic_permeability_name)) {
     MFEM_ABORT(_magnetic_permeability_name + " coefficient not found.");
   }

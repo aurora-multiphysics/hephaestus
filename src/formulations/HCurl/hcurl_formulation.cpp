@@ -51,25 +51,23 @@ void HCurlFormulation::ConstructEquationSystem() {
   weak_form_params.SetParam("HCurlVarName", _h_curl_var_name);
   weak_form_params.SetParam("AlphaCoefName", _alpha_coef_name);
   weak_form_params.SetParam("BetaCoefName", _beta_coef_name);
-  this->GetProblem()->td_equation_system =
+  GetProblem()->td_equation_system =
       std::make_unique<hephaestus::CurlCurlEquationSystem>(weak_form_params);
 }
 
 void HCurlFormulation::ConstructOperator() {
-  this->problem->td_operator = std::make_unique<hephaestus::HCurlOperator>(
-      *(this->problem->pmesh), this->problem->fespaces,
-      this->problem->gridfunctions, this->problem->bc_map,
-      this->problem->coefficients, this->problem->sources,
-      this->problem->solver_options);
-  this->problem->td_operator->SetEquationSystem(
-      this->problem->td_equation_system.get());
-  this->problem->td_operator->SetGridFunctions();
+  problem->td_operator = std::make_unique<hephaestus::HCurlOperator>(
+      *(problem->pmesh), problem->fespaces, problem->gridfunctions,
+      problem->bc_map, problem->coefficients, problem->sources,
+      problem->solver_options);
+  problem->td_operator->SetEquationSystem(problem->td_equation_system.get());
+  problem->td_operator->SetGridFunctions();
 };
 
 void HCurlFormulation::RegisterGridFunctions() {
-  int &myid = this->GetProblem()->myid_;
-  hephaestus::GridFunctions &gridfunctions = this->GetProblem()->gridfunctions;
-  hephaestus::FESpaces &fespaces = this->GetProblem()->fespaces;
+  int &myid = GetProblem()->myid_;
+  hephaestus::GridFunctions &gridfunctions = GetProblem()->gridfunctions;
+  hephaestus::FESpaces &fespaces = GetProblem()->fespaces;
 
   // Register default ParGridFunctions of state gridfunctions if not provided
   if (!gridfunctions.Has(_h_curl_var_name)) {
@@ -129,7 +127,7 @@ void CurlCurlEquationSystem::addKernels() {
 }
 
 void HCurlFormulation::RegisterCoefficients() {
-  hephaestus::Coefficients &coefficients = this->GetProblem()->coefficients;
+  hephaestus::Coefficients &coefficients = GetProblem()->coefficients;
   if (!coefficients.scalars.Has(_alpha_coef_name)) {
     MFEM_ABORT(_alpha_coef_name + " coefficient not found.");
   }
@@ -173,7 +171,7 @@ void HCurlOperator::ImplicitSolve(const double dt, const mfem::Vector &X,
     local_trial_vars.at(ind)->MakeRef(local_trial_vars.at(ind)->ParFESpace(),
                                       dX_dt, true_offsets[ind]);
   }
-  _coefficients.SetTime(this->GetTime());
+  _coefficients.SetTime(GetTime());
   _equation_system->setTimeStep(dt);
   _equation_system->updateEquationSystem(_bc_map, _sources);
 
