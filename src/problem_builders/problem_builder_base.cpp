@@ -46,6 +46,12 @@ void ProblemBuilder::SetCoefficients(hephaestus::Coefficients &coefficients) {
 
 void ProblemBuilder::AddFESpace(std::string fespace_name, std::string fec_name,
                                 int vdim, int ordering) {
+  if (this->GetProblem()->fespaces.Has(fespace_name)) {
+    const std::string error_message =
+        "A fespace with the name " + fespace_name +
+        " has already been added to the problem fespaces.";
+    mfem::mfem_error(error_message.c_str());
+  }
   if (!this->GetProblem()->fecs.Has(fec_name)) {
     mfem::FiniteElementCollection *fec =
         mfem::FiniteElementCollection::New(fec_name.c_str());
@@ -68,6 +74,12 @@ void ProblemBuilder::AddFESpace(std::string fespace_name, std::string fec_name,
 
 void ProblemBuilder::AddGridFunction(std::string gridfunction_name,
                                      std::string fespace_name) {
+  if (this->GetProblem()->gridfunctions.Has(gridfunction_name)) {
+    const std::string error_message =
+        "A gridfunction with the name " + gridfunction_name +
+        " has already been added to the problem gridfunctions.";
+    mfem::mfem_error(error_message.c_str());
+  }
   mfem::ParFiniteElementSpace *fespace(
       this->GetProblem()->fespaces.Get(fespace_name));
   if (fespace == NULL) {
@@ -88,22 +100,46 @@ void ProblemBuilder::AddGridFunction(std::string gridfunction_name,
 void ProblemBuilder::AddBoundaryCondition(std::string bc_name,
                                           hephaestus::BoundaryCondition *bc,
                                           bool own_data) {
+  if (this->GetProblem()->bc_map.Has(bc_name)) {
+    const std::string error_message =
+        "A boundary condition with the name " + bc_name +
+        " has already been added to the problem boundary conditions.";
+    mfem::mfem_error(error_message.c_str());
+  }
   this->GetProblem()->bc_map.Register(bc_name, bc, own_data);
 }
 
 void ProblemBuilder::AddAuxSolver(std::string auxsolver_name,
                                   hephaestus::AuxSolver *aux, bool own_data) {
+  if (this->GetProblem()->preprocessors.Has(auxsolver_name)) {
+    const std::string error_message =
+        "An auxsolver with the name " + auxsolver_name +
+        " has already been added to the problem preprocessors.";
+    mfem::mfem_error(error_message.c_str());
+  }
   this->GetProblem()->preprocessors.Register(auxsolver_name, aux, own_data);
 }
 
 void ProblemBuilder::AddPostprocessor(std::string auxsolver_name,
                                       hephaestus::AuxSolver *aux,
                                       bool own_data) {
+  if (this->GetProblem()->postprocessors.Has(auxsolver_name)) {
+    const std::string error_message =
+        "An auxsolver with the name " + auxsolver_name +
+        " has already been added to the problem postprocessors.";
+    mfem::mfem_error(error_message.c_str());
+  }
   this->GetProblem()->postprocessors.Register(auxsolver_name, aux, own_data);
 }
 
 void ProblemBuilder::AddSource(std::string source_name,
                                hephaestus::Source *source, bool own_data) {
+  if (this->GetProblem()->sources.Has(source_name)) {
+    const std::string error_message =
+        "A source with the name " + source_name +
+        " has already been added to the problem sources.";
+    mfem::mfem_error(error_message.c_str());
+  }
   this->GetProblem()->sources.Register(source_name, source, own_data);
 }
 
