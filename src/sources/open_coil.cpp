@@ -161,7 +161,7 @@ OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters &params,
       V_gf_name_(params.GetParam<std::string>("PotentialName")),
       I_coef_name_(params.GetParam<std::string>("IFuncCoefName")),
       cond_coef_name_(params.GetParam<std::string>("ConductivityCoefName")),
-      coil_domains_(coil_dom), elec_attrs_(electrodes), coef1_(nullptr),
+      coil_domains_(coil_dom), elec_attrs_(electrodes), sigma_(nullptr),
       mesh_parent_(nullptr), mesh_(nullptr), H1FESpace_(nullptr),
       HCurlFESpace_(nullptr), E_parent_(nullptr), Et_parent_(nullptr),
       V_parent_(nullptr), Vt_parent_(nullptr), E_(nullptr), V_(nullptr),
@@ -206,12 +206,12 @@ void OpenCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
     Itotal_ = new mfem::ConstantCoefficient(1.0);
   }
 
-  coef1_ = coefficients.scalars.Get(cond_coef_name_);
-  if (coef1_ == nullptr) {
+  sigma_ = coefficients.scalars.Get(cond_coef_name_);
+  if (sigma_ == nullptr) {
     std::cout << cond_coef_name_ + " not found in coefficients when "
                                    "creating OpenCoilSolver. "
                                    "Assuming unit conductivity.\n";
-    coef1_ = new mfem::ConstantCoefficient(1.0);
+    sigma_ = new mfem::ConstantCoefficient(1.0);
   }
 
   E_parent_ = gridfunctions.Get(E_gf_name_);
@@ -341,7 +341,7 @@ void OpenCoilSolver::SPSCurrent() {
                       std::string("electric_conductivity"));
 
   hephaestus::Coefficients coefs;
-  coefs.scalars.Register("electric_conductivity", coef1_, false);
+  coefs.scalars.Register("electric_conductivity", sigma_, false);
 
   hephaestus::ScalarPotentialSource sps(sps_params);
   sps.Init(gridfunctions, fespaces, bc_maps, coefs);
@@ -350,7 +350,7 @@ void OpenCoilSolver::SPSCurrent() {
   sps.Apply(&dummy);
 
   // Normalise the current through the wedges and use them as a reference
-  double flux = calcFlux(E_, ref_face_, *coef1_);
+  double flux = calcFlux(E_, ref_face_, *sigma_);
   *E_ /= abs(flux);
   if (V_)
     *V_ /= abs(flux);
@@ -373,7 +373,7 @@ void OpenCoilSolver::buildM1() {
     m1_ = new mfem::ParBilinearForm(E_parent_->ParFESpace());
     hephaestus::attrToMarker(coil_domains_, coil_markers_,
                              mesh_parent_->attributes.Max());
-    m1_->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(coef1_),
+    m1_->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(sigma_),
                              coil_markers_);
     m1_->Assemble();
     m1_->Finalize();

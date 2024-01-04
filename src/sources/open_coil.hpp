@@ -81,7 +81,7 @@ private:
   std::pair<int, int> elec_attrs_;
   mfem::Array<int> coil_domains_;
   mfem::Array<int> coil_markers_;
-  mfem::Coefficient *coef1_;
+  mfem::Coefficient *sigma_;
   mfem::Coefficient *Itotal_;
   hephaestus::InputParameters solver_options_;
 
