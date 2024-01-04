@@ -2,13 +2,19 @@
 
 const char *DATA_DIR = "../../data/";
 
+double sigmafunc(const mfem::Vector &x, double t){
+
+  return pow(x[0], 2);
+
+}
+
 hephaestus::Coefficients defineCoefficients() {
   hephaestus::Coefficients coefficients;
   coefficients.scalars.Register("magnetic_permeability",
                                 new mfem::ConstantCoefficient(M_PI * 4.0e-7),
                                 true);
-  coefficients.scalars.Register("electrical_conductivity",
-                                new mfem::ConstantCoefficient(1.0), true);
+  coefficients.scalars.Register("elec_conductivity",
+                                new mfem::FunctionCoefficient(sigmafunc), true);
 
   double Itotal = 2742;
   coefficients.scalars.Register("I", new mfem::ConstantCoefficient(Itotal),
@@ -32,7 +38,7 @@ hephaestus::Sources defineSources() {
   hephaestus::InputParameters coilsolver_pars;
   coilsolver_pars.SetParam("HCurlFESpaceName", std::string("HCurl"));
   coilsolver_pars.SetParam("EGridFunctionName",
-                           std::string("source_current_density"));
+                           std::string("source_electric_field"));
   coilsolver_pars.SetParam("IFuncCoefName", std::string("I"));
   coilsolver_pars.SetParam("ConductivityCoefName",
                            std::string("elec_conductivity"));
@@ -49,9 +55,12 @@ hephaestus::Sources defineSources() {
 hephaestus::Outputs defineOutputs() {
 
   hephaestus::Outputs outputs;
-  outputs.Register("ParaViewDataCollection",
-                   new mfem::ParaViewDataCollection("ClosedCoilParaView"),
-                   true);
+  //outputs.Register("ParaViewDataCollection",
+  //                 new mfem::ParaViewDataCollection("ClosedCoilParaView"),
+  //                 true);
+  outputs.Register("GLVisDataCollection",
+                 new mfem::VisItDataCollection("ClosedCoilGLVis"),
+                 true);
   return outputs;
 }
 
@@ -83,7 +92,7 @@ int main(int argc, char *argv[]) {
   problem_builder->AddFESpace(std::string("HDiv"), std::string("RT_3D_P0"));
   problem_builder->AddGridFunction(std::string("magnetic_vector_potential"),
                                    std::string("HCurl"));
-  problem_builder->AddGridFunction(std::string("source_current_density"),
+  problem_builder->AddGridFunction(std::string("source_electric_field"),
                                    std::string("HCurl"));
   problem_builder->AddGridFunction(std::string("magnetic_flux_density"),
                                    std::string("HDiv"));
