@@ -73,6 +73,7 @@ private:
 
   // Names
   std::string hcurl_fespace_name_;
+  std::string cond_coef_name_;
   std::string h1_fespace_name_;
   std::string J_gf_name_;
   std::string I_coef_name_;
