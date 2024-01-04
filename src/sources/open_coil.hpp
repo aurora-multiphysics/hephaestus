@@ -86,15 +86,15 @@ private:
   hephaestus::InputParameters solver_options_;
 
   // Names
-  std::string J_gf_name_;
+  std::string E_gf_name_;
   std::string V_gf_name_;
   std::string I_coef_name_;
   std::string cond_coef_name_;
 
   // Parent mesh, FE space, and current
   mfem::ParMesh *mesh_parent_;
-  mfem::ParGridFunction *J_parent_;
-  mfem::ParGridFunction *Jt_parent_;
+  mfem::ParGridFunction *E_parent_;
+  mfem::ParGridFunction *Et_parent_;
   mfem::ParGridFunction *V_parent_;
   mfem::ParGridFunction *Vt_parent_;
 
@@ -104,7 +104,7 @@ private:
   mfem::ParFiniteElementSpace *HCurlFESpace_;
 
   // Child GridFunctions
-  mfem::ParGridFunction *J_;
+  mfem::ParGridFunction *E_;
   mfem::ParGridFunction *V_;
 
   // Child boundary condition objects

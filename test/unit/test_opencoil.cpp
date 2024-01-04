@@ -17,7 +17,7 @@ TEST(OpenCoilTest, CheckData) {
 
   mfem::ND_FECollection HCurl_Collection(order, pmesh.get()->Dimension());
   mfem::ParFiniteElementSpace HCurlFESpace(pmesh.get(), &HCurl_Collection);
-  mfem::ParGridFunction j(&HCurlFESpace);
+  mfem::ParGridFunction E(&HCurlFESpace);
 
   double Ival = 10.0;
   double cond_val = 1e6;
@@ -36,9 +36,9 @@ TEST(OpenCoilTest, CheckData) {
   fespaces.Register(std::string("HCurl"), &HCurlFESpace, true);
 
   hephaestus::GridFunctions gridfunctions;
-  gridfunctions.Register(std::string("J"), &j, true);
+  gridfunctions.Register(std::string("E"), &E, true);
 
-  ocs_params.SetParam("SourceName", std::string("J"));
+  ocs_params.SetParam("EFieldName", std::string("E"));
   ocs_params.SetParam("IFuncCoefName", std::string("Itotal"));
   ocs_params.SetParam("PotentialName", std::string("V"));
   ocs_params.SetParam("ConductivityCoefName", std::string("Conductivity"));
@@ -52,7 +52,7 @@ TEST(OpenCoilTest, CheckData) {
   mfem::ParLinearForm dummy(&HCurlFESpace);
   opencoil.Apply(&dummy);
 
-  double flux = hephaestus::calcFlux(&j, elec_attrs.first, Conductivity);
+  double flux = hephaestus::calcFlux(&E, elec_attrs.first, Conductivity);
 
   EXPECT_FLOAT_EQ(flux, Ival);
 }
