@@ -31,11 +31,13 @@ hephaestus::Sources defineSources() {
 
   hephaestus::InputParameters coilsolver_pars;
   coilsolver_pars.SetParam("HCurlFESpaceName", std::string("HCurl"));
-  coilsolver_pars.SetParam("JGridFunctionName",
+  coilsolver_pars.SetParam("EGridFunctionName",
                            std::string("source_current_density"));
   coilsolver_pars.SetParam("IFuncCoefName", std::string("I"));
+  coilsolver_pars.SetParam("ConductivityCoefName",
+                           std::string("elec_conductivity"));
   coilsolver_pars.SetParam("H1FESpaceName", std::string("H1"));
-  coilsolver_pars.SetParam("JTransfer", true);
+  coilsolver_pars.SetParam("ETransfer", true);
 
   hephaestus::Sources sources;
   sources.Register("source",
@@ -47,10 +49,10 @@ hephaestus::Sources defineSources() {
 hephaestus::Outputs defineOutputs() {
 
   hephaestus::Outputs outputs;
-    outputs.Register("ParaViewDataCollection",
-                     new mfem::ParaViewDataCollection("ClosedCoilParaView"),
-                     true);
-    return outputs;
+  outputs.Register("ParaViewDataCollection",
+                   new mfem::ParaViewDataCollection("ClosedCoilParaView"),
+                   true);
+  return outputs;
 }
 
 int main(int argc, char *argv[]) {
