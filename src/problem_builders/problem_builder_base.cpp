@@ -3,8 +3,10 @@
 namespace hephaestus {
 
 Problem::~Problem() {
+  // Ensure that all owned memory is properly freed!
   gridfunctions.DeleteData(true);
   fespaces.DeleteData(true);
+  fecs.DeleteData(true);
 }
 
 void ProblemBuilder::SetMesh(std::shared_ptr<mfem::ParMesh> pmesh) {
