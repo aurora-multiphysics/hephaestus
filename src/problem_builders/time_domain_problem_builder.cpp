@@ -2,6 +2,11 @@
 
 namespace hephaestus {
 
+TimeDomainProblem::~TimeDomainProblem() {
+  td_equation_system.reset();
+  td_operator.reset();
+}
+
 std::vector<mfem::ParGridFunction *>
 TimeDomainProblemBuilder::RegisterTimeDerivatives(
     std::vector<std::string> gridfunction_names,
@@ -55,7 +60,7 @@ void TimeDomainProblemBuilder::ConstructOperator() {
 
 void TimeDomainProblemBuilder::ConstructState() {
   // Vector of dofs.
-  problem->F = 
+  problem->F =
       std::make_unique<mfem::BlockVector>(problem->td_operator->true_offsets);
   *(problem->F) = 0.0;                       // give initial value
   problem->td_operator->Init(*(problem->F)); // Set up initial conditions

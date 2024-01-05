@@ -7,6 +7,9 @@ Problem::~Problem() {
   gridfunctions.DeleteData(true);
   fespaces.DeleteData(true);
   fecs.DeleteData(true);
+
+  F.reset();
+  ode_solver.reset();
 }
 
 void ProblemBuilder::SetMesh(std::shared_ptr<mfem::ParMesh> pmesh) {
