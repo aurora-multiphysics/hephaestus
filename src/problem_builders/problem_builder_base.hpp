@@ -13,7 +13,7 @@ namespace hephaestus {
 class Problem {
 public:
   Problem() = default;
-  ~Problem() = default;
+  ~Problem();
 
   std::shared_ptr<mfem::ParMesh> pmesh;
   hephaestus::BCMap bc_map;
