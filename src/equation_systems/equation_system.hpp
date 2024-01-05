@@ -1,12 +1,13 @@
 #pragma once
 #include "../common/pfem_extras.hpp"
 #include "inputs.hpp"
+#include "named_fields_map.hpp"
 #include "sources.hpp"
 
 namespace hephaestus {
 template <typename T>
 std::vector<T *>
-populateVectorFromNamedFieldsMap(mfem::NamedFieldsMap<T> nfmap,
+populateVectorFromNamedFieldsMap(hephaestus::NamedFieldsMap<T> nfmap,
                                  std::vector<std::string> keys) {
   std::vector<T *> result;
   for (auto &key : keys) {
@@ -38,10 +39,11 @@ public:
   std::vector<mfem::ParFiniteElementSpace *> test_pfespaces;
 
   // Components of weak form. // Named according to test variable
-  mfem::NamedFieldsMap<mfem::ParBilinearForm> blfs;
-  mfem::NamedFieldsMap<mfem::ParLinearForm> lfs;
-  mfem::NamedFieldsMap<mfem::ParNonlinearForm> nlfs;
-  mfem::NamedFieldsMap<mfem::NamedFieldsMap<mfem::ParMixedBilinearForm>>
+  hephaestus::NamedFieldsMap<mfem::ParBilinearForm> blfs;
+  hephaestus::NamedFieldsMap<mfem::ParLinearForm> lfs;
+  hephaestus::NamedFieldsMap<mfem::ParNonlinearForm> nlfs;
+  hephaestus::NamedFieldsMap<
+      hephaestus::NamedFieldsMap<mfem::ParMixedBilinearForm>>
       mblfs; // named according to trial variable
 
   // add test variable to EquationSystem;
@@ -91,14 +93,16 @@ protected:
   mfem::Array2D<mfem::HypreParMatrix *> hBlocks;
   // Arrays to store kernels to act on each component of weak form. Named
   // according to test variable
-  mfem::NamedFieldsMap<mfem::Array<hephaestus::Kernel<mfem::ParBilinearForm> *>>
+  hephaestus::NamedFieldsMap<
+      mfem::Array<hephaestus::Kernel<mfem::ParBilinearForm> *>>
       blf_kernels_map;
-  mfem::NamedFieldsMap<mfem::Array<hephaestus::Kernel<mfem::ParLinearForm> *>>
+  hephaestus::NamedFieldsMap<
+      mfem::Array<hephaestus::Kernel<mfem::ParLinearForm> *>>
       lf_kernels_map;
-  mfem::NamedFieldsMap<
+  hephaestus::NamedFieldsMap<
       mfem::Array<hephaestus::Kernel<mfem::ParNonlinearForm> *>>
       nlf_kernels_map;
-  mfem::NamedFieldsMap<mfem::NamedFieldsMap<
+  hephaestus::NamedFieldsMap<hephaestus::NamedFieldsMap<
       mfem::Array<hephaestus::Kernel<mfem::ParMixedBilinearForm> *>>>
       mblf_kernels_map_map;
 };

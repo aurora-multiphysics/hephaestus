@@ -4,9 +4,9 @@ namespace hephaestus {
 
 Problem::~Problem() {
   // Ensure that all owned memory is properly freed!
-  gridfunctions.DeleteData(true);
-  fespaces.DeleteData(true);
-  fecs.DeleteData(true);
+  // gridfunctions.DeleteData(true);
+  // fespaces.DeleteData(true);
+  // fecs.DeleteData(true);
 
   F.reset();
   ode_solver.reset();
