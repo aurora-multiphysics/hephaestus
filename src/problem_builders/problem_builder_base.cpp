@@ -2,7 +2,10 @@
 
 namespace hephaestus {
 
-Problem::~Problem() { gridfunctions.DeleteData(true); }
+Problem::~Problem() {
+  gridfunctions.DeleteData(true);
+  fespaces.DeleteData(true);
+}
 
 void ProblemBuilder::SetMesh(std::shared_ptr<mfem::ParMesh> pmesh) {
   GetProblem()->pmesh = pmesh;
