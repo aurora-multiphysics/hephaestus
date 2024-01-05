@@ -409,7 +409,7 @@ void ClosedCoilSolver::solveCoil() {
   mfem::Vector B0_coil;
   a_coil.FormLinearSystem(ess_bdr_tdofs_coil, Vaux_coil, b_coil, A0_coil,
                           X0_coil, B0_coil);
-  hephaestus::DefaultH1PCGSolver a_coil_solver(solver_options_, A0_coil);
+  hephaestus::DefaultGMRESSolver a_coil_solver(solver_options_, A0_coil);
   a_coil_solver.Mult(B0_coil, X0_coil);
   a_coil.RecoverFEMSolution(X0_coil, b_coil, Vaux_coil);
 
