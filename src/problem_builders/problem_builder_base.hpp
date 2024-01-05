@@ -13,7 +13,7 @@ namespace hephaestus {
 class Problem {
 public:
   Problem() = default;
-  ~Problem();
+  ~Problem() = default;
 
   std::shared_ptr<mfem::ParMesh> pmesh;
   hephaestus::BCMap bc_map;
@@ -24,8 +24,8 @@ public:
   hephaestus::Outputs outputs;
   hephaestus::InputParameters solver_options;
 
-  mfem::ODESolver *ode_solver = nullptr;
-  mfem::BlockVector *F = nullptr;
+  std::unique_ptr<mfem::ODESolver> ode_solver = nullptr;
+  std::unique_ptr<mfem::BlockVector> F = nullptr;
 
   hephaestus::FECollections fecs;
   hephaestus::FESpaces fespaces;

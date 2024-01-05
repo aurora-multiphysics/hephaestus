@@ -54,15 +54,16 @@ void TimeDomainProblemBuilder::ConstructOperator() {
 }
 
 void TimeDomainProblemBuilder::ConstructState() {
-  problem->F = new mfem::BlockVector(
-      problem->td_operator->true_offsets);   // Vector of dofs
+  // Vector of dofs.
+  problem->F = 
+      std::make_unique<mfem::BlockVector>(problem->td_operator->true_offsets);
   *(problem->F) = 0.0;                       // give initial value
   problem->td_operator->Init(*(problem->F)); // Set up initial conditions
   problem->td_operator->SetTime(0.0);
 }
 
 void TimeDomainProblemBuilder::ConstructSolver() {
-  problem->ode_solver = new mfem::BackwardEulerSolver;
+  problem->ode_solver = std::make_unique<mfem::BackwardEulerSolver>();
   problem->ode_solver->Init(*(problem->td_operator));
 }
 

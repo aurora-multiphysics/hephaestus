@@ -2,11 +2,6 @@
 
 namespace hephaestus {
 
-Problem::~Problem() { 
-    delete F;
-    delete ode_solver;
-}
-
 void ProblemBuilder::SetMesh(std::shared_ptr<mfem::ParMesh> pmesh) {
   GetProblem()->pmesh = pmesh;
   MPI_Comm_rank(pmesh->GetComm(), &(GetProblem()->myid_));
