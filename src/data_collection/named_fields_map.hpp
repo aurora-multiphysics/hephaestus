@@ -127,12 +127,6 @@ protected:
     if (iter == end()) // Not found.
       return;
 
-    DeleteData(iter);
-    GetMap().erase(iter);
-  }
-
-  /// Deletes memory for field.
-  void DeleteData(iterator iter) {
     const auto &field_name = iter->first;
 
     if (IsDataOwner(field_name)) {
@@ -141,6 +135,8 @@ protected:
     }
 
     iter->second = nullptr;
+
+    GetMap().erase(iter);
   }
 
   /// Returns reference to set.
