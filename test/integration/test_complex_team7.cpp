@@ -3,11 +3,11 @@
 
 #include "hephaestus.hpp"
 
-#include <gtest/gtest.h>
+#include <catch2/catch_test_macros.hpp>
 
 extern const char *DATA_DIR;
 
-class TestComplexTeam7 : public testing::Test {
+class TestComplexTeam7{
 protected:
   static void source_current(const mfem::Vector &xv, mfem::Vector &J) {
     double x0(194e-3);  // Coil centre x coordinate
@@ -154,7 +154,7 @@ protected:
   }
 };
 
-TEST_F(TestComplexTeam7, CheckRun) {
+TEST_CASE_METHOD(TestComplexTeam7, "TestComplexTeam7", "[CheckRun]") {
   hephaestus::InputParameters params(test_params());
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));

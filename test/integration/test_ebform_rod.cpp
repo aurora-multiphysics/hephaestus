@@ -1,9 +1,9 @@
 #include "hephaestus.hpp"
-#include <gtest/gtest.h>
+#include <catch2/catch_test_macros.hpp>
 
 extern const char *DATA_DIR;
 
-class TestEBFormRod : public testing::Test {
+class TestEBFormRod{
 protected:
   static double potential_high(const mfem::Vector &x, double t) {
     double wj_(2.0 * M_PI / 60.0);
@@ -131,7 +131,7 @@ protected:
   }
 };
 
-TEST_F(TestEBFormRod, CheckRun) {
+TEST_CASE_METHOD(TestEBFormRod, "TestEBFormRod", "[CheckRun]") {
   hephaestus::InputParameters params(test_params());
   hephaestus::TimeDomainProblemBuilder *problem_builder =
       new hephaestus::EBDualFormulation(
