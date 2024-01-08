@@ -4,7 +4,6 @@
 #include "curl_aux.hpp"
 #include "helmholtz_projector.hpp"
 #include "l2_error_vector_aux.hpp"
-#include "named_fields_map.hpp"
 #include "scaled_curl_vector_gridfunction_aux.hpp"
 #include "scaled_vector_gridfunction_aux.hpp"
 #include "vector_coefficient_aux.hpp"

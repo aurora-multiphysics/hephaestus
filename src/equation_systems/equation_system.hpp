@@ -1,6 +1,7 @@
 #pragma once
 #include "../common/pfem_extras.hpp"
 #include "inputs.hpp"
+#include "kernel_base.hpp"
 #include "named_fields_map.hpp"
 #include "sources.hpp"
 
