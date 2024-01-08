@@ -12,56 +12,40 @@ public:
   typedef typename MapType::iterator iterator;
   typedef typename MapType::const_iterator const_iterator;
 
-  // Default initializer.
+  /// Default initializer.
   NamedFieldsMap() = default;
 
-  // Destructor.
+  /// Destructor.
   ~NamedFieldsMap() { DeregisterAll(); }
 
-  // Copy constructor. If we are creating a copy then we must NOT retain
-  // ownership over any objects otherwise we will end-up with a double-free
-  // situation.
-  NamedFieldsMap(const NamedFieldsMap &other) {
-    _field_map = other._field_map;
-    _is_owner.clear(); // No ownership since copied. Prevents double-free.
-  }
-
-  // Copy assignment.
-  // 1. destroy anything we have ownership of.
-  // 2. Copy the field map.
-  // 3. Do NOT copy the set to avoid double-freeing.
+  /// Copy assignment.
+  /// 1. Deregister all fields we currently have.
+  /// 2. Perform assignment.
   NamedFieldsMap &operator=(const NamedFieldsMap &other) {
     DeregisterAll();
+
     _field_map = other._field_map;
-    _is_owner.clear(); // No transferrence of ownership. Prevents double-free.
+    _current_owner = other._current_owner;
 
     return *this;
   }
 
-  /// Register field @a field with name @a fname
+  /// Register association between field @a field and name @a fname
   void Register(const std::string &fname, T *field, bool own_data) {
-    // Deregister any existing field with that name and free memory if we have
-    // ownership.
+    // 1. Deregister existing field with that name.
     Deregister(fname);
 
+    // 2. Add to field map.
     _field_map[fname] = field;
 
-    if (own_data) {
-      _is_owner.insert(fname);
-    }
+    // 3. Keep track of ownership.
+    _current_owner[fname] = own_data ? (void *)this : nullptr;
   }
 
   /// Unregister association between field @a field and name @a fname
   void Deregister(const std::string &fname) {
     iterator iter = find(fname);
     Deregister(iter);
-  }
-
-  /// Clear all associations between names and fields
-  void DeregisterAll() {
-    for (iterator iter = begin(); iter != end(); iter++) {
-      Deregister(iter);
-    }
   }
 
   /// Predicate to check if a field is associated with name @a fname
@@ -77,7 +61,7 @@ public:
 
   /// Returns a vector containing all values.
   std::vector<T *> Get(const std::vector<std::string> keys) {
-    std::vector<T *> values(keys.size());
+    std::vector<T *> values;
 
     for (const auto &key : keys) {
       if (Has(key)) {
@@ -122,6 +106,13 @@ public:
   inline int NumFields() const { return GetMap().size(); }
 
 protected:
+  /// Clear all associations between names and fields
+  void DeregisterAll() {
+    for (iterator iter = begin(); iter != end(); iter++) {
+      Deregister(iter);
+    }
+  }
+
   /// Deregister field and delete any owned memory.
   void Deregister(iterator iter) {
     if (iter == end()) // Not found.
@@ -129,31 +120,28 @@ protected:
 
     const auto &field_name = iter->first;
 
-    if (IsDataOwner(field_name)) {
+    if (OwnsPointer(field_name)) {
       delete iter->second;
-      _is_owner.erase(field_name);
+      _current_owner.erase(field_name);
     }
 
-    iter->second = nullptr;
-
-    GetMap().erase(iter);
+    _field_map.erase(field_name);
   }
 
-  /// Returns reference to set.
-  inline std::set<std::string> &GetIsDataOwnerSet() { return _is_owner; };
+  /// Returns true if we are responsible for deleting the pointer.
+  bool OwnsPointer(const std::string &fname) const {
+    auto iter = _current_owner.find(fname);
 
-  /// Returns const-reference to set.
-  inline const std::set<std::string> &GetIsDataOwnerSet() const {
-    return _is_owner;
-  };
+    if (iter == _current_owner.end())
+      return false;
 
-  /// Returns true if owner of the data.
-  inline bool IsDataOwner(const std::string &fname) const {
-    return (GetIsDataOwnerSet().count(fname) > 0);
+    const void *owner_ptr = iter->second;
+
+    return (owner_ptr == (void *)this);
   }
 
 private:
   MapType _field_map{};
-  std::set<std::string> _is_owner{};
+  std::map<std::string, void *> _current_owner{};
 };
 }; // namespace hephaestus
