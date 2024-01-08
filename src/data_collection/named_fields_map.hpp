@@ -16,16 +16,34 @@ public:
   NamedFieldsMap() = default;
 
   // Destructor.
-  ~NamedFieldsMap();
+  ~NamedFieldsMap() { DeleteData(); }
 
   /// Register field @a field with name @a fname
-  void Register(const std::string &fname, T *field, bool own_data);
+  void Register(const std::string &fname, T *field, bool own_data) {
+    T *&ref = _field_map[fname];
+
+    if (own_data) {
+      delete ref; // if newly allocated -> ref is null -> OK
+      GetIsDataOwnerSet().insert(fname);
+    }
+
+    ref = field;
+  }
 
   /// Unregister association between field @a field and name @a fname
-  void Deregister(const std::string &fname);
+  void Deregister(const std::string &fname) {
+    iterator iter = find(fname);
+    Deregister(iter);
+  }
 
   /// Clear all associations between names and fields
-  void DeleteData();
+  void DeleteData() {
+    for (iterator iter = begin(); iter != end(); iter++) {
+      DeleteData(iter);
+    }
+
+    GetMap().clear();
+  }
 
   /// Predicate to check if a field is associated with name @a fname
   inline bool Has(const std::string &fname) const {
@@ -70,6 +88,27 @@ public:
   inline int NumFields() const { return GetMap().size(); }
 
 protected:
+  /// Deregister field and delete any owned memory.
+  void Deregister(iterator iter) {
+    if (iter == end()) // Not found.
+      return;
+
+    DeleteData(iter);
+    GetMap().erase(iter);
+  }
+
+  /// Deletes memory for field.
+  void DeleteData(iterator iter) {
+    const auto &field_name = iter->first;
+
+    if (IsDataOwner(field_name)) {
+      delete iter->second;
+      GetIsDataOwnerSet().erase(field_name);
+    }
+
+    iter->second = nullptr;
+  }
+
   /// Returns reference to set.
   inline std::set<std::string> &GetIsDataOwnerSet() {
     return _is_data_owner_set;
@@ -79,12 +118,6 @@ protected:
   inline const std::set<std::string> &GetIsDataOwnerSet() const {
     return _is_data_owner_set;
   };
-
-  /// Deregister field and delete any owned memory.
-  void Deregister(iterator it);
-
-  /// Deletes memory for field.
-  void DeleteData(iterator iter);
 
   /// Returns true if owner of the data.
   inline bool IsDataOwner(const std::string &fname) const {
