@@ -1,5 +1,4 @@
 #pragma once
-
 #include <map>
 #include <set>
 #include <string>
@@ -17,7 +16,7 @@ public:
   NamedFieldsMap() = default;
 
   // Destructor.
-  virtual ~NamedFieldsMap() { DeleteData(); }
+  ~NamedFieldsMap();
 
   /// Register field @a field with name @a fname
   void Register(const std::string &fname, T *field, bool own_data);

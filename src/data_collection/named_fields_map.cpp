@@ -2,6 +2,8 @@
 
 using namespace hephaestus;
 
+template <typename T> NamedFieldsMap<T>::~NamedFieldsMap<T>() { DeleteData(); }
+
 template <typename T>
 void NamedFieldsMap<T>::Register(const std::string &fname, T *field,
                                  bool own_data) {
