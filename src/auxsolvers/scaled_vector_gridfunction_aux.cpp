@@ -39,7 +39,6 @@ void ScaledVectorGridFunctionAux::Init(
   trial_fes = input_gf->ParFESpace();
   buildBilinearForm();
   buildMixedBilinearForm();
-  mixed_mat = a_mixed->ParallelAssemble();
   a_mat = a->ParallelAssemble();
   solver = new hephaestus::DefaultJacobiPCGSolver(_solver_options, *a_mat);
 }
@@ -70,7 +69,16 @@ void ScaledVectorGridFunctionAux::Solve(double t) {
   mfem::Vector P(trial_fes->GetTrueVSize()); // H(Curl) gridfunction true DOFs
   B = 0.0;
   input_gf->GetTrueDofs(P);
+
+  // Reassemble in case coef has changed
+  a_mixed->Update();
+  a_mixed->Assemble();
+  a_mixed->Finalize();
+  if (mixed_mat != nullptr)
+    delete mixed_mat;
+  mixed_mat = a_mixed->ParallelAssemble();
   mixed_mat->AddMult(P, B, _aConst);
+
   X = 0.0;
   solver->Mult(B, X);
   scaled_gf->SetFromTrueDofs(X);
