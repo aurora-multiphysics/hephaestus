@@ -3,8 +3,7 @@
 namespace hephaestus {
 
 void EquationSystemOperator::SetGridFunctions() {
-  local_test_vars = populateVectorFromNamedFieldsMap<mfem::ParGridFunction>(
-      _gridfunctions, state_var_names);
+  local_test_vars = _gridfunctions.Get(state_var_names);
 
   // Set operator size and block structure
   block_trueOffsets.SetSize(local_test_vars.size() + 1);

@@ -6,20 +6,6 @@
 #include "sources.hpp"
 
 namespace hephaestus {
-template <typename T>
-std::vector<T *>
-populateVectorFromNamedFieldsMap(hephaestus::NamedFieldsMap<T> nfmap,
-                                 std::vector<std::string> keys) {
-  std::vector<T *> result;
-  for (auto &key : keys) {
-    if (nfmap.Has(key)) {
-      result.push_back(nfmap.Get(key));
-    } else {
-      MFEM_ABORT("Key " << key << " not found in NamedFieldsMap");
-    }
-  }
-  return result;
-};
 
 /*
 Class to store weak form components (bilinear and linear forms, and optionally

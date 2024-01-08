@@ -54,7 +54,22 @@ public:
   inline T *Get(const std::string &fname) const {
     const_iterator it = find(fname);
     return it != _field_map.end() ? it->second : nullptr;
-  };
+  }
+
+  /// Returns a vector containing all values.
+  std::vector<T *> Get(const std::vector<std::string> keys) {
+    std::vector<T *> values(keys.size());
+
+    for (const auto &key : keys) {
+      if (Has(key)) {
+        values.push_back(Get(key));
+      } else {
+        MFEM_ABORT("Key " << key << " not found in NamedFieldsMap.");
+      }
+    }
+
+    return values;
+  }
 
   /// Returns reference to field map.
   inline MapType &GetMap() { return _field_map; }
