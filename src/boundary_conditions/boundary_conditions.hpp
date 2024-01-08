@@ -1,6 +1,7 @@
 #pragma once
 #include "essential_bcs.hpp"
 #include "integrated_bcs.hpp"
+#include "named_fields_map.hpp"
 #include "robin_bcs.hpp"
 
 namespace hephaestus {
