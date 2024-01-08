@@ -16,18 +16,39 @@ public:
   NamedFieldsMap() = default;
 
   // Destructor.
-  ~NamedFieldsMap() { DeleteData(); }
+  ~NamedFieldsMap() { DeregisterAll(); }
+
+  // Copy constructor. If we are creating a copy then we must NOT retain
+  // ownership over any objects otherwise we will end-up with a double-free
+  // situation.
+  NamedFieldsMap(const NamedFieldsMap &other) {
+    _field_map = other._field_map;
+    _is_owner.clear(); // No ownership since copied. Prevents double-free.
+  }
+
+  // Copy assignment.
+  // 1. destroy anything we have ownership of.
+  // 2. Copy the field map.
+  // 3. Do NOT copy the set to avoid double-freeing.
+  NamedFieldsMap &operator=(const NamedFieldsMap &other) {
+    DeregisterAll();
+    _field_map = other._field_map;
+    _is_owner.clear(); // No transferrence of ownership. Prevents double-free.
+
+    return *this;
+  }
 
   /// Register field @a field with name @a fname
   void Register(const std::string &fname, T *field, bool own_data) {
-    T *&ref = _field_map[fname];
+    // Deregister any existing field with that name and free memory if we have
+    // ownership.
+    Deregister(fname);
+
+    _field_map[fname] = field;
 
     if (own_data) {
-      delete ref; // if newly allocated -> ref is null -> OK
-      GetIsDataOwnerSet().insert(fname);
+      _is_owner.insert(fname);
     }
-
-    ref = field;
   }
 
   /// Unregister association between field @a field and name @a fname
@@ -37,12 +58,10 @@ public:
   }
 
   /// Clear all associations between names and fields
-  void DeleteData() {
+  void DeregisterAll() {
     for (iterator iter = begin(); iter != end(); iter++) {
-      DeleteData(iter);
+      Deregister(iter);
     }
-
-    GetMap().clear();
   }
 
   /// Predicate to check if a field is associated with name @a fname
@@ -118,20 +137,18 @@ protected:
 
     if (IsDataOwner(field_name)) {
       delete iter->second;
-      GetIsDataOwnerSet().erase(field_name);
+      _is_owner.erase(field_name);
     }
 
     iter->second = nullptr;
   }
 
   /// Returns reference to set.
-  inline std::set<std::string> &GetIsDataOwnerSet() {
-    return _is_data_owner_set;
-  };
+  inline std::set<std::string> &GetIsDataOwnerSet() { return _is_owner; };
 
   /// Returns const-reference to set.
   inline const std::set<std::string> &GetIsDataOwnerSet() const {
-    return _is_data_owner_set;
+    return _is_owner;
   };
 
   /// Returns true if owner of the data.
@@ -141,6 +158,6 @@ protected:
 
 private:
   MapType _field_map{};
-  std::set<std::string> _is_data_owner_set{};
+  std::set<std::string> _is_owner{};
 };
 }; // namespace hephaestus
