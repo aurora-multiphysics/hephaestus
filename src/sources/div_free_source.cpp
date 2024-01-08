@@ -62,7 +62,7 @@ void DivFreeSource::Init(hephaestus::GridFunctions &gridfunctions,
   gridfunctions_ = &gridfunctions;
   fespaces_ = &fespaces;
 
-  this->buildHCurlMass();
+  buildHCurlMass();
 }
 
 void DivFreeSource::buildHCurlMass() {
@@ -103,8 +103,10 @@ void DivFreeSource::Apply(mfem::ParLinearForm *lf) {
     projector_pars.SetParam("H1FESpaceName", h1_fespace_name);
     projector_pars.SetParam("HCurlFESpaceName", hcurl_fespace_name);
 
+    hephaestus::BCMap bcs;
+
     hephaestus::HelmholtzProjector projector(projector_pars);
-    projector.Project(*gridfunctions_, *fespaces_, *bc_map_);
+    projector.Project(*gridfunctions_, *fespaces_, bcs);
   }
 
   // Add divergence free source to target linear form

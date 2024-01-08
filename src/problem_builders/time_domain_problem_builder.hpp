@@ -27,7 +27,7 @@ protected:
   mfem::ConstantCoefficient oneCoef{1.0};
 
   virtual hephaestus::TimeDomainProblem *GetProblem() override {
-    return this->problem.get();
+    return problem.get();
   };
 
 public:
@@ -35,7 +35,7 @@ public:
       : problem(std::make_unique<hephaestus::TimeDomainProblem>()){};
 
   virtual std::unique_ptr<hephaestus::TimeDomainProblem> ReturnProblem() {
-    return std::move(this->problem);
+    return std::move(problem);
   };
 
   static std::vector<mfem::ParGridFunction *>

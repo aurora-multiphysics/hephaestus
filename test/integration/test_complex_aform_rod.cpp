@@ -161,7 +161,6 @@ TEST_CASE_METHOD(TestComplexAFormRod, "TestComplexAFormRod", "[CheckRun]") {
   problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P1"));
   problem_builder->AddGridFunction("magnetic_vector_potential_real", "HCurl");
   problem_builder->AddGridFunction("magnetic_vector_potential_imag", "HCurl");
-  problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P1"));
   problem_builder->SetBoundaryConditions(bc_map);
   problem_builder->SetAuxSolvers(preprocessors);
   problem_builder->SetCoefficients(coefficients);

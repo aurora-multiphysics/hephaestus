@@ -5,7 +5,13 @@
 
 namespace hephaestus {
 
+double highV(const mfem::Vector &x, double t);
+double lowV(const mfem::Vector &x, double t);
+
 double calcFlux(mfem::GridFunction *v_field, int face_attr);
+
+double calcFlux(mfem::GridFunction *v_field, int face_attr,
+                mfem::Coefficient &q);
 
 template <typename T> void ifDelete(T *ptr);
 
@@ -13,10 +19,19 @@ void inheritBdrAttributes(const mfem::ParMesh *parent_mesh,
                           mfem::ParSubMesh *child_mesh);
 
 // Applies the HelmholtzProjector onto the J GridFunction to clean it of any
-// divergences
-void cleanDivergence(hephaestus::GridFunctions *gridfunctions,
-                     std::string J_name, std::string V_name,
-                     hephaestus::BCMap *bc_map);
+// divergences. This is for the simplest case with no BCs
+void cleanDivergence(mfem::ParGridFunction &Vec_GF,
+                     hephaestus::InputParameters solve_pars);
+
+// The more complicated case where BCs are needed
+void cleanDivergence(const hephaestus::GridFunctions &gfs,
+                     const hephaestus::BCMap &bcs,
+                     const std::string vec_gf_name,
+                     const std::string scalar_gf_name,
+                     hephaestus::InputParameters solve_pars);
+
+void attrToMarker(const mfem::Array<int> attr_list,
+                  mfem::Array<int> &marker_list, int max_attr);
 
 class OpenCoilSolver : public hephaestus::Source {
 
@@ -50,6 +65,10 @@ public:
   // Dirichlet BCs.
   void SPSCurrent();
 
+  // Creates a mass matrix with basis functions that will be used in the Apply()
+  // method
+  void buildM1();
+
   // Sets the boundary attribute for the face to be used as reference in flux
   // calculation
   void setRefFace(const int face);
@@ -61,18 +80,23 @@ private:
   int ref_face_;
   std::pair<int, int> elec_attrs_;
   mfem::Array<int> coil_domains_;
-  mfem::ConstantCoefficient coef1_;
+  mfem::Array<int> coil_markers_;
+  mfem::Coefficient *coef1_;
   mfem::Coefficient *Itotal_;
+  hephaestus::InputParameters solver_options_;
 
   // Names
   std::string J_gf_name_;
   std::string V_gf_name_;
   std::string I_coef_name_;
+  std::string cond_coef_name_;
 
   // Parent mesh, FE space, and current
   mfem::ParMesh *mesh_parent_;
   mfem::ParGridFunction *J_parent_;
+  mfem::ParGridFunction *Jt_parent_;
   mfem::ParGridFunction *V_parent_;
+  mfem::ParGridFunction *Vt_parent_;
 
   // Child mesh and FE spaces
   mfem::ParSubMesh *mesh_;
@@ -88,6 +112,15 @@ private:
   mfem::FunctionCoefficient low_src_;
   mfem::Array<int> high_terminal_;
   mfem::Array<int> low_terminal_;
+
+  // Mass Matrix
+  mfem::ParBilinearForm *m1_;
+
+  // BC Map
+  hephaestus::BCMap bc_maps;
+
+  // Final LinearForm
+  mfem::ParLinearForm *final_lf_;
 };
 
 } // namespace hephaestus

@@ -38,8 +38,8 @@ void TimeDomainEquationSystemOperator::SetGridFunctions() {
   }
   true_offsets.PartialSum();
 
-  this->height = true_offsets[local_test_vars.size()];
-  this->width = true_offsets[local_test_vars.size()];
+  height = true_offsets[local_test_vars.size()];
+  width = true_offsets[local_test_vars.size()];
   trueX.Update(block_trueOffsets);
   trueRhs.Update(block_trueOffsets);
 
@@ -76,7 +76,7 @@ void TimeDomainEquationSystemOperator::ImplicitSolve(const double dt,
     local_trial_vars.at(ind)->MakeRef(local_trial_vars.at(ind)->ParFESpace(),
                                       dX_dt, true_offsets[ind]);
   }
-  _coefficients.SetTime(this->GetTime());
+  _coefficients.SetTime(GetTime());
   _equation_system->setTimeStep(dt);
   _equation_system->updateEquationSystem(_bc_map, _sources);
 

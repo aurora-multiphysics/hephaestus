@@ -25,7 +25,7 @@ EFormulation::EFormulation(const std::string &magnetic_reluctivity_name,
       _magnetic_permeability_name(magnetic_permeability_name) {}
 
 void EFormulation::RegisterCoefficients() {
-  hephaestus::Coefficients &coefficients = this->GetProblem()->coefficients;
+  hephaestus::Coefficients &coefficients = GetProblem()->coefficients;
   if (!coefficients.scalars.Has(_magnetic_permeability_name)) {
     MFEM_ABORT(_magnetic_permeability_name + " coefficient not found.");
   }
@@ -43,7 +43,7 @@ void EFormulation::RegisterCoefficients() {
 void EFormulation::registerCurrentDensityAux(const std::string &j_field_name) {
   //* Current density J = Jᵉ + σE
   //* Induced electric field, Jind = σE
-  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  hephaestus::AuxSolvers &auxsolvers = GetProblem()->postprocessors;
   auxsolvers.Register(
       j_field_name,
       new hephaestus::ScaledVectorGridFunctionAux(
@@ -55,7 +55,7 @@ void EFormulation::registerJouleHeatingDensityAux(
     const std::string &p_field_name, const std::string &e_field_name,
     const std::string &conductivity_coef_name) {
   //* Joule heating density = E.J
-  hephaestus::AuxSolvers &auxsolvers = this->GetProblem()->postprocessors;
+  hephaestus::AuxSolvers &auxsolvers = GetProblem()->postprocessors;
   auxsolvers.Register(p_field_name,
                       new hephaestus::VectorGridFunctionDotProductAux(
                           p_field_name, p_field_name,
