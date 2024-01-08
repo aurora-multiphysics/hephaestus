@@ -1,12 +1,13 @@
 #pragma once
-#include "div_free_source.hpp"
-#include "scalar_potential_source.hpp"
 #include "closed_coil.hpp"
+#include "div_free_source.hpp"
+#include "named_fields_map.hpp"
 #include "open_coil.hpp"
+#include "scalar_potential_source.hpp"
 
 namespace hephaestus {
 
-class Sources : public mfem::NamedFieldsMap<hephaestus::Source> {
+class Sources : public hephaestus::NamedFieldsMap<hephaestus::Source> {
 public:
   void Init(hephaestus::GridFunctions &gridfunctions,
             const hephaestus::FESpaces &fespaces, hephaestus::BCMap &bc_map,

@@ -1,5 +1,6 @@
 #pragma once
 #include "auxsolvers.hpp"
+#include "coefficient_aux.hpp"
 
 // Specify postprocessors that depend on one or more gridfunctions
 namespace hephaestus {

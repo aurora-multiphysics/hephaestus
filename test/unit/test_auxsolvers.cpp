@@ -1,3 +1,4 @@
+#include "auxsolver_base.hpp"
 #include "auxsolvers.hpp"
 #include "gridfunctions.hpp"
 #include <gtest/gtest.h>

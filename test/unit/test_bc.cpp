@@ -1,3 +1,4 @@
+#include "boundary_condition_base.hpp"
 #include "boundary_conditions.hpp"
 #include <gtest/gtest.h>
 
