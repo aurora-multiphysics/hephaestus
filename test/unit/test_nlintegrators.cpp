@@ -1,5 +1,5 @@
 #include "coefficients.hpp"
-#include <gtest/gtest.h>
+#include <catch2/catch_test_macros.hpp>
 
 extern const char *DATA_DIR;
 
@@ -157,7 +157,7 @@ public:
   virtual ~NonlinearOperator() { delete Jacobian; };
 };
 
-TEST(NonlinearIntegratorTest, CheckData) {
+TEST_CASE("NonlinearIntegratorTest", "[CheckData]") {
   mfem::Mesh mesh((std::string(DATA_DIR) + "cylinder-hex-q2.gen").c_str(), 1,
                   1);
   std::shared_ptr<mfem::ParMesh> pmesh =
@@ -231,5 +231,4 @@ TEST(NonlinearIntegratorTest, CheckData) {
   std::cout << "Finished on rank:" << _my_rank << std::endl;
   x.Distribute(X);
 
-  // EXPECT_LT(x.Norml2(), 1.e-12);
 }
