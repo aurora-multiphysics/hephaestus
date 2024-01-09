@@ -18,18 +18,6 @@ public:
   /// Destructor.
   ~NamedFieldsMap() { DeregisterAll(); }
 
-  /// Copy assignment.
-  /// 1. Deregister all fields we currently have.
-  /// 2. Perform assignment.
-  NamedFieldsMap &operator=(const NamedFieldsMap &other) {
-    DeregisterAll();
-
-    _field_map = other._field_map;
-    _current_owner = other._current_owner;
-
-    return *this;
-  }
-
   /// Register association between field @a field and name @a fname
   void Register(const std::string &fname, T *field, bool own_data) {
     // 1. Deregister existing field with that name.
@@ -39,7 +27,9 @@ public:
     _field_map[fname] = field;
 
     // 3. Keep track of ownership.
-    _current_owner[fname] = own_data ? (void *)this : nullptr;
+    if (own_data) {
+      _owned_ptrs_map.emplace(fname, std::shared_ptr<T>(field));
+    }
   }
 
   /// Unregister association between field @a field and name @a fname
@@ -120,9 +110,10 @@ protected:
 
     const auto &field_name = iter->first;
 
+    std::cout << " Now deregistering " << field_name << std::endl;
+
     if (OwnsPointer(field_name)) {
-      delete iter->second;
-      _current_owner.erase(field_name);
+      _owned_ptrs_map.erase(field_name);
     }
 
     _field_map.erase(field_name);
@@ -130,18 +121,13 @@ protected:
 
   /// Returns true if we are responsible for deleting the pointer.
   bool OwnsPointer(const std::string &fname) const {
-    auto iter = _current_owner.find(fname);
+    auto iter = _owned_ptrs_map.find(fname);
 
-    if (iter == _current_owner.end())
-      return false;
-
-    const void *owner_ptr = iter->second;
-
-    return (owner_ptr == (void *)this);
+    return (iter != _owned_ptrs_map.end());
   }
 
 private:
   MapType _field_map{};
-  std::map<std::string, void *> _current_owner{};
+  std::map<std::string, std::shared_ptr<T>> _owned_ptrs_map{};
 };
 }; // namespace hephaestus
