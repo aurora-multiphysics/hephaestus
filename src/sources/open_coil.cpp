@@ -26,7 +26,7 @@ double calcFlux(mfem::GridFunction *v_field, int face_attr,
       continue;
 
     mfem::FaceElementTransformations *FTr =
-        mesh->GetFaceElementTransformations(mesh->GetBdrFace(i));
+        mesh->GetFaceElementTransformations(mesh->GetBdrElementFaceIndex(i));
     if (FTr == nullptr)
       continue;
 
