@@ -1,7 +1,8 @@
 #pragma once
 #include "frequency_domain_em_formulation.hpp"
 
-namespace hephaestus {
+namespace hephaestus
+{
 /*
 Operator for solving:
 ∇×(α∇×u) + iωβu - ω²γu = g
@@ -24,37 +25,39 @@ Robin boundaries weakly constrain (α∇×u)×n + γ(n×n×u) = F
 Divergence cleaning (such as via Helmholtz projection)
 should be performed on g before use in this operator.
 */
-class ComplexMaxwellOperator : public EquationSystemOperator {
+class ComplexMaxwellOperator : public EquationSystemOperator
+{
 public:
-  ComplexMaxwellOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
-                         hephaestus::GridFunctions &gridfunctions,
-                         hephaestus::BCMap &bc_map,
-                         hephaestus::Coefficients &coefficients,
-                         hephaestus::Sources &sources,
-                         hephaestus::InputParameters &solver_options);
+  ComplexMaxwellOperator(mfem::ParMesh & pmesh,
+                         hephaestus::FESpaces & fespaces,
+                         hephaestus::GridFunctions & gridfunctions,
+                         hephaestus::BCMap & bc_map,
+                         hephaestus::Coefficients & coefficients,
+                         hephaestus::Sources & sources,
+                         hephaestus::InputParameters & solver_options);
 
   ~ComplexMaxwellOperator(){};
 
   virtual void SetGridFunctions() override;
-  virtual void Init(mfem::Vector &X) override;
-  virtual void Solve(mfem::Vector &X) override;
+  virtual void Init(mfem::Vector & X) override;
+  virtual void Solve(mfem::Vector & X) override;
 
-  std::string h_curl_var_complex_name, h_curl_var_real_name,
-      h_curl_var_imag_name, stiffness_coef_name, mass_coef_name, loss_coef_name;
-  mfem::ParComplexGridFunction *u_;
+  std::string h_curl_var_complex_name, h_curl_var_real_name, h_curl_var_imag_name,
+      stiffness_coef_name, mass_coef_name, loss_coef_name;
+  mfem::ParComplexGridFunction * u_;
   mfem::ComplexOperator::Convention conv_ = mfem::ComplexOperator::HERMITIAN;
 
-  mfem::Coefficient *stiffCoef_; // Dia/Paramagnetic Material Coefficient
-  mfem::Coefficient *massCoef_;  // -omega^2 epsilon
-  mfem::Coefficient *lossCoef_;  // omega sigma
+  mfem::Coefficient * stiffCoef_; // Dia/Paramagnetic Material Coefficient
+  mfem::Coefficient * massCoef_;  // -omega^2 epsilon
+  mfem::Coefficient * lossCoef_;  // omega sigma
 
   mfem::Array<int> ess_bdr_tdofs_;
 };
 
 //
 // Specifies output interfaces of a time-domain EM formulation.
-class ComplexMaxwellFormulation
-    : public hephaestus::FrequencyDomainEMFormulation {
+class ComplexMaxwellFormulation : public hephaestus::FrequencyDomainEMFormulation
+{
   // std::vector<mfem::ParGridFunction *> local_trial_vars, local_test_vars;
 protected:
   const std::string _alpha_coef_name;
@@ -68,13 +71,13 @@ protected:
   const std::string _loss_coef_name;
 
 public:
-  ComplexMaxwellFormulation(const std::string &frequency_coef_name,
-                            const std::string &alpha_coef_name,
-                            const std::string &beta_coef_name,
-                            const std::string &zeta_coef_name,
-                            const std::string &h_curl_var_complex_name,
-                            const std::string &h_curl_var_real_name,
-                            const std::string &h_curl_var_imag_name);
+  ComplexMaxwellFormulation(const std::string & frequency_coef_name,
+                            const std::string & alpha_coef_name,
+                            const std::string & beta_coef_name,
+                            const std::string & zeta_coef_name,
+                            const std::string & h_curl_var_complex_name,
+                            const std::string & h_curl_var_real_name,
+                            const std::string & h_curl_var_imag_name);
 
   virtual void ConstructOperator() override;
 
