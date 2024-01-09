@@ -1,9 +1,10 @@
 #include "inputs.hpp"
 #include <catch2/catch_test_macros.hpp>
 
-extern const char *DATA_DIR;
+extern const char * DATA_DIR;
 
-TEST_CASE("InputParametersTest", "[CheckData]") {
+TEST_CASE("InputParametersTest", "[CheckData]")
+{
   hephaestus::InputParameters params;
   int example_int = 5;
   params.SetParam("IntegerParam", example_int);
@@ -18,8 +19,7 @@ TEST_CASE("InputParametersTest", "[CheckData]") {
 
   REQUIRE(params.GetParam<std::string>("StringParam") == example_string);
 
-  mfem::Array<int> stored_array =
-      params.GetParam<mfem::Array<int>>("ArrayParam");
+  mfem::Array<int> stored_array = params.GetParam<mfem::Array<int>>("ArrayParam");
 
   for (int i = 0; i < example_array.Size(); ++i)
     REQUIRE(example_array[i] == stored_array[i]);
