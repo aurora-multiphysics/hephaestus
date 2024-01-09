@@ -324,12 +324,12 @@ void OpenCoilSolver::SPSCurrent() {
                    true);
 
   hephaestus::FESpaces fespaces;
-  fespaces.Register(std::string("HCurl"), HCurlFESpace_, true);
-  fespaces.Register(std::string("H1"), H1FESpace_, true);
+  fespaces.Register(std::string("HCurl"), HCurlFESpace_, false);
+  fespaces.Register(std::string("H1"), H1FESpace_, false);
 
   hephaestus::GridFunctions gridfunctions;
-  gridfunctions.Register(std::string("source"), J_, true);
-  gridfunctions.Register(std::string("V"), V_, true);
+  gridfunctions.Register(std::string("source"), J_, false);
+  gridfunctions.Register(std::string("V"), V_, false);
 
   hephaestus::InputParameters sps_params;
   sps_params.SetParam("SourceName", std::string("source"));
