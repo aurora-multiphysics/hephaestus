@@ -4,15 +4,18 @@
 #include "closed_coil.hpp"
 #include "open_coil.hpp"
 
-namespace hephaestus {
+namespace hephaestus
+{
 
-class Sources : public mfem::NamedFieldsMap<hephaestus::Source> {
+class Sources : public mfem::NamedFieldsMap<hephaestus::Source>
+{
 public:
-  void Init(hephaestus::GridFunctions &gridfunctions,
-            const hephaestus::FESpaces &fespaces, hephaestus::BCMap &bc_map,
-            hephaestus::Coefficients &coefficients);
-  void Apply(mfem::ParLinearForm *lf);
-  void SubtractSources(mfem::ParGridFunction *gf);
+  void Init(hephaestus::GridFunctions & gridfunctions,
+            const hephaestus::FESpaces & fespaces,
+            hephaestus::BCMap & bc_map,
+            hephaestus::Coefficients & coefficients);
+  void Apply(mfem::ParLinearForm * lf);
+  void SubtractSources(mfem::ParGridFunction * gf);
 };
 
 }; // namespace hephaestus
