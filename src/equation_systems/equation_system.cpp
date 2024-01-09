@@ -363,6 +363,8 @@ void TimeDependentEquationSystem::setTimeStep(double dt) {
 void TimeDependentEquationSystem::updateEquationSystem(
     hephaestus::BCMap &bc_map, hephaestus::Sources &sources) {
   buildLinearForms(bc_map, sources);
+  buildBilinearForms();
+  buildMixedBilinearForms();
 };
 
 } // namespace hephaestus

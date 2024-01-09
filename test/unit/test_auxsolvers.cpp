@@ -1,7 +1,7 @@
 #include "auxsolver_base.hpp"
 #include "auxsolvers.hpp"
 #include "gridfunctions.hpp"
-#include <gtest/gtest.h>
+#include <catch2/catch_test_macros.hpp>
 
 extern const char *DATA_DIR;
 
@@ -21,7 +21,7 @@ public:
   std::string &string_modified;
 };
 
-TEST(AuxSolverTest, CheckQueue) {
+TEST_CASE("AuxSolverTest", "[CheckQueue]") {
   std::string string_base("");
   std::string string_arg1("The order");
   std::string string_arg2(" should");
@@ -55,9 +55,7 @@ TEST(AuxSolverTest, CheckQueue) {
   auxsolvers.Init(gridfunctions, coefficients);
   auxsolvers.Solve();
 
-  EXPECT_EQ(std::string("The order should be correct!!"), string_base);
+  REQUIRE( string_base == "The order should be correct!!" );
   auxsolvers.Solve();
-  EXPECT_EQ(
-      std::string("The order should be correct!!The order should be correct!!"),
-      string_base);
+  REQUIRE( string_base == "The order should be correct!!The order should be correct!!" );
 }

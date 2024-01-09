@@ -1,10 +1,10 @@
 // Based on an H form MMS test provided by Joseph Dean
 #include "hephaestus.hpp"
-#include <gtest/gtest.h>
+#include <catch2/catch_test_macros.hpp>
 
 extern const char *DATA_DIR;
 
-class TestAFormSource : public testing::Test {
+class TestAFormSource{
 protected:
   static double estimate_convergence_rate(HYPRE_BigInt n_i, HYPRE_BigInt n_imo,
                                           double error_i, double error_imo,
@@ -133,7 +133,7 @@ protected:
   }
 };
 
-TEST_F(TestAFormSource, CheckRun) {
+TEST_CASE_METHOD(TestAFormSource, "TestAForm", "[CheckRun]") {
   hephaestus::InputParameters params(test_params());
   mfem::ParMesh unrefined_pmesh(params.GetParam<mfem::ParMesh>("Mesh"));
 
@@ -211,7 +211,7 @@ TEST_F(TestAFormSource, CheckRun) {
         l2errpostprocessor.ndofs[i], l2errpostprocessor.ndofs[i - 1],
         l2errpostprocessor.l2_errs[i], l2errpostprocessor.l2_errs[i - 1], 3);
     std::cout << r << std::endl;
-    ASSERT_TRUE(r > 2 - 0.15);
-    ASSERT_TRUE(r < 2 + 1.0);
+    REQUIRE(r > 2 - 0.15);
+    REQUIRE(r < 2 + 1.0);
   }
 }
