@@ -8,9 +8,11 @@
 #include <iostream>
 #include <memory>
 
-namespace hephaestus {
+namespace hephaestus
+{
 
-class Problem {
+class Problem
+{
 public:
   std::shared_ptr<mfem::ParMesh> pmesh;
   hephaestus::BCMap bc_map;
@@ -21,8 +23,8 @@ public:
   hephaestus::Outputs outputs;
   hephaestus::InputParameters solver_options;
 
-  mfem::ODESolver *ode_solver;
-  mfem::BlockVector *F;
+  mfem::ODESolver * ode_solver;
+  mfem::BlockVector * F;
 
   hephaestus::FECollections fecs;
   hephaestus::FESpaces fespaces;
@@ -32,44 +34,44 @@ public:
 
   Problem() = default;
 
-  virtual hephaestus::EquationSystem *GetEquationSystem() = 0;
-  virtual mfem::Operator *GetOperator() = 0;
+  virtual hephaestus::EquationSystem * GetEquationSystem() = 0;
+  virtual mfem::Operator * GetOperator() = 0;
 };
 
-class ProblemBuilder {
+class ProblemBuilder
+{
 private:
-  virtual hephaestus::Problem *GetProblem() = 0;
+  virtual hephaestus::Problem * GetProblem() = 0;
 
 public:
   ProblemBuilder(){};
 
   void SetMesh(std::shared_ptr<mfem::ParMesh> pmesh);
-  void SetFESpaces(hephaestus::FESpaces &fespaces);
-  void SetGridFunctions(hephaestus::GridFunctions &gridfunctions);
-  void SetBoundaryConditions(hephaestus::BCMap &bc_map);
-  void SetAuxSolvers(hephaestus::AuxSolvers &preprocessors);
-  void SetPostprocessors(hephaestus::AuxSolvers &postprocessors);
-  void SetSources(hephaestus::Sources &sources);
-  void SetOutputs(hephaestus::Outputs &outputs);
-  void SetSolverOptions(hephaestus::InputParameters &solver_options);
-  void SetCoefficients(hephaestus::Coefficients &coefficients);
+  void SetFESpaces(hephaestus::FESpaces & fespaces);
+  void SetGridFunctions(hephaestus::GridFunctions & gridfunctions);
+  void SetBoundaryConditions(hephaestus::BCMap & bc_map);
+  void SetAuxSolvers(hephaestus::AuxSolvers & preprocessors);
+  void SetPostprocessors(hephaestus::AuxSolvers & postprocessors);
+  void SetSources(hephaestus::Sources & sources);
+  void SetOutputs(hephaestus::Outputs & outputs);
+  void SetSolverOptions(hephaestus::InputParameters & solver_options);
+  void SetCoefficients(hephaestus::Coefficients & coefficients);
 
-  void AddFESpace(std::string fespace_name, std::string fec_name, int vdim = 1,
+  void AddFESpace(std::string fespace_name,
+                  std::string fec_name,
+                  int vdim = 1,
                   int ordering = mfem::Ordering::byNODES);
   void AddGridFunction(std::string gridfunction_name, std::string fespace_name);
   template <class T>
-  void AddKernel(std::string var_name, hephaestus::Kernel<T> *kernel) {
+  void AddKernel(std::string var_name, hephaestus::Kernel<T> * kernel)
+  {
     GetProblem()->GetEquationSystem()->addVariableNameIfMissing(var_name);
     GetProblem()->GetEquationSystem()->addKernel(var_name, kernel);
   };
-  void AddBoundaryCondition(std::string bc_name,
-                            hephaestus::BoundaryCondition *bc, bool own_data);
-  void AddAuxSolver(std::string auxsolver_name, hephaestus::AuxSolver *aux,
-                    bool own_data);
-  void AddPostprocessor(std::string auxsolver_name, hephaestus::AuxSolver *aux,
-                        bool own_data);
-  void AddSource(std::string source_name, hephaestus::Source *source,
-                 bool own_data);
+  void AddBoundaryCondition(std::string bc_name, hephaestus::BoundaryCondition * bc, bool own_data);
+  void AddAuxSolver(std::string auxsolver_name, hephaestus::AuxSolver * aux, bool own_data);
+  void AddPostprocessor(std::string auxsolver_name, hephaestus::AuxSolver * aux, bool own_data);
+  void AddSource(std::string source_name, hephaestus::Source * source, bool own_data);
 
   virtual void RegisterFESpaces() = 0;
   virtual void RegisterGridFunctions() = 0;
@@ -86,7 +88,8 @@ public:
   void InitializeOutputs();
 };
 
-class ProblemBuildSequencer {
+class ProblemBuildSequencer
+{
   /**
    * @var Builder
    */
@@ -99,14 +102,17 @@ private:
    */
 
 public:
-  ProblemBuildSequencer(hephaestus::ProblemBuilder *problem_builder_)
-      : problem_builder(problem_builder_) {}
+  ProblemBuildSequencer(hephaestus::ProblemBuilder * problem_builder_)
+    : problem_builder(problem_builder_)
+  {
+  }
 
   /**
    * The ProblemBuildSequencer can construct variations of Problems using the
    * same building steps.
    */
-  void ConstructOperatorProblem() {
+  void ConstructOperatorProblem()
+  {
     // SteadyStateProblem
     problem_builder->RegisterFESpaces();
     problem_builder->RegisterGridFunctions();
@@ -118,7 +124,8 @@ public:
     problem_builder->InitializeAuxSolvers();
     problem_builder->InitializeOutputs();
   }
-  void ConstructEquationSystemProblem() {
+  void ConstructEquationSystemProblem()
+  {
     problem_builder->RegisterFESpaces();
     problem_builder->RegisterGridFunctions();
     problem_builder->RegisterAuxSolvers();
