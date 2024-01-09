@@ -18,49 +18,49 @@ public:
   /// Destructor.
   ~NamedFieldsMap() { DeregisterAll(); }
 
-  /// Register association between field @a field and name @a fname
-  void Register(const std::string &fname, T *field, bool own_data) {
+  /// Register association between field @a field and name @a field_name
+  void Register(const std::string &field_name, T *field, bool own_data) {
     // 1. Deregister existing field with that name.
-    Deregister(fname);
+    Deregister(field_name);
 
     // 2. Add to field map.
-    _field_map[fname] = field;
+    _field_map[field_name] = field;
 
     // 3. Keep track of ownership.
     if (own_data) {
-      _owned_ptrs_map.emplace(fname, std::shared_ptr<T>(field));
+      _owned_ptrs_map.emplace(field_name, std::shared_ptr<T>(field));
     }
   }
 
-  /// Unregister association between field @a field and name @a fname
-  void Deregister(const std::string &fname) {
-    iterator iter = find(fname);
-    Deregister(iter);
+  /// Unregister association between field @a field and name @a field_name.
+  void Deregister(const std::string &field_name) {
+    _field_map.erase(field_name);
+    _owned_ptrs_map.erase(field_name);
   }
 
-  /// Predicate to check if a field is associated with name @a fname
-  inline bool Has(const std::string &fname) const {
-    return find(fname) != end();
+  /// Predicate to check if a field is associated with name @a field_name.
+  inline bool Has(const std::string &field_name) const {
+    return find(field_name) != end();
   }
 
-  /// Get a pointer to the field associated with name @a fname
-  inline T *Get(const std::string &fname) const {
-    const_iterator it = find(fname);
+  /// Get a pointer to the field associated with name @a field_name.
+  inline T *Get(const std::string &field_name) const {
+    const_iterator it = find(field_name);
     return it != _field_map.end() ? it->second : nullptr;
   }
 
-  /// Returns a vector containing all values.
+  /// Returns a vector containing all values for supplied keys.
   std::vector<T *> Get(const std::vector<std::string> keys) {
     std::vector<T *> values;
 
     for (const auto &key : keys) {
-      if (Has(key)) {
+      if (Has(key))
         values.push_back(Get(key));
-      } else {
+      else
         MFEM_ABORT("Key " << key << " not found in NamedFieldsMap.");
-      }
     }
 
+    values.shrink_to_fit();
     return values;
   }
 
@@ -71,58 +71,35 @@ public:
   inline const MapType &GetMap() const { return _field_map; }
 
   /// Returns a begin iterator to the registered fields.
-  inline iterator begin() { return GetMap().begin(); }
+  inline iterator begin() { return _field_map.begin(); }
 
   /// Returns a begin const iterator to the registered fields.
-  inline const_iterator begin() const { return GetMap().begin(); }
+  inline const_iterator begin() const { return _field_map.begin(); }
 
   /// Returns an end iterator to the registered fields.
-  inline iterator end() { return GetMap().end(); }
+  inline iterator end() { return _field_map.end(); }
 
   /// Returns an end const iterator to the registered fields.
-  inline const_iterator end() const { return GetMap().end(); }
+  inline const_iterator end() const { return _field_map.end(); }
 
-  /// Returns an iterator to the field @a fname
-  inline iterator find(const std::string &fname) {
-    return GetMap().find(fname);
+  /// Returns an iterator to the field @a field_name.
+  inline iterator find(const std::string &field_name) {
+    return _field_map.find(field_name);
   }
 
-  /// Returns a const iterator to the field @a fname
-  inline const_iterator find(const std::string &fname) const {
-    return GetMap().find(fname);
+  /// Returns a const iterator to the field @a field_name.
+  inline const_iterator find(const std::string &field_name) const {
+    return _field_map.find(field_name);
   }
 
-  /// Returns the number of registered fields
-  inline int NumFields() const { return GetMap().size(); }
+  /// Returns the number of registered fields.
+  inline int NumFields() const { return _field_map.size(); }
 
 protected:
-  /// Clear all associations between names and fields
+  /// Clear all associations between names and fields.
   void DeregisterAll() {
     _field_map.clear();
     _owned_ptrs_map.clear();
-  }
-
-  /// Deregister field and delete any owned memory.
-  void Deregister(iterator iter) {
-    if (iter == end()) // Not found.
-      return;
-
-    const auto &field_name = iter->first;
-
-    std::cout << " Now deregistering " << field_name << std::endl;
-
-    if (OwnsPointer(field_name)) {
-      _owned_ptrs_map.erase(field_name);
-    }
-
-    _field_map.erase(field_name);
-  }
-
-  /// Returns true if we are responsible for deleting the pointer.
-  bool OwnsPointer(const std::string &fname) const {
-    auto iter = _owned_ptrs_map.find(fname);
-
-    return (iter != _owned_ptrs_map.end());
   }
 
 private:
