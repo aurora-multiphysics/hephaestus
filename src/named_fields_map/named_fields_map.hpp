@@ -98,9 +98,8 @@ public:
 protected:
   /// Clear all associations between names and fields
   void DeregisterAll() {
-    for (iterator iter = begin(); iter != end(); iter++) {
-      Deregister(iter);
-    }
+    _field_map.clear();
+    _owned_ptrs_map.clear();
   }
 
   /// Deregister field and delete any owned memory.
