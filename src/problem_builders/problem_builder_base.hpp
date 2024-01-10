@@ -24,8 +24,8 @@ public:
   hephaestus::Outputs outputs;
   hephaestus::InputParameters solver_options;
 
-  std::unique_ptr<mfem::ODESolver> ode_solver = nullptr;
-  std::unique_ptr<mfem::BlockVector> F = nullptr;
+  std::unique_ptr<mfem::ODESolver> ode_solver{nullptr};
+  std::unique_ptr<mfem::BlockVector> F{nullptr};
 
   hephaestus::FECollections fecs;
   hephaestus::FESpaces fespaces;

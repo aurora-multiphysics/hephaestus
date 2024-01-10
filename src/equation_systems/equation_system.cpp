@@ -6,21 +6,7 @@ EquationSystem::EquationSystem(const hephaestus::InputParameters &params)
     : var_names(), test_var_names(), test_pfespaces(), blfs(), lfs(), nlfs(),
       mblfs(), ess_tdof_lists(), xs() {}
 
-EquationSystem::~EquationSystem() {
-  hBlocks.DeleteAll();
-  // blfs.DeleteData(true);
-  // lfs.DeleteData(true);
-
-  // for (const auto &[test_var_name, blf_kernels] : blf_kernels_map.GetMap()) {
-  //   blf_kernels->DeleteAll();
-  // }
-  // blf_kernels_map.DeleteData(true);
-
-  // for (const auto &[test_var_name, lf_kernels] : lf_kernels_map.GetMap()) {
-  //   lf_kernels->DeleteAll();
-  // }
-  // lf_kernels_map.DeleteData(true);
-}
+EquationSystem::~EquationSystem() { hBlocks.DeleteAll(); }
 
 void EquationSystem::addVariableNameIfMissing(std::string var_name) {
   if (std::find(var_names.begin(), var_names.end(), var_name) ==

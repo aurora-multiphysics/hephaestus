@@ -1,4 +1,3 @@
-#include "auxsolver_base.hpp"
 #include "auxsolvers.hpp"
 #include "gridfunctions.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -55,7 +54,8 @@ TEST_CASE("AuxSolverTest", "[CheckQueue]") {
   auxsolvers.Init(gridfunctions, coefficients);
   auxsolvers.Solve();
 
-  REQUIRE( string_base == "The order should be correct!!" );
+  REQUIRE(string_base == "The order should be correct!!");
   auxsolvers.Solve();
-  REQUIRE( string_base == "The order should be correct!!The order should be correct!!" );
+  REQUIRE(string_base ==
+          "The order should be correct!!The order should be correct!!");
 }

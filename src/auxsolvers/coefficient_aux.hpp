@@ -1,6 +1,5 @@
 #pragma once
 #include "auxsolver_base.hpp"
-#include "mfem.hpp"
 
 namespace hephaestus {
 

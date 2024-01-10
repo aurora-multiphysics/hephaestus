@@ -28,14 +28,14 @@ public:
 
     // 3. Keep track of ownership.
     if (own_data) {
-      _owned_ptrs_map.emplace(field_name, std::shared_ptr<T>(field));
+      _stored_ptrs_map.emplace(field_name, std::shared_ptr<T>(field));
     }
   }
 
   /// Unregister association between field @a field and name @a field_name.
   void Deregister(const std::string &field_name) {
     _field_map.erase(field_name);
-    _owned_ptrs_map.erase(field_name);
+    _stored_ptrs_map.erase(field_name);
   }
 
   /// Predicate to check if a field is associated with name @a field_name.
@@ -99,11 +99,11 @@ protected:
   /// Clear all associations between names and fields.
   void DeregisterAll() {
     _field_map.clear();
-    _owned_ptrs_map.clear();
+    _stored_ptrs_map.clear();
   }
 
 private:
   MapType _field_map{};
-  std::map<std::string, std::shared_ptr<T>> _owned_ptrs_map{};
+  std::map<std::string, std::shared_ptr<T>> _stored_ptrs_map{};
 };
 }; // namespace hephaestus
