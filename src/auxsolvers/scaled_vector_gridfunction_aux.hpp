@@ -26,8 +26,8 @@ protected:
   mfem::ParFiniteElementSpace *test_fes;
 
   // Bilinear forms
-  mfem::ParBilinearForm *a;
-  mfem::ParMixedBilinearForm *a_mixed;
+  std::unique_ptr<mfem::ParBilinearForm> a{nullptr};
+  std::unique_ptr<mfem::ParMixedBilinearForm> a_mixed{nullptr};
 
   // Coefficient to scale input gridfunction by
   mfem::Coefficient *coef;
@@ -47,10 +47,10 @@ private:
   mfem::ParGridFunction *scaled_gf;
 
   // Operator matrices
-  mfem::HypreParMatrix *a_mat;
-  mfem::HypreParMatrix *mixed_mat;
+  std::unique_ptr<mfem::HypreParMatrix> a_mat{nullptr};
+  std::unique_ptr<mfem::HypreParMatrix> mixed_mat{nullptr};
 
   // Solver
-  hephaestus::DefaultJacobiPCGSolver *solver;
+  std::unique_ptr<hephaestus::DefaultJacobiPCGSolver> solver{nullptr};
 };
 } // namespace hephaestus

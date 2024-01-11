@@ -39,25 +39,21 @@ void ScaledVectorGridFunctionAux::Init(
   trial_fes = input_gf->ParFESpace();
   buildBilinearForm();
   buildMixedBilinearForm();
-  a_mat = a->ParallelAssemble();
-  solver = new hephaestus::DefaultJacobiPCGSolver(_solver_options, *a_mat);
+  a_mat = std::unique_ptr<mfem::HypreParMatrix>(a->ParallelAssemble());
+
+  solver = std::make_unique<hephaestus::DefaultJacobiPCGSolver>(_solver_options,
+                                                                *a_mat);
 }
 
 void ScaledVectorGridFunctionAux::buildBilinearForm() {
-  if (a != nullptr) {
-    delete a;
-  }
-  a = new mfem::ParBilinearForm(test_fes);
+  a = std::make_unique<mfem::ParBilinearForm>(test_fes);
   a->AddDomainIntegrator(new mfem::VectorFEMassIntegrator());
   a->Assemble();
   a->Finalize();
 }
 
 void ScaledVectorGridFunctionAux::buildMixedBilinearForm() {
-  if (a_mixed != nullptr) {
-    delete a_mixed;
-  }
-  a_mixed = new mfem::ParMixedBilinearForm(trial_fes, test_fes);
+  a_mixed = std::make_unique<mfem::ParMixedBilinearForm>(trial_fes, test_fes);
   a_mixed->AddDomainIntegrator(new mfem::MixedVectorMassIntegrator(*coef));
   a_mixed->Assemble();
   a_mixed->Finalize();
@@ -74,9 +70,9 @@ void ScaledVectorGridFunctionAux::Solve(double t) {
   a_mixed->Update();
   a_mixed->Assemble();
   a_mixed->Finalize();
-  if (mixed_mat != nullptr)
-    delete mixed_mat;
-  mixed_mat = a_mixed->ParallelAssemble();
+
+  mixed_mat =
+      std::unique_ptr<mfem::HypreParMatrix>(a_mixed->ParallelAssemble());
   mixed_mat->AddMult(P, B, _aConst);
 
   X = 0.0;
@@ -84,17 +80,6 @@ void ScaledVectorGridFunctionAux::Solve(double t) {
   scaled_gf->SetFromTrueDofs(X);
 }
 
-ScaledVectorGridFunctionAux::~ScaledVectorGridFunctionAux() {
-  if (a != nullptr)
-    delete a;
-  if (a_mixed != nullptr)
-    delete a_mixed;
-  if (mixed_mat != nullptr)
-    delete mixed_mat;
-  if (a_mat != nullptr)
-    delete a_mat;
-  if (solver != nullptr)
-    delete solver;
-}
+ScaledVectorGridFunctionAux::~ScaledVectorGridFunctionAux() {}
 
 } // namespace hephaestus
