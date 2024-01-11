@@ -62,9 +62,11 @@ private:
   mfem::Array<int> coil_markers_;
   mfem::Array<int> transition_domain_;
   mfem::Array<int> transition_markers_;
-  mfem::Coefficient *Itotal_;
   std::vector<int> old_dom_attrs;
   hephaestus::InputParameters solver_options_;
+
+  mfem::Coefficient *Itotal_{nullptr};
+  bool owns_Itotal_{false};
 
   // Seting J_transfer_ to true will negatively affect performance, but
   // the resulting source current will be correct for visualisation purposes.
@@ -78,31 +80,36 @@ private:
   std::string I_coef_name_;
 
   // Parent mesh, FE space, and current
-  mfem::ParMesh *mesh_parent_;
-  mfem::ParGridFunction *J_parent_;
-  mfem::ParFiniteElementSpace *HCurlFESpace_parent_;
-  mfem::ParFiniteElementSpace *H1FESpace_parent_;
+  mfem::ParMesh *mesh_parent_{nullptr};
+  mfem::ParGridFunction *J_parent_{nullptr};
+  mfem::ParFiniteElementSpace *HCurlFESpace_parent_{nullptr};
+  mfem::ParFiniteElementSpace *H1FESpace_parent_{nullptr};
+
+  // H1 Finite-Element Collection. We need to retain ownership.
+  std::unique_ptr<mfem::H1_FECollection> H1FESpace_parent_fec_{nullptr};
+  std::unique_ptr<mfem::H1_FECollection> H1FESpace_coil_fec_{nullptr};
+  std::unique_ptr<mfem::ND_FECollection> Jaux_coil_fec_{nullptr};
+  std::unique_ptr<mfem::ND_FECollection> Jaux_t_fec_{nullptr};
 
   // In case J transfer is true
-  mfem::ParGridFunction *Jt_parent_;
+  std::unique_ptr<mfem::ParGridFunction> Jt_parent_{nullptr};
 
   // Coil mesh, FE Space, and current
-  mfem::ParSubMesh *mesh_coil_;
-  mfem::ParSubMesh *mesh_t_;
-  mfem::ParFiniteElementSpace *H1FESpace_coil_;
-  mfem::ParGridFunction *Jaux_coil_;
-  mfem::ParGridFunction *V_coil_;
+  std::unique_ptr<mfem::ParSubMesh> mesh_coil_{nullptr};
+  std::unique_ptr<mfem::ParSubMesh> mesh_t_{nullptr};
+
+  std::unique_ptr<mfem::ParFiniteElementSpace> H1FESpace_coil_{nullptr};
+  std::unique_ptr<mfem::ParGridFunction> Jaux_coil_{nullptr};
+  std::unique_ptr<mfem::ParGridFunction> V_coil_{nullptr};
 
   // Final LinearForm
-  mfem::ParLinearForm *final_lf_;
-
+  std::unique_ptr<mfem::ParLinearForm> final_lf_{nullptr};
 };
 
 class Plane3D {
 
 public:
   Plane3D();
-  ~Plane3D();
 
   // Constructs a mathematical 3D plane from a mesh face
   void make3DPlane(const mfem::ParMesh *pm, const int face);
@@ -112,7 +119,7 @@ public:
   int side(const mfem::Vector v);
 
 private:
-  mfem::Vector *u;
+  std::unique_ptr<mfem::Vector> u{nullptr};
   double d;
 };
 
