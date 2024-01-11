@@ -175,7 +175,9 @@ void DualOperator::Init(mfem::Vector &X) {
   dv_ = _gridfunctions.Get(GetTimeDerivativeName(_h_div_var_name));
   HCurlFESpace_ = u_->ParFESpace();
   HDivFESpace_ = dv_->ParFESpace();
-  curl = new mfem::ParDiscreteLinearOperator(HCurlFESpace_, HDivFESpace_);
+
+  curl = std::make_unique<mfem::ParDiscreteLinearOperator>(HCurlFESpace_,
+                                                           HDivFESpace_);
   curl->AddDomainInterpolator(new mfem::CurlInterpolator);
   curl->Assemble();
 }

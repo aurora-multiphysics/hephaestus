@@ -66,6 +66,6 @@ public:
   mfem::ParGridFunction *dv_; // HDiv vector field
 
 protected:
-  mfem::ParDiscreteLinearOperator *curl;
+  std::unique_ptr<mfem::ParDiscreteLinearOperator> curl;
 };
 } // namespace hephaestus
