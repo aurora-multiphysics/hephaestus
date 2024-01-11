@@ -21,7 +21,8 @@ public:
   mfem::ParGridFunction *u_; //
   mfem::ParFiniteElementSpace *H1FESpace_;
   mfem::Coefficient *coef;
-  mfem::ParBilinearForm *curlCurl;
+
+  std::unique_ptr<mfem::ParBilinearForm> curlCurl;
 };
 
 }; // namespace hephaestus

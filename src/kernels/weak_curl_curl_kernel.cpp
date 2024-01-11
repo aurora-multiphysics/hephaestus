@@ -8,11 +8,7 @@ WeakCurlCurlKernel::WeakCurlCurlKernel(
       coupled_gf_name(params.GetParam<std::string>("CoupledVariableName")),
       coef_name(params.GetParam<std::string>("CoefficientName")) {}
 
-WeakCurlCurlKernel::~WeakCurlCurlKernel() {
-  if (curlCurl != NULL) {
-    delete curlCurl;
-  }
-}
+WeakCurlCurlKernel::~WeakCurlCurlKernel() {}
 
 void WeakCurlCurlKernel::Init(hephaestus::GridFunctions &gridfunctions,
                               const hephaestus::FESpaces &fespaces,
@@ -22,7 +18,7 @@ void WeakCurlCurlKernel::Init(hephaestus::GridFunctions &gridfunctions,
   u_ = gridfunctions.Get(coupled_gf_name);
   coef = coefficients.scalars.Get(coef_name);
 
-  curlCurl = new mfem::ParBilinearForm(u_->ParFESpace());
+  curlCurl = std::make_unique<mfem::ParBilinearForm>(u_->ParFESpace());
   curlCurl->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*coef));
   curlCurl->Assemble();
 }
