@@ -12,7 +12,7 @@ mfem::Array<int> BCMap::getEssentialBdrMarkers(const std::string &name_,
   for (auto const &[name, bc_] : *this) {
     if (bc_->name == name_) {
       bc = dynamic_cast<hephaestus::EssentialBC *>(bc_);
-      if (bc != NULL) {
+      if (bc != nullptr) {
         ess_bdrs = bc->getMarkers(*mesh_);
         for (auto it = 0; it != mesh_->bdr_attributes.Max(); ++it) {
           global_ess_markers[it] =
@@ -32,7 +32,7 @@ void BCMap::applyEssentialBCs(const std::string &name_,
     if (bc_->name == name_) {
       hephaestus::EssentialBC *bc =
           dynamic_cast<hephaestus::EssentialBC *>(bc_);
-      if (bc != NULL) {
+      if (bc != nullptr) {
         bc->applyBC(gridfunc, mesh_);
       }
     }
@@ -50,7 +50,7 @@ void BCMap::applyEssentialBCs(const std::string &name_,
     if (bc_->name == name_) {
       hephaestus::EssentialBC *bc =
           dynamic_cast<hephaestus::EssentialBC *>(bc_);
-      if (bc != NULL) {
+      if (bc != nullptr) {
         bc->applyBC(gridfunc, mesh_);
       }
     }
@@ -66,7 +66,7 @@ void BCMap::applyIntegratedBCs(const std::string &name_, mfem::LinearForm &lf,
     if (bc_->name == name_) {
       hephaestus::IntegratedBC *bc =
           dynamic_cast<hephaestus::IntegratedBC *>(bc_);
-      if (bc != NULL) {
+      if (bc != nullptr) {
         bc->getMarkers(*mesh_);
         bc->applyBC(lf);
       }
@@ -82,7 +82,7 @@ void BCMap::applyIntegratedBCs(const std::string &name_,
     if (bc_->name == name_) {
       hephaestus::IntegratedBC *bc =
           dynamic_cast<hephaestus::IntegratedBC *>(bc_);
-      if (bc != NULL) {
+      if (bc != nullptr) {
         bc->getMarkers(*mesh_);
         bc->applyBC(clf);
       }
@@ -97,7 +97,7 @@ void BCMap::applyIntegratedBCs(const std::string &name_,
   for (auto const &[name, bc_] : *this) {
     if (bc_->name == name_) {
       hephaestus::RobinBC *bc = dynamic_cast<hephaestus::RobinBC *>(bc_);
-      if (bc != NULL) {
+      if (bc != nullptr) {
         bc->getMarkers(*mesh_);
         bc->applyBC(slf);
       }

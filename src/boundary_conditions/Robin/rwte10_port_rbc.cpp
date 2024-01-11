@@ -6,7 +6,7 @@ RWTE10PortRBC::RWTE10PortRBC(const std::string &name_,
                              mfem::Array<int> bdr_attributes_,
                              double frequency_, double port_length_vector_[3],
                              double port_width_vector_[3], bool input_port_)
-    : RobinBC(name_, bdr_attributes_, NULL, NULL, NULL, NULL),
+    : RobinBC(name_, bdr_attributes_, nullptr, nullptr, nullptr, nullptr),
       input_port(input_port_), omega_(2 * M_PI * frequency_),
       a1Vec(port_length_vector_, 3), a2Vec(port_width_vector_, 3),
       a3Vec(cross_product(a1Vec, a2Vec)), a2xa3(cross_product(a2Vec, a3Vec)),

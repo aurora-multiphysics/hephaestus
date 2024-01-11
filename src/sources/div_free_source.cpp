@@ -32,14 +32,14 @@ void DivFreeSource::Init(hephaestus::GridFunctions &gridfunctions,
                          hephaestus::BCMap &bc_map,
                          hephaestus::Coefficients &coefficients) {
   H1FESpace_ = fespaces.Get(h1_fespace_name);
-  if (H1FESpace_ == NULL) {
+  if (H1FESpace_ == nullptr) {
     const std::string error_message = h1_fespace_name +
                                       " not found in fespaces when "
                                       "creating DivFreeSource\n";
     mfem::mfem_error(error_message.c_str());
   }
   HCurlFESpace_ = fespaces.Get(hcurl_fespace_name);
-  if (HCurlFESpace_ == NULL) {
+  if (HCurlFESpace_ == nullptr) {
     const std::string error_message = hcurl_fespace_name +
                                       " not found in fespaces when "
                                       "creating DivFreeSource\n";

@@ -9,12 +9,12 @@ CurlAuxSolver::CurlAuxSolver(const std::string &input_gf_name,
 void CurlAuxSolver::Init(const hephaestus::GridFunctions &gridfunctions,
                          hephaestus::Coefficients &coefficients) {
   u_ = gridfunctions.Get(_input_gf_name);
-  if (u_ == NULL) {
+  if (u_ == nullptr) {
     MFEM_ABORT("GridFunction " << _input_gf_name
                                << " not found when initializing CurlAuxSolver");
   }
   curl_u_ = gridfunctions.Get(_curl_gf_name);
-  if (curl_u_ == NULL) {
+  if (curl_u_ == nullptr) {
     MFEM_ABORT("GridFunction " << _curl_gf_name
                                << " not found when initializing CurlAuxSolver");
   }

@@ -9,13 +9,13 @@ VectorCoefficientAux::VectorCoefficientAux(const std::string &gf_name,
 void VectorCoefficientAux::Init(const hephaestus::GridFunctions &gridfunctions,
                                 hephaestus::Coefficients &coefficients) {
   gf = gridfunctions.Get(_gf_name);
-  if (gf == NULL) {
+  if (gf == nullptr) {
     MFEM_ABORT("GridFunction "
                << _gf_name
                << " not found when initializing VectorCoefficientAux");
   }
   vec_coef = coefficients.vectors.Get(_vec_coef_name);
-  if (vec_coef == NULL) {
+  if (vec_coef == nullptr) {
     MFEM_ABORT("VectorCoefficient "
                << _vec_coef_name
                << " not found when initializing VectorCoefficientAux");

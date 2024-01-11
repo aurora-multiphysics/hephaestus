@@ -238,7 +238,7 @@ void EquationSystem::buildLinearForms(hephaestus::BCMap &bc_map,
     lf->Assemble();
 
     auto lf_kernels = lf_kernels_map.Get(test_var_name);
-    if (lf_kernels != NULL) {
+    if (lf_kernels != nullptr) {
       for (auto &lf_kernel : *lf_kernels) {
         lf_kernel->Apply(lf);
       }
@@ -262,7 +262,7 @@ void EquationSystem::buildBilinearForms() {
     // Apply kernels
     auto blf = blfs.Get(test_var_name);
     auto blf_kernels = blf_kernels_map.Get(test_var_name);
-    if (blf_kernels != NULL) {
+    if (blf_kernels != nullptr) {
       for (auto &blf_kernel : *blf_kernels) {
         blf_kernel->Apply(blf);
       }

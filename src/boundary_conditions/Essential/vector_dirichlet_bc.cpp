@@ -18,7 +18,7 @@ void VectorDirichletBC::applyBC(mfem::GridFunction &gridfunc,
                                 mfem::Mesh *mesh_) {
   mfem::Array<int> ess_bdrs(mesh_->bdr_attributes.Max());
   ess_bdrs = getMarkers(*mesh_);
-  if (vec_coeff == NULL) {
+  if (vec_coeff == nullptr) {
     MFEM_ABORT(
         "Boundary condition does not store valid coefficients to specify the "
         "components of the vector at the Dirichlet boundary.");
@@ -40,7 +40,7 @@ void VectorDirichletBC::applyBC(mfem::ParComplexGridFunction &gridfunc,
                                 mfem::Mesh *mesh_) {
   mfem::Array<int> ess_bdrs(mesh_->bdr_attributes.Max());
   ess_bdrs = getMarkers(*mesh_);
-  if (vec_coeff == NULL || vec_coeff_im == NULL) {
+  if (vec_coeff == nullptr || vec_coeff_im == nullptr) {
     MFEM_ABORT(
         "Boundary condition does not store valid coefficients to specify both "
         "the real and imaginary components of the vector at the Dirichlet "
