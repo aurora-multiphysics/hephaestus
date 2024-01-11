@@ -18,7 +18,7 @@ RWTE10PortRBC::RWTE10PortRBC(const std::string &name_,
   k_c *= k_.imag() / a3Vec.Norml2();
 
   robin_coef_im = new mfem::ConstantCoefficient(k_.imag() / mu0_);
-  blfi_im = new mfem::VectorFEMassIntegrator(robin_coef_im);
+  blfi_im = std::make_unique<mfem::VectorFEMassIntegrator>(robin_coef_im);
 
   if (input_port) {
     u_real = new mfem::VectorFunctionCoefficient(
