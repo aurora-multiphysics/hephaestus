@@ -173,11 +173,12 @@ TEST_CASE_METHOD(TestComplexTeam7, "TestComplexTeam7", "[CheckRun]") {
       params.GetOptionalParam<hephaestus::InputParameters>(
           "SolverOptions", hephaestus::InputParameters()));
 
-  hephaestus::SteadyStateProblemBuilder *problem_builder =
-      new hephaestus::ComplexAFormulation(
+  std::unique_ptr<hephaestus::SteadyStateProblemBuilder> problem_builder =
+      std::make_unique<hephaestus::ComplexAFormulation>(
           "magnetic_reluctivity", "electrical_conductivity",
           "dielectric_permittivity", "frequency", "magnetic_vector_potential",
           "magnetic_vector_potential_real", "magnetic_vector_potential_imag");
+
   problem_builder->SetMesh(pmesh);
   problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P1"));
   problem_builder->AddFESpace(std::string("HDiv"), std::string("RT_3D_P0"));
@@ -198,7 +199,7 @@ TEST_CASE_METHOD(TestComplexTeam7, "TestComplexTeam7", "[CheckRun]") {
   problem_builder->SetOutputs(outputs);
   problem_builder->SetSolverOptions(solver_options);
 
-  hephaestus::ProblemBuildSequencer sequencer(problem_builder);
+  hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
   sequencer.ConstructOperatorProblem();
   std::unique_ptr<hephaestus::SteadyStateProblem> problem =
       problem_builder->ReturnProblem();

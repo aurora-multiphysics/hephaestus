@@ -147,10 +147,12 @@ TEST_CASE_METHOD(TestAFormSource, "TestAForm", "[CheckRun]") {
     for (int l = 0; l < par_ref_levels; l++) {
       pmesh->UniformRefinement();
     }
-    hephaestus::TimeDomainProblemBuilder *problem_builder =
-        new hephaestus::AFormulation(
+
+    std::unique_ptr<hephaestus::TimeDomainProblemBuilder> problem_builder =
+        std::make_unique<hephaestus::AFormulation>(
             "magnetic_reluctivity", "magnetic_permeability",
             "electrical_conductivity", "magnetic_vector_potential");
+
     hephaestus::BCMap bc_map(
         params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
     hephaestus::Coefficients coefficients(
@@ -181,7 +183,7 @@ TEST_CASE_METHOD(TestAFormSource, "TestAForm", "[CheckRun]") {
     problem_builder->SetOutputs(outputs);
     problem_builder->SetSolverOptions(solver_options);
 
-    hephaestus::ProblemBuildSequencer sequencer(problem_builder);
+    hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
     sequencer.ConstructEquationSystemProblem();
     std::unique_ptr<hephaestus::TimeDomainProblem> problem =
         problem_builder->ReturnProblem();

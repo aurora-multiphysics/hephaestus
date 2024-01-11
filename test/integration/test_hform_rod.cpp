@@ -133,10 +133,11 @@ TEST_CASE_METHOD(TestHFormRod, "TestHFormRod", "[CheckRun]") {
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
 
-  hephaestus::TimeDomainProblemBuilder *problem_builder =
-      new hephaestus::HFormulation("electrical_resistivity",
-                                   "electrical_conductivity",
-                                   "magnetic_permeability", "magnetic_field");
+  std::unique_ptr<hephaestus::TimeDomainProblemBuilder> problem_builder =
+      std::make_unique<hephaestus::HFormulation>(
+          "electrical_resistivity", "electrical_conductivity",
+          "magnetic_permeability", "magnetic_field");
+
   hephaestus::BCMap bc_map(
       params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
   hephaestus::Coefficients coefficients(
@@ -161,7 +162,7 @@ TEST_CASE_METHOD(TestHFormRod, "TestHFormRod", "[CheckRun]") {
   problem_builder->SetOutputs(outputs);
   problem_builder->SetSolverOptions(solver_options);
 
-  hephaestus::ProblemBuildSequencer sequencer(problem_builder);
+  hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
   sequencer.ConstructEquationSystemProblem();
   std::unique_ptr<hephaestus::TimeDomainProblem> problem =
       problem_builder->ReturnProblem();

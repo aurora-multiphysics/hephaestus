@@ -133,10 +133,12 @@ protected:
 
 TEST_CASE_METHOD(TestEBFormRod, "TestEBFormRod", "[CheckRun]") {
   hephaestus::InputParameters params(test_params());
-  hephaestus::TimeDomainProblemBuilder *problem_builder =
-      new hephaestus::EBDualFormulation(
+
+  std::unique_ptr<hephaestus::TimeDomainProblemBuilder> problem_builder =
+      std::make_unique<hephaestus::EBDualFormulation>(
           "magnetic_reluctivity", "magnetic_permeability",
           "electrical_conductivity", "electric_field", "magnetic_flux_density");
+
   hephaestus::BCMap bc_map(
       params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
   hephaestus::Coefficients coefficients(
@@ -166,7 +168,7 @@ TEST_CASE_METHOD(TestEBFormRod, "TestEBFormRod", "[CheckRun]") {
   problem_builder->SetOutputs(outputs);
   problem_builder->SetSolverOptions(solver_options);
 
-  hephaestus::ProblemBuildSequencer sequencer(problem_builder);
+  hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
   sequencer.ConstructEquationSystemProblem();
   std::unique_ptr<hephaestus::TimeDomainProblem> problem =
       problem_builder->ReturnProblem();

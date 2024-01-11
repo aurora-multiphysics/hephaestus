@@ -127,11 +127,12 @@ TEST_CASE_METHOD(TestComplexERMESMouse, "TestComplexERMESMouse", "[CheckRun]") {
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
 
-  hephaestus::SteadyStateProblemBuilder *problem_builder =
-      new hephaestus::ComplexEFormulation(
+  std::unique_ptr<hephaestus::SteadyStateProblemBuilder> problem_builder =
+      std::make_unique<hephaestus::ComplexEFormulation>(
           "magnetic_reluctivity", "electrical_conductivity",
           "dielectric_permittivity", "frequency", "electric_field",
           "electric_field_real", "electric_field_imag");
+
   hephaestus::BCMap bc_map(
       params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
   hephaestus::Coefficients coefficients(
@@ -155,7 +156,7 @@ TEST_CASE_METHOD(TestComplexERMESMouse, "TestComplexERMESMouse", "[CheckRun]") {
   problem_builder->SetOutputs(outputs);
   problem_builder->SetSolverOptions(solver_options);
 
-  hephaestus::ProblemBuildSequencer sequencer(problem_builder);
+  hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
   sequencer.ConstructOperatorProblem();
   std::unique_ptr<hephaestus::SteadyStateProblem> problem =
       problem_builder->ReturnProblem();
