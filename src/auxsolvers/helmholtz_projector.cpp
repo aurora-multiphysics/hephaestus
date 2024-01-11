@@ -22,20 +22,7 @@ HelmholtzProjector::HelmholtzProjector(
   default_pars.SetParam("PrintLevel", 1);
 
   solver_options_ = params.GetOptionalParam<hephaestus::InputParameters>(
-        "SolverOptions", default_pars);
-
-  }
-
-HelmholtzProjector::~HelmholtzProjector() {
-
-  if (gDiv_ != nullptr)
-    delete gDiv_;
-  if (weakDiv_ != nullptr)
-    delete weakDiv_;
-  if (grad_ != nullptr)
-    delete grad_;
-  if (a0_ != nullptr)
-    delete a0_;
+      "SolverOptions", default_pars);
 }
 
 void HelmholtzProjector::Project(hephaestus::GridFunctions &gridfunctions,
@@ -108,17 +95,18 @@ void HelmholtzProjector::Project(hephaestus::GridFunctions &gridfunctions,
 void HelmholtzProjector::setForms() {
 
   if (gDiv_ == nullptr)
-    gDiv_ = new mfem::ParLinearForm(H1FESpace_);
+    gDiv_ = std::make_unique<mfem::ParLinearForm>(H1FESpace_);
 
   if (weakDiv_ == nullptr) {
-    weakDiv_ = new mfem::ParMixedBilinearForm(HCurlFESpace_, H1FESpace_);
+    weakDiv_ =
+        std::make_unique<mfem::ParMixedBilinearForm>(HCurlFESpace_, H1FESpace_);
     weakDiv_->AddDomainIntegrator(new mfem::VectorFEWeakDivergenceIntegrator);
     weakDiv_->Assemble();
     weakDiv_->Finalize();
   }
 
   if (a0_ == nullptr) {
-    a0_ = new mfem::ParBilinearForm(H1FESpace_);
+    a0_ = std::make_unique<mfem::ParBilinearForm>(H1FESpace_);
     a0_->AddDomainIntegrator(new mfem::DiffusionIntegrator);
     a0_->Assemble();
     a0_->Finalize();
@@ -128,7 +116,8 @@ void HelmholtzProjector::setForms() {
 void HelmholtzProjector::setGrad() {
 
   if (grad_ == nullptr) {
-    grad_ = new mfem::ParDiscreteLinearOperator(H1FESpace_, HCurlFESpace_);
+    grad_ = std::make_unique<mfem::ParDiscreteLinearOperator>(H1FESpace_,
+                                                              HCurlFESpace_);
     grad_->AddDomainInterpolator(new mfem::GradientInterpolator());
     grad_->Assemble();
     grad_->Finalize();
