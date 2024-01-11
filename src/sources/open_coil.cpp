@@ -272,14 +272,19 @@ void OpenCoilSolver::initChildMesh() {
 
 void OpenCoilSolver::makeFESpaces() {
 
-  if (H1FESpace_ == nullptr)
+  if (H1FESpace_ == nullptr) {
+    H1FESpace_fec_ =
+        std::make_unique<mfem::H1_FECollection>(order_h1_, mesh_->Dimension());
     H1FESpace_ = std::make_unique<mfem::ParFiniteElementSpace>(
-        mesh_.get(), new mfem::H1_FECollection(order_h1_, mesh_->Dimension()));
+        mesh_.get(), H1FESpace_fec_.get());
+  }
 
-  if (HCurlFESpace_ == nullptr)
+  if (HCurlFESpace_ == nullptr) {
+    HCurlFESpace_fec = std::make_unique<mfem::ND_FECollection>(
+        order_hcurl_, mesh_->Dimension());
     HCurlFESpace_ = std::make_unique<mfem::ParFiniteElementSpace>(
-        mesh_.get(),
-        new mfem::ND_FECollection(order_hcurl_, mesh_->Dimension()));
+        mesh_.get(), HCurlFESpace_fec.get());
+  }
 }
 
 void OpenCoilSolver::makeGridFunctions() {

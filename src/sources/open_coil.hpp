@@ -109,6 +109,9 @@ private:
   std::unique_ptr<mfem::ParFiniteElementSpace> H1FESpace_{nullptr};
   std::unique_ptr<mfem::ParFiniteElementSpace> HCurlFESpace_{nullptr};
 
+  std::unique_ptr<mfem::H1_FECollection> H1FESpace_fec_{nullptr};
+  std::unique_ptr<mfem::ND_FECollection> HCurlFESpace_fec{nullptr};
+
   // Child GridFunctions
   std::unique_ptr<mfem::ParGridFunction> J_{nullptr};
   std::unique_ptr<mfem::ParGridFunction> V_{nullptr};
