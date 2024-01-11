@@ -17,16 +17,16 @@ RWTE10PortRBC::RWTE10PortRBC(const std::string &name_,
   k_a *= M_PI / V;
   k_c *= k_.imag() / a3Vec.Norml2();
 
-  robin_coef_im = new mfem::ConstantCoefficient(k_.imag() / mu0_);
-  blfi_im = std::make_unique<mfem::VectorFEMassIntegrator>(robin_coef_im);
+  robin_coef_im = std::make_unique<mfem::ConstantCoefficient>(k_.imag() / mu0_);
+  blfi_im = std::make_unique<mfem::VectorFEMassIntegrator>(robin_coef_im.get());
 
   if (input_port) {
-    u_real = new mfem::VectorFunctionCoefficient(
+    u_real = std::make_unique<mfem::VectorFunctionCoefficient>(
         3, [this](const mfem::Vector &x, mfem::Vector &v) {
           return RWTE10_real(x, v);
         });
 
-    u_imag = new mfem::VectorFunctionCoefficient(
+    u_imag = std::make_unique<mfem::VectorFunctionCoefficient>(
         3, [this](const mfem::Vector &x, mfem::Vector &v) {
           return RWTE10_imag(x, v);
         });

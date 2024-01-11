@@ -42,9 +42,9 @@ public:
   mfem::Vector k_a;
   mfem::Vector k_c;
 
-  mfem::ConstantCoefficient *robin_coef_im;
-  mfem::VectorFunctionCoefficient *u_real;
-  mfem::VectorFunctionCoefficient *u_imag;
+  std::unique_ptr<mfem::ConstantCoefficient> robin_coef_im;
+  std::unique_ptr<mfem::VectorFunctionCoefficient> u_real;
+  std::unique_ptr<mfem::VectorFunctionCoefficient> u_imag;
 };
 
 } // namespace hephaestus
