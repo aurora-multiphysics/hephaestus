@@ -18,8 +18,8 @@ void CurlAuxSolver::Init(const hephaestus::GridFunctions &gridfunctions,
     MFEM_ABORT("GridFunction " << _curl_gf_name
                                << " not found when initializing CurlAuxSolver");
   }
-  curl = new mfem::ParDiscreteLinearOperator(u_->ParFESpace(),
-                                             curl_u_->ParFESpace());
+  curl = std::make_unique<mfem::ParDiscreteLinearOperator>(
+      u_->ParFESpace(), curl_u_->ParFESpace());
   curl->AddDomainInterpolator(new mfem::CurlInterpolator());
   curl->Assemble();
 }

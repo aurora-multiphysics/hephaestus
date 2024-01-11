@@ -19,7 +19,7 @@ private:
   const std::string _curl_gf_name;  // Variable in which to store curl
 
   mfem::ParGridFunction *u_, *curl_u_;
-  mfem::ParDiscreteLinearOperator *curl;
+  std::unique_ptr<mfem::ParDiscreteLinearOperator> curl;
 };
 
 } // namespace hephaestus
