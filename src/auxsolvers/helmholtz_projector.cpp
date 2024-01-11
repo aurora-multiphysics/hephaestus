@@ -68,7 +68,7 @@ void HelmholtzProjector::Project(hephaestus::GridFunctions &gridfunctions,
     q_ = new mfem::ParGridFunction(H1FESpace_);
   }
 
-  g = new mfem::ParGridFunction(HCurlFESpace_);
+  g = std::make_unique<mfem::ParGridFunction>(HCurlFESpace_);
   *g = *div_free_src_gf_;
   *q_ = 0.0;
 
@@ -85,7 +85,6 @@ void HelmholtzProjector::Project(hephaestus::GridFunctions &gridfunctions,
   *div_free_src_gf_ -= *g;
   *div_free_src_gf_ *= -1.0;
 
-  delete g;
   if (!gridfunctions.Has(gf_name_))
     delete q_;
   if (!fespaces.Has(h1_fespace_name_))
