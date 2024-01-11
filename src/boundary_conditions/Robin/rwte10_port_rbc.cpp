@@ -31,8 +31,10 @@ RWTE10PortRBC::RWTE10PortRBC(const std::string &name_,
           return RWTE10_imag(x, v);
         });
 
-    lfi_re = new mfem::VectorFEBoundaryTangentLFIntegrator(*u_real);
-    lfi_im = new mfem::VectorFEBoundaryTangentLFIntegrator(*u_imag);
+    lfi_re =
+        std::make_unique<mfem::VectorFEBoundaryTangentLFIntegrator>(*u_real);
+    lfi_im =
+        std::make_unique<mfem::VectorFEBoundaryTangentLFIntegrator>(*u_imag);
   }
 }
 
