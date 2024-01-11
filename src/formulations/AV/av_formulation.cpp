@@ -225,10 +225,8 @@ void AVOperator::ImplicitSolve(const double dt, const mfem::Vector &X,
   _equation_system->updateEquationSystem(_bc_map, _sources);
 
   _equation_system->FormLinearSystem(blockA, trueX, trueRhs);
-  if (solver != NULL) {
-    delete solver;
-  }
-  solver = new hephaestus::DefaultGMRESSolver(
+
+  solver = std::make_unique<hephaestus::DefaultGMRESSolver>(
       _solver_options, *blockA.As<mfem::HypreParMatrix>());
   // solver = new hephaestus::DefaultGMRESSolver(_solver_options, *blockA,
   //                                             pmesh_->GetComm());

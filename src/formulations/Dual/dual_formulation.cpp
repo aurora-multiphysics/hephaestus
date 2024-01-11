@@ -195,12 +195,10 @@ void DualOperator::ImplicitSolve(const double dt, const mfem::Vector &X,
 
   _equation_system->FormLinearSystem(blockA, trueX, trueRhs);
 
-  if (a1_solver != NULL) {
-    delete a1_solver;
-  }
-  a1_solver = new hephaestus::DefaultHCurlPCGSolver(
+  a1_solver = std::make_unique<hephaestus::DefaultHCurlPCGSolver>(
       _solver_options, *blockA.As<mfem::HypreParMatrix>(),
       _equation_system->test_pfespaces.at(0));
+
   a1_solver->Mult(trueRhs, trueX);
   _equation_system->RecoverFEMSolution(trueX, _gridfunctions);
 
