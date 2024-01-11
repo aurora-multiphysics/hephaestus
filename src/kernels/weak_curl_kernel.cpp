@@ -8,11 +8,7 @@ WeakCurlKernel::WeakCurlKernel(const hephaestus::InputParameters &params)
       hdiv_gf_name(params.GetParam<std::string>("HDivVarName")),
       coef_name(params.GetParam<std::string>("CoefficientName")) {}
 
-WeakCurlKernel::~WeakCurlKernel() {
-  if (weakCurl != NULL) {
-    delete weakCurl;
-  }
-}
+WeakCurlKernel::~WeakCurlKernel() {}
 
 void WeakCurlKernel::Init(hephaestus::GridFunctions &gridfunctions,
                           const hephaestus::FESpaces &fespaces,
@@ -24,7 +20,8 @@ void WeakCurlKernel::Init(hephaestus::GridFunctions &gridfunctions,
 
   coef = coefficients.scalars.Get(coef_name);
 
-  weakCurl = new mfem::ParMixedBilinearForm(u_->ParFESpace(), v_->ParFESpace());
+  weakCurl = std::make_unique<mfem::ParMixedBilinearForm>(u_->ParFESpace(),
+                                                          v_->ParFESpace());
   weakCurl->AddDomainIntegrator(new mfem::VectorFECurlIntegrator(*coef));
 }
 

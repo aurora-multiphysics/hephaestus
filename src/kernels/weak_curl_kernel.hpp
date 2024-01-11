@@ -20,7 +20,8 @@ public:
   std::string coef_name;
   mfem::ParGridFunction *u_, *v_; //
   mfem::Coefficient *coef;
-  mfem::ParMixedBilinearForm *weakCurl;
+
+  std::unique_ptr<mfem::ParMixedBilinearForm> weakCurl;
 };
 
 }; // namespace hephaestus
