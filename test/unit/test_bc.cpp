@@ -13,5 +13,4 @@ TEST_CASE("BoundaryConditionTest", "[CheckData]") {
 
   for (int i = 0; i < bdr_attrs.Size(); ++i)
     REQUIRE(bdr_attrs[i] == ess_bdr[i]);
-  
 }

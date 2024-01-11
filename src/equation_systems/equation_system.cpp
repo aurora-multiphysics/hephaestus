@@ -6,21 +6,7 @@ EquationSystem::EquationSystem(const hephaestus::InputParameters &params)
     : var_names(), test_var_names(), test_pfespaces(), blfs(), lfs(), nlfs(),
       mblfs(), ess_tdof_lists(), xs() {}
 
-EquationSystem::~EquationSystem() {
-  hBlocks.DeleteAll();
-  blfs.DeleteData(true);
-  lfs.DeleteData(true);
-
-  for (const auto &[test_var_name, blf_kernels] : blf_kernels_map.GetMap()) {
-    blf_kernels->DeleteAll();
-  }
-  blf_kernels_map.DeleteData(true);
-
-  for (const auto &[test_var_name, lf_kernels] : lf_kernels_map.GetMap()) {
-    lf_kernels->DeleteAll();
-  }
-  lf_kernels_map.DeleteData(true);
-}
+EquationSystem::~EquationSystem() { hBlocks.DeleteAll(); }
 
 void EquationSystem::addVariableNameIfMissing(std::string var_name) {
   if (std::find(var_names.begin(), var_names.end(), var_name) ==
@@ -82,7 +68,7 @@ void EquationSystem::addKernel(
   if (!mblf_kernels_map_map.Has(test_var_name)) {
     mblf_kernels_map_map.Register(
         test_var_name,
-        new mfem::NamedFieldsMap<
+        new hephaestus::NamedFieldsMap<
             mfem::Array<hephaestus::Kernel<mfem::ParMixedBilinearForm> *>>,
         true);
   }
@@ -236,7 +222,7 @@ void EquationSystem::buildLinearForms(hephaestus::BCMap &bc_map,
   for (int i = 0; i < test_var_names.size(); i++) {
     auto test_var_name = test_var_names.at(i);
     if (lfs.Has(test_var_name)) {
-      lfs.Deregister(test_var_name, true);
+      lfs.Deregister(test_var_name);
     }
     lfs.Register(test_var_name, new mfem::ParLinearForm(test_pfespaces.at(i)),
                  true);
@@ -268,7 +254,7 @@ void EquationSystem::buildBilinearForms() {
   for (int i = 0; i < test_var_names.size(); i++) {
     auto test_var_name = test_var_names.at(i);
     if (blfs.Has(test_var_name)) {
-      blfs.Deregister(test_var_name, true);
+      blfs.Deregister(test_var_name);
     }
     blfs.Register(test_var_name,
                   new mfem::ParBilinearForm(test_pfespaces.at(i)), true);
@@ -294,10 +280,10 @@ void EquationSystem::buildMixedBilinearForms() {
   for (int i = 0; i < test_var_names.size(); i++) {
     auto test_var_name = test_var_names.at(i);
     if (mblfs.Has(test_var_name)) {
-      mblfs.Deregister(test_var_name, true);
+      mblfs.Deregister(test_var_name);
     }
-    mfem::NamedFieldsMap<mfem::ParMixedBilinearForm> *test_mblfs =
-        new mfem::NamedFieldsMap<mfem::ParMixedBilinearForm>;
+    hephaestus::NamedFieldsMap<mfem::ParMixedBilinearForm> *test_mblfs =
+        new hephaestus::NamedFieldsMap<mfem::ParMixedBilinearForm>;
     for (int j = 0; j < test_var_names.size(); j++) {
       auto trial_var_name = test_var_names.at(j);
 

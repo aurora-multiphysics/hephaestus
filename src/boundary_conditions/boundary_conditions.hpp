@@ -1,11 +1,12 @@
 #pragma once
 #include "essential_bcs.hpp"
 #include "integrated_bcs.hpp"
+#include "named_fields_map.hpp"
 #include "robin_bcs.hpp"
 
 namespace hephaestus {
 
-class BCMap : public mfem::NamedFieldsMap<hephaestus::BoundaryCondition> {
+class BCMap : public hephaestus::NamedFieldsMap<hephaestus::BoundaryCondition> {
 public:
   mfem::Array<int> getEssentialBdrMarkers(const std::string &name_,
                                           mfem::Mesh *mesh_);
