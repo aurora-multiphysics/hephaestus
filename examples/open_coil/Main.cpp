@@ -123,10 +123,10 @@ int main(int argc, char *argv[]) {
   elec_attrs.second = elec_bdr_array[1];
 
   // Create Formulation
-  hephaestus::MagnetostaticFormulation *problem_builder =
-      new hephaestus::MagnetostaticFormulation("magnetic_reluctivity",
-                                               "magnetic_permeability",
-                                               "magnetic_vector_potential");
+  auto problem_builder = std::make_unique<hephaestus::MagnetostaticFormulation>(
+      "magnetic_reluctivity", "magnetic_permeability",
+      "magnetic_vector_potential");
+
   // Set Mesh
   problem_builder->SetMesh(pmesh);
   problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P1"));
@@ -166,7 +166,7 @@ int main(int argc, char *argv[]) {
   solver_options.SetParam("PrintLevel", 2);
   problem_builder->SetSolverOptions(solver_options);
 
-  hephaestus::ProblemBuildSequencer sequencer(problem_builder);
+  hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
   sequencer.ConstructEquationSystemProblem();
   std::unique_ptr<hephaestus::SteadyStateProblem> problem =
       problem_builder->ReturnProblem();

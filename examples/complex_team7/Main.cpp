@@ -123,11 +123,11 @@ int main(int argc, char *argv[]) {
   MPI_Init(&argc, &argv);
 
   // Create Formulation
-  hephaestus::ComplexAFormulation *problem_builder =
-      new hephaestus::ComplexAFormulation(
-          "magnetic_reluctivity", "electrical_conductivity",
-          "dielectric_permittivity", "frequency", "magnetic_vector_potential",
-          "magnetic_vector_potential_real", "magnetic_vector_potential_imag");
+  auto problem_builder = std::make_unique<hephaestus::ComplexAFormulation>(
+      "magnetic_reluctivity", "electrical_conductivity",
+      "dielectric_permittivity", "frequency", "magnetic_vector_potential",
+      "magnetic_vector_potential_real", "magnetic_vector_potential_imag");
+
   // Set Mesh
   mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team7.g")).c_str(), 1,
                   1);
@@ -177,7 +177,7 @@ int main(int argc, char *argv[]) {
   solver_options.SetParam("PrintLevel", 0);
   problem_builder->SetSolverOptions(solver_options);
 
-  hephaestus::ProblemBuildSequencer sequencer(problem_builder);
+  hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
   sequencer.ConstructOperatorProblem();
   std::unique_ptr<hephaestus::SteadyStateProblem> problem =
       problem_builder->ReturnProblem();
