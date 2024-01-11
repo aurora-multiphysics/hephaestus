@@ -23,16 +23,23 @@ public:
 
   mfem::ParFiniteElementSpace *H1FESpace_;
   mfem::ParFiniteElementSpace *HCurlFESpace_;
-  mfem::ParGridFunction *q_; // Potential
+
+  std::unique_ptr<mfem::ParGridFunction> q_; // Potential
+
   hephaestus::BCMap *bc_map_;
   hephaestus::GridFunctions *gridfunctions_;
   const hephaestus::FESpaces *fespaces_;
 
-  mfem::ParBilinearForm *h_curl_mass;
+  std::unique_ptr<mfem::ParBilinearForm> h_curl_mass;
 
   mfem::VectorCoefficient *sourceVecCoef;
-  mfem::ParGridFunction *g; // H(Curl) projection of user specified source
-  mfem::ParGridFunction *div_free_src_gf; // Divergence free projected source
+
+  // H(Curl) projection of user specified source
+  std::unique_ptr<mfem::ParGridFunction> g;
+
+  // Divergence free projected source
+  std::unique_ptr<mfem::ParGridFunction> div_free_src_gf;
+
   mfem::Solver *solver;
 };
 

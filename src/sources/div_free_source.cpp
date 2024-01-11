@@ -25,7 +25,7 @@ DivFreeSource::DivFreeSource(const hephaestus::InputParameters &params)
           "SolverOptions", hephaestus::InputParameters())),
       perform_helmholtz_projection(
           params.GetOptionalParam<bool>("HelmholtzProjection", true)),
-      h_curl_mass(NULL) {}
+      h_curl_mass(nullptr) {}
 
 void DivFreeSource::Init(hephaestus::GridFunctions &gridfunctions,
                          const hephaestus::FESpaces &fespaces,
@@ -51,12 +51,15 @@ void DivFreeSource::Init(hephaestus::GridFunctions &gridfunctions,
     MFEM_ABORT("SOURCE NOT FOUND");
   }
 
-  div_free_src_gf = new mfem::ParGridFunction(HCurlFESpace_);
-  gridfunctions.Register(src_gf_name, div_free_src_gf, false);
-  g = new mfem::ParGridFunction(HCurlFESpace_);
-  gridfunctions.Register("_user_source", g, false);
-  q_ = new mfem::ParGridFunction(H1FESpace_);
-  gridfunctions.Register(potential_gf_name, q_, false);
+  // NB: Register must be false to avoid double-free.
+  div_free_src_gf = std::make_unique<mfem::ParGridFunction>(HCurlFESpace_);
+  gridfunctions.Register(src_gf_name, div_free_src_gf.get(), false);
+
+  g = std::make_unique<mfem::ParGridFunction>(HCurlFESpace_);
+  gridfunctions.Register("_user_source", g.get(), false);
+
+  q_ = std::make_unique<mfem::ParGridFunction>(H1FESpace_);
+  gridfunctions.Register(potential_gf_name, q_.get(), false);
 
   bc_map_ = &bc_map;
   gridfunctions_ = &gridfunctions;
@@ -66,10 +69,7 @@ void DivFreeSource::Init(hephaestus::GridFunctions &gridfunctions,
 }
 
 void DivFreeSource::buildHCurlMass() {
-  if (h_curl_mass != NULL) {
-    delete h_curl_mass;
-  }
-  h_curl_mass = new mfem::ParBilinearForm(HCurlFESpace_);
+  h_curl_mass = std::make_unique<mfem::ParBilinearForm>(HCurlFESpace_);
   h_curl_mass->AddDomainIntegrator(new mfem::VectorFEMassIntegrator);
   h_curl_mass->Assemble();
   h_curl_mass->Finalize();
