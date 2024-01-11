@@ -6,7 +6,13 @@ EquationSystem::EquationSystem(const hephaestus::InputParameters &params)
     : var_names(), test_var_names(), test_pfespaces(), blfs(), lfs(), nlfs(),
       mblfs(), ess_tdof_lists(), xs() {}
 
-EquationSystem::~EquationSystem() { hBlocks.DeleteAll(); }
+EquationSystem::~EquationSystem() {
+  hBlocks.DeleteAll();
+
+  for (const auto par_grid_function : xs) {
+    delete par_grid_function;
+  }
+}
 
 void EquationSystem::addVariableNameIfMissing(std::string var_name) {
   if (std::find(var_names.begin(), var_names.end(), var_name) ==
