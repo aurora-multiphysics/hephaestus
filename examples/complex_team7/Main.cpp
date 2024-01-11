@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
   MPI_Init(&argc, &argv);
 
   // Create Formulation
-  auto problem_builder = std::make_unique<hephaestus::ComplexAFormulation>(
+  auto problem_builder = new hephaestus::ComplexAFormulation(
       "magnetic_reluctivity", "electrical_conductivity",
       "dielectric_permittivity", "frequency", "magnetic_vector_potential",
       "magnetic_vector_potential_real", "magnetic_vector_potential_imag");
@@ -177,7 +177,7 @@ int main(int argc, char *argv[]) {
   solver_options.SetParam("PrintLevel", 0);
   problem_builder->SetSolverOptions(solver_options);
 
-  hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
+  hephaestus::ProblemBuildSequencer sequencer(problem_builder);
   sequencer.ConstructOperatorProblem();
   std::unique_ptr<hephaestus::SteadyStateProblem> problem =
       problem_builder->ReturnProblem();

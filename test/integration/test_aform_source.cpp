@@ -148,8 +148,8 @@ TEST_CASE_METHOD(TestAFormSource, "TestAForm", "[CheckRun]") {
       pmesh->UniformRefinement();
     }
 
-    std::unique_ptr<hephaestus::TimeDomainProblemBuilder> problem_builder =
-        std::make_unique<hephaestus::AFormulation>(
+    hephaestus::TimeDomainProblemBuilder *problem_builder =
+        new hephaestus::AFormulation(
             "magnetic_reluctivity", "magnetic_permeability",
             "electrical_conductivity", "magnetic_vector_potential");
 
@@ -183,7 +183,7 @@ TEST_CASE_METHOD(TestAFormSource, "TestAForm", "[CheckRun]") {
     problem_builder->SetOutputs(outputs);
     problem_builder->SetSolverOptions(solver_options);
 
-    hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
+    hephaestus::ProblemBuildSequencer sequencer(problem_builder);
     sequencer.ConstructEquationSystemProblem();
     std::unique_ptr<hephaestus::TimeDomainProblem> problem =
         problem_builder->ReturnProblem();

@@ -108,8 +108,8 @@ TEST_CASE_METHOD(TestAVFormRod, "TestAVFormRod", "[CheckRun]") {
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
 
-  std::unique_ptr<hephaestus::TimeDomainProblemBuilder> problem_builder =
-      std::make_unique<hephaestus::AVFormulation>(
+  hephaestus::TimeDomainProblemBuilder *problem_builder =
+      new hephaestus::AVFormulation(
           "magnetic_reluctivity", "magnetic_permeability",
           "electrical_conductivity", "magnetic_vector_potential",
           "electric_potential");
@@ -137,7 +137,7 @@ TEST_CASE_METHOD(TestAVFormRod, "TestAVFormRod", "[CheckRun]") {
   problem_builder->SetOutputs(outputs);
   problem_builder->SetSolverOptions(solver_options);
 
-  hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
+  hephaestus::ProblemBuildSequencer sequencer(problem_builder);
   sequencer.ConstructEquationSystemProblem();
   std::unique_ptr<hephaestus::TimeDomainProblem> problem =
       problem_builder->ReturnProblem();
