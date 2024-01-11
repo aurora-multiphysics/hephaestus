@@ -81,8 +81,13 @@ private:
   std::pair<int, int> elec_attrs_;
   mfem::Array<int> coil_domains_;
   mfem::Array<int> coil_markers_;
-  mfem::Coefficient *coef1_;
-  mfem::Coefficient *Itotal_;
+
+  mfem::Coefficient *coef1_{nullptr};
+  mfem::Coefficient *Itotal_{nullptr};
+
+  bool owns_coef1_{false};
+  bool owns_Itotal_{false};
+
   hephaestus::InputParameters solver_options_;
 
   // Names
@@ -92,35 +97,37 @@ private:
   std::string cond_coef_name_;
 
   // Parent mesh, FE space, and current
-  mfem::ParMesh *mesh_parent_;
-  mfem::ParGridFunction *J_parent_;
-  mfem::ParGridFunction *Jt_parent_;
-  mfem::ParGridFunction *V_parent_;
-  mfem::ParGridFunction *Vt_parent_;
+  mfem::ParMesh *mesh_parent_{nullptr};
+  mfem::ParGridFunction *J_parent_{nullptr};
+  mfem::ParGridFunction *V_parent_{nullptr};
+
+  std::unique_ptr<mfem::ParGridFunction> Jt_parent_{nullptr};
+  std::unique_ptr<mfem::ParGridFunction> Vt_parent_{nullptr};
 
   // Child mesh and FE spaces
-  mfem::ParSubMesh *mesh_;
-  mfem::ParFiniteElementSpace *H1FESpace_;
-  mfem::ParFiniteElementSpace *HCurlFESpace_;
+  std::unique_ptr<mfem::ParSubMesh> mesh_{nullptr};
+  std::unique_ptr<mfem::ParFiniteElementSpace> H1FESpace_{nullptr};
+  std::unique_ptr<mfem::ParFiniteElementSpace> HCurlFESpace_{nullptr};
 
   // Child GridFunctions
-  mfem::ParGridFunction *J_;
-  mfem::ParGridFunction *V_;
+  std::unique_ptr<mfem::ParGridFunction> J_{nullptr};
+  std::unique_ptr<mfem::ParGridFunction> V_{nullptr};
 
   // Child boundary condition objects
   mfem::FunctionCoefficient high_src_;
   mfem::FunctionCoefficient low_src_;
+
   mfem::Array<int> high_terminal_;
   mfem::Array<int> low_terminal_;
 
   // Mass Matrix
-  mfem::ParBilinearForm *m1_;
+  std::unique_ptr<mfem::ParBilinearForm> m1_{nullptr};
 
   // BC Map
   hephaestus::BCMap bc_maps;
 
   // Final LinearForm
-  mfem::ParLinearForm *final_lf_;
+  std::unique_ptr<mfem::ParLinearForm> final_lf_{nullptr};
 };
 
 } // namespace hephaestus
