@@ -3,7 +3,7 @@
 
 extern const char *DATA_DIR;
 
-class TestHFormRod{
+class TestHFormRod {
 protected:
   static double potential_high(const mfem::Vector &x, double t) {
     double wj_(2.0 * M_PI / 60.0);
@@ -171,8 +171,9 @@ TEST_CASE_METHOD(TestHFormRod, "TestHFormRod", "[CheckRun]") {
   exec_params.SetParam("EndTime", float(2.5));
   exec_params.SetParam("VisualisationSteps", int(1));
   exec_params.SetParam("Problem", problem.get());
-  hephaestus::TransientExecutioner *executioner =
-      new hephaestus::TransientExecutioner(exec_params);
+
+  auto executioner =
+      std::make_unique<hephaestus::TransientExecutioner>(exec_params);
 
   executioner->Execute();
 }

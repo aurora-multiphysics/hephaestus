@@ -176,8 +176,9 @@ int main(int argc, char *argv[]) {
   exec_params.SetParam("EndTime", float(0.002));
   exec_params.SetParam("VisualisationSteps", int(1));
   exec_params.SetParam("Problem", problem.get());
-  hephaestus::TransientExecutioner *executioner =
-      new hephaestus::TransientExecutioner(exec_params);
+
+  auto executioner =
+      std::make_unique<hephaestus::TransientExecutioner>(exec_params);
 
   mfem::out << "Created executioner";
   executioner->Execute();

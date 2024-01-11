@@ -4,7 +4,7 @@
 
 extern const char *DATA_DIR;
 
-class TestAFormSource{
+class TestAFormSource {
 protected:
   static double estimate_convergence_rate(HYPRE_BigInt n_i, HYPRE_BigInt n_imo,
                                           double error_i, double error_imo,
@@ -192,12 +192,11 @@ TEST_CASE_METHOD(TestAFormSource, "TestAForm", "[CheckRun]") {
     exec_params.SetParam("EndTime", float(0.05));
     exec_params.SetParam("VisualisationSteps", int(1));
     exec_params.SetParam("Problem", problem.get());
-    hephaestus::TransientExecutioner *executioner =
-        new hephaestus::TransientExecutioner(exec_params);
+
+    auto executioner =
+        std::make_unique<hephaestus::TransientExecutioner>(exec_params);
 
     executioner->Execute();
-
-    delete executioner;
   }
 
   hephaestus::L2ErrorVectorPostprocessor l2errpostprocessor =

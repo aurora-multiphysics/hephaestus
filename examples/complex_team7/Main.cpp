@@ -184,8 +184,9 @@ int main(int argc, char *argv[]) {
 
   hephaestus::InputParameters exec_params;
   exec_params.SetParam("Problem", problem.get());
-  hephaestus::SteadyExecutioner *executioner =
-      new hephaestus::SteadyExecutioner(exec_params);
+
+  auto executioner =
+      std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
 
   std::cout << "Created exec ";
   executioner->Execute();

@@ -4,7 +4,7 @@
 
 extern const char *DATA_DIR;
 
-class TestHFormSource{
+class TestHFormSource {
 protected:
   const int var_order{2};
   static double estimate_convergence_rate(HYPRE_BigInt n_i, HYPRE_BigInt n_imo,
@@ -213,8 +213,9 @@ TEST_CASE_METHOD(TestHFormSource, "TestHFormSource", "[CheckRun]") {
     exec_params.SetParam("EndTime", float(0.05));
     exec_params.SetParam("VisualisationSteps", int(1));
     exec_params.SetParam("Problem", problem.get());
-    hephaestus::TransientExecutioner *executioner =
-        new hephaestus::TransientExecutioner(exec_params);
+
+    auto executioner =
+        std::make_unique<hephaestus::TransientExecutioner>(exec_params);
 
     executioner->Execute();
   }

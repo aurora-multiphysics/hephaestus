@@ -7,7 +7,7 @@
 
 extern const char *DATA_DIR;
 
-class TestComplexTeam7{
+class TestComplexTeam7 {
 protected:
   static void source_current(const mfem::Vector &xv, mfem::Vector &J) {
     double x0(194e-3);  // Coil centre x coordinate
@@ -205,8 +205,10 @@ TEST_CASE_METHOD(TestComplexTeam7, "TestComplexTeam7", "[CheckRun]") {
 
   hephaestus::InputParameters exec_params;
   exec_params.SetParam("Problem", problem.get());
-  hephaestus::SteadyExecutioner *executioner =
-      new hephaestus::SteadyExecutioner(exec_params);
+
+  auto executioner =
+      std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
+
   std::cout << "Created exec ";
 
   executioner->Execute();

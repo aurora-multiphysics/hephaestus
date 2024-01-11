@@ -7,7 +7,7 @@
 
 extern const char *DATA_DIR;
 
-class TestComplexERMESMouse{
+class TestComplexERMESMouse {
 protected:
   static void e_bc_r(const mfem::Vector &x, mfem::Vector &E) {
     E.SetSize(3);
@@ -162,8 +162,9 @@ TEST_CASE_METHOD(TestComplexERMESMouse, "TestComplexERMESMouse", "[CheckRun]") {
 
   hephaestus::InputParameters exec_params;
   exec_params.SetParam("Problem", problem.get());
-  hephaestus::SteadyExecutioner *executioner =
-      new hephaestus::SteadyExecutioner(exec_params);
+
+  auto executioner =
+      std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
 
   executioner->Execute();
 

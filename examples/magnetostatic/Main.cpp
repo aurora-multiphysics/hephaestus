@@ -158,8 +158,9 @@ int main(int argc, char *argv[]) {
   exec_params.SetParam("VisualisationSteps", int(1));
   exec_params.SetParam("UseGLVis", true);
   exec_params.SetParam("Problem", problem.get());
-  hephaestus::SteadyExecutioner *executioner =
-      new hephaestus::SteadyExecutioner(exec_params);
+
+  auto executioner =
+      std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
 
   mfem::out << "Created executioner";
   executioner->Execute();
