@@ -6,15 +6,7 @@ EquationSystem::EquationSystem(const hephaestus::InputParameters &params)
     : var_names(), test_var_names(), test_pfespaces(), blfs(), lfs(), nlfs(),
       mblfs(), ess_tdof_lists(), xs() {}
 
-EquationSystem::~EquationSystem() {
-  fprintf(stdout, "Calling %s\n", __func__);
-  fflush(stdout);
-  hBlocks.DeleteAll();
-
-  for (const auto par_grid_function : xs) {
-    delete par_grid_function;
-  }
-}
+EquationSystem::~EquationSystem() { hBlocks.DeleteAll(); }
 
 bool EquationSystem::vectorContainsName(
     const std::vector<std::string> &the_vector, const std::string &name) const {
@@ -201,7 +193,7 @@ void EquationSystem::Init(hephaestus::GridFunctions &gridfunctions,
     // Store pointers to variable FESpaces
     test_pfespaces.push_back(gridfunctions.Get(test_var_name)->ParFESpace());
     // Create auxiliary gridfunctions for applying Dirichlet conditions
-    xs.push_back(new mfem::ParGridFunction(
+    xs.emplace_back(std::make_unique<mfem::ParGridFunction>(
         gridfunctions.Get(test_var_name)->ParFESpace()));
   }
 

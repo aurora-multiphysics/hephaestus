@@ -89,7 +89,7 @@ protected:
 
   // gridfunctions for setting Dirichlet BCs
   std::vector<mfem::Array<int>> ess_tdof_lists;
-  std::vector<mfem::ParGridFunction *> xs;
+  std::vector<std::unique_ptr<mfem::ParGridFunction>> xs;
 
   mfem::Array2D<mfem::HypreParMatrix *> hBlocks;
 
