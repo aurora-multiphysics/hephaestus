@@ -34,8 +34,8 @@ public:
       mblfs; // named according to trial variable
 
   // add test variable to EquationSystem;
-  virtual void addTestVariableNameIfMissing(std::string test_var_name);
-  virtual void addVariableNameIfMissing(std::string var_name);
+  virtual void addTestVariableNameIfMissing(const std::string &test_var_name);
+  virtual void addVariableNameIfMissing(const std::string &var_name);
 
   // Add kernels. EquationSystem takes ownership.
   void addKernel(std::string test_var_name,
@@ -108,7 +108,7 @@ public:
   static std::string GetTimeDerivativeName(std::string name) {
     return std::string("d") + name + std::string("_dt");
   }
-  virtual void addVariableNameIfMissing(std::string var_name) override;
+  virtual void addVariableNameIfMissing(const std::string &var_name) override;
 
   virtual void setTimeStep(double dt);
   virtual void updateEquationSystem(hephaestus::BCMap &bc_map,

@@ -22,13 +22,14 @@ bool EquationSystem::vectorContainsName(
   return (iter != the_vector.end());
 }
 
-void EquationSystem::addVariableNameIfMissing(std::string var_name) {
+void EquationSystem::addVariableNameIfMissing(const std::string &var_name) {
   if (!vectorContainsName(var_names, var_name)) {
     var_names.push_back(var_name);
   }
 }
 
-void EquationSystem::addTestVariableNameIfMissing(std::string test_var_name) {
+void EquationSystem::addTestVariableNameIfMissing(
+    const std::string &test_var_name) {
   if (!vectorContainsName(test_var_names, test_var_name)) {
     test_var_names.push_back(test_var_name);
   }
@@ -336,7 +337,7 @@ TimeDependentEquationSystem::TimeDependentEquationSystem(
     : EquationSystem(params), var_time_derivative_names(), dtCoef(1.0) {}
 
 void TimeDependentEquationSystem::addVariableNameIfMissing(
-    std::string var_name) {
+    const std::string &var_name) {
   EquationSystem::addVariableNameIfMissing(var_name);
   std::string var_time_derivative_name = GetTimeDerivativeName(var_name);
   if (std::find(var_time_derivative_names.begin(),
