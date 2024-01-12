@@ -14,16 +14,22 @@ EquationSystem::~EquationSystem() {
   }
 }
 
+bool EquationSystem::vectorContainsName(
+    const std::vector<std::string> &the_vector, const std::string &name) const {
+
+  auto iter = std::find(the_vector.begin(), the_vector.end(), name);
+
+  return (iter != the_vector.end());
+}
+
 void EquationSystem::addVariableNameIfMissing(std::string var_name) {
-  if (std::find(var_names.begin(), var_names.end(), var_name) ==
-      var_names.end()) {
+  if (!vectorContainsName(var_names, var_name)) {
     var_names.push_back(var_name);
   }
 }
 
 void EquationSystem::addTestVariableNameIfMissing(std::string test_var_name) {
-  if (std::find(test_var_names.begin(), test_var_names.end(), test_var_name) ==
-      test_var_names.end()) {
+  if (!vectorContainsName(test_var_names, test_var_name)) {
     test_var_names.push_back(test_var_name);
   }
 }

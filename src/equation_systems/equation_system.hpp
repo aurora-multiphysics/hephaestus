@@ -73,6 +73,9 @@ public:
                                   hephaestus::GridFunctions &gridfunctions);
 
 protected:
+  bool vectorContainsName(const std::vector<std::string> &the_vector,
+                          const std::string &name) const;
+
   // gridfunctions for setting Dirichlet BCs
   std::vector<mfem::Array<int>> ess_tdof_lists;
   std::vector<mfem::ParGridFunction *> xs;
@@ -100,6 +103,7 @@ Class to store weak form components for time dependent PDEs
 class TimeDependentEquationSystem : public EquationSystem {
 public:
   TimeDependentEquationSystem(const hephaestus::InputParameters &params);
+  ~TimeDependentEquationSystem() override{};
 
   static std::string GetTimeDerivativeName(std::string name) {
     return std::string("d") + name + std::string("_dt");
