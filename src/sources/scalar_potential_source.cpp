@@ -20,6 +20,9 @@ void ScalarPotentialSource::Init(hephaestus::GridFunctions &gridfunctions,
                                  const hephaestus::FESpaces &fespaces,
                                  hephaestus::BCMap &bc_map,
                                  hephaestus::Coefficients &coefficients) {
+  fprintf(stdout, "called %s:%d\n", __func__, __LINE__);
+  fflush(stdout);
+
   H1FESpace_ = fespaces.Get(h1_fespace_name);
   if (H1FESpace_ == nullptr) {
     const std::string error_message = h1_fespace_name +
@@ -70,7 +73,11 @@ void ScalarPotentialSource::Init(hephaestus::GridFunctions &gridfunctions,
   B0 = std::make_unique<mfem::Vector>();
 }
 
+ScalarPotentialSource::~ScalarPotentialSource() {}
+
 void ScalarPotentialSource::buildM1(mfem::Coefficient *Sigma) {
+  fprintf(stdout, "called %s:%d\n", __func__, __LINE__);
+  fflush(stdout);
   m1 = std::make_unique<mfem::ParBilinearForm>(HCurlFESpace_);
   m1->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*Sigma));
   m1->Assemble();

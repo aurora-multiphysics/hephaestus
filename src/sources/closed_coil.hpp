@@ -15,7 +15,8 @@ public:
   ClosedCoilSolver(const hephaestus::InputParameters &params,
                    const mfem::Array<int> &coil_dom, const int electrode_face);
 
-  ~ClosedCoilSolver();
+  // Override virtual Source destructor to avoid leaks.
+  ~ClosedCoilSolver() override;
 
   void Init(hephaestus::GridFunctions &gridfunctions,
             const hephaestus::FESpaces &fespaces, hephaestus::BCMap &bc_map,
