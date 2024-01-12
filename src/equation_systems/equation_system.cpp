@@ -7,6 +7,8 @@ EquationSystem::EquationSystem(const hephaestus::InputParameters &params)
       mblfs(), ess_tdof_lists(), xs() {}
 
 EquationSystem::~EquationSystem() {
+  fprintf(stdout, "Calling %s\n", __func__);
+  fflush(stdout);
   hBlocks.DeleteAll();
 
   for (const auto par_grid_function : xs) {
@@ -35,69 +37,84 @@ void EquationSystem::addTestVariableNameIfMissing(
   }
 }
 
-void EquationSystem::addKernel(
-    std::string test_var_name,
-    hephaestus::Kernel<mfem::ParBilinearForm> *blf_kernel) {
+void EquationSystem::addKernel(std::string test_var_name,
+                               ParBilinearFormKernel *blf_kernel) {
+
   addTestVariableNameIfMissing(test_var_name);
+
+  auto kernel = std::unique_ptr<ParBilinearFormKernel>(blf_kernel);
+
   if (!blf_kernels_map.Has(test_var_name)) {
-    blf_kernels_map.Register(
-        test_var_name,
-        new mfem::Array<hephaestus::Kernel<mfem::ParBilinearForm> *>, true);
+    // 1. Create kernels vector.
+    auto kernels = new std::vector<decltype(kernel)>;
+
+    // 2. Register with map to prevent leaks.
+    blf_kernels_map.Register(test_var_name, kernels, true);
   }
-  blf_kernels_map.Get(test_var_name)->Append(blf_kernel);
+
+  blf_kernels_map.Get(test_var_name)->push_back(std::move(kernel));
 }
 
-void EquationSystem::addKernel(
-    std::string test_var_name,
-    hephaestus::Kernel<mfem::ParLinearForm> *lf_kernel) {
+void EquationSystem::addKernel(std::string test_var_name,
+                               ParLinearFormKernel *lf_kernel) {
+
   addTestVariableNameIfMissing(test_var_name);
+
+  auto kernel = std::unique_ptr<ParLinearFormKernel>(lf_kernel);
+
   if (!lf_kernels_map.Has(test_var_name)) {
-    lf_kernels_map.Register(
-        test_var_name,
-        new mfem::Array<hephaestus::Kernel<mfem::ParLinearForm> *>, true);
+    auto kernels = new std::vector<decltype(kernel)>;
+
+    lf_kernels_map.Register(test_var_name, kernels, true);
   }
 
-  lf_kernels_map.Get(test_var_name)->Append(lf_kernel);
+  lf_kernels_map.Get(test_var_name)->push_back(std::move(kernel));
 }
 
-void EquationSystem::addKernel(
-    std::string test_var_name,
-    hephaestus::Kernel<mfem::ParNonlinearForm> *nlf_kernel) {
+void EquationSystem::addKernel(std::string test_var_name,
+                               ParNonlinearFormKernel *nlf_kernel) {
+
   addTestVariableNameIfMissing(test_var_name);
+
+  auto kernel = std::unique_ptr<ParNonlinearFormKernel>(nlf_kernel);
+
   if (!nlf_kernels_map.Has(test_var_name)) {
-    nlf_kernels_map.Register(
-        test_var_name,
-        new mfem::Array<hephaestus::Kernel<mfem::ParNonlinearForm> *>, true);
+    auto kernels = new std::vector<decltype(kernel)>;
+
+    nlf_kernels_map.Register(test_var_name, kernels, true);
   }
 
-  nlf_kernels_map.Get(test_var_name)->Append(nlf_kernel);
+  nlf_kernels_map.Get(test_var_name)->push_back(std::move(kernel));
 }
 
-void EquationSystem::addKernel(
-    std::string trial_var_name, std::string test_var_name,
-    hephaestus::Kernel<mfem::ParMixedBilinearForm> *mblf_kernel) {
+void EquationSystem::addKernel(std::string trial_var_name,
+                               std::string test_var_name,
+                               ParMixedBilinearFormKernel *mblf_kernel) {
+
   addTestVariableNameIfMissing(test_var_name);
+
+  auto kernel = std::unique_ptr<ParMixedBilinearFormKernel>(mblf_kernel);
+
   // Register new mblf kernels map if not present for this test variable
   if (!mblf_kernels_map_map.Has(test_var_name)) {
-    mblf_kernels_map_map.Register(
-        test_var_name,
-        new hephaestus::NamedFieldsMap<
-            mfem::Array<hephaestus::Kernel<mfem::ParMixedBilinearForm> *>>,
-        true);
+    auto kernel_field_map =
+        new hephaestus::NamedFieldsMap<std::vector<decltype(kernel)>>;
+
+    mblf_kernels_map_map.Register(test_var_name, kernel_field_map, true);
   }
+
   // Register new mblf kernels map if not present for the test/trial variable
   // pair
   if (!mblf_kernels_map_map.Get(test_var_name)->Has(trial_var_name)) {
+    auto kernels = new std::vector<decltype(kernel)>;
+
     mblf_kernels_map_map.Get(test_var_name)
-        ->Register(
-            trial_var_name,
-            new mfem::Array<hephaestus::Kernel<mfem::ParMixedBilinearForm> *>,
-            true);
+        ->Register(trial_var_name, kernels, true);
   }
 
   mblf_kernels_map_map.Get(test_var_name)
       ->Get(trial_var_name)
-      ->Append(mblf_kernel);
+      ->push_back(std::move(kernel));
 }
 
 void EquationSystem::applyBoundaryConditions(hephaestus::BCMap &bc_map) {
@@ -197,34 +214,30 @@ void EquationSystem::Init(hephaestus::GridFunctions &gridfunctions,
   // Initialise bilinear forms
 
   for (const auto &[test_var_name, blf_kernels] : blf_kernels_map.GetMap()) {
-    for (int i = 0; i < blf_kernels->Size(); i++) {
+    for (int i = 0; i < blf_kernels->size(); i++) {
       (*blf_kernels)[i]->Init(gridfunctions, fespaces, bc_map, coefficients);
     }
-    blf_kernels->MakeDataOwner();
   }
   // Initialise linear form kernels
   for (const auto &[test_var_name, lf_kernels] : lf_kernels_map.GetMap()) {
-    for (int i = 0; i < lf_kernels->Size(); i++) {
+    for (int i = 0; i < lf_kernels->size(); i++) {
       (*lf_kernels)[i]->Init(gridfunctions, fespaces, bc_map, coefficients);
     }
-    lf_kernels->MakeDataOwner();
   }
   // Initialise nonlinear form kernels
   for (const auto &[test_var_name, nlf_kernels] : nlf_kernels_map.GetMap()) {
-    for (int i = 0; i < nlf_kernels->Size(); i++) {
+    for (int i = 0; i < nlf_kernels->size(); i++) {
       (*nlf_kernels)[i]->Init(gridfunctions, fespaces, bc_map, coefficients);
     }
-    nlf_kernels->MakeDataOwner();
   }
   // Initialise mixed bilinear form kernels
   for (const auto &[test_var_name, mblf_kernels_map] :
        mblf_kernels_map_map.GetMap()) {
     for (const auto &[trial_var_name, mblf_kernels] :
          mblf_kernels_map->GetMap()) {
-      for (int i = 0; i < mblf_kernels->Size(); i++) {
+      for (int i = 0; i < mblf_kernels->size(); i++) {
         (*mblf_kernels)[i]->Init(gridfunctions, fespaces, bc_map, coefficients);
       }
-      mblf_kernels->MakeDataOwner();
     }
   }
 }

@@ -73,6 +73,12 @@ public:
                                   hephaestus::GridFunctions &gridfunctions);
 
 protected:
+  typedef hephaestus::Kernel<mfem::ParBilinearForm> ParBilinearFormKernel;
+  typedef hephaestus::Kernel<mfem::ParLinearForm> ParLinearFormKernel;
+  typedef hephaestus::Kernel<mfem::ParNonlinearForm> ParNonlinearFormKernel;
+  typedef hephaestus::Kernel<mfem::ParMixedBilinearForm>
+      ParMixedBilinearFormKernel;
+
   bool vectorContainsName(const std::vector<std::string> &the_vector,
                           const std::string &name) const;
 
@@ -81,19 +87,22 @@ protected:
   std::vector<mfem::ParGridFunction *> xs;
 
   mfem::Array2D<mfem::HypreParMatrix *> hBlocks;
+
   // Arrays to store kernels to act on each component of weak form. Named
   // according to test variable
   hephaestus::NamedFieldsMap<
-      mfem::Array<hephaestus::Kernel<mfem::ParBilinearForm> *>>
+      std::vector<std::unique_ptr<ParBilinearFormKernel>>>
       blf_kernels_map;
-  hephaestus::NamedFieldsMap<
-      mfem::Array<hephaestus::Kernel<mfem::ParLinearForm> *>>
+
+  hephaestus::NamedFieldsMap<std::vector<std::unique_ptr<ParLinearFormKernel>>>
       lf_kernels_map;
+
   hephaestus::NamedFieldsMap<
-      mfem::Array<hephaestus::Kernel<mfem::ParNonlinearForm> *>>
+      std::vector<std::unique_ptr<ParNonlinearFormKernel>>>
       nlf_kernels_map;
+
   hephaestus::NamedFieldsMap<hephaestus::NamedFieldsMap<
-      mfem::Array<hephaestus::Kernel<mfem::ParMixedBilinearForm> *>>>
+      std::vector<std::unique_ptr<ParMixedBilinearFormKernel>>>>
       mblf_kernels_map_map;
 };
 
