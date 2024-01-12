@@ -4,6 +4,13 @@ const char *DATA_DIR = "../../data/";
 
 static void zeroVec(const mfem::Vector &x, mfem::Vector &V) { V = 1.0; }
 
+double sigmafunc(const mfem::Vector &x, double t){
+
+  return pow(x[2],1.0);
+
+}
+
+
 hephaestus::Coefficients defineCoefficients(double Itotal) {
 
   hephaestus::Subdomain coil("coil", 1);
@@ -19,7 +26,7 @@ hephaestus::Coefficients defineCoefficients(double Itotal) {
                                 true);
   
   // Electrical conductivity
-  coefficients.scalars.Register("elec_cond", new mfem::ConstantCoefficient(3.526e7),
+  coefficients.scalars.Register("elec_cond", new mfem::FunctionCoefficient(sigmafunc),
                               true);
 
   return coefficients;
@@ -29,7 +36,7 @@ hephaestus::Sources defineSources(std::pair<int, int> elec,
                                   mfem::Array<int> coil_domains) {
 
   hephaestus::InputParameters coilsolver_pars;
-  coilsolver_pars.SetParam("EFieldName", std::string("electric_field"));
+  coilsolver_pars.SetParam("GradPotentialName", std::string("grad_phi"));
   coilsolver_pars.SetParam("PotentialName", std::string("auxiliary_potential"));
   coilsolver_pars.SetParam("IFuncCoefName", std::string("I"));
   coilsolver_pars.SetParam("ConductivityCoefName", std::string("elec_cond"));
@@ -54,7 +61,7 @@ hephaestus::Outputs defineOutputs() {
 int main(int argc, char *argv[]) {
 
   // Refinement and order
-  int par_ref_lvl = -1;
+  int par_ref_lvl = 1;
   int order = 1;
 
   // Total electrical current going around the coil. Must be nonzero, can be
@@ -136,7 +143,7 @@ int main(int argc, char *argv[]) {
   problem_builder->AddFESpace(std::string("HDiv"), std::string("RT_3D_P0"));
   problem_builder->AddGridFunction(std::string("magnetic_vector_potential"),
                                    std::string("HCurl"));
-  problem_builder->AddGridFunction(std::string("electric_field"),
+  problem_builder->AddGridFunction(std::string("grad_phi"),
                                    std::string("HCurl"));
   problem_builder->AddGridFunction(std::string("magnetic_flux_density"),
                                    std::string("HDiv"));
@@ -162,9 +169,9 @@ int main(int argc, char *argv[]) {
   problem_builder->SetOutputs(outputs);
 
   hephaestus::InputParameters solver_options;
-  solver_options.SetParam("Tolerance", float(1.0e-10));
-  solver_options.SetParam("AbsTolerance", float(1.0e-10));
-  solver_options.SetParam("MaxIter", (unsigned int)1000);
+  solver_options.SetParam("Tolerance", float(1.0e-15));
+  solver_options.SetParam("AbsTolerance", float(1.0e-15));
+  solver_options.SetParam("MaxIter", (unsigned int)100);
   solver_options.SetParam("PrintLevel", 2);
   problem_builder->SetSolverOptions(solver_options);
 

@@ -17,7 +17,7 @@ public:
   void buildWeakDiv();
   void buildGrad();
 
-  std::string efield_gf_name;
+  std::string grad_phi_name_;
   std::string src_coef_name;
   std::string potential_gf_name;
   std::string hcurl_fespace_name;
@@ -40,7 +40,7 @@ public:
   mfem::HypreParMatrix *A0, *S0_;
   mfem::Vector *X0, *B0;
   mutable mfem::HypreSolver *amg_a0;
-  mutable hephaestus::DefaultH1PCGSolver *a0_solver;
+  mutable hephaestus::DefaultGMRESSolver *a0_solver;
 
   mfem::ParLinearForm *b0;
   mfem::ParGridFunction *grad_p_, *xDiv_;

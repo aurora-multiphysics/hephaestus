@@ -7,7 +7,7 @@ namespace hephaestus {
 // coefficient.
 ScalarPotentialSource::ScalarPotentialSource(
     const hephaestus::InputParameters &params)
-    : efield_gf_name(params.GetParam<std::string>("EFieldName")),
+    : grad_phi_name_(params.GetParam<std::string>("GradPotentialName")),
       potential_gf_name(params.GetParam<std::string>("PotentialName")),
       hcurl_fespace_name(params.GetParam<std::string>("HCurlFESpaceName")),
       h1_fespace_name(params.GetParam<std::string>("H1FESpaceName")),
@@ -45,10 +45,10 @@ void ScalarPotentialSource::Init(hephaestus::GridFunctions &gridfunctions,
     gridfunctions.Register(potential_gf_name, p_, false);
   }
 
-  grad_p_ = gridfunctions.Get(efield_gf_name);
+  grad_p_ = gridfunctions.Get(grad_phi_name_);
   if (grad_p_ == NULL) {
     grad_p_ = new mfem::ParGridFunction(HCurlFESpace_);
-    gridfunctions.Register(efield_gf_name, grad_p_, false);
+    gridfunctions.Register(grad_phi_name_, grad_p_, false);
   }
 
   _bc_map = &bc_map;
@@ -112,7 +112,7 @@ void ScalarPotentialSource::Apply(mfem::ParLinearForm *lf) {
   a0->FormLinearSystem(poisson_ess_tdof_list, Phi_gf, *b0, *A0, *X0, *B0);
 
   if (a0_solver == NULL) {
-    a0_solver = new hephaestus::DefaultH1PCGSolver(solver_options, *A0);
+    a0_solver = new hephaestus::DefaultGMRESSolver(solver_options, *A0);
   }
   // Solve
   a0_solver->Mult(*B0, *X0);

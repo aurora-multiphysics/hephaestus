@@ -78,6 +78,7 @@ private:
   int order_h1_;
   int order_hcurl_;
   int ref_face_;
+  bool grad_phi_transfer_;
   std::pair<int, int> elec_attrs_;
   mfem::Array<int> coil_domains_;
   mfem::Array<int> coil_markers_;
@@ -86,15 +87,15 @@ private:
   hephaestus::InputParameters solver_options_;
 
   // Names
-  std::string E_gf_name_;
+  std::string grad_phi_name_;
   std::string V_gf_name_;
   std::string I_coef_name_;
   std::string cond_coef_name_;
 
   // Parent mesh, FE space, and current
   mfem::ParMesh *mesh_parent_;
-  mfem::ParGridFunction *E_parent_;
-  mfem::ParGridFunction *Et_parent_;
+  mfem::ParGridFunction *grad_p_parent_;
+  mfem::ParGridFunction *grad_p_t_parent;
   mfem::ParGridFunction *V_parent_;
   mfem::ParGridFunction *Vt_parent_;
 
@@ -104,7 +105,7 @@ private:
   mfem::ParFiniteElementSpace *HCurlFESpace_;
 
   // Child GridFunctions
-  mfem::ParGridFunction *E_;
+  mfem::ParGridFunction *grad_p_;
   mfem::ParGridFunction *V_;
 
   // Child boundary condition objects

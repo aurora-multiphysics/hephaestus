@@ -2,9 +2,11 @@
 
 const char *DATA_DIR = "../../data/";
 
+static void zeroVec(const mfem::Vector &x, mfem::Vector &V) { V = 1.0; }
+
 double sigmafunc(const mfem::Vector &x, double t){
 
-  return pow(x[0], 2);
+  return 1.0;
 
 }
 
@@ -16,7 +18,7 @@ hephaestus::Coefficients defineCoefficients() {
   coefficients.scalars.Register("elec_conductivity",
                                 new mfem::FunctionCoefficient(sigmafunc), true);
 
-  double Itotal = 2742;
+  double Itotal = 1;
   coefficients.scalars.Register("I", new mfem::ConstantCoefficient(Itotal),
                                 true);
   return coefficients;
@@ -26,7 +28,6 @@ hephaestus::Sources defineSources() {
   hephaestus::InputParameters div_free_source_params;
   // This vector of subdomains will form the coil that we pass to
   // ClosedCoilSolver
-  int order = 1;
   int electrode_attr = 7;
   std::string coil_attr = "3 4 5 6";
   mfem::Array<int> coil_domains;
@@ -37,8 +38,8 @@ hephaestus::Sources defineSources() {
 
   hephaestus::InputParameters coilsolver_pars;
   coilsolver_pars.SetParam("HCurlFESpaceName", std::string("HCurl"));
-  coilsolver_pars.SetParam("EGridFunctionName",
-                           std::string("source_electric_field"));
+  coilsolver_pars.SetParam("GradPotentialName",
+                           std::string("source_grad_phi"));
   coilsolver_pars.SetParam("IFuncCoefName", std::string("I"));
   coilsolver_pars.SetParam("ConductivityCoefName",
                            std::string("elec_conductivity"));
@@ -82,7 +83,7 @@ int main(int argc, char *argv[]) {
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(mfem::ParMesh(MPI_COMM_WORLD, mesh));
 
-  int par_ref_lvl = 1;
+  int par_ref_lvl = -1;
   for (int l = 0; l < par_ref_lvl; ++l)
     pmesh->UniformRefinement();
 
@@ -92,13 +93,27 @@ int main(int argc, char *argv[]) {
   problem_builder->AddFESpace(std::string("HDiv"), std::string("RT_3D_P0"));
   problem_builder->AddGridFunction(std::string("magnetic_vector_potential"),
                                    std::string("HCurl"));
-  problem_builder->AddGridFunction(std::string("source_electric_field"),
+  problem_builder->AddGridFunction(std::string("source_grad_phi"),
                                    std::string("HCurl"));
   problem_builder->AddGridFunction(std::string("magnetic_flux_density"),
                                    std::string("HDiv"));
   problem_builder->registerMagneticFluxDensityAux("magnetic_flux_density");
   hephaestus::Coefficients coefficients = defineCoefficients();
   problem_builder->SetCoefficients(coefficients);
+
+  mfem::Array<int> A_DBC_bdr(6);
+  A_DBC_bdr[0] = 1;
+  A_DBC_bdr[1] = 2;
+  A_DBC_bdr[2] = 3;
+  A_DBC_bdr[3] = 4;
+  A_DBC_bdr[4] = 5;
+  A_DBC_bdr[5] = 6;
+  hephaestus::VectorDirichletBC A_DBC("magnetic_vector_potential", A_DBC_bdr,
+                                      new mfem::VectorFunctionCoefficient(3, zeroVec));
+
+  problem_builder->AddBoundaryCondition("A_DBC", &A_DBC,
+                                        true);
+
 
   hephaestus::Sources sources = defineSources();
   problem_builder->SetSources(sources);
@@ -107,9 +122,9 @@ int main(int argc, char *argv[]) {
   problem_builder->SetOutputs(outputs);
 
   hephaestus::InputParameters solver_options;
-  solver_options.SetParam("Tolerance", float(1.0e-13));
-  solver_options.SetParam("AbsTolerance", float(1.0e-16));
-  solver_options.SetParam("MaxIter", (unsigned int)500);
+  solver_options.SetParam("Tolerance", float(1.0e-20));
+  solver_options.SetParam("AbsTolerance", float(1.0e-20));
+  solver_options.SetParam("MaxIter", (unsigned int)200);
   solver_options.SetParam("PrintLevel", 2);
   problem_builder->SetSolverOptions(solver_options);
 
@@ -124,7 +139,7 @@ int main(int argc, char *argv[]) {
   hephaestus::SteadyExecutioner *executioner =
       new hephaestus::SteadyExecutioner(exec_params);
 
-  mfem::out << "Created executioner";
+  mfem::out << "Created executioner" << std::endl;
   executioner->Execute();
 
   MPI_Finalize();

@@ -38,7 +38,7 @@ TEST(OpenCoilTest, CheckData) {
   hephaestus::GridFunctions gridfunctions;
   gridfunctions.Register(std::string("E"), &E, true);
 
-  ocs_params.SetParam("EFieldName", std::string("E"));
+  ocs_params.SetParam("GradPotentialName", std::string("E"));
   ocs_params.SetParam("IFuncCoefName", std::string("Itotal"));
   ocs_params.SetParam("PotentialName", std::string("V"));
   ocs_params.SetParam("ConductivityCoefName", std::string("Conductivity"));
