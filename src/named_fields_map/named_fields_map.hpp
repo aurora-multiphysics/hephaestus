@@ -20,6 +20,9 @@ public:
 
   /// Register association between field @a field and name @a field_name
   void Register(const std::string &field_name, T *field, bool own_data) {
+    // 0. Prevent double-registration of field.
+    CheckForDoubleRegistration(field_name, field);
+
     // 1. Deregister existing field with that name.
     Deregister(field_name);
 
@@ -96,6 +99,14 @@ public:
   inline int NumFields() const { return _field_map.size(); }
 
 protected:
+  /// Check for double-registration of a field. A double-registered field may
+  /// result in undefined behavior.
+  void CheckForDoubleRegistration(const std::string &field_name, T *field) {
+    if (Has(field_name) && Get(field_name) == field) {
+      MFEM_ABORT("The field '" << field_name << "' is already registered.");
+    }
+  }
+
   /// Clear all associations between names and fields.
   void DeregisterAll() {
     _field_map.clear();
