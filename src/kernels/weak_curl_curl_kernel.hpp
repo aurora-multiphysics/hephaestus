@@ -10,7 +10,7 @@ class WeakCurlCurlKernel : public Kernel<mfem::ParLinearForm> {
 public:
   WeakCurlCurlKernel(const hephaestus::InputParameters &params);
 
-  ~WeakCurlCurlKernel() override {}
+  ~WeakCurlCurlKernel() override{};
 
   virtual void Init(hephaestus::GridFunctions &gridfunctions,
                     const hephaestus::FESpaces &fespaces,
