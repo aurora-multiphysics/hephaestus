@@ -17,6 +17,8 @@ public:
   Outputs();
   Outputs(hephaestus::GridFunctions &gridfunctions);
 
+  ~Outputs();
+
   // Set output fields to write out. If output_field_names is empty, all
   // gridfunctions will be written by default.
   void SetOutputFieldNames(std::vector<std::string> &output_field_names) {
