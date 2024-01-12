@@ -13,6 +13,12 @@ mixed and nonlinear forms) and build methods
 */
 class EquationSystem {
 public:
+  typedef hephaestus::Kernel<mfem::ParBilinearForm> ParBilinearFormKernel;
+  typedef hephaestus::Kernel<mfem::ParLinearForm> ParLinearFormKernel;
+  typedef hephaestus::Kernel<mfem::ParNonlinearForm> ParNonlinearFormKernel;
+  typedef hephaestus::Kernel<mfem::ParMixedBilinearForm>
+      ParMixedBilinearFormKernel;
+
   EquationSystem(){};
   EquationSystem(const hephaestus::InputParameters &params);
 
@@ -37,15 +43,20 @@ public:
   virtual void addTestVariableNameIfMissing(const std::string &test_var_name);
   virtual void addVariableNameIfMissing(const std::string &var_name);
 
-  // Add kernels. EquationSystem takes ownership.
-  void addKernel(std::string test_var_name,
-                 hephaestus::Kernel<mfem::ParBilinearForm> *blf_kernel);
-  void addKernel(std::string test_var_name,
-                 hephaestus::Kernel<mfem::ParLinearForm> *lf_kernel);
-  void addKernel(std::string test_var_name,
-                 hephaestus::Kernel<mfem::ParNonlinearForm> *nlf_kernel);
-  void addKernel(std::string trial_var_name, std::string test_var_name,
-                 hephaestus::Kernel<mfem::ParMixedBilinearForm> *mblf_kernel);
+  // Add kernels.
+  void addKernel(const std::string &test_var_name,
+                 std::unique_ptr<ParBilinearFormKernel> blf_kernel);
+
+  void addKernel(const std::string &test_var_name,
+                 std::unique_ptr<ParLinearFormKernel> lf_kernel);
+
+  void addKernel(const std::string &test_var_name,
+                 std::unique_ptr<ParNonlinearFormKernel> nlf_kernel);
+
+  void addKernel(const std::string &trial_var_name,
+                 const std::string &test_var_name,
+                 std::unique_ptr<ParMixedBilinearFormKernel> mblf_kernel);
+
   virtual void applyBoundaryConditions(hephaestus::BCMap &bc_map);
 
   // override to add kernels
@@ -73,12 +84,6 @@ public:
                                   hephaestus::GridFunctions &gridfunctions);
 
 protected:
-  typedef hephaestus::Kernel<mfem::ParBilinearForm> ParBilinearFormKernel;
-  typedef hephaestus::Kernel<mfem::ParLinearForm> ParLinearFormKernel;
-  typedef hephaestus::Kernel<mfem::ParNonlinearForm> ParNonlinearFormKernel;
-  typedef hephaestus::Kernel<mfem::ParMixedBilinearForm>
-      ParMixedBilinearFormKernel;
-
   bool vectorContainsName(const std::vector<std::string> &the_vector,
                           const std::string &name) const;
 

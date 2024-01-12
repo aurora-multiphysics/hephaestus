@@ -146,35 +146,39 @@ void AVEquationSystem::addKernels() {
   hephaestus::InputParameters weakCurlCurlParams;
   weakCurlCurlParams.SetParam("CoupledVariableName", a_name);
   weakCurlCurlParams.SetParam("CoefficientName", alpha_coef_name);
-  addKernel(da_dt_name, new hephaestus::WeakCurlCurlKernel(weakCurlCurlParams));
+  addKernel(da_dt_name, std::make_unique<hephaestus::WeakCurlCurlKernel>(
+                            weakCurlCurlParams));
 
   // (αdt∇×dA/dt_{n+1}, ∇×A')
   hephaestus::InputParameters curlCurlParams;
   curlCurlParams.SetParam("CoefficientName", dtalpha_coef_name);
-  addKernel(da_dt_name, new hephaestus::CurlCurlKernel(curlCurlParams));
+  addKernel(da_dt_name,
+            std::make_unique<hephaestus::CurlCurlKernel>(curlCurlParams));
 
   // (βdA/dt_{n+1}, A')
   hephaestus::InputParameters vectorFEMassParams;
   vectorFEMassParams.SetParam("CoefficientName", beta_coef_name);
-  addKernel(da_dt_name, new hephaestus::VectorFEMassKernel(vectorFEMassParams));
+  addKernel(da_dt_name, std::make_unique<hephaestus::VectorFEMassKernel>(
+                            vectorFEMassParams));
 
   // (σ ∇ V, dA'/dt)
   hephaestus::InputParameters mixedVectorGradientParams;
   mixedVectorGradientParams.SetParam("CoefficientName", beta_coef_name);
-  addKernel(
-      v_name, da_dt_name,
-      new hephaestus::MixedVectorGradientKernel(mixedVectorGradientParams));
+  addKernel(v_name, da_dt_name,
+            std::make_unique<hephaestus::MixedVectorGradientKernel>(
+                mixedVectorGradientParams));
 
   // (σ ∇ V, ∇ V')
   hephaestus::InputParameters diffusionParams;
   diffusionParams.SetParam("CoefficientName", beta_coef_name);
-  addKernel(v_name, new hephaestus::DiffusionKernel(diffusionParams));
+  addKernel(v_name,
+            std::make_unique<hephaestus::DiffusionKernel>(diffusionParams));
 
   // (σdA/dt, ∇ V')
   hephaestus::InputParameters vectorFEWeakDivergenceParams;
   vectorFEWeakDivergenceParams.SetParam("CoefficientName", beta_coef_name);
   addKernel(da_dt_name, v_name,
-            new hephaestus::VectorFEWeakDivergenceKernel(
+            std::make_unique<hephaestus::VectorFEWeakDivergenceKernel>(
                 vectorFEWeakDivergenceParams));
 }
 

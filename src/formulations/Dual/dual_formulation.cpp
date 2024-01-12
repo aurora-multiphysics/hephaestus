@@ -142,18 +142,20 @@ void WeakCurlEquationSystem::addKernels() {
   weakCurlParams.SetParam("HCurlVarName", _h_curl_var_name);
   weakCurlParams.SetParam("HDivVarName", _h_div_var_name);
   weakCurlParams.SetParam("CoefficientName", _alpha_coef_name);
-  addKernel(_h_curl_var_name, new hephaestus::WeakCurlKernel(weakCurlParams));
+  addKernel(_h_curl_var_name,
+            std::make_unique<hephaestus::WeakCurlKernel>(weakCurlParams));
 
   // (αdt∇×u_{n+1}, ∇×u')
   hephaestus::InputParameters curlCurlParams;
   curlCurlParams.SetParam("CoefficientName", _dtalpha_coef_name);
-  addKernel(_h_curl_var_name, new hephaestus::CurlCurlKernel(curlCurlParams));
+  addKernel(_h_curl_var_name,
+            std::make_unique<hephaestus::CurlCurlKernel>(curlCurlParams));
 
   // (βu_{n+1}, u')
   hephaestus::InputParameters vectorFEMassParams;
   vectorFEMassParams.SetParam("CoefficientName", _beta_coef_name);
-  addKernel(_h_curl_var_name,
-            new hephaestus::VectorFEMassKernel(vectorFEMassParams));
+  addKernel(_h_curl_var_name, std::make_unique<hephaestus::VectorFEMassKernel>(
+                                  vectorFEMassParams));
 }
 
 DualOperator::DualOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,

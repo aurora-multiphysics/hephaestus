@@ -37,68 +37,62 @@ void EquationSystem::addTestVariableNameIfMissing(
   }
 }
 
-void EquationSystem::addKernel(std::string test_var_name,
-                               ParBilinearFormKernel *blf_kernel) {
+void EquationSystem::addKernel(
+    const std::string &test_var_name,
+    std::unique_ptr<ParBilinearFormKernel> blf_kernel) {
 
   addTestVariableNameIfMissing(test_var_name);
 
-  auto kernel = std::unique_ptr<ParBilinearFormKernel>(blf_kernel);
-
   if (!blf_kernels_map.Has(test_var_name)) {
     // 1. Create kernels vector.
-    auto kernels = new std::vector<decltype(kernel)>;
+    auto kernels = new std::vector<decltype(blf_kernel)>;
 
     // 2. Register with map to prevent leaks.
     blf_kernels_map.Register(test_var_name, kernels, true);
   }
 
-  blf_kernels_map.Get(test_var_name)->push_back(std::move(kernel));
+  blf_kernels_map.Get(test_var_name)->push_back(std::move(blf_kernel));
 }
 
-void EquationSystem::addKernel(std::string test_var_name,
-                               ParLinearFormKernel *lf_kernel) {
+void EquationSystem::addKernel(const std::string &test_var_name,
+                               std::unique_ptr<ParLinearFormKernel> lf_kernel) {
 
   addTestVariableNameIfMissing(test_var_name);
 
-  auto kernel = std::unique_ptr<ParLinearFormKernel>(lf_kernel);
-
   if (!lf_kernels_map.Has(test_var_name)) {
-    auto kernels = new std::vector<decltype(kernel)>;
+    auto kernels = new std::vector<decltype(lf_kernel)>;
 
     lf_kernels_map.Register(test_var_name, kernels, true);
   }
 
-  lf_kernels_map.Get(test_var_name)->push_back(std::move(kernel));
+  lf_kernels_map.Get(test_var_name)->push_back(std::move(lf_kernel));
 }
 
-void EquationSystem::addKernel(std::string test_var_name,
-                               ParNonlinearFormKernel *nlf_kernel) {
+void EquationSystem::addKernel(
+    const std::string &test_var_name,
+    std::unique_ptr<ParNonlinearFormKernel> nlf_kernel) {
 
   addTestVariableNameIfMissing(test_var_name);
 
-  auto kernel = std::unique_ptr<ParNonlinearFormKernel>(nlf_kernel);
-
   if (!nlf_kernels_map.Has(test_var_name)) {
-    auto kernels = new std::vector<decltype(kernel)>;
+    auto kernels = new std::vector<decltype(nlf_kernel)>;
 
     nlf_kernels_map.Register(test_var_name, kernels, true);
   }
 
-  nlf_kernels_map.Get(test_var_name)->push_back(std::move(kernel));
+  nlf_kernels_map.Get(test_var_name)->push_back(std::move(nlf_kernel));
 }
 
-void EquationSystem::addKernel(std::string trial_var_name,
-                               std::string test_var_name,
-                               ParMixedBilinearFormKernel *mblf_kernel) {
+void EquationSystem::addKernel(
+    const std::string &trial_var_name, const std::string &test_var_name,
+    std::unique_ptr<ParMixedBilinearFormKernel> mblf_kernel) {
 
   addTestVariableNameIfMissing(test_var_name);
-
-  auto kernel = std::unique_ptr<ParMixedBilinearFormKernel>(mblf_kernel);
 
   // Register new mblf kernels map if not present for this test variable
   if (!mblf_kernels_map_map.Has(test_var_name)) {
     auto kernel_field_map =
-        new hephaestus::NamedFieldsMap<std::vector<decltype(kernel)>>;
+        new hephaestus::NamedFieldsMap<std::vector<decltype(mblf_kernel)>>;
 
     mblf_kernels_map_map.Register(test_var_name, kernel_field_map, true);
   }
@@ -106,7 +100,7 @@ void EquationSystem::addKernel(std::string trial_var_name,
   // Register new mblf kernels map if not present for the test/trial variable
   // pair
   if (!mblf_kernels_map_map.Get(test_var_name)->Has(trial_var_name)) {
-    auto kernels = new std::vector<decltype(kernel)>;
+    auto kernels = new std::vector<std::unique_ptr<ParMixedBilinearFormKernel>>;
 
     mblf_kernels_map_map.Get(test_var_name)
         ->Register(trial_var_name, kernels, true);
@@ -114,7 +108,7 @@ void EquationSystem::addKernel(std::string trial_var_name,
 
   mblf_kernels_map_map.Get(test_var_name)
       ->Get(trial_var_name)
-      ->push_back(std::move(kernel));
+      ->push_back(std::move(mblf_kernel));
 }
 
 void EquationSystem::applyBoundaryConditions(hephaestus::BCMap &bc_map) {
