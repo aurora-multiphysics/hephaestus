@@ -8,8 +8,6 @@ WeakCurlCurlKernel::WeakCurlCurlKernel(
       coupled_gf_name(params.GetParam<std::string>("CoupledVariableName")),
       coef_name(params.GetParam<std::string>("CoefficientName")) {}
 
-WeakCurlCurlKernel::~WeakCurlCurlKernel() {}
-
 void WeakCurlCurlKernel::Init(hephaestus::GridFunctions &gridfunctions,
                               const hephaestus::FESpaces &fespaces,
                               hephaestus::BCMap &bc_map,

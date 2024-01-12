@@ -9,7 +9,9 @@ namespace hephaestus {
 class WeakCurlKernel : public Kernel<mfem::ParLinearForm> {
 public:
   WeakCurlKernel(const hephaestus::InputParameters &params);
-  ~WeakCurlKernel();
+
+  ~WeakCurlKernel() override {}
+
   virtual void Init(hephaestus::GridFunctions &gridfunctions,
                     const hephaestus::FESpaces &fespaces,
                     hephaestus::BCMap &bc_map,

@@ -9,6 +9,8 @@ namespace hephaestus {
 template <typename T> class Kernel {
 public:
   Kernel() {}
+  virtual ~Kernel(){};
+
   Kernel(const hephaestus::InputParameters &params){};
   virtual void Init(hephaestus::GridFunctions &gridfunctions,
                     const hephaestus::FESpaces &fespaces,

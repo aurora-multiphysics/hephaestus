@@ -30,6 +30,7 @@ protected:
 class WeakCurlEquationSystem : public TimeDependentEquationSystem {
 public:
   WeakCurlEquationSystem(const hephaestus::InputParameters &params);
+  ~WeakCurlEquationSystem() override{};
 
   virtual void Init(hephaestus::GridFunctions &gridfunctions,
                     const hephaestus::FESpaces &fespaces,

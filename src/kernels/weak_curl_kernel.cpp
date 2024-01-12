@@ -8,8 +8,6 @@ WeakCurlKernel::WeakCurlKernel(const hephaestus::InputParameters &params)
       hdiv_gf_name(params.GetParam<std::string>("HDivVarName")),
       coef_name(params.GetParam<std::string>("CoefficientName")) {}
 
-WeakCurlKernel::~WeakCurlKernel() {}
-
 void WeakCurlKernel::Init(hephaestus::GridFunctions &gridfunctions,
                           const hephaestus::FESpaces &fespaces,
                           hephaestus::BCMap &bc_map,

@@ -9,6 +9,9 @@ namespace hephaestus {
 class VectorFEWeakDivergenceKernel : public Kernel<mfem::ParMixedBilinearForm> {
 public:
   VectorFEWeakDivergenceKernel(const hephaestus::InputParameters &params);
+
+  ~VectorFEWeakDivergenceKernel() override {}
+
   virtual void Init(hephaestus::GridFunctions &gridfunctions,
                     const hephaestus::FESpaces &fespaces,
                     hephaestus::BCMap &bc_map,

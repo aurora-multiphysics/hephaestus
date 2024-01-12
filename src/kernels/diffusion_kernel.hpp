@@ -9,6 +9,9 @@ namespace hephaestus {
 class DiffusionKernel : public Kernel<mfem::ParBilinearForm> {
 public:
   DiffusionKernel(const hephaestus::InputParameters &params);
+
+  ~DiffusionKernel() override{};
+
   virtual void Init(hephaestus::GridFunctions &gridfunctions,
                     const hephaestus::FESpaces &fespaces,
                     hephaestus::BCMap &bc_map,
