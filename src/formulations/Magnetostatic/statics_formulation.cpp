@@ -27,6 +27,23 @@
 // b1(u') = (s0, u') + <(α∇×u) × n, u'>
 #include "statics_formulation.hpp"
 
+bool isInDomain(const int el, const mfem::Array<int> &dom,
+                                  const mfem::ParMesh *mesh) {
+
+  // This is for ghost elements
+  if (el < 0)
+    return false;
+
+  bool verify = false;
+
+  for (auto sd : dom) {
+    if (mesh->GetAttribute(el) == sd)
+      verify = true;
+  }
+
+  return verify;
+}
+
 namespace hephaestus {
 
 StaticsFormulation::StaticsFormulation(const std::string &alpha_coef_name,
@@ -122,6 +139,36 @@ void StaticsOperator::Solve(mfem::Vector &X) {
 
   // Define and apply a parallel FGMRES solver for AX=B with the AMS
   // preconditioner from hypre.
+  /*
+  mfem::HypreParVector int_nodes;
+  int_nodes.SetSize(a_.ParFESpace()->GetNV());
+  mfem::Array<int> coil_domains({3,4,5,6});
+
+  int_nodes = 0;
+  mfem::Table* v_to_el = pmesh_->GetVertexToElementTable();
+  v_to_el->Print();
+  std::cout << "NUMBER OF ELEMENTS = " << pmesh_->GetNE() << std::endl;
+  std::cout << "NUMBER OF VERTICES = " << pmesh_->GetNV() << std::endl;
+  std::cout << "NUMBER OF VERTICES FE = " << a_.ParFESpace()->GetNV() << std::endl;
+
+  for (int v = 0; v < pmesh_->GetNV(); ++v)
+    for (int e = 0; e < pmesh_->GetNE(); ++e)
+      std::cout << *v_to_el(v,e) << std::endl;
+  //for (int v = 0; v < int_nodes.Size(); ++v){
+    
+    for (auto e:v_to_el[v]){
+      if (isInDomain(e,coil_domains,pmesh_)){
+        int_nodes[v] = 1;
+        break;
+      }
+    }
+    
+    
+
+  //}
+  */
+  
+
   hephaestus::DefaultHCurlFGMRESSolver a1_solver(_solver_options, CurlMuInvCurl,
                                                  a_.ParFESpace());
   a1_solver.Mult(RHS, A);

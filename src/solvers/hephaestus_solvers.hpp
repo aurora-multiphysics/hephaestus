@@ -81,6 +81,45 @@ class DefaultHCurlFGMRESSolver : public mfem::HypreFGMRES {
 public:
   DefaultHCurlFGMRESSolver(const hephaestus::InputParameters &params,
                            const mfem::HypreParMatrix &M,
+                           mfem::ParFiniteElementSpace *edge_fespace,
+                           mfem::HypreParMatrix beta)
+      : mfem::HypreFGMRES(M), ams(M, edge_fespace),
+        tol(params.GetOptionalParam<float>("Tolerance", 1e-16)),
+        max_iter(params.GetOptionalParam<unsigned int>("MaxIter", 100)),
+        k_dim(params.GetOptionalParam<unsigned int>("KDim", 10)),
+        print_level(params.GetOptionalParam<int>("PrintLevel", -1)) {
+
+    ams.SetSingularProblem(beta);
+    ams.SetPrintLevel(print_level);
+    SetTol(tol);
+    SetMaxIter(max_iter);
+    SetKDim(k_dim);
+    SetPrintLevel(print_level);
+    SetPreconditioner(ams);
+  }
+
+  DefaultHCurlFGMRESSolver(const hephaestus::InputParameters &params,
+                           const mfem::HypreParMatrix &M,
+                           mfem::ParFiniteElementSpace *edge_fespace,
+                           mfem::HypreParVector interior_nodes)
+      : mfem::HypreFGMRES(M), ams(M, edge_fespace),
+        tol(params.GetOptionalParam<float>("Tolerance", 1e-16)),
+        max_iter(params.GetOptionalParam<unsigned int>("MaxIter", 100)),
+        k_dim(params.GetOptionalParam<unsigned int>("KDim", 10)),
+        print_level(params.GetOptionalParam<int>("PrintLevel", -1)) {
+
+    ams.SetInteriorNodes(interior_nodes);
+    ams.SetPrintLevel(print_level);
+    SetTol(tol);
+    SetMaxIter(max_iter);
+    SetKDim(k_dim);
+    SetPrintLevel(print_level);
+    SetPreconditioner(ams);
+  }
+
+
+  DefaultHCurlFGMRESSolver(const hephaestus::InputParameters &params,
+                           const mfem::HypreParMatrix &M,
                            mfem::ParFiniteElementSpace *edge_fespace)
       : mfem::HypreFGMRES(M), ams(M, edge_fespace),
         tol(params.GetOptionalParam<float>("Tolerance", 1e-16)),
@@ -96,6 +135,7 @@ public:
     SetPrintLevel(print_level);
     SetPreconditioner(ams);
   }
+
   mfem::HypreAMS ams;
   double tol;
   int max_iter;
