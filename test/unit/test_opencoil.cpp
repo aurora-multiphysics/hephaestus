@@ -1,9 +1,13 @@
 #include "open_coil.hpp"
-#include <gtest/gtest.h>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 extern const char *DATA_DIR;
 
-TEST(OpenCoilTest, CheckData) {
+TEST_CASE("OpenCoilTest", "[CheckData]") {
+
+  // Floating point error tolerance
+  const double eps{1e-10};
 
   int par_ref_lvl = -1;
   int order = 1;
@@ -28,12 +32,12 @@ TEST(OpenCoilTest, CheckData) {
   hephaestus::BCMap bc_maps;
 
   hephaestus::Coefficients coefficients;
-  coefficients.scalars.Register(std::string("Itotal"), &Itot, true);
+  coefficients.scalars.Register(std::string("Itotal"), &Itot, false);
   coefficients.scalars.Register(std::string("Conductivity"), &Conductivity,
-                                true);
+                                false);
 
   hephaestus::FESpaces fespaces;
-  fespaces.Register(std::string("HCurl"), &HCurlFESpace, true);
+  fespaces.Register(std::string("HCurl"), &HCurlFESpace, false);
 
   hephaestus::GridFunctions gridfunctions;
   gridfunctions.Register(std::string("E"), &E, true);
@@ -54,5 +58,5 @@ TEST(OpenCoilTest, CheckData) {
 
   double flux = hephaestus::calcFlux(&E, elec_attrs.first, Conductivity);
 
-  EXPECT_FLOAT_EQ(flux, Ival);
+  REQUIRE_THAT(flux, Catch::Matchers::WithinAbs(Ival, eps));
 }

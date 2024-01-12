@@ -12,6 +12,9 @@ namespace hephaestus {
 
 class Problem {
 public:
+  Problem() = default;
+  virtual ~Problem();
+
   std::shared_ptr<mfem::ParMesh> pmesh;
   hephaestus::BCMap bc_map;
   hephaestus::Coefficients coefficients;
@@ -21,16 +24,15 @@ public:
   hephaestus::Outputs outputs;
   hephaestus::InputParameters solver_options;
 
-  mfem::ODESolver *ode_solver;
-  mfem::BlockVector *F;
+  std::unique_ptr<mfem::ODESolver> ode_solver{nullptr};
+  std::unique_ptr<mfem::BlockVector> F{nullptr};
 
   hephaestus::FECollections fecs;
   hephaestus::FESpaces fespaces;
   hephaestus::GridFunctions gridfunctions;
+
   int myid_;
   int num_procs_;
-
-  Problem() = default;
 
   virtual hephaestus::EquationSystem *GetEquationSystem() = 0;
   virtual mfem::Operator *GetOperator() = 0;

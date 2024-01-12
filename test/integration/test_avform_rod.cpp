@@ -1,9 +1,9 @@
 #include "hephaestus.hpp"
-#include <gtest/gtest.h>
+#include <catch2/catch_test_macros.hpp>
 
 extern const char *DATA_DIR;
 
-class TestAVFormRod : public testing::Test {
+class TestAVFormRod{
 protected:
   static double potential_high(const mfem::Vector &x, double t) {
     double wj_(2.0 * M_PI / 60.0);
@@ -103,7 +103,7 @@ protected:
   }
 };
 
-TEST_F(TestAVFormRod, CheckRun) {
+TEST_CASE_METHOD(TestAVFormRod, "TestAVFormRod", "[CheckRun]") {
   hephaestus::InputParameters params(test_params());
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));

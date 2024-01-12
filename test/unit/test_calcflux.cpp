@@ -1,16 +1,21 @@
 #include "open_coil.hpp"
-#include <gtest/gtest.h>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 static void JExact(const mfem::Vector &x, mfem::Vector &J);
 
 extern const char *DATA_DIR;
 
-TEST(CalcFluxTest, CheckData) {
+// Floating point error tolerance
+const double eps{1e-10};
+
+TEST_CASE("Flux calculation", "[CalcFlux]") {
 
   int par_ref_lvl = -1;
   int order = 1;
 
   mfem::Mesh mesh((std::string(DATA_DIR) + "team7.g").c_str(), 1, 1);
+  
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(mfem::ParMesh(MPI_COMM_WORLD, mesh));
 
@@ -28,8 +33,9 @@ TEST(CalcFluxTest, CheckData) {
   double theta = M_PI / 4.;
 
   double flux = hephaestus::calcFlux(&j, 7);
+  
+  REQUIRE_THAT( flux, Catch::Matchers::WithinAbs(area * cos(theta), eps));
 
-  EXPECT_FLOAT_EQ(flux, area * cos(theta));
 }
 
 static void JExact(const mfem::Vector &x, mfem::Vector &J) {

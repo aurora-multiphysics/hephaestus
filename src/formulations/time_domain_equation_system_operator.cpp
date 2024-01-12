@@ -17,10 +17,9 @@ GetTimeDerivativeNames(std::vector<std::string> gridfunction_names) {
 
 void TimeDomainEquationSystemOperator::SetGridFunctions() {
   state_var_names = _equation_system->var_names;
-  local_test_vars = populateVectorFromNamedFieldsMap<mfem::ParGridFunction>(
-      _gridfunctions, _equation_system->var_names);
-  local_trial_vars = populateVectorFromNamedFieldsMap<mfem::ParGridFunction>(
-      _gridfunctions, _equation_system->var_time_derivative_names);
+  local_test_vars = _gridfunctions.Get(_equation_system->var_names);
+  local_trial_vars =
+      _gridfunctions.Get(_equation_system->var_time_derivative_names);
 
   // Set operator size and block structure
   block_trueOffsets.SetSize(local_test_vars.size() + 1);
