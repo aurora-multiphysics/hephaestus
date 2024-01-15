@@ -17,7 +17,7 @@ void SteadyStateProblemBuilder::ConstructOperator() {
 }
 
 void SteadyStateProblemBuilder::ConstructState() {
-  problem->F = new mfem::BlockVector(
+  problem->F = std::make_unique<mfem::BlockVector>(
       problem->eq_sys_operator->true_offsets);   // Vector of dofs
   problem->eq_sys_operator->Init(*(problem->F)); // Set up initial conditions
 }

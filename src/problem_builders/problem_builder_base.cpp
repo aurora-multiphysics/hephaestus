@@ -1,6 +1,13 @@
 #include "problem_builder.hpp"
 
 namespace hephaestus {
+
+Problem::~Problem() {
+  // Ensure that all owned memory is properly freed!
+  F.reset();
+  ode_solver.reset();
+}
+
 void ProblemBuilder::SetMesh(std::shared_ptr<mfem::ParMesh> pmesh) {
   GetProblem()->pmesh = pmesh;
   MPI_Comm_rank(pmesh->GetComm(), &(GetProblem()->myid_));

@@ -52,10 +52,9 @@ hephaestus::Sources defineSources(std::pair<int, int> elec,
 hephaestus::Outputs defineOutputs() {
 
   hephaestus::Outputs outputs;
-    outputs.Register("ParaViewDataCollection",
-                     new mfem::ParaViewDataCollection("OpenCoilParaView"),
-                     true);
-    return outputs;
+  outputs.Register("ParaViewDataCollection",
+                   new mfem::ParaViewDataCollection("OpenCoilParaView"), true);
+  return outputs;
 }
 
 int main(int argc, char *argv[]) {
@@ -154,11 +153,11 @@ int main(int argc, char *argv[]) {
   A_DBC_bdr[0] = 1;
   A_DBC_bdr[1] = 2;
   A_DBC_bdr[2] = 4;
-  hephaestus::VectorDirichletBC A_DBC("magnetic_vector_potential", A_DBC_bdr,
-                                      new mfem::VectorFunctionCoefficient(3, zeroVec));
+  hephaestus::VectorDirichletBC A_DBC(
+      "magnetic_vector_potential", A_DBC_bdr,
+      new mfem::VectorFunctionCoefficient(3, zeroVec));
 
-  problem_builder->AddBoundaryCondition("A_DBC", &A_DBC,
-                                        true);
+  problem_builder->AddBoundaryCondition("A_DBC", &A_DBC, false);
 
   problem_builder->SetCoefficients(coefficients);
 
@@ -183,8 +182,9 @@ int main(int argc, char *argv[]) {
   exec_params.SetParam("VisualisationSteps", int(1));
   exec_params.SetParam("UseGLVis", true);
   exec_params.SetParam("Problem", problem.get());
-  hephaestus::SteadyExecutioner *executioner =
-      new hephaestus::SteadyExecutioner(exec_params);
+
+  auto executioner =
+      std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
 
   mfem::out << "Created executioner";
   executioner->Execute();

@@ -26,7 +26,7 @@ double calcFlux(mfem::GridFunction *v_field, int face_attr,
       continue;
 
     mfem::FaceElementTransformations *FTr =
-        mesh->GetFaceElementTransformations(mesh->GetBdrFace(i));
+        mesh->GetFaceElementTransformations(mesh->GetBdrElementFaceIndex(i));
     if (FTr == nullptr)
       continue;
 
@@ -330,8 +330,8 @@ void OpenCoilSolver::SPSCurrent() {
                    true);
 
   hephaestus::FESpaces fespaces;
-  fespaces.Register(std::string("HCurl"), HCurlFESpace_, true);
-  fespaces.Register(std::string("H1"), H1FESpace_, true);
+  fespaces.Register(std::string("HCurl"), HCurlFESpace_, false);
+  fespaces.Register(std::string("H1"), H1FESpace_, false);
 
   hephaestus::GridFunctions gridfunctions;
   gridfunctions.Register(std::string("GradPhi"), grad_p_, true);

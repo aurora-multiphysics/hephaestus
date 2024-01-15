@@ -11,6 +11,7 @@ public:
   std::unique_ptr<hephaestus::TimeDomainEquationSystemOperator> td_operator;
 
   TimeDomainProblem() = default;
+  ~TimeDomainProblem() override;
 
   virtual hephaestus::TimeDependentEquationSystem *GetEquationSystem() {
     return td_equation_system.get();

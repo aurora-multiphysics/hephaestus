@@ -1,5 +1,6 @@
 #pragma once
 #include "mesh_extras.hpp"
+#include "named_fields_map.hpp"
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -16,7 +17,7 @@ public:
 
   std::string name;
   int id;
-  mfem::NamedFieldsMap<mfem::Coefficient> scalar_coefficients;
+  hephaestus::NamedFieldsMap<mfem::Coefficient> scalar_coefficients;
 };
 
 // Coefficients - stores all scalar and vector coefficients
@@ -34,8 +35,8 @@ public:
   void AddGlobalCoefficientsFromSubdomains();
   void registerDefaultCoefficients();
 
-  mfem::NamedFieldsMap<mfem::Coefficient> scalars;
-  mfem::NamedFieldsMap<mfem::VectorCoefficient> vectors;
+  hephaestus::NamedFieldsMap<mfem::Coefficient> scalars;
+  hephaestus::NamedFieldsMap<mfem::VectorCoefficient> vectors;
   std::vector<Subdomain> subdomains;
 };
 

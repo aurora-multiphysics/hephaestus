@@ -6,10 +6,11 @@
 #include "../common/pfem_extras.hpp"
 #include "gridfunctions.hpp"
 #include "mesh_extras.hpp"
+#include "named_fields_map.hpp"
 
 namespace hephaestus {
 
-class Outputs : public mfem::NamedFieldsMap<mfem::DataCollection> {
+class Outputs : public hephaestus::NamedFieldsMap<mfem::DataCollection> {
   friend class ProblemBuilder;
 
 public:

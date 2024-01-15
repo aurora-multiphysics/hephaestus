@@ -1,7 +1,11 @@
 #include "coefficients.hpp"
-#include <gtest/gtest.h>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 
-TEST(CoefficientsTest, CheckData) {
+// Floating point error tolerance
+const double eps{1e-10};
+
+TEST_CASE("CoefficientsTest", "[CheckData]") {
   hephaestus::Subdomain wire("wire", 1);
   wire.scalar_coefficients.Register("property_one",
                                     new mfem::ConstantCoefficient(1.0), true);
@@ -22,13 +26,13 @@ TEST(CoefficientsTest, CheckData) {
 
   mfem::Coefficient *pw = coefficients.scalars.Get("property_one");
   T.Attribute = 1;
-  EXPECT_FLOAT_EQ(pw->Eval(T, ip), 1.0);
+  REQUIRE_THAT(pw->Eval(T, ip), Catch::Matchers::WithinAbs(1.0, eps));
   T.Attribute = 2;
-  EXPECT_FLOAT_EQ(pw->Eval(T, ip), 26.0);
+  REQUIRE_THAT(pw->Eval(T, ip), Catch::Matchers::WithinAbs(26.0, eps));
 
   pw = coefficients.scalars.Get("property_two");
   T.Attribute = 1;
-  EXPECT_FLOAT_EQ(pw->Eval(T, ip), 150.0);
+  REQUIRE_THAT(pw->Eval(T, ip), Catch::Matchers::WithinAbs(150.0, eps));
   T.Attribute = 2;
-  EXPECT_FLOAT_EQ(pw->Eval(T, ip), 152.0);
+  REQUIRE_THAT(pw->Eval(T, ip), Catch::Matchers::WithinAbs(152.0, eps));
 }
