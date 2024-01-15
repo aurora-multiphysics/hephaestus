@@ -233,9 +233,7 @@ void EquationSystem::buildLinearForms(hephaestus::BCMap &bc_map,
   // Register linear forms
   for (int i = 0; i < test_var_names.size(); i++) {
     auto test_var_name = test_var_names.at(i);
-    if (lfs.Has(test_var_name)) {
-      lfs.Deregister(test_var_name);
-    }
+
     lfs.Register(test_var_name, new mfem::ParLinearForm(test_pfespaces.at(i)),
                  true);
     *(lfs.Get(test_var_name)) = 0.0;
@@ -265,9 +263,7 @@ void EquationSystem::buildBilinearForms() {
   // Register bilinear forms
   for (int i = 0; i < test_var_names.size(); i++) {
     auto test_var_name = test_var_names.at(i);
-    if (blfs.Has(test_var_name)) {
-      blfs.Deregister(test_var_name);
-    }
+
     blfs.Register(test_var_name,
                   new mfem::ParBilinearForm(test_pfespaces.at(i)), true);
 
@@ -291,9 +287,7 @@ void EquationSystem::buildMixedBilinearForms() {
   // Create mblf for each test/trial pair
   for (int i = 0; i < test_var_names.size(); i++) {
     auto test_var_name = test_var_names.at(i);
-    if (mblfs.Has(test_var_name)) {
-      mblfs.Deregister(test_var_name);
-    }
+
     hephaestus::NamedFieldsMap<mfem::ParMixedBilinearForm> *test_mblfs =
         new hephaestus::NamedFieldsMap<mfem::ParMixedBilinearForm>;
     for (int j = 0; j < test_var_names.size(); j++) {
