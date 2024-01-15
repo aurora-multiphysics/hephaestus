@@ -47,10 +47,10 @@ hephaestus::Sources defineSources() {
 hephaestus::Outputs defineOutputs() {
 
   hephaestus::Outputs outputs;
-    outputs.Register("ParaViewDataCollection",
-                     new mfem::ParaViewDataCollection("ClosedCoilParaView"),
-                     true);
-    return outputs;
+  outputs.Register("ParaViewDataCollection",
+                   new mfem::ParaViewDataCollection("ClosedCoilParaView"),
+                   true);
+  return outputs;
 }
 
 int main(int argc, char *argv[]) {

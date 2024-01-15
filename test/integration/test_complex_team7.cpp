@@ -7,7 +7,7 @@
 
 extern const char *DATA_DIR;
 
-class TestComplexTeam7{
+class TestComplexTeam7 {
 protected:
   static void source_current(const mfem::Vector &xv, mfem::Vector &J) {
     double x0(194e-3);  // Coil centre x coordinate

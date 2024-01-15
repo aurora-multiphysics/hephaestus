@@ -4,7 +4,7 @@
 
 extern const char *DATA_DIR;
 
-class TestComplexIrisWaveguide{
+class TestComplexIrisWaveguide {
 protected:
   static void e_bc_r(const mfem::Vector &x, mfem::Vector &E) {
     E.SetSize(3);
@@ -114,7 +114,8 @@ protected:
   }
 };
 
-TEST_CASE_METHOD(TestComplexIrisWaveguide, "TestComplexIrisWaveguide", "[CheckRun]") {
+TEST_CASE_METHOD(TestComplexIrisWaveguide, "TestComplexIrisWaveguide",
+                 "[CheckRun]") {
   hephaestus::InputParameters params(test_params());
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));

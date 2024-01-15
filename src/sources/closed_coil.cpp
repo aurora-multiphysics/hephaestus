@@ -176,7 +176,8 @@ void ClosedCoilSolver::makeWedge() {
   Plane3D plane;
 
   if (bdr_els.size() > 0) {
-    plane.make3DPlane(mesh_parent_, mesh_parent_->GetBdrElementFaceIndex(bdr_els[0]));
+    plane.make3DPlane(mesh_parent_,
+                      mesh_parent_->GetBdrElementFaceIndex(bdr_els[0]));
   }
 
   std::vector<int> elec_vtx;
@@ -184,7 +185,8 @@ void ClosedCoilSolver::makeWedge() {
   for (auto b_fc : bdr_els) {
 
     mfem::Array<int> face_vtx;
-    mesh_parent_->GetFaceVertices(mesh_parent_->GetBdrElementFaceIndex(b_fc), face_vtx);
+    mesh_parent_->GetFaceVertices(mesh_parent_->GetBdrElementFaceIndex(b_fc),
+                                  face_vtx);
 
     for (auto v : face_vtx)
       pushIfUnique(elec_vtx, v);
@@ -371,14 +373,13 @@ void ClosedCoilSolver::solveCoil() {
   // This creates a binary representation of which MPI ranks contain at
   // least one element
   int ref_rank = 0;
-  int has_els =
-      (bool)mesh_coil_->GetNE() ? 1<<mfem::Mpi::WorldRank() : 0;
+  int has_els = (bool)mesh_coil_->GetNE() ? 1 << mfem::Mpi::WorldRank() : 0;
   int has_els_sum;
   MPI_Allreduce(&has_els, &has_els_sum, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
   MFEM_ASSERT(has_els_sum != 0, "Empty coil submesh!");
 
-  for (int i=0; i < mfem::Mpi::WorldSize(); ++i){
-    if ((1<<i & has_els_sum) != 0){
+  for (int i = 0; i < mfem::Mpi::WorldSize(); ++i) {
+    if ((1 << i & has_els_sum) != 0) {
       ref_rank = i;
       break;
     }

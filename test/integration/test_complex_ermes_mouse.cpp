@@ -7,7 +7,7 @@
 
 extern const char *DATA_DIR;
 
-class TestComplexERMESMouse{
+class TestComplexERMESMouse {
 protected:
   static void e_bc_r(const mfem::Vector &x, mfem::Vector &E) {
     E.SetSize(3);

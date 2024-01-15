@@ -22,6 +22,6 @@ TEST_CASE("VariablesTest", "[CheckSetup]") {
       problem->gridfunctions.Get("vector_potential");
   mfem::ParFiniteElementSpace *stored_fespace = problem->fespaces.Get("HCurl");
 
-  REQUIRE( stored_fespace->GetVSize() == stored_gf->ParFESpace()->GetVSize() );
-  REQUIRE( stored_fespace->GetVSize() > 0 );
+  REQUIRE(stored_fespace->GetVSize() == stored_gf->ParFESpace()->GetVSize());
+  REQUIRE(stored_fespace->GetVSize() > 0);
 }

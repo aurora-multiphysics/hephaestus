@@ -95,7 +95,6 @@ private:
 
   // Final LinearForm
   mfem::ParLinearForm *final_lf_;
-
 };
 
 class Plane3D {

@@ -13,6 +13,11 @@ RUN cd /$WORKDIR && \
     git checkout "$build_git_sha" && \
     git submodule update --init --recursive
 
+# Install and run pre-commit hooks
+RUN cd /$WORKDIR/hephaestus/ && \
+    pre-commit install && \
+    pre-commit run --all-files
+
 # Build Hephaestus
 RUN cd /$WORKDIR/hephaestus/ && \
     mkdir build && \
