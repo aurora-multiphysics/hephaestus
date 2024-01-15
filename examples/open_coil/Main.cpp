@@ -31,6 +31,7 @@ hephaestus::Sources defineSources(std::pair<int, int> elec,
   coilsolver_pars.SetParam("GradPotentialName", std::string("grad_phi"));
   coilsolver_pars.SetParam("PotentialName", std::string("auxiliary_potential"));
   coilsolver_pars.SetParam("IFuncCoefName", std::string("I"));
+  coilsolver_pars.SetParam("ConductivityCoefName", std::string("electrical_conductivity"));
 
   hephaestus::Sources sources;
   sources.Register(
