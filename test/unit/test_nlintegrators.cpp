@@ -1,11 +1,12 @@
 #include "coefficients.hpp"
 #include <catch2/catch_test_macros.hpp>
 
-extern const char *DATA_DIR;
+extern const char * DATA_DIR;
 
-class VectorPowerLawNLFIntegrator : public mfem::NonlinearFormIntegrator {
+class VectorPowerLawNLFIntegrator : public mfem::NonlinearFormIntegrator
+{
 protected:
-  mfem::Coefficient *Q;
+  mfem::Coefficient * Q;
 
 private:
   mfem::DenseMatrix curlshape, curlshape_dFt, Jac;
@@ -15,12 +16,13 @@ private:
   double Jc = 100000000;
 
 public:
-  VectorPowerLawNLFIntegrator(mfem::Coefficient &q) : Q(&q) {}
+  VectorPowerLawNLFIntegrator(mfem::Coefficient & q) : Q(&q) {}
 
-  virtual void AssembleElementGrad(const mfem::FiniteElement &el,
-                                   mfem::ElementTransformation &Ttr,
-                                   const mfem::Vector &elfun,
-                                   mfem::DenseMatrix &elmat) {
+  virtual void AssembleElementGrad(const mfem::FiniteElement & el,
+                                   mfem::ElementTransformation & Ttr,
+                                   const mfem::Vector & elfun,
+                                   mfem::DenseMatrix & elmat)
+  {
 
     int nd = el.GetDof();
     int dim = el.GetDim();
@@ -33,13 +35,14 @@ public:
     elmat = 0.0;
     double w;
 
-    const mfem::IntegrationRule *ir = IntRule;
-    if (!ir) {
-      ir = &(
-          mfem::IntRules.Get(el.GetGeomType(), 2 * el.GetOrder() + 3)); // <---
+    const mfem::IntegrationRule * ir = IntRule;
+    if (!ir)
+    {
+      ir = &(mfem::IntRules.Get(el.GetGeomType(), 2 * el.GetOrder() + 3)); // <---
     }
-    for (int i = 0; i < ir->GetNPoints(); i++) {
-      const mfem::IntegrationPoint &ip = ir->IntPoint(i);
+    for (int i = 0; i < ir->GetNPoints(); i++)
+    {
+      const mfem::IntegrationPoint & ip = ir->IntPoint(i);
       Ttr.SetIntPoint(&ip);
       w = ip.weight / Ttr.Weight();
       w *= Q->Eval(Ttr, ip);           // multiply the PWconstantcoefficient
@@ -57,10 +60,11 @@ public:
     }
   };
 
-  virtual void AssembleElementVector(const mfem::FiniteElement &el,
-                                     mfem::ElementTransformation &Ttr,
-                                     const mfem::Vector &elfun,
-                                     mfem::Vector &elvect) {
+  virtual void AssembleElementVector(const mfem::FiniteElement & el,
+                                     mfem::ElementTransformation & Ttr,
+                                     const mfem::Vector & elfun,
+                                     mfem::Vector & elvect)
+  {
     int nd = el.GetDof(), dim = el.GetDim();
 
     mfem::DenseMatrix curlshape(nd, dim);
@@ -76,20 +80,21 @@ public:
     // cout << "elfun size " <<  elfun.Size() << endl;
     // cout << "Densemtrix row col " << nd <<" Elfun size " << elfun.Size() <<
     // endl;
-    const mfem::IntegrationRule *ir = IntRule;
-    if (!ir) {
-      ir = &(
-          mfem::IntRules.Get(el.GetGeomType(), 2 * el.GetOrder() + 3)); // <---
+    const mfem::IntegrationRule * ir = IntRule;
+    if (!ir)
+    {
+      ir = &(mfem::IntRules.Get(el.GetGeomType(), 2 * el.GetOrder() + 3)); // <---
     }
-    for (int i = 0; i < ir->GetNPoints(); i++) {
-      const mfem::IntegrationPoint &ip = ir->IntPoint(i);
+    for (int i = 0; i < ir->GetNPoints(); i++)
+    {
+      const mfem::IntegrationPoint & ip = ir->IntPoint(i);
       Ttr.SetIntPoint(&ip);
       w = ip.weight / Ttr.Weight();
       w *= Q->Eval(Ttr, ip);           // multiply the PWconstantcoefficient
       el.CalcCurlShape(ip, curlshape); // curl operation on the shape function
 
       curlshape.MultTranspose(elfun, J); // compute the current density J
-      Jac = Ttr.Jacobian(); // mapping Jacobian to the reference element
+      Jac = Ttr.Jacobian();              // mapping Jacobian to the reference element
 
       curlshape.MultTranspose(elfun, vec); //
       Jac.MultTranspose(vec, pointflux);
@@ -110,32 +115,41 @@ public:
     k --> (M + dt*S)*k + H(x + dt*v + dt^2*k) + S*v,
     where M and S are given BilinearForms, H is a given NonlinearForm, v and x
     are given vectors, and dt is a scalar. */
-class NonlinearOperator : public mfem::Operator {
+class NonlinearOperator : public mfem::Operator
+{
 private:
-  mfem::ParBilinearForm *blf;
-  mfem::ParNonlinearForm *nlf;
-  mutable mfem::HypreParMatrix *Jacobian;
+  mfem::ParBilinearForm * blf;
+  mfem::ParNonlinearForm * nlf;
+  mutable mfem::HypreParMatrix * Jacobian;
   double dt;
-  const mfem::Vector *x0;
+  const mfem::Vector * x0;
   mutable mfem::Vector x1;
-  const mfem::Array<int> &ess_tdof_list;
+  const mfem::Array<int> & ess_tdof_list;
 
 public:
-  NonlinearOperator(mfem::ParBilinearForm *blf_, mfem::ParNonlinearForm *nlf_,
-                    const mfem::Array<int> &ess_tdof_list_)
-      : Operator(blf_->ParFESpace()->TrueVSize()), blf(blf_), nlf(nlf_),
-        Jacobian(NULL), dt(0.0), x0(NULL), x1(height),
-        ess_tdof_list(ess_tdof_list_){};
+  NonlinearOperator(mfem::ParBilinearForm * blf_,
+                    mfem::ParNonlinearForm * nlf_,
+                    const mfem::Array<int> & ess_tdof_list_)
+    : Operator(blf_->ParFESpace()->TrueVSize()),
+      blf(blf_),
+      nlf(nlf_),
+      Jacobian(NULL),
+      dt(0.0),
+      x0(NULL),
+      x1(height),
+      ess_tdof_list(ess_tdof_list_){};
 
   /// Set current dt, v, x values - needed to compute action and Jacobian.
-  void SetParameters(double dt_, const mfem::Vector *x0_) {
+  void SetParameters(double dt_, const mfem::Vector * x0_)
+  {
     dt = dt_;
     x0 = x0_;
   };
 
   //* residual = (ρ(∇×H), ∇×v) + (μdH/dt, v) + (dBᵉ/dt, v) - <(ρ∇×H)×n, v>  = 0
   /// Compute y = H(x0 + dt* dx/dt) + M dx/dt
-  virtual void Mult(const mfem::Vector &dx_dt, mfem::Vector &residual) const {
+  virtual void Mult(const mfem::Vector & dx_dt, mfem::Vector & residual) const
+  {
     add(*x0, dt, dx_dt, x1);
     nlf->Mult(x1, residual);
     blf->TrueAddMult(dx_dt, residual);
@@ -143,13 +157,14 @@ public:
 
   /// Compute J = dy/d(dx/dt)
   /// Compute J = M + dt grad_H(x0 + dt* dx/dt)
-  virtual mfem::Operator &GetGradient(const mfem::Vector &dx_dt) const {
+  virtual mfem::Operator & GetGradient(const mfem::Vector & dx_dt) const
+  {
     add(*x0, dt, dx_dt, x1);
     delete Jacobian;
-    mfem::SparseMatrix &localJ = blf->SpMat();
+    mfem::SparseMatrix & localJ = blf->SpMat();
     localJ.Add(dt, nlf->GetLocalGradient(x1));
     Jacobian = blf->ParallelAssemble(&localJ);
-    mfem::HypreParMatrix *Je = Jacobian->EliminateRowsCols(ess_tdof_list);
+    mfem::HypreParMatrix * Je = Jacobian->EliminateRowsCols(ess_tdof_list);
     delete Je;
     return *Jacobian;
   };
@@ -157,16 +172,16 @@ public:
   virtual ~NonlinearOperator() { delete Jacobian; };
 };
 
-TEST_CASE("NonlinearIntegratorTest", "[CheckData]") {
-  mfem::Mesh mesh((std::string(DATA_DIR) + "cylinder-hex-q2.gen").c_str(), 1,
-                  1);
+TEST_CASE("NonlinearIntegratorTest", "[CheckData]")
+{
+  mfem::Mesh mesh((std::string(DATA_DIR) + "cylinder-hex-q2.gen").c_str(), 1, 1);
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(mfem::ParMesh(MPI_COMM_WORLD, mesh));
 
   mesh.EnsureNodes();
   int dim = mesh.Dimension();
-  mfem::FiniteElementCollection *fec_ND;
-  mfem::FiniteElementCollection *fec_RT;
+  mfem::FiniteElementCollection * fec_ND;
+  mfem::FiniteElementCollection * fec_RT;
   fec_ND = new mfem::ND_FECollection(1, pmesh->Dimension());
   fec_RT = new mfem::RT_FECollection(1, pmesh->Dimension());
   mfem::ParFiniteElementSpace HCurlFESpace(pmesh.get(), fec_ND);
@@ -199,7 +214,7 @@ TEST_CASE("NonlinearIntegratorTest", "[CheckData]") {
   nl_oper.SetParameters(0.1, &X);
 
   // Solver for the Jacobian solve in the Newton method
-  mfem::Solver *jacobian_solver;
+  mfem::Solver * jacobian_solver;
   // Set up the Jacobian solver
   mfem::HyprePCG j_pcg(HCurlFESpace.GetComm());
   mfem::HypreAMS ams(&HCurlFESpace);
