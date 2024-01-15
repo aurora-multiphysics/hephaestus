@@ -9,7 +9,8 @@ void AuxSolvers::Init(const hephaestus::GridFunctions &gridfunctions,
     auxsolver->Init(gridfunctions, coefficients);
     aux_queue.push_back(auxsolver);
   }
-  std::sort(aux_queue.begin(), aux_queue.end(), AuxCompare());
+
+  std::sort(aux_queue.begin(), aux_queue.end(), AuxSolver::comparator);
 }
 
 void AuxSolvers::Solve(double t) {
