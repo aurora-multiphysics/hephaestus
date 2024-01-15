@@ -7,7 +7,7 @@ namespace hephaestus {
 // coefficient.
 ScalarPotentialSource::ScalarPotentialSource(
     const hephaestus::InputParameters &params)
-    : src_gf_name(params.GetParam<std::string>("SourceName")),
+    : grad_phi_name_(params.GetParam<std::string>("GradPotentialName")),
       potential_gf_name(params.GetParam<std::string>("PotentialName")),
       hcurl_fespace_name(params.GetParam<std::string>("HCurlFESpaceName")),
       h1_fespace_name(params.GetParam<std::string>("H1FESpaceName")),
@@ -45,10 +45,10 @@ void ScalarPotentialSource::Init(hephaestus::GridFunctions &gridfunctions,
     gridfunctions.Register(potential_gf_name, p_, false);
   }
 
-  grad_p_ = gridfunctions.Get(src_gf_name);
+  grad_p_ = gridfunctions.Get(grad_phi_name_);
   if (grad_p_ == NULL) {
     grad_p_ = new mfem::ParGridFunction(HCurlFESpace_);
-    gridfunctions.Register(src_gf_name, grad_p_, false);
+    gridfunctions.Register(grad_phi_name_, grad_p_, false);
   }
 
   _bc_map = &bc_map;

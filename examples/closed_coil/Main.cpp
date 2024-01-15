@@ -2,13 +2,17 @@
 
 const char *DATA_DIR = "../../data/";
 
+static void zeroVec(const mfem::Vector &x, mfem::Vector &V) { V = 1.0; }
+
+double sigmafunc(const mfem::Vector &x, double t) { return 1.0; }
+
 hephaestus::Coefficients defineCoefficients() {
   hephaestus::Coefficients coefficients;
   coefficients.scalars.Register("magnetic_permeability",
                                 new mfem::ConstantCoefficient(M_PI * 4.0e-7),
                                 true);
   coefficients.scalars.Register("electrical_conductivity",
-                                new mfem::ConstantCoefficient(1.0), true);
+                                new mfem::FunctionCoefficient(sigmafunc), true);
 
   double Itotal = 2742;
   coefficients.scalars.Register("I", new mfem::ConstantCoefficient(Itotal),
@@ -31,11 +35,10 @@ hephaestus::Sources defineSources() {
 
   hephaestus::InputParameters coilsolver_pars;
   coilsolver_pars.SetParam("HCurlFESpaceName", std::string("HCurl"));
-  coilsolver_pars.SetParam("JGridFunctionName",
-                           std::string("source_current_density"));
+  coilsolver_pars.SetParam("GradPotentialName", std::string("source_grad_phi"));
   coilsolver_pars.SetParam("IFuncCoefName", std::string("I"));
   coilsolver_pars.SetParam("H1FESpaceName", std::string("H1"));
-  coilsolver_pars.SetParam("JTransfer", true);
+  coilsolver_pars.SetParam("GradPhiTransfer", true);
 
   hephaestus::Sources sources;
   sources.Register("source",
@@ -47,10 +50,10 @@ hephaestus::Sources defineSources() {
 hephaestus::Outputs defineOutputs() {
 
   hephaestus::Outputs outputs;
-    outputs.Register("ParaViewDataCollection",
-                     new mfem::ParaViewDataCollection("ClosedCoilParaView"),
-                     true);
-    return outputs;
+  outputs.Register("ParaViewDataCollection",
+                   new mfem::ParaViewDataCollection("ClosedCoilParaView"),
+                   true);
+  return outputs;
 }
 
 int main(int argc, char *argv[]) {
