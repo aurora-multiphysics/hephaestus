@@ -2,9 +2,11 @@
 #include "executioner_base.hpp"
 #include "time_domain_problem_builder.hpp"
 
-namespace hephaestus {
+namespace hephaestus
+{
 
-class TransientExecutioner : public Executioner {
+class TransientExecutioner : public Executioner
+{
 private:
   double t_initial;       // Start time
   double t_final;         // End time
@@ -17,7 +19,7 @@ public:
   mutable double t_step; // Time step
 
   TransientExecutioner() = default;
-  explicit TransientExecutioner(const hephaestus::InputParameters &params);
+  explicit TransientExecutioner(const hephaestus::InputParameters & params);
 
   void Step(double dt, int it) const;
 
@@ -25,7 +27,7 @@ public:
 
   void Execute() const override;
 
-  hephaestus::TimeDomainProblem *problem;
+  hephaestus::TimeDomainProblem * problem;
 };
 
 } // namespace hephaestus

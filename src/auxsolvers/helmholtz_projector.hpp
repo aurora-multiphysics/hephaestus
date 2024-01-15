@@ -1,15 +1,18 @@
 #pragma once
 #include "auxsolver_base.hpp"
 
-namespace hephaestus {
+namespace hephaestus
+{
 
-class HelmholtzProjector {
+class HelmholtzProjector
+{
 public:
-  HelmholtzProjector(const hephaestus::InputParameters &params);
+  HelmholtzProjector(const hephaestus::InputParameters & params);
   ~HelmholtzProjector();
 
-  void Project(hephaestus::GridFunctions &gridfunctions,
-               const hephaestus::FESpaces &fespaces, hephaestus::BCMap &bc_map);
+  void Project(hephaestus::GridFunctions & gridfunctions,
+               const hephaestus::FESpaces & fespaces,
+               hephaestus::BCMap & bc_map);
 
   void setForms();
   void setGrad();
@@ -23,19 +26,19 @@ private:
   std::string gf_name_;
   hephaestus::InputParameters solver_options_;
 
-  mfem::ParFiniteElementSpace *H1FESpace_;
-  mfem::ParFiniteElementSpace *HCurlFESpace_;
-  mfem::ParGridFunction *q_;
-  mfem::ParGridFunction *g; // H(Curl) projection of user specified source
-  mfem::ParGridFunction *div_free_src_gf_; // Divergence free projected source
+  mfem::ParFiniteElementSpace * H1FESpace_;
+  mfem::ParFiniteElementSpace * HCurlFESpace_;
+  mfem::ParGridFunction * q_;
+  mfem::ParGridFunction * g;                // H(Curl) projection of user specified source
+  mfem::ParGridFunction * div_free_src_gf_; // Divergence free projected source
 
-  mfem::ParLinearForm *gDiv_;
-  mfem::ParBilinearForm *a0_;
-  mfem::ParMixedBilinearForm *weakDiv_;
-  mfem::ParDiscreteLinearOperator *grad_;
+  mfem::ParLinearForm * gDiv_;
+  mfem::ParBilinearForm * a0_;
+  mfem::ParMixedBilinearForm * weakDiv_;
+  mfem::ParDiscreteLinearOperator * grad_;
 
   mfem::Array<int> ess_bdr_tdofs_;
-  hephaestus::BCMap *bc_map_;
+  hephaestus::BCMap * bc_map_;
 };
 
 } // namespace hephaestus

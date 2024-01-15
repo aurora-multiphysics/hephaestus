@@ -1,12 +1,16 @@
 #include "steady_executioner.hpp"
 
-namespace hephaestus {
+namespace hephaestus
+{
 
-SteadyExecutioner::SteadyExecutioner(const hephaestus::InputParameters &params)
-    : Executioner(params),
-      problem(params.GetParam<hephaestus::SteadyStateProblem *>("Problem")) {}
+SteadyExecutioner::SteadyExecutioner(const hephaestus::InputParameters & params)
+  : Executioner(params), problem(params.GetParam<hephaestus::SteadyStateProblem *>("Problem"))
+{
+}
 
-void SteadyExecutioner::Solve() const {
+void
+SteadyExecutioner::Solve() const
+{
   // Advance time step.
   problem->preprocessors.Solve();
   problem->GetOperator()->Solve(*(problem->F));
@@ -16,5 +20,9 @@ void SteadyExecutioner::Solve() const {
   // Output timestep summary to console
   problem->outputs.Write();
 }
-void SteadyExecutioner::Execute() const { Solve(); }
+void
+SteadyExecutioner::Execute() const
+{
+  Solve();
+}
 } // namespace hephaestus
