@@ -18,6 +18,12 @@ public:
   /// Destructor.
   ~NamedFieldsMap() { DeregisterAll(); }
 
+  /// Construct new field with name @field_name and register (own_data = true).
+  template <class FieldType, class... FieldArgs>
+  void Register(const std::string &field_name, FieldArgs &&...args) {
+    Register(field_name, new FieldType(std::forward<FieldArgs>(args)...), true);
+  }
+
   /// Register association between field @a field and name @a field_name
   void Register(const std::string &field_name, T *field, bool own_data) {
     // 0. Prevent double-registration of field.
