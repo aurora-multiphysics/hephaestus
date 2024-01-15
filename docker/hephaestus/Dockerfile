@@ -20,11 +20,6 @@ RUN cd /$WORKDIR/hephaestus/ && \
     cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DMFEM_DIR=/$WORKDIR/mfem/build -DMFEM_COMMON_INCLUDES=/$WORKDIR/mfem/miniapps/common  .. && \
     make -j1
 
-# Install and run pre-commit hooks
-RUN cd /$WORKDIR/hephaestus/ && \
-    pre-commit install && \
-    pre-commit run --all-files
-
 # Test Hephaestus
 RUN cd /$WORKDIR/hephaestus/build && \
     make test
