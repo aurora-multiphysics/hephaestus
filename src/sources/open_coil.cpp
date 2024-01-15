@@ -163,10 +163,11 @@ OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters &params,
       cond_coef_name_(params.GetParam<std::string>("ConductivityCoefName")),
       coil_domains_(coil_dom), elec_attrs_(electrodes), sigma_(nullptr),
       mesh_parent_(nullptr), mesh_(nullptr), H1FESpace_(nullptr),
-      HCurlFESpace_(nullptr), grad_p_parent_(nullptr), grad_p_t_parent_(nullptr),
-      V_parent_(nullptr), Vt_parent_(nullptr), grad_p_(nullptr), V_(nullptr),
-      m1_(nullptr), final_lf_(nullptr), high_src_(highV), low_src_(lowV),
-      high_terminal_(1), low_terminal_(1), grad_phi_transfer_(true) {
+      HCurlFESpace_(nullptr), grad_p_parent_(nullptr),
+      grad_p_t_parent_(nullptr), V_parent_(nullptr), Vt_parent_(nullptr),
+      grad_p_(nullptr), V_(nullptr), m1_(nullptr), final_lf_(nullptr),
+      high_src_(highV), low_src_(lowV), high_terminal_(1), low_terminal_(1),
+      grad_phi_transfer_(true) {
 
   hephaestus::InputParameters default_pars;
   default_pars.SetParam("Tolerance", float(1.0e-20));
@@ -257,7 +258,8 @@ void OpenCoilSolver::Apply(mfem::ParLinearForm *lf) {
   // just so we can call Eval
   mfem::ElementTransformation *Tr = mesh_parent_->GetElementTransformation(0);
   const mfem::IntegrationPoint &ip =
-      mfem::IntRules.Get(grad_p_parent_->ParFESpace()->GetFE(0)->GetGeomType(), 1)
+      mfem::IntRules
+          .Get(grad_p_parent_->ParFESpace()->GetFE(0)->GetGeomType(), 1)
           .IntPoint(0);
 
   double I = Itotal_->Eval(*Tr, ip);
@@ -265,7 +267,7 @@ void OpenCoilSolver::Apply(mfem::ParLinearForm *lf) {
   *grad_p_parent_ = 0.0;
   if (grad_phi_transfer_)
     grad_p_parent_->Add(I, *grad_p_t_parent_);
-  
+
   if (V_parent_ != nullptr) {
     *V_parent_ = 0.0;
     V_parent_->Add(I, *Vt_parent_);

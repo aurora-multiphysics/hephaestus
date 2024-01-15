@@ -22,7 +22,7 @@ TEST_CASE("OpenCoilTest", "[CheckData]") {
   mfem::ND_FECollection HCurl_Collection(order, pmesh.get()->Dimension());
   mfem::ParFiniteElementSpace HCurlFESpace(pmesh.get(), &HCurl_Collection);
   mfem::ParGridFunction E(&HCurlFESpace);
-  
+
   double Ival = 10.0;
   double cond_val = 1e6;
   mfem::ConstantCoefficient Itot(Ival);
@@ -35,7 +35,7 @@ TEST_CASE("OpenCoilTest", "[CheckData]") {
   coefficients.scalars.Register(std::string("Itotal"), &Itot, false);
   coefficients.scalars.Register(std::string("Conductivity"), &Conductivity,
                                 false);
-  
+
   hephaestus::FESpaces fespaces;
   fespaces.Register(std::string("HCurl"), &HCurlFESpace, false);
 
@@ -59,5 +59,4 @@ TEST_CASE("OpenCoilTest", "[CheckData]") {
   double flux = hephaestus::calcFlux(&E, elec_attrs.first, Conductivity);
 
   REQUIRE_THAT(flux, Catch::Matchers::WithinAbs(Ival, eps));
-  
 }

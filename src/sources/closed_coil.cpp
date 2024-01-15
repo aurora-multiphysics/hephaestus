@@ -435,9 +435,8 @@ void ClosedCoilSolver::solveCoil() {
   mfem::ParBilinearForm m1(HCurlFESpace_parent_);
   hephaestus::attrToMarker(coil_domains_, coil_markers_,
                            mesh_parent_->attributes.Max());
-  m1.AddDomainIntegrator(
-      new mfem::VectorFEMassIntegrator(sigma_),
-      coil_markers_);
+  m1.AddDomainIntegrator(new mfem::VectorFEMassIntegrator(sigma_),
+                         coil_markers_);
   m1.Assemble();
   m1.AddMult(*grad_phi_parent_, *final_lf_, -1.0);
 
