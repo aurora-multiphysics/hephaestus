@@ -105,7 +105,7 @@ void ClosedCoilSolver::Init(hephaestus::GridFunctions &gridfunctions,
     grad_phi_parent_ = new mfem::ParGridFunction(HCurlFESpace_parent_);
   } else if (grad_phi_parent_->ParFESpace()->FEColl()->GetContType() !=
              mfem::FiniteElementCollection::TANGENTIAL) {
-    mfem::mfem_error("J GridFunction must be of HCurl type.");
+    mfem::mfem_error("GradPhi GridFunction must be of HCurl type.");
   }
 
   Itotal_ = coefficients.scalars.Get(I_coef_name_);
@@ -158,8 +158,8 @@ void ClosedCoilSolver::Apply(mfem::ParLinearForm *lf) {
   double I = Itotal_->Eval(*Tr, ip);
   lf->Add(I, *final_lf_);
 
+  *grad_phi_parent_ = 0.0;
   if (grad_phi_transfer_) {
-    *grad_phi_parent_ = 0.0;
     grad_phi_parent_->Add(I, *grad_phi_t_parent_);
   }
 }
