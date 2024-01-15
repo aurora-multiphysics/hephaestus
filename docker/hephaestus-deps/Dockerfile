@@ -23,6 +23,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install 
     doxygen \
     git \
     ninja-build \
+    pre-commit \
     python3 \
     python3-dev \
     python3-distutils \
