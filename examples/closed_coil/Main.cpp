@@ -44,7 +44,7 @@ hephaestus::Sources defineSources() {
   coilsolver_pars.SetParam("ConductivityCoefName",
                            std::string("elec_conductivity"));
   coilsolver_pars.SetParam("H1FESpaceName", std::string("H1"));
-  coilsolver_pars.SetParam("ETransfer", true);
+  coilsolver_pars.SetParam("GradPhiTransfer", true);
 
   hephaestus::Sources sources;
   sources.Register("source",
