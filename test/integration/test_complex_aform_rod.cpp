@@ -3,7 +3,7 @@
 
 extern const char *DATA_DIR;
 
-class TestComplexAFormRod{
+class TestComplexAFormRod {
 protected:
   static double potential_high(const mfem::Vector &x, double t) {
     // double wj_(2.0 * M_PI / 60.0);

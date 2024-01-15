@@ -22,9 +22,8 @@ HelmholtzProjector::HelmholtzProjector(
   default_pars.SetParam("PrintLevel", 1);
 
   solver_options_ = params.GetOptionalParam<hephaestus::InputParameters>(
-        "SolverOptions", default_pars);
-
-  }
+      "SolverOptions", default_pars);
+}
 
 HelmholtzProjector::~HelmholtzProjector() {
 

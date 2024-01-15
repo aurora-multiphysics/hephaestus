@@ -4,7 +4,7 @@
 
 extern const char *DATA_DIR;
 
-class TestAFormSource{
+class TestAFormSource {
 protected:
   static double estimate_convergence_rate(HYPRE_BigInt n_i, HYPRE_BigInt n_imo,
                                           double error_i, double error_imo,
