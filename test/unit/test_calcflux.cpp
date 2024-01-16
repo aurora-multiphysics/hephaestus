@@ -15,7 +15,7 @@ TEST_CASE("Flux calculation", "[CalcFlux]") {
   int order = 1;
 
   mfem::Mesh mesh((std::string(DATA_DIR) + "team7.g").c_str(), 1, 1);
-  
+
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(mfem::ParMesh(MPI_COMM_WORLD, mesh));
 
@@ -33,9 +33,8 @@ TEST_CASE("Flux calculation", "[CalcFlux]") {
   double theta = M_PI / 4.;
 
   double flux = hephaestus::calcFlux(&j, 7);
-  
-  REQUIRE_THAT( flux, Catch::Matchers::WithinAbs(area * cos(theta), eps));
 
+  REQUIRE_THAT(flux, Catch::Matchers::WithinAbs(area * cos(theta), eps));
 }
 
 static void JExact(const mfem::Vector &x, mfem::Vector &J) {

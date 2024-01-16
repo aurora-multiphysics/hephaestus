@@ -230,5 +230,4 @@ TEST_CASE("NonlinearIntegratorTest", "[CheckData]") {
   MFEM_VERIFY(newton_solver.GetConverged(), "Newton Solver did not converge.");
   std::cout << "Finished on rank:" << _my_rank << std::endl;
   x.Distribute(X);
-
 }
