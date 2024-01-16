@@ -2,18 +2,6 @@
 
 const char * DATA_DIR = "../../data/";
 
-static void
-zeroVec(const mfem::Vector & x, mfem::Vector & V)
-{
-  V = 1.0;
-}
-
-double
-sigmafunc(const mfem::Vector & x, double t)
-{
-  return 1.0;
-}
-
 hephaestus::Coefficients
 defineCoefficients()
 {
@@ -21,7 +9,7 @@ defineCoefficients()
   coefficients.scalars.Register(
       "magnetic_permeability", new mfem::ConstantCoefficient(M_PI * 4.0e-7), true);
   coefficients.scalars.Register(
-      "electrical_conductivity", new mfem::FunctionCoefficient(sigmafunc), true);
+      "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
 
   double Itotal = 2742;
   coefficients.scalars.Register("I", new mfem::ConstantCoefficient(Itotal), true);

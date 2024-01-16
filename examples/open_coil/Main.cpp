@@ -3,15 +3,9 @@
 const char * DATA_DIR = "../../data/";
 
 static void
-zeroVec(const mfem::Vector & x, mfem::Vector & V)
+constVec(const mfem::Vector & x, mfem::Vector & V)
 {
   V = 1.0;
-}
-
-double
-sigmafunc(const mfem::Vector & x, double t)
-{
-  return 1.0;
 }
 
 hephaestus::Coefficients
@@ -24,7 +18,7 @@ defineCoefficients(double Itotal)
 
   // Electrical conductivity
   coefficients.scalars.Register(
-      "electrical_conductivity", new mfem::FunctionCoefficient(sigmafunc), true);
+      "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
 
   // Time-dependent current
   coefficients.scalars.Register("I", new mfem::ConstantCoefficient(Itotal), true);
@@ -153,7 +147,7 @@ main(int argc, char * argv[])
   A_DBC_bdr[1] = 2;
   A_DBC_bdr[2] = 4;
   hephaestus::VectorDirichletBC A_DBC(
-      "magnetic_vector_potential", A_DBC_bdr, new mfem::VectorFunctionCoefficient(3, zeroVec));
+      "magnetic_vector_potential", A_DBC_bdr, new mfem::VectorFunctionCoefficient(3, constVec));
 
   problem_builder->AddBoundaryCondition("A_DBC", &A_DBC, false);
 
