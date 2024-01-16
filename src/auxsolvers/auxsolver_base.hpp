@@ -25,12 +25,11 @@ public:
   // Set priority. Lower values are evaluated first.
   void SetPriority(const int priority) { _priority = priority; };
 
-  inline int priority() const { return _priority; }
+  inline int Priority() const { return _priority; }
 
-  // Priority comparator.
-  static bool comparator(const AuxSolver * first, const AuxSolver * second)
+  static bool PriorityComparator(const AuxSolver * first, const AuxSolver * second)
   {
-    return (first->priority() < second->priority());
+    return (first->Priority() < second->Priority());
   }
 
 private:
