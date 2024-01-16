@@ -14,7 +14,7 @@ AuxSolvers::Init(const hephaestus::GridFunctions & gridfunctions,
     aux_queue.push_back(auxsolver);
   }
 
-  std::sort(aux_queue.begin(), aux_queue.end(), AuxSolver::comparator);
+  std::sort(aux_queue.begin(), aux_queue.end(), AuxSolver::PriorityComparator);
 }
 
 void
