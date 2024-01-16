@@ -1,6 +1,7 @@
 #include "steady_state_em_formulation.hpp"
 
-namespace hephaestus {
+namespace hephaestus
+{
 
 SteadyStateEMFormulation::SteadyStateEMFormulation(){};
 

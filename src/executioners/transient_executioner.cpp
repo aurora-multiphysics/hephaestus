@@ -1,20 +1,27 @@
 #include "transient_executioner.hpp"
 
-namespace hephaestus {
+namespace hephaestus
+{
 
-TransientExecutioner::TransientExecutioner(
-    const hephaestus::InputParameters &params)
-    : Executioner(params),
-      problem(params.GetParam<hephaestus::TimeDomainProblem *>("Problem")),
-      t_step(params.GetParam<float>("TimeStep")),
-      t_initial(params.GetParam<float>("StartTime")),
-      t_final(params.GetParam<float>("EndTime")), t(t_initial), it(0),
-      vis_steps(params.GetOptionalParam<int>("VisualisationSteps", 1)),
-      last_step(false) {}
+TransientExecutioner::TransientExecutioner(const hephaestus::InputParameters & params)
+  : Executioner(params),
+    problem(params.GetParam<hephaestus::TimeDomainProblem *>("Problem")),
+    t_step(params.GetParam<float>("TimeStep")),
+    t_initial(params.GetParam<float>("StartTime")),
+    t_final(params.GetParam<float>("EndTime")),
+    t(t_initial),
+    it(0),
+    vis_steps(params.GetOptionalParam<int>("VisualisationSteps", 1)),
+    last_step(false)
+{
+}
 
-void TransientExecutioner::Step(double dt, int it) const {
+void
+TransientExecutioner::Step(double dt, int it) const
+{
   // Check if current time step is final
-  if (t + dt >= t_final - dt / 2) {
+  if (t + dt >= t_final - dt / 2)
+  {
     last_step = true;
   }
 
@@ -24,22 +31,28 @@ void TransientExecutioner::Step(double dt, int it) const {
   problem->postprocessors.Solve(t);
 
   // Output data
-  if (last_step || (it % vis_steps) == 0) {
+  if (last_step || (it % vis_steps) == 0)
+  {
     problem->outputs.Write(t);
   }
 }
 
-void TransientExecutioner::Solve() const {
+void
+TransientExecutioner::Solve() const
+{
   it++;
   Step(t_step, it);
 }
 
-void TransientExecutioner::Execute() const {
+void
+TransientExecutioner::Execute() const
+{
   // Initialise time gridfunctions
   t = t_initial;
   last_step = false;
   it = 0;
-  while (last_step != true) {
+  while (last_step != true)
+  {
     Solve();
   }
 }

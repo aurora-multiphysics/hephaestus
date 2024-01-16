@@ -1,6 +1,6 @@
 #include "hephaestus.hpp"
 
-const char *DATA_DIR = "../../data/";
+const char * DATA_DIR = "../../data/";
 
 static void zeroVec(const mfem::Vector &x, mfem::Vector &V) { V = 1.0; }
 
@@ -15,12 +15,13 @@ hephaestus::Coefficients defineCoefficients() {
                                 new mfem::FunctionCoefficient(sigmafunc), true);
 
   double Itotal = 2742;
-  coefficients.scalars.Register("I", new mfem::ConstantCoefficient(Itotal),
-                                true);
+  coefficients.scalars.Register("I", new mfem::ConstantCoefficient(Itotal), true);
   return coefficients;
 }
 
-hephaestus::Sources defineSources() {
+hephaestus::Sources
+defineSources()
+{
   hephaestus::InputParameters div_free_source_params;
   // This vector of subdomains will form the coil that we pass to
   // ClosedCoilSolver
@@ -44,12 +45,13 @@ hephaestus::Sources defineSources() {
 
   hephaestus::Sources sources;
   sources.Register("source",
-                   new hephaestus::ClosedCoilSolver(
-                       coilsolver_pars, coil_domains, electrode_attr),
+                   new hephaestus::ClosedCoilSolver(coilsolver_pars, coil_domains, electrode_attr),
                    true);
   return sources;
 }
-hephaestus::Outputs defineOutputs() {
+hephaestus::Outputs
+defineOutputs()
+{
 
   hephaestus::Outputs outputs;
   outputs.Register("ParaViewDataCollection",
@@ -58,21 +60,20 @@ hephaestus::Outputs defineOutputs() {
   return outputs;
 }
 
-int main(int argc, char *argv[]) {
+int
+main(int argc, char * argv[])
+{
   mfem::OptionsParser args(argc, argv);
-  args.AddOption(&DATA_DIR, "-dataDir", "--data_directory",
-                 "Directory storing input data for tests.");
+  args.AddOption(
+      &DATA_DIR, "-dataDir", "--data_directory", "Directory storing input data for tests.");
   args.Parse();
   MPI_Init(&argc, &argv);
 
   // Create Formulation
-  hephaestus::MagnetostaticFormulation *problem_builder =
-      new hephaestus::MagnetostaticFormulation("magnetic_reluctivity",
-                                               "magnetic_permeability",
-                                               "magnetic_vector_potential");
+  hephaestus::MagnetostaticFormulation * problem_builder = new hephaestus::MagnetostaticFormulation(
+      "magnetic_reluctivity", "magnetic_permeability", "magnetic_vector_potential");
   // Set Mesh
-  mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team7.g")).c_str(), 1,
-                  1);
+  mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team7.g")).c_str(), 1, 1);
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(mfem::ParMesh(MPI_COMM_WORLD, mesh));
 
@@ -109,14 +110,12 @@ int main(int argc, char *argv[]) {
 
   hephaestus::ProblemBuildSequencer sequencer(problem_builder);
   sequencer.ConstructEquationSystemProblem();
-  std::unique_ptr<hephaestus::SteadyStateProblem> problem =
-      problem_builder->ReturnProblem();
+  std::unique_ptr<hephaestus::SteadyStateProblem> problem = problem_builder->ReturnProblem();
   hephaestus::InputParameters exec_params;
   exec_params.SetParam("VisualisationSteps", int(1));
   exec_params.SetParam("UseGLVis", true);
   exec_params.SetParam("Problem", problem.get());
-  hephaestus::SteadyExecutioner *executioner =
-      new hephaestus::SteadyExecutioner(exec_params);
+  hephaestus::SteadyExecutioner * executioner = new hephaestus::SteadyExecutioner(exec_params);
 
   mfem::out << "Created executioner";
   executioner->Execute();

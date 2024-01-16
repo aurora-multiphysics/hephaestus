@@ -10,22 +10,22 @@
 #include "inputs.hpp"
 #include "magnetostatic_formulation.hpp"
 
-namespace hephaestus {
+namespace hephaestus
+{
 
-class Factory {
+class Factory
+{
 public:
-  static hephaestus::ProblemBuilder *
-  createProblemBuilder(std::string &formulation_name);
+  static hephaestus::ProblemBuilder * createProblemBuilder(std::string & formulation_name);
 
   static hephaestus::TimeDomainEMFormulation *
-  createTimeDomainEMFormulation(std::string &formulation);
+  createTimeDomainEMFormulation(std::string & formulation);
 
   static hephaestus::FrequencyDomainEMFormulation *
-  createFrequencyDomainEMFormulation(std::string &formulation);
+  createFrequencyDomainEMFormulation(std::string & formulation);
 
-  static mfem::ParFiniteElementSpace *
-  createParFESpace(const hephaestus::InputParameters params,
-                   mfem::ParMesh &pmesh);
+  static mfem::ParFiniteElementSpace * createParFESpace(const hephaestus::InputParameters params,
+                                                        mfem::ParMesh & pmesh);
 };
 
 } // namespace hephaestus
