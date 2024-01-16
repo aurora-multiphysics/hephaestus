@@ -100,8 +100,8 @@ main(int argc, char * argv[])
 
   // Set Mesh
   mfem::Mesh mesh((std::string(DATA_DIR) + mesh_filename).c_str(), 1, 1);
-  std::shared_ptr<mfem::ParMesh> pmesh =
-      std::make_shared<mfem::ParMesh>(mfem::ParMesh(MPI_COMM_WORLD, mesh));
+  auto pmesh = std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mesh);
+
   for (int l = 0; l < par_ref_lvl; ++l)
     pmesh->UniformRefinement();
 
