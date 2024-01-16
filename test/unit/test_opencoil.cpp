@@ -2,9 +2,10 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
-extern const char *DATA_DIR;
+extern const char * DATA_DIR;
 
-TEST_CASE("OpenCoilTest", "[CheckData]") {
+TEST_CASE("OpenCoilTest", "[CheckData]")
+{
 
   // Floating point error tolerance
   const double eps{1e-10};
@@ -33,14 +34,13 @@ TEST_CASE("OpenCoilTest", "[CheckData]") {
 
   hephaestus::Coefficients coefficients;
   coefficients.scalars.Register(std::string("Itotal"), &Itot, false);
-  coefficients.scalars.Register(std::string("Conductivity"), &Conductivity,
-                                false);
+  coefficients.scalars.Register(std::string("Conductivity"), &Conductivity, false);
 
   hephaestus::FESpaces fespaces;
   fespaces.Register(std::string("HCurl"), &HCurlFESpace, false);
 
   hephaestus::GridFunctions gridfunctions;
-  gridfunctions.Register(std::string("E"), &E, true);
+  gridfunctions.Register(std::string("E"), &E, false);
 
   ocs_params.SetParam("GradPotentialName", std::string("E"));
   ocs_params.SetParam("IFuncCoefName", std::string("Itotal"));
