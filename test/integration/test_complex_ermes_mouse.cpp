@@ -5,16 +5,19 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
-extern const char *DATA_DIR;
+extern const char * DATA_DIR;
 
-class TestComplexERMESMouse {
+class TestComplexERMESMouse
+{
 protected:
-  static void e_bc_r(const mfem::Vector &x, mfem::Vector &E) {
+  static void e_bc_r(const mfem::Vector & x, mfem::Vector & E)
+  {
     E.SetSize(3);
     E = 0.0;
   }
 
-  static void e_bc_i(const mfem::Vector &x, mfem::Vector &E) {
+  static void e_bc_i(const mfem::Vector & x, mfem::Vector & E)
+  {
     E.SetSize(3);
     E = 0.0;
   }
@@ -27,65 +30,66 @@ protected:
   //   double port_length_vector[3] = {0.0, 22.86e-3, 0.0};
   //   double port_width_vector[3] = {0.0, 0.0, 10.16e-3};
 
-  hephaestus::InputParameters test_params() {
+  hephaestus::InputParameters test_params()
+  {
     hephaestus::Subdomain mouse("mouse", 1);
     hephaestus::Subdomain air("air", 2);
 
-    air.scalar_coefficients.Register("electrical_conductivity",
-                                     new mfem::ConstantCoefficient(0.0), true);
-    air.scalar_coefficients.Register("dielectric_permittivity",
-                                     new mfem::ConstantCoefficient(epsilon0_),
-                                     true);
-    air.scalar_coefficients.Register("magnetic_permeability",
-                                     new mfem::ConstantCoefficient(mu0_), true);
+    air.scalar_coefficients.Register(
+        "electrical_conductivity", new mfem::ConstantCoefficient(0.0), true);
+    air.scalar_coefficients.Register(
+        "dielectric_permittivity", new mfem::ConstantCoefficient(epsilon0_), true);
+    air.scalar_coefficients.Register(
+        "magnetic_permeability", new mfem::ConstantCoefficient(mu0_), true);
 
     mouse.scalar_coefficients.Register(
         "electrical_conductivity", new mfem::ConstantCoefficient(0.97), true);
     mouse.scalar_coefficients.Register(
-        "dielectric_permittivity",
-        new mfem::ConstantCoefficient(43 * epsilon0_), true);
+        "dielectric_permittivity", new mfem::ConstantCoefficient(43 * epsilon0_), true);
     mouse.scalar_coefficients.Register(
         "magnetic_permeability", new mfem::ConstantCoefficient(mu0_), true);
 
-    hephaestus::Coefficients coefficients(
-        std::vector<hephaestus::Subdomain>({air, mouse}));
+    hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({air, mouse}));
 
-    coefficients.scalars.Register("frequency",
-                                  new mfem::ConstantCoefficient(freq_), true);
+    coefficients.scalars.Register("frequency", new mfem::ConstantCoefficient(freq_), true);
 
     hephaestus::BCMap bc_map;
     mfem::Array<int> dirichlet_attr({2, 3, 4});
-    bc_map.Register("tangential_E",
-                    new hephaestus::VectorDirichletBC(
-                        std::string("electric_field"), dirichlet_attr,
-                        new mfem::VectorFunctionCoefficient(3, e_bc_r),
-                        new mfem::VectorFunctionCoefficient(3, e_bc_i)),
-                    true);
+    bc_map.Register(
+        "tangential_E",
+        new hephaestus::VectorDirichletBC(std::string("electric_field"),
+                                          dirichlet_attr,
+                                          new mfem::VectorFunctionCoefficient(3, e_bc_r),
+                                          new mfem::VectorFunctionCoefficient(3, e_bc_i)),
+        true);
 
     mfem::Array<int> wgi_in_attr(1);
     wgi_in_attr[0] = 5;
     bc_map.Register("WaveguidePortIn",
-                    new hephaestus::RWTE10PortRBC(
-                        std::string("electric_field"), wgi_in_attr, freq_,
-                        port_length_vector, port_width_vector, true),
+                    new hephaestus::RWTE10PortRBC(std::string("electric_field"),
+                                                  wgi_in_attr,
+                                                  freq_,
+                                                  port_length_vector,
+                                                  port_width_vector,
+                                                  true),
                     true);
 
     mfem::Array<int> wgi_out_attr(1);
     wgi_out_attr[0] = 6;
     bc_map.Register("WaveguidePortOut",
-                    new hephaestus::RWTE10PortRBC(
-                        std::string("electric_field"), wgi_out_attr, freq_,
-                        port_length_vector, port_width_vector, false),
+                    new hephaestus::RWTE10PortRBC(std::string("electric_field"),
+                                                  wgi_out_attr,
+                                                  freq_,
+                                                  port_length_vector,
+                                                  port_width_vector,
+                                                  false),
                     true);
 
-    mfem::Mesh mesh(
-        (std::string(DATA_DIR) + std::string("./ermes_mouse_coarse.g")).c_str(),
-        1, 1);
+    mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./ermes_mouse_coarse.g")).c_str(), 1, 1);
 
     hephaestus::Outputs outputs;
-    outputs.Register("VisItDataCollection",
-                     new mfem::VisItDataCollection("ComplexMaxwellERMESMouse"),
-                     true);
+    outputs.Register(
+        "VisItDataCollection", new mfem::VisItDataCollection("ComplexMaxwellERMESMouse"), true);
 
     hephaestus::FESpaces fespaces;
     hephaestus::GridFunctions gridfunctions;
@@ -93,11 +97,14 @@ protected:
     hephaestus::AuxSolvers preprocessors;
     hephaestus::Sources sources;
 
-    hephaestus::FrequencyDomainEMFormulation *formulation =
-        new hephaestus::ComplexEFormulation(
-            "magnetic_reluctivity", "electrical_conductivity",
-            "dielectric_permittivity", "frequency", "electric_field",
-            "electric_field_real", "electric_field_imag");
+    hephaestus::FrequencyDomainEMFormulation * formulation =
+        new hephaestus::ComplexEFormulation("magnetic_reluctivity",
+                                            "electrical_conductivity",
+                                            "dielectric_permittivity",
+                                            "frequency",
+                                            "electric_field",
+                                            "electric_field_real",
+                                            "electric_field_imag");
 
     hephaestus::InputParameters solver_options;
     solver_options.SetParam("Tolerance", float(1.0e-16));
@@ -122,30 +129,29 @@ protected:
   }
 };
 
-TEST_CASE_METHOD(TestComplexERMESMouse, "TestComplexERMESMouse", "[CheckRun]") {
+TEST_CASE_METHOD(TestComplexERMESMouse, "TestComplexERMESMouse", "[CheckRun]")
+{
   hephaestus::InputParameters params(test_params());
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
 
-  hephaestus::SteadyStateProblemBuilder *problem_builder =
-      new hephaestus::ComplexEFormulation(
-          "magnetic_reluctivity", "electrical_conductivity",
-          "dielectric_permittivity", "frequency", "electric_field",
-          "electric_field_real", "electric_field_imag");
+  hephaestus::SteadyStateProblemBuilder * problem_builder =
+      new hephaestus::ComplexEFormulation("magnetic_reluctivity",
+                                          "electrical_conductivity",
+                                          "dielectric_permittivity",
+                                          "frequency",
+                                          "electric_field",
+                                          "electric_field_real",
+                                          "electric_field_imag");
 
-  hephaestus::BCMap bc_map(
-      params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-  hephaestus::Coefficients coefficients(
-      params.GetParam<hephaestus::Coefficients>("Coefficients"));
-  hephaestus::AuxSolvers preprocessors(
-      params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
-  hephaestus::AuxSolvers postprocessors(
-      params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
+  hephaestus::BCMap bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
+  hephaestus::Coefficients coefficients(params.GetParam<hephaestus::Coefficients>("Coefficients"));
+  hephaestus::AuxSolvers preprocessors(params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
+  hephaestus::AuxSolvers postprocessors(params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
   hephaestus::Sources sources(params.GetParam<hephaestus::Sources>("Sources"));
   hephaestus::Outputs outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
-  hephaestus::InputParameters solver_options(
-      params.GetOptionalParam<hephaestus::InputParameters>(
-          "SolverOptions", hephaestus::InputParameters()));
+  hephaestus::InputParameters solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
+      "SolverOptions", hephaestus::InputParameters()));
 
   problem_builder->SetMesh(pmesh);
   problem_builder->SetBoundaryConditions(bc_map);
@@ -158,14 +164,12 @@ TEST_CASE_METHOD(TestComplexERMESMouse, "TestComplexERMESMouse", "[CheckRun]") {
 
   hephaestus::ProblemBuildSequencer sequencer(problem_builder);
   sequencer.ConstructOperatorProblem();
-  std::unique_ptr<hephaestus::SteadyStateProblem> problem =
-      problem_builder->ReturnProblem();
+  std::unique_ptr<hephaestus::SteadyStateProblem> problem = problem_builder->ReturnProblem();
 
   hephaestus::InputParameters exec_params;
   exec_params.SetParam("Problem", problem.get());
 
-  auto executioner =
-      std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
+  auto executioner = std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
 
   executioner->Execute();
 
@@ -174,11 +178,9 @@ TEST_CASE_METHOD(TestComplexERMESMouse, "TestComplexERMESMouse", "[CheckRun]") {
   mfem::VectorConstantCoefficient zeroCoef(zeroVec);
 
   double norm_r =
-      executioner->problem->gridfunctions.Get("electric_field_real")
-          ->ComputeMaxError(zeroCoef);
+      executioner->problem->gridfunctions.Get("electric_field_real")->ComputeMaxError(zeroCoef);
   double norm_i =
-      executioner->problem->gridfunctions.Get("electric_field_imag")
-          ->ComputeMaxError(zeroCoef);
+      executioner->problem->gridfunctions.Get("electric_field_imag")->ComputeMaxError(zeroCoef);
   REQUIRE_THAT(norm_r, Catch::Matchers::WithinAbs(480, 15));
   REQUIRE_THAT(norm_i, Catch::Matchers::WithinAbs(180, 5));
 }

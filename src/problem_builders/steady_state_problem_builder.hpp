@@ -1,38 +1,35 @@
 #pragma once
 #include "equation_system_operator.hpp"
 #include "problem_builder_base.hpp"
-namespace hephaestus {
+namespace hephaestus
+{
 
-class SteadyStateProblem : public hephaestus::Problem {
+class SteadyStateProblem : public hephaestus::Problem
+{
 public:
   std::unique_ptr<hephaestus::EquationSystem> eq_sys;
   std::unique_ptr<hephaestus::EquationSystemOperator> eq_sys_operator;
 
   SteadyStateProblem() = default;
 
-  virtual hephaestus::EquationSystem *GetEquationSystem() {
-    return eq_sys.get();
-  };
-  virtual hephaestus::EquationSystemOperator *GetOperator() {
-    return eq_sys_operator.get();
-  };
+  virtual hephaestus::EquationSystem * GetEquationSystem() { return eq_sys.get(); };
+  virtual hephaestus::EquationSystemOperator * GetOperator() { return eq_sys_operator.get(); };
 };
 
 // Builder class of a frequency-domain problem.
-class SteadyStateProblemBuilder : public hephaestus::ProblemBuilder {
+class SteadyStateProblemBuilder : public hephaestus::ProblemBuilder
+{
 protected:
   std::unique_ptr<hephaestus::SteadyStateProblem> problem;
   mfem::ConstantCoefficient oneCoef{1.0};
 
-  virtual hephaestus::SteadyStateProblem *GetProblem() override {
-    return problem.get();
-  };
+  virtual hephaestus::SteadyStateProblem * GetProblem() override { return problem.get(); };
 
 public:
-  SteadyStateProblemBuilder()
-      : problem(std::make_unique<hephaestus::SteadyStateProblem>()){};
+  SteadyStateProblemBuilder() : problem(std::make_unique<hephaestus::SteadyStateProblem>()){};
 
-  virtual std::unique_ptr<hephaestus::SteadyStateProblem> ReturnProblem() {
+  virtual std::unique_ptr<hephaestus::SteadyStateProblem> ReturnProblem()
+  {
     return std::move(problem);
   };
 

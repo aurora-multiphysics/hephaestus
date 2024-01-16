@@ -3,10 +3,13 @@
 #include <set>
 #include <string>
 
-namespace hephaestus {
+namespace hephaestus
+{
 
 /// Lightweight adaptor over an std::map from strings to pointer to T
-template <typename T> class NamedFieldsMap {
+template <typename T>
+class NamedFieldsMap
+{
 public:
   typedef std::map<std::string, T *> MapType;
   typedef typename MapType::iterator iterator;
@@ -20,12 +23,14 @@ public:
 
   /// Construct new field with name @field_name and register (own_data = true).
   template <class FieldType, class... FieldArgs>
-  void Register(const std::string &field_name, FieldArgs &&...args) {
+  void Register(const std::string & field_name, FieldArgs &&... args)
+  {
     Register(field_name, new FieldType(std::forward<FieldArgs>(args)...), true);
   }
 
   /// Register association between field @a field and name @a field_name
-  void Register(const std::string &field_name, T *field, bool own_data) {
+  void Register(const std::string & field_name, T * field, bool own_data)
+  {
     // 0. Prevent double-registration of field.
     CheckForDoubleRegistration(field_name, field);
 
@@ -36,33 +41,36 @@ public:
     _field_map[field_name] = field;
 
     // 3. Keep track of ownership.
-    if (own_data) {
+    if (own_data)
+    {
       _stored_ptrs_map.emplace(field_name, std::shared_ptr<T>(field));
     }
   }
 
   /// Unregister association between field @a field and name @a field_name.
-  void Deregister(const std::string &field_name) {
+  void Deregister(const std::string & field_name)
+  {
     _field_map.erase(field_name);
     _stored_ptrs_map.erase(field_name);
   }
 
   /// Predicate to check if a field is associated with name @a field_name.
-  inline bool Has(const std::string &field_name) const {
-    return find(field_name) != end();
-  }
+  inline bool Has(const std::string & field_name) const { return find(field_name) != end(); }
 
   /// Get a pointer to the field associated with name @a field_name.
-  inline T *Get(const std::string &field_name) const {
+  inline T * Get(const std::string & field_name) const
+  {
     const_iterator it = find(field_name);
     return it != _field_map.end() ? it->second : nullptr;
   }
 
   /// Returns a vector containing all values for supplied keys.
-  std::vector<T *> Get(const std::vector<std::string> keys) {
+  std::vector<T *> Get(const std::vector<std::string> keys)
+  {
     std::vector<T *> values;
 
-    for (const auto &key : keys) {
+    for (const auto & key : keys)
+    {
       if (Has(key))
         values.push_back(Get(key));
       else
@@ -74,10 +82,10 @@ public:
   }
 
   /// Returns reference to field map.
-  inline MapType &GetMap() { return _field_map; }
+  inline MapType & GetMap() { return _field_map; }
 
   /// Returns const-reference to field map.
-  inline const MapType &GetMap() const { return _field_map; }
+  inline const MapType & GetMap() const { return _field_map; }
 
   /// Returns a begin iterator to the registered fields.
   inline iterator begin() { return _field_map.begin(); }
@@ -92,12 +100,11 @@ public:
   inline const_iterator end() const { return _field_map.end(); }
 
   /// Returns an iterator to the field @a field_name.
-  inline iterator find(const std::string &field_name) {
-    return _field_map.find(field_name);
-  }
+  inline iterator find(const std::string & field_name) { return _field_map.find(field_name); }
 
   /// Returns a const iterator to the field @a field_name.
-  inline const_iterator find(const std::string &field_name) const {
+  inline const_iterator find(const std::string & field_name) const
+  {
     return _field_map.find(field_name);
   }
 
@@ -107,14 +114,17 @@ public:
 protected:
   /// Check for double-registration of a field. A double-registered field may
   /// result in undefined behavior.
-  void CheckForDoubleRegistration(const std::string &field_name, T *field) {
-    if (Has(field_name) && Get(field_name) == field) {
+  void CheckForDoubleRegistration(const std::string & field_name, T * field)
+  {
+    if (Has(field_name) && Get(field_name) == field)
+    {
       MFEM_ABORT("The field '" << field_name << "' is already registered.");
     }
   }
 
   /// Clear all associations between names and fields.
-  void DeregisterAll() {
+  void DeregisterAll()
+  {
     _field_map.clear();
     _stored_ptrs_map.clear();
   }

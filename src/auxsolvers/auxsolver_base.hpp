@@ -7,16 +7,18 @@
 
 // Specify classes that perform auxiliary calculations on GridFunctions or
 // Coefficients.
-namespace hephaestus {
+namespace hephaestus
+{
 
 class AuxSolver;
 
-class AuxSolver {
+class AuxSolver
+{
 public:
   AuxSolver() = default;
 
-  virtual void Init(const hephaestus::GridFunctions &gridfunctions,
-                    hephaestus::Coefficients &coefficients) = 0;
+  virtual void Init(const hephaestus::GridFunctions & gridfunctions,
+                    hephaestus::Coefficients & coefficients) = 0;
 
   virtual void Solve(double t = 0.0) = 0;
 
@@ -26,7 +28,8 @@ public:
   inline int priority() const { return _priority; }
 
   // Priority comparator.
-  static bool comparator(const AuxSolver *first, const AuxSolver *second) {
+  static bool comparator(const AuxSolver * first, const AuxSolver * second)
+  {
     return (first->priority() < second->priority());
   }
 

@@ -1,17 +1,21 @@
 #include "weak_curl_curl_kernel.hpp"
 
-namespace hephaestus {
+namespace hephaestus
+{
 
-WeakCurlCurlKernel::WeakCurlCurlKernel(
-    const hephaestus::InputParameters &params)
-    : Kernel(params),
-      coupled_gf_name(params.GetParam<std::string>("CoupledVariableName")),
-      coef_name(params.GetParam<std::string>("CoefficientName")) {}
+WeakCurlCurlKernel::WeakCurlCurlKernel(const hephaestus::InputParameters & params)
+  : Kernel(params),
+    coupled_gf_name(params.GetParam<std::string>("CoupledVariableName")),
+    coef_name(params.GetParam<std::string>("CoefficientName"))
+{
+}
 
-void WeakCurlCurlKernel::Init(hephaestus::GridFunctions &gridfunctions,
-                              const hephaestus::FESpaces &fespaces,
-                              hephaestus::BCMap &bc_map,
-                              hephaestus::Coefficients &coefficients) {
+void
+WeakCurlCurlKernel::Init(hephaestus::GridFunctions & gridfunctions,
+                         const hephaestus::FESpaces & fespaces,
+                         hephaestus::BCMap & bc_map,
+                         hephaestus::Coefficients & coefficients)
+{
 
   u_ = gridfunctions.Get(coupled_gf_name);
   coef = coefficients.scalars.Get(coef_name);
@@ -21,7 +25,9 @@ void WeakCurlCurlKernel::Init(hephaestus::GridFunctions &gridfunctions,
   curlCurl->Assemble();
 }
 
-void WeakCurlCurlKernel::Apply(mfem::ParLinearForm *lf) {
+void
+WeakCurlCurlKernel::Apply(mfem::ParLinearForm * lf)
+{
   curlCurl->AddMultTranspose(*u_, *lf, -1.0);
 }
 

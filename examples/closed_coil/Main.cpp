@@ -1,22 +1,24 @@
 #include "hephaestus.hpp"
 
-const char *DATA_DIR = "../../data/";
+const char * DATA_DIR = "../../data/";
 
-hephaestus::Coefficients defineCoefficients() {
+hephaestus::Coefficients
+defineCoefficients()
+{
   hephaestus::Coefficients coefficients;
-  coefficients.scalars.Register("magnetic_permeability",
-                                new mfem::ConstantCoefficient(M_PI * 4.0e-7),
-                                true);
-  coefficients.scalars.Register("electrical_conductivity",
-                                new mfem::ConstantCoefficient(1.0), true);
+  coefficients.scalars.Register(
+      "magnetic_permeability", new mfem::ConstantCoefficient(M_PI * 4.0e-7), true);
+  coefficients.scalars.Register(
+      "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
 
   double Itotal = 2742;
-  coefficients.scalars.Register("I", new mfem::ConstantCoefficient(Itotal),
-                                true);
+  coefficients.scalars.Register("I", new mfem::ConstantCoefficient(Itotal), true);
   return coefficients;
 }
 
-hephaestus::Sources defineSources() {
+hephaestus::Sources
+defineSources()
+{
   hephaestus::InputParameters div_free_source_params;
   // This vector of subdomains will form the coil that we pass to
   // ClosedCoilSolver
@@ -31,43 +33,42 @@ hephaestus::Sources defineSources() {
 
   hephaestus::InputParameters coilsolver_pars;
   coilsolver_pars.SetParam("HCurlFESpaceName", std::string("HCurl"));
-  coilsolver_pars.SetParam("JGridFunctionName",
-                           std::string("source_current_density"));
+  coilsolver_pars.SetParam("JGridFunctionName", std::string("source_current_density"));
   coilsolver_pars.SetParam("IFuncCoefName", std::string("I"));
   coilsolver_pars.SetParam("H1FESpaceName", std::string("H1"));
   coilsolver_pars.SetParam("JTransfer", true);
 
   hephaestus::Sources sources;
   sources.Register("source",
-                   new hephaestus::ClosedCoilSolver(
-                       coilsolver_pars, coil_domains, electrode_attr),
+                   new hephaestus::ClosedCoilSolver(coilsolver_pars, coil_domains, electrode_attr),
                    true);
   return sources;
 }
-hephaestus::Outputs defineOutputs() {
+hephaestus::Outputs
+defineOutputs()
+{
 
   hephaestus::Outputs outputs;
-  outputs.Register("ParaViewDataCollection",
-                   new mfem::ParaViewDataCollection("ClosedCoilParaView"),
-                   true);
+  outputs.Register(
+      "ParaViewDataCollection", new mfem::ParaViewDataCollection("ClosedCoilParaView"), true);
   return outputs;
 }
 
-int main(int argc, char *argv[]) {
+int
+main(int argc, char * argv[])
+{
   mfem::OptionsParser args(argc, argv);
-  args.AddOption(&DATA_DIR, "-dataDir", "--data_directory",
-                 "Directory storing input data for tests.");
+  args.AddOption(
+      &DATA_DIR, "-dataDir", "--data_directory", "Directory storing input data for tests.");
   args.Parse();
   MPI_Init(&argc, &argv);
 
   // Create Formulation
   auto problem_builder = new hephaestus::MagnetostaticFormulation(
-      "magnetic_reluctivity", "magnetic_permeability",
-      "magnetic_vector_potential");
+      "magnetic_reluctivity", "magnetic_permeability", "magnetic_vector_potential");
 
   // Set Mesh
-  mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team7.g")).c_str(), 1,
-                  1);
+  mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team7.g")).c_str(), 1, 1);
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(mfem::ParMesh(MPI_COMM_WORLD, mesh));
 
@@ -79,12 +80,9 @@ int main(int argc, char *argv[]) {
   problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P1"));
   problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P1"));
   problem_builder->AddFESpace(std::string("HDiv"), std::string("RT_3D_P0"));
-  problem_builder->AddGridFunction(std::string("magnetic_vector_potential"),
-                                   std::string("HCurl"));
-  problem_builder->AddGridFunction(std::string("source_current_density"),
-                                   std::string("HCurl"));
-  problem_builder->AddGridFunction(std::string("magnetic_flux_density"),
-                                   std::string("HDiv"));
+  problem_builder->AddGridFunction(std::string("magnetic_vector_potential"), std::string("HCurl"));
+  problem_builder->AddGridFunction(std::string("source_current_density"), std::string("HCurl"));
+  problem_builder->AddGridFunction(std::string("magnetic_flux_density"), std::string("HDiv"));
   problem_builder->registerMagneticFluxDensityAux("magnetic_flux_density");
   hephaestus::Coefficients coefficients = defineCoefficients();
   problem_builder->SetCoefficients(coefficients);
@@ -104,15 +102,13 @@ int main(int argc, char *argv[]) {
 
   hephaestus::ProblemBuildSequencer sequencer(problem_builder);
   sequencer.ConstructEquationSystemProblem();
-  std::unique_ptr<hephaestus::SteadyStateProblem> problem =
-      problem_builder->ReturnProblem();
+  std::unique_ptr<hephaestus::SteadyStateProblem> problem = problem_builder->ReturnProblem();
   hephaestus::InputParameters exec_params;
   exec_params.SetParam("VisualisationSteps", int(1));
   exec_params.SetParam("UseGLVis", true);
   exec_params.SetParam("Problem", problem.get());
 
-  auto executioner =
-      std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
+  auto executioner = std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
 
   mfem::out << "Created executioner";
   executioner->Execute();

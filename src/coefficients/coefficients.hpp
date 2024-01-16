@@ -6,14 +6,16 @@
 #include <memory>
 #include <unordered_set>
 
-namespace hephaestus {
+namespace hephaestus
+{
 
 double prodFunc(double a, double b);
 double fracFunc(double a, double b);
 
-class Subdomain {
+class Subdomain
+{
 public:
-  Subdomain(const std::string &name_, int id_);
+  Subdomain(const std::string & name_, int id_);
 
   std::string name;
   int id;
@@ -26,7 +28,8 @@ public:
 //--vectors
 
 // Stores all coefficients defined over
-class Coefficients {
+class Coefficients
+{
   double t; // Time at which time-dependent coefficients are evaluated
 public:
   Coefficients();

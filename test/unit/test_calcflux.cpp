@@ -2,14 +2,15 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
-static void JExact(const mfem::Vector &x, mfem::Vector &J);
+static void JExact(const mfem::Vector & x, mfem::Vector & J);
 
-extern const char *DATA_DIR;
+extern const char * DATA_DIR;
 
 // Floating point error tolerance
 const double eps{1e-10};
 
-TEST_CASE("Flux calculation", "[CalcFlux]") {
+TEST_CASE("Flux calculation", "[CalcFlux]")
+{
 
   int par_ref_lvl = -1;
   int order = 1;
@@ -37,7 +38,9 @@ TEST_CASE("Flux calculation", "[CalcFlux]") {
   REQUIRE_THAT(flux, Catch::Matchers::WithinAbs(area * cos(theta), eps));
 }
 
-static void JExact(const mfem::Vector &x, mfem::Vector &J) {
+static void
+JExact(const mfem::Vector & x, mfem::Vector & J)
+{
   J = 0.0;
   J(0) = 1.0 / sqrt(2);
   J(1) = 1.0 / sqrt(2);
