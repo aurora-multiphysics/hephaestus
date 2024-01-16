@@ -175,16 +175,15 @@ public:
 TEST_CASE("NonlinearIntegratorTest", "[CheckData]")
 {
   mfem::Mesh mesh((std::string(DATA_DIR) + "cylinder-hex-q2.gen").c_str(), 1, 1);
-  std::shared_ptr<mfem::ParMesh> pmesh =
-      std::make_shared<mfem::ParMesh>(mfem::ParMesh(MPI_COMM_WORLD, mesh));
+  auto pmesh = std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mesh);
 
   mesh.EnsureNodes();
   int dim = mesh.Dimension();
-  mfem::FiniteElementCollection * fec_ND;
-  mfem::FiniteElementCollection * fec_RT;
-  fec_ND = new mfem::ND_FECollection(1, pmesh->Dimension());
-  fec_RT = new mfem::RT_FECollection(1, pmesh->Dimension());
-  mfem::ParFiniteElementSpace HCurlFESpace(pmesh.get(), fec_ND);
+
+  auto fec_ND = std::make_unique<mfem::ND_FECollection>(1, pmesh->Dimension());
+  auto fec_RT = std::make_unique<mfem::RT_FECollection>(1, pmesh->Dimension());
+
+  mfem::ParFiniteElementSpace HCurlFESpace(pmesh.get(), fec_ND.get());
   mfem::ConstantCoefficient coeff(1.0);
   mfem::ConstantCoefficient mu(1.0);
 
