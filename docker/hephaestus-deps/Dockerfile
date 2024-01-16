@@ -1,6 +1,6 @@
 # Build image containing Hephaestus dependencies
 # Get base image
-FROM ubuntu:22.04
+FROM ubuntu:20.04
 
 # This is needed or it mpiexec complains because docker runs as root
 # Discussion on this issue https://github.com/open-mpi/ompi/issues/4451
@@ -18,7 +18,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install 
     build-essential \
     bison \
     flex \
-    clang-format \
+    clang-format-9 \
     curl \
     doxygen \
     git \
