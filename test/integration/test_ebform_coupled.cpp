@@ -116,16 +116,12 @@ protected:
 
     hephaestus::Sources sources;
     hephaestus::InputParameters scalar_potential_source_params;
-    scalar_potential_source_params.SetParam("GradPotentialName",
-                                            std::string("source"));
-    scalar_potential_source_params.SetParam("PotentialName",
-                                            std::string("electric_potential"));
-    scalar_potential_source_params.SetParam("HCurlFESpaceName",
-                                            std::string("HCurlSource"));
-    scalar_potential_source_params.SetParam("H1FESpaceName",
-                                            std::string("H1Source"));
-    scalar_potential_source_params.SetParam(
-        "ConductivityCoefName", std::string("electrical_conductivity"));
+    scalar_potential_source_params.SetParam("GradPotentialName", std::string("source"));
+    scalar_potential_source_params.SetParam("PotentialName", std::string("electric_potential"));
+    scalar_potential_source_params.SetParam("HCurlFESpaceName", std::string("HCurlSource"));
+    scalar_potential_source_params.SetParam("H1FESpaceName", std::string("H1Source"));
+    scalar_potential_source_params.SetParam("ConductivityCoefName",
+                                            std::string("electrical_conductivity"));
     hephaestus::InputParameters current_solver_options;
     current_solver_options.SetParam("Tolerance", float(1.0e-9));
     current_solver_options.SetParam("MaxIter", (unsigned int)1000);

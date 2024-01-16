@@ -8,18 +8,23 @@ zeroVec(const mfem::Vector & x, mfem::Vector & V)
   V = 1.0;
 }
 
-double sigmafunc(const mfem::Vector &x, double t) { return 1.0; }
+double
+sigmafunc(const mfem::Vector & x, double t)
+{
+  return 1.0;
+}
 
-hephaestus::Coefficients defineCoefficients(double Itotal) {
+hephaestus::Coefficients
+defineCoefficients(double Itotal)
+{
 
   hephaestus::Coefficients coefficients;
-  coefficients.scalars.Register("magnetic_permeability",
-                                new mfem::ConstantCoefficient(M_PI * 4.0e-7),
-                                true);
+  coefficients.scalars.Register(
+      "magnetic_permeability", new mfem::ConstantCoefficient(M_PI * 4.0e-7), true);
 
   // Electrical conductivity
-  coefficients.scalars.Register("electrical_conductivity",
-                                new mfem::FunctionCoefficient(sigmafunc), true);
+  coefficients.scalars.Register(
+      "electrical_conductivity", new mfem::FunctionCoefficient(sigmafunc), true);
 
   // Time-dependent current
   coefficients.scalars.Register("I", new mfem::ConstantCoefficient(Itotal), true);
@@ -137,12 +142,9 @@ main(int argc, char * argv[])
   problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P1"));
   problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P1"));
   problem_builder->AddFESpace(std::string("HDiv"), std::string("RT_3D_P0"));
-  problem_builder->AddGridFunction(std::string("magnetic_vector_potential"),
-                                   std::string("HCurl"));
-  problem_builder->AddGridFunction(std::string("grad_phi"),
-                                   std::string("HCurl"));
-  problem_builder->AddGridFunction(std::string("magnetic_flux_density"),
-                                   std::string("HDiv"));
+  problem_builder->AddGridFunction(std::string("magnetic_vector_potential"), std::string("HCurl"));
+  problem_builder->AddGridFunction(std::string("grad_phi"), std::string("HCurl"));
+  problem_builder->AddGridFunction(std::string("magnetic_flux_density"), std::string("HDiv"));
   problem_builder->registerMagneticFluxDensityAux("magnetic_flux_density");
   hephaestus::Coefficients coefficients = defineCoefficients(Itotal);
 

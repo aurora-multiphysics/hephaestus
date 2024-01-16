@@ -65,8 +65,8 @@ private:
   mfem::Array<int> coil_markers_;
   mfem::Array<int> transition_domain_;
   mfem::Array<int> transition_markers_;
-  mfem::Coefficient *sigma_;
-  mfem::Coefficient *Itotal_;
+  mfem::Coefficient * sigma_;
+  mfem::Coefficient * Itotal_;
   std::vector<int> old_dom_attrs;
   hephaestus::InputParameters solver_options_;
 
@@ -83,23 +83,23 @@ private:
   std::string I_coef_name_;
 
   // Parent mesh, FE space, and current
-  mfem::ParMesh *mesh_parent_;
-  mfem::ParGridFunction *grad_phi_parent_;
-  mfem::ParFiniteElementSpace *HCurlFESpace_parent_;
-  mfem::ParFiniteElementSpace *H1FESpace_parent_;
+  mfem::ParMesh * mesh_parent_;
+  mfem::ParGridFunction * grad_phi_parent_;
+  mfem::ParFiniteElementSpace * HCurlFESpace_parent_;
+  mfem::ParFiniteElementSpace * H1FESpace_parent_;
 
   // In case J transfer is true
-  mfem::ParGridFunction *grad_phi_t_parent_;
+  mfem::ParGridFunction * grad_phi_t_parent_;
 
   // Coil mesh, FE Space, and current
-  mfem::ParSubMesh *mesh_coil_;
-  mfem::ParSubMesh *mesh_t_;
-  mfem::ParFiniteElementSpace *H1FESpace_coil_;
-  mfem::ParGridFunction *grad_phi_aux_coil_;
-  mfem::ParGridFunction *V_coil_;
+  mfem::ParSubMesh * mesh_coil_;
+  mfem::ParSubMesh * mesh_t_;
+  mfem::ParFiniteElementSpace * H1FESpace_coil_;
+  mfem::ParGridFunction * grad_phi_aux_coil_;
+  mfem::ParGridFunction * V_coil_;
 
   // Final LinearForm
-  mfem::ParLinearForm *final_lf_;
+  mfem::ParLinearForm * final_lf_;
 };
 
 class Plane3D

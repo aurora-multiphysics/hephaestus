@@ -82,8 +82,8 @@ private:
   std::pair<int, int> elec_attrs_;
   mfem::Array<int> coil_domains_;
   mfem::Array<int> coil_markers_;
-  mfem::Coefficient *sigma_;
-  mfem::Coefficient *Itotal_;
+  mfem::Coefficient * sigma_;
+  mfem::Coefficient * Itotal_;
   hephaestus::InputParameters solver_options_;
 
   // Names
@@ -93,11 +93,11 @@ private:
   std::string cond_coef_name_;
 
   // Parent mesh, FE space, and current
-  mfem::ParMesh *mesh_parent_;
-  mfem::ParGridFunction *grad_p_parent_;
-  mfem::ParGridFunction *grad_p_t_parent_;
-  mfem::ParGridFunction *V_parent_;
-  mfem::ParGridFunction *Vt_parent_;
+  mfem::ParMesh * mesh_parent_;
+  mfem::ParGridFunction * grad_p_parent_;
+  mfem::ParGridFunction * grad_p_t_parent_;
+  mfem::ParGridFunction * V_parent_;
+  mfem::ParGridFunction * Vt_parent_;
 
   // Child mesh and FE spaces
   mfem::ParSubMesh * mesh_;
@@ -105,8 +105,8 @@ private:
   mfem::ParFiniteElementSpace * HCurlFESpace_;
 
   // Child GridFunctions
-  mfem::ParGridFunction *grad_p_;
-  mfem::ParGridFunction *V_;
+  mfem::ParGridFunction * grad_p_;
+  mfem::ParGridFunction * V_;
 
   // Child boundary condition objects
   mfem::FunctionCoefficient high_src_;

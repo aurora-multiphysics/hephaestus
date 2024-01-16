@@ -6,21 +6,26 @@ namespace hephaestus
 // Create a scalar potential source that can add terms of the form
 // J0_{n+1} ∈ H(div) source field, where J0 = -β∇p and β is a conductivity
 // coefficient.
-ScalarPotentialSource::ScalarPotentialSource(
-    const hephaestus::InputParameters &params)
-    : grad_phi_name_(params.GetParam<std::string>("GradPotentialName")),
-      potential_gf_name(params.GetParam<std::string>("PotentialName")),
-      hcurl_fespace_name(params.GetParam<std::string>("HCurlFESpaceName")),
-      h1_fespace_name(params.GetParam<std::string>("H1FESpaceName")),
-      beta_coef_name(params.GetParam<std::string>("ConductivityCoefName")),
-      solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
-          "SolverOptions", hephaestus::InputParameters())),
-      grad(NULL), m1(NULL), a0_solver(NULL) {}
+ScalarPotentialSource::ScalarPotentialSource(const hephaestus::InputParameters & params)
+  : grad_phi_name_(params.GetParam<std::string>("GradPotentialName")),
+    potential_gf_name(params.GetParam<std::string>("PotentialName")),
+    hcurl_fespace_name(params.GetParam<std::string>("HCurlFESpaceName")),
+    h1_fespace_name(params.GetParam<std::string>("H1FESpaceName")),
+    beta_coef_name(params.GetParam<std::string>("ConductivityCoefName")),
+    solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
+        "SolverOptions", hephaestus::InputParameters())),
+    grad(NULL),
+    m1(NULL),
+    a0_solver(NULL)
+{
+}
 
-void ScalarPotentialSource::Init(hephaestus::GridFunctions &gridfunctions,
-                                 const hephaestus::FESpaces &fespaces,
-                                 hephaestus::BCMap &bc_map,
-                                 hephaestus::Coefficients &coefficients) {
+void
+ScalarPotentialSource::Init(hephaestus::GridFunctions & gridfunctions,
+                            const hephaestus::FESpaces & fespaces,
+                            hephaestus::BCMap & bc_map,
+                            hephaestus::Coefficients & coefficients)
+{
   H1FESpace_ = fespaces.Get(h1_fespace_name);
   if (H1FESpace_ == NULL)
   {
@@ -48,7 +53,8 @@ void ScalarPotentialSource::Init(hephaestus::GridFunctions &gridfunctions,
   }
 
   grad_p_ = gridfunctions.Get(grad_phi_name_);
-  if (grad_p_ == NULL) {
+  if (grad_p_ == NULL)
+  {
 
     grad_p_ = new mfem::ParGridFunction(HCurlFESpace_);
     gridfunctions.Register(grad_phi_name_, grad_p_, false);

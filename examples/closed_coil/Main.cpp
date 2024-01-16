@@ -2,17 +2,26 @@
 
 const char * DATA_DIR = "../../data/";
 
-static void zeroVec(const mfem::Vector &x, mfem::Vector &V) { V = 1.0; }
+static void
+zeroVec(const mfem::Vector & x, mfem::Vector & V)
+{
+  V = 1.0;
+}
 
-double sigmafunc(const mfem::Vector &x, double t) { return 1.0; }
+double
+sigmafunc(const mfem::Vector & x, double t)
+{
+  return 1.0;
+}
 
-hephaestus::Coefficients defineCoefficients() {
+hephaestus::Coefficients
+defineCoefficients()
+{
   hephaestus::Coefficients coefficients;
-  coefficients.scalars.Register("magnetic_permeability",
-                                new mfem::ConstantCoefficient(M_PI * 4.0e-7),
-                                true);
-  coefficients.scalars.Register("electrical_conductivity",
-                                new mfem::FunctionCoefficient(sigmafunc), true);
+  coefficients.scalars.Register(
+      "magnetic_permeability", new mfem::ConstantCoefficient(M_PI * 4.0e-7), true);
+  coefficients.scalars.Register(
+      "electrical_conductivity", new mfem::FunctionCoefficient(sigmafunc), true);
 
   double Itotal = 2742;
   coefficients.scalars.Register("I", new mfem::ConstantCoefficient(Itotal), true);
@@ -38,8 +47,7 @@ defineSources()
   coilsolver_pars.SetParam("HCurlFESpaceName", std::string("HCurl"));
   coilsolver_pars.SetParam("GradPotentialName", std::string("source_grad_phi"));
   coilsolver_pars.SetParam("IFuncCoefName", std::string("I"));
-  coilsolver_pars.SetParam("ConductivityCoefName",
-                           std::string("electrical_conductivity"));
+  coilsolver_pars.SetParam("ConductivityCoefName", std::string("electrical_conductivity"));
   coilsolver_pars.SetParam("H1FESpaceName", std::string("H1"));
   coilsolver_pars.SetParam("GradPhiTransfer", true);
 
@@ -54,9 +62,8 @@ defineOutputs()
 {
 
   hephaestus::Outputs outputs;
-  outputs.Register("ParaViewDataCollection",
-                   new mfem::ParaViewDataCollection("ClosedCoilParaView"),
-                   true);
+  outputs.Register(
+      "ParaViewDataCollection", new mfem::ParaViewDataCollection("ClosedCoilParaView"), true);
   return outputs;
 }
 
@@ -85,12 +92,9 @@ main(int argc, char * argv[])
   problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P1"));
   problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P1"));
   problem_builder->AddFESpace(std::string("HDiv"), std::string("RT_3D_P0"));
-  problem_builder->AddGridFunction(std::string("magnetic_vector_potential"),
-                                   std::string("HCurl"));
-  problem_builder->AddGridFunction(std::string("source_grad_phi"),
-                                   std::string("HCurl"));
-  problem_builder->AddGridFunction(std::string("magnetic_flux_density"),
-                                   std::string("HDiv"));
+  problem_builder->AddGridFunction(std::string("magnetic_vector_potential"), std::string("HCurl"));
+  problem_builder->AddGridFunction(std::string("source_grad_phi"), std::string("HCurl"));
+  problem_builder->AddGridFunction(std::string("magnetic_flux_density"), std::string("HDiv"));
   problem_builder->registerMagneticFluxDensityAux("magnetic_flux_density");
   hephaestus::Coefficients coefficients = defineCoefficients();
   problem_builder->SetCoefficients(coefficients);
