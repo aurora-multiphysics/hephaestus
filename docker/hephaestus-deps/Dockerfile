@@ -19,6 +19,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install 
     bison \
     flex \
     clang-format \
+    clang-tidy \
     curl \
     doxygen \
     git \

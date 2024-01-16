@@ -13,17 +13,17 @@ RUN cd /$WORKDIR && \
     git checkout "$build_git_sha" && \
     git submodule update --init --recursive
 
-# Install and run pre-commit hooks
-RUN cd /$WORKDIR/hephaestus/ && \
-    pre-commit install && \
-    pre-commit run --all-files
-
 # Build Hephaestus
 RUN cd /$WORKDIR/hephaestus/ && \
     mkdir build && \
     cd build && \
-    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DMFEM_DIR=/$WORKDIR/mfem/build -DMFEM_COMMON_INCLUDES=/$WORKDIR/mfem/miniapps/common  .. && \
+    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DMFEM_DIR=/$WORKDIR/mfem/build -DMFEM_COMMON_INCLUDES=/$WORKDIR/mfem/miniapps/common -DCMAKE_EXPORT_COMPILE_COMMANDS=ON .. && \
     make -j1
+
+# Install and run pre-commit hooks
+RUN cd /$WORKDIR/hephaestus/ && \
+    pre-commit install && \
+    pre-commit run --all-files
 
 # Test Hephaestus
 RUN cd /$WORKDIR/hephaestus/build && \
