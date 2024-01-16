@@ -148,14 +148,12 @@ TEST_CASE_METHOD(TestAVFormSource, "TestAVFormSource", "[CheckRun]")
     {
       pmesh->UniformRefinement();
     }
-
     hephaestus::TimeDomainProblemBuilder * problem_builder =
         new hephaestus::AVFormulation("magnetic_reluctivity",
                                       "magnetic_permeability",
                                       "electrical_conductivity",
                                       "magnetic_vector_potential",
                                       "electric_potential");
-
     hephaestus::BCMap bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
     hephaestus::Coefficients coefficients(
         params.GetParam<hephaestus::Coefficients>("Coefficients"));

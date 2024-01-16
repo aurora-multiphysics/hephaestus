@@ -182,7 +182,6 @@ TEST_CASE_METHOD(TestComplexTeam7, "TestComplexTeam7", "[CheckRun]")
                                           "magnetic_vector_potential",
                                           "magnetic_vector_potential_real",
                                           "magnetic_vector_potential_imag");
-
   problem_builder->SetMesh(pmesh);
   problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P1"));
   problem_builder->AddFESpace(std::string("HDiv"), std::string("RT_3D_P0"));

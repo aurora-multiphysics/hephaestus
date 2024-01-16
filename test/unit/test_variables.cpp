@@ -13,7 +13,6 @@ TEST_CASE("VariablesTest", "[CheckSetup]")
   problem_builder->SetMesh(pmesh);
   problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P2"));
   problem_builder->AddGridFunction(std::string("vector_potential"), std::string("HCurl"));
-
   std::unique_ptr<hephaestus::TimeDomainProblem> problem = problem_builder->ReturnProblem();
 
   mfem::ParGridFunction * stored_gf = problem->gridfunctions.Get("vector_potential");

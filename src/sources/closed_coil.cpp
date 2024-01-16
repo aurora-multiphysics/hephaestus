@@ -87,7 +87,6 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
 
   // Optional FE Spaces and parameters
   H1FESpace_parent_ = fespaces.Get(h1_fespace_name_);
-
   if (H1FESpace_parent_ == nullptr)
   {
     std::cout << h1_fespace_name_ + " not found in fespaces when "
@@ -106,7 +105,6 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
   {
     std::cout << J_gf_name_ + " not found in gridfunctions when "
                               "creating OpenCoilSolver. Creating new GridFunction.\n";
-
     J_parent_ = new mfem::ParGridFunction(HCurlFESpace_parent_);
   }
   else if (J_parent_->ParFESpace()->FEColl()->GetContType() !=

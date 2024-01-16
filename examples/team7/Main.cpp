@@ -134,11 +134,11 @@ main(int argc, char * argv[])
   MPI_Init(&argc, &argv);
 
   // Create Formulation
-  auto problem_builder = new hephaestus::AFormulation("magnetic_reluctivity",
-                                                      "magnetic_permeability",
-                                                      "electrical_conductivity",
-                                                      "magnetic_vector_potential");
-
+  hephaestus::AFormulation * problem_builder =
+      new hephaestus::AFormulation("magnetic_reluctivity",
+                                   "magnetic_permeability",
+                                   "electrical_conductivity",
+                                   "magnetic_vector_potential");
   // Set Mesh
   mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team7.g")).c_str(), 1, 1);
   std::shared_ptr<mfem::ParMesh> pmesh =

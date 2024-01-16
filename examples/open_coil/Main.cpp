@@ -15,9 +15,11 @@ defineCoefficients(double Itotal)
   hephaestus::Subdomain coil("coil", 1);
   coil.scalar_coefficients.Register(
       "electrical_conductivity", new mfem::ConstantCoefficient(3.526e7), true);
+
   hephaestus::Subdomain air("air", 2);
   air.scalar_coefficients.Register(
       "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
+
   hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({coil, air}));
   coefficients.scalars.Register(
       "magnetic_permeability", new mfem::ConstantCoefficient(M_PI * 4.0e-7), true);
@@ -31,7 +33,6 @@ defineCoefficients(double Itotal)
 hephaestus::Sources
 defineSources(std::pair<int, int> elec, mfem::Array<int> coil_domains)
 {
-
   hephaestus::InputParameters coilsolver_pars;
   coilsolver_pars.SetParam("SourceName", std::string("source_current_density"));
   coilsolver_pars.SetParam("PotentialName", std::string("auxiliary_potential"));
@@ -46,7 +47,6 @@ defineSources(std::pair<int, int> elec, mfem::Array<int> coil_domains)
 hephaestus::Outputs
 defineOutputs()
 {
-
   hephaestus::Outputs outputs;
   outputs.Register(
       "ParaViewDataCollection", new mfem::ParaViewDataCollection("OpenCoilParaView"), true);

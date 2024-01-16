@@ -122,14 +122,12 @@ protected:
 TEST_CASE_METHOD(TestEBFormRod, "TestEBFormRod", "[CheckRun]")
 {
   hephaestus::InputParameters params(test_params());
-
   hephaestus::TimeDomainProblemBuilder * problem_builder =
       new hephaestus::EBDualFormulation("magnetic_reluctivity",
                                         "magnetic_permeability",
                                         "electrical_conductivity",
                                         "electric_field",
                                         "magnetic_flux_density");
-
   hephaestus::BCMap bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
   hephaestus::Coefficients coefficients(params.GetParam<hephaestus::Coefficients>("Coefficients"));
   hephaestus::AuxSolvers preprocessors(params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));

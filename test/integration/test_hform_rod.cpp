@@ -131,7 +131,6 @@ TEST_CASE_METHOD(TestHFormRod, "TestHFormRod", "[CheckRun]")
                                    "electrical_conductivity",
                                    "magnetic_permeability",
                                    "magnetic_field");
-
   hephaestus::BCMap bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
   hephaestus::Coefficients coefficients(params.GetParam<hephaestus::Coefficients>("Coefficients"));
   hephaestus::AuxSolvers preprocessors(params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
