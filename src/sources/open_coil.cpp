@@ -188,6 +188,7 @@ OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters & params,
     V_gf_name_(params.GetParam<std::string>("PotentialName")),
     I_coef_name_(params.GetParam<std::string>("IFuncCoefName")),
     cond_coef_name_(params.GetParam<std::string>("ConductivityCoefName")),
+    grad_phi_transfer_(params.GetOptionalParam<bool>("GradPhiTransfer", true)),
     coil_domains_(coil_dom),
     elec_attrs_(electrodes),
     sigma_(nullptr),
@@ -206,8 +207,7 @@ OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters & params,
     high_src_(highV),
     low_src_(lowV),
     high_terminal_(1),
-    low_terminal_(1),
-    grad_phi_transfer_(true)
+    low_terminal_(1)
 {
 
   hephaestus::InputParameters default_pars;
