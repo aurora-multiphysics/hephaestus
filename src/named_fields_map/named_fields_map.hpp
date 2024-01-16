@@ -2,6 +2,9 @@
 #include <map>
 #include <set>
 #include <string>
+#include <memory>
+#include <vector>
+#include <mfem.hpp>
 
 namespace hephaestus
 {
@@ -74,7 +77,10 @@ public:
       if (Has(key))
         values.push_back(Get(key));
       else
-        MFEM_ABORT("Key " << key << " not found in NamedFieldsMap.");
+      {
+        std::string key_not_found_msg("Key " + key + " not found in NamedFieldsMap.");
+        MFEM_ABORT(key_not_found_msg);
+      }
     }
 
     values.shrink_to_fit();
