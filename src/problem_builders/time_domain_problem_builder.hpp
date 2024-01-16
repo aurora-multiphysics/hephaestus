@@ -31,7 +31,7 @@ class TimeDomainProblemBuilder : public hephaestus::ProblemBuilder
 public:
   TimeDomainProblemBuilder() : problem(std::make_unique<hephaestus::TimeDomainProblem>()){};
 
-  ~TimeDomainProblemBuilder() override{}
+  ~TimeDomainProblemBuilder() override {}
 
   virtual std::unique_ptr<hephaestus::TimeDomainProblem> ReturnProblem()
   {

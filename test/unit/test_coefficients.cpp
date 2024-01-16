@@ -10,7 +10,7 @@ TEST_CASE("CoefficientsTest", "[CheckData]")
   hephaestus::Subdomain wire("wire", 1);
   wire.scalar_coefficients.Register("property_one", new mfem::ConstantCoefficient(1.0), true);
   wire.scalar_coefficients.Register("property_two", new mfem::ConstantCoefficient(150.0), true);
-  
+
   hephaestus::Subdomain air("air", 2);
   air.scalar_coefficients.Register("property_one", new mfem::ConstantCoefficient(26.0), true);
   air.scalar_coefficients.Register("property_two", new mfem::ConstantCoefficient(152.0), true);

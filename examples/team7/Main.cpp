@@ -140,10 +140,10 @@ main(int argc, char * argv[])
   MPI_Init(&argc, &argv);
 
   // Create Formulation
-  auto problem_builder = new hephaestus::AFormulation("magnetic_reluctivity",
-                                                      "magnetic_permeability",
-                                                      "electrical_conductivity",
-                                                      "magnetic_vector_potential");
+  auto problem_builder = std::make_unique<hephaestus::AFormulation>("magnetic_reluctivity",
+                                                                    "magnetic_permeability",
+                                                                    "electrical_conductivity",
+                                                                    "magnetic_vector_potential");
   // Set Mesh
   mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team7.g")).c_str(), 1, 1);
   auto pmesh = std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mesh);
@@ -188,9 +188,9 @@ main(int argc, char * argv[])
   solver_options.SetParam("PrintLevel", 0);
   problem_builder->SetSolverOptions(solver_options);
 
-  hephaestus::ProblemBuildSequencer sequencer(problem_builder);
+  hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
   sequencer.ConstructEquationSystemProblem();
-  std::unique_ptr<hephaestus::TimeDomainProblem> problem = problem_builder->ReturnProblem();
+  auto problem = problem_builder->ReturnProblem();
   hephaestus::InputParameters exec_params;
   exec_params.SetParam("TimeStep", float(0.001));
   exec_params.SetParam("StartTime", float(0.00));
