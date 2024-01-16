@@ -401,7 +401,7 @@ ClosedCoilSolver::solveTransition()
 void
 ClosedCoilSolver::solveCoil()
 {
-  // (∇Va,∇ψ) = (∇Vt,∇ψ)
+  // -(σ∇Va,∇ψ) = (σ∇Vt,∇ψ)
   // where Va is Vaux_coil_, the auxiliary continuous "potential"
   // ψ are the H1 test functions
   // Vt is the transition potential
