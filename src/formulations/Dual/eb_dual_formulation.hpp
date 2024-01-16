@@ -15,7 +15,7 @@ public:
                     const std::string & e_field_name,
                     const std::string & b_field_name);
 
-  ~EBDualFormulation(){};
+  ~EBDualFormulation() override {}
 
   // Enable auxiliary calculation of J ∈ H(div)
   virtual void registerCurrentDensityAux(const std::string & j_field_name) override;

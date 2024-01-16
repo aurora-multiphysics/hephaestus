@@ -14,6 +14,8 @@ public:
                   const std::string & h_curl_var_name,
                   const std::string & h_div_var_name);
 
+  ~DualFormulation() override {}
+
   virtual void ConstructEquationSystem() override;
 
   virtual void ConstructOperator() override;
@@ -33,7 +35,7 @@ class WeakCurlEquationSystem : public TimeDependentEquationSystem
 {
 public:
   WeakCurlEquationSystem(const hephaestus::InputParameters & params);
-  ~WeakCurlEquationSystem() override{};
+  ~WeakCurlEquationSystem() override {}
 
   virtual void Init(hephaestus::GridFunctions & gridfunctions,
                     const hephaestus::FESpaces & fespaces,
@@ -56,7 +58,7 @@ public:
                hephaestus::Sources & sources,
                hephaestus::InputParameters & solver_options);
 
-  ~DualOperator(){};
+  ~DualOperator() override {}
 
   void Init(mfem::Vector & X) override;
 

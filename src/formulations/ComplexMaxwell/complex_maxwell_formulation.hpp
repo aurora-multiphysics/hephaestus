@@ -36,7 +36,7 @@ public:
                          hephaestus::Sources & sources,
                          hephaestus::InputParameters & solver_options);
 
-  ~ComplexMaxwellOperator(){};
+  ~ComplexMaxwellOperator() override {}
 
   virtual void SetGridFunctions() override;
   virtual void Init(mfem::Vector & X) override;
@@ -58,6 +58,23 @@ public:
 // Specifies output interfaces of a time-domain EM formulation.
 class ComplexMaxwellFormulation : public hephaestus::FrequencyDomainEMFormulation
 {
+public:
+  ComplexMaxwellFormulation(const std::string & frequency_coef_name,
+                            const std::string & alpha_coef_name,
+                            const std::string & beta_coef_name,
+                            const std::string & zeta_coef_name,
+                            const std::string & h_curl_var_complex_name,
+                            const std::string & h_curl_var_real_name,
+                            const std::string & h_curl_var_imag_name);
+
+  ~ComplexMaxwellFormulation() override{};
+
+  virtual void ConstructOperator() override;
+
+  virtual void RegisterGridFunctions() override;
+
+  virtual void RegisterCoefficients() override;
+
   // std::vector<mfem::ParGridFunction *> local_trial_vars, local_test_vars;
 protected:
   const std::string _alpha_coef_name;
@@ -69,20 +86,6 @@ protected:
   const std::string _h_curl_var_imag_name;
   const std::string _mass_coef_name;
   const std::string _loss_coef_name;
-
-public:
-  ComplexMaxwellFormulation(const std::string & frequency_coef_name,
-                            const std::string & alpha_coef_name,
-                            const std::string & beta_coef_name,
-                            const std::string & zeta_coef_name,
-                            const std::string & h_curl_var_complex_name,
-                            const std::string & h_curl_var_real_name,
-                            const std::string & h_curl_var_imag_name);
-
-  virtual void ConstructOperator() override;
-
-  virtual void RegisterGridFunctions() override;
-
-  virtual void RegisterCoefficients() override;
 };
+
 } // namespace hephaestus

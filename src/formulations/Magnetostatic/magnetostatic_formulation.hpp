@@ -13,7 +13,7 @@ public:
                            const std::string & magnetic_permeability_name,
                            const std::string & magnetic_vector_potential_name);
 
-  ~MagnetostaticFormulation(){};
+  ~MagnetostaticFormulation() override {}
 
   // Enable auxiliary calculation of B ∈ H(div)
   virtual void registerMagneticFluxDensityAux(const std::string & b_field_name) override;

@@ -12,6 +12,8 @@ class StaticsFormulation : public SteadyStateEMFormulation
 public:
   StaticsFormulation(const std::string & alpha_coef_name, const std::string & h_curl_var_name);
 
+  ~StaticsFormulation() override {}
+
   virtual void ConstructOperator() override;
 
   virtual void RegisterGridFunctions() override;

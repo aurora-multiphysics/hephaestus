@@ -16,6 +16,8 @@ public:
                 const std::string & vector_potential_name,
                 const std::string & scalar_potential_name);
 
+  ~AVFormulation() override {}
+
   virtual void ConstructEquationSystem() override;
 
   virtual void ConstructOperator() override;
@@ -36,6 +38,8 @@ class AVEquationSystem : public TimeDependentEquationSystem
 {
 public:
   AVEquationSystem(const hephaestus::InputParameters & params);
+
+  ~AVEquationSystem() override {}
 
   virtual void Init(hephaestus::GridFunctions & gridfunctions,
                     const hephaestus::FESpaces & fespaces,
@@ -59,7 +63,7 @@ public:
              hephaestus::Sources & sources,
              hephaestus::InputParameters & solver_options);
 
-  ~AVOperator(){};
+  ~AVOperator() override {}
 
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
 };

@@ -33,6 +33,8 @@ class Coefficients
   double t; // Time at which time-dependent coefficients are evaluated
 public:
   Coefficients();
+  ~Coefficients() {};
+  
   Coefficients(std::vector<Subdomain> subdomains_);
   void SetTime(double t);
   void AddGlobalCoefficientsFromSubdomains();

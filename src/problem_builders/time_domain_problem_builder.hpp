@@ -28,14 +28,10 @@ public:
 // Builder class of a time-domain EM formulation.
 class TimeDomainProblemBuilder : public hephaestus::ProblemBuilder
 {
-protected:
-  std::unique_ptr<hephaestus::TimeDomainProblem> problem;
-  mfem::ConstantCoefficient oneCoef{1.0};
-
-  virtual hephaestus::TimeDomainProblem * GetProblem() override { return problem.get(); };
-
 public:
   TimeDomainProblemBuilder() : problem(std::make_unique<hephaestus::TimeDomainProblem>()){};
+
+  ~TimeDomainProblemBuilder() override{}
 
   virtual std::unique_ptr<hephaestus::TimeDomainProblem> ReturnProblem()
   {
@@ -63,6 +59,12 @@ public:
   virtual void ConstructState() override;
 
   virtual void ConstructSolver() override;
+
+protected:
+  std::unique_ptr<hephaestus::TimeDomainProblem> problem{nullptr};
+  mfem::ConstantCoefficient oneCoef{1.0};
+
+  virtual hephaestus::TimeDomainProblem * GetProblem() override { return problem.get(); };
 };
 
 } // namespace hephaestus

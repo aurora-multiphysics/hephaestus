@@ -17,7 +17,7 @@ public:
   Problem() = default;
   virtual ~Problem();
 
-  std::shared_ptr<mfem::ParMesh> pmesh;
+  std::shared_ptr<mfem::ParMesh> pmesh{nullptr};
   hephaestus::BCMap bc_map;
   hephaestus::Coefficients coefficients;
   hephaestus::AuxSolvers preprocessors;
@@ -47,6 +47,9 @@ private:
 
 public:
   ProblemBuilder(){};
+
+  // Virtual destructor required to prevent leaks.
+  virtual ~ProblemBuilder() {}
 
   void SetMesh(std::shared_ptr<mfem::ParMesh> pmesh);
   void SetFESpaces(hephaestus::FESpaces & fespaces);
@@ -97,7 +100,7 @@ class ProblemBuildSequencer
    * @var Builder
    */
 private:
-  std::unique_ptr<hephaestus::ProblemBuilder> problem_builder;
+  std::unique_ptr<hephaestus::ProblemBuilder> problem_builder{nullptr};
   /**
    * The ProblemBuildSequencer works with any builder instance that the client
    * code passes to it. This way, the client code may alter the final type of

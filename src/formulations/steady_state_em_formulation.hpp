@@ -11,5 +11,6 @@ class SteadyStateEMFormulation : public hephaestus::SteadyStateProblemBuilder,
 {
 public:
   SteadyStateEMFormulation();
+  ~SteadyStateEMFormulation() override {}
 };
 } // namespace hephaestus

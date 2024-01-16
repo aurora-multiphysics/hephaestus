@@ -15,7 +15,7 @@ public:
 
   void Execute() const override;
 
-  hephaestus::SteadyStateProblem * problem;
+  hephaestus::SteadyStateProblem * problem{nullptr};
 };
 
 } // namespace hephaestus
