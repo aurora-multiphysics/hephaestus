@@ -134,8 +134,7 @@ TEST_CASE_METHOD(TestAFormSource, "TestAForm", "[CheckRun]")
   int num_conv_refinements = 3;
   for (int par_ref_levels = 0; par_ref_levels < num_conv_refinements; ++par_ref_levels)
   {
-
-    std::shared_ptr<mfem::ParMesh> pmesh = std::make_shared<mfem::ParMesh>(unrefined_pmesh);
+    auto pmesh = std::make_shared<mfem::ParMesh>(unrefined_pmesh);
 
     for (int l = 0; l < par_ref_levels; l++)
     {

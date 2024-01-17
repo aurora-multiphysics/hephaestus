@@ -10,6 +10,8 @@ public:
   Executioner() = default;
   explicit Executioner(const hephaestus::InputParameters & params){};
 
+  virtual ~Executioner() {}
+
   // Solve the current system of equations
   virtual void Solve() const = 0;
 

@@ -100,7 +100,8 @@ class ProblemBuildSequencer
    * @var Builder
    */
 private:
-  std::unique_ptr<hephaestus::ProblemBuilder> problem_builder{nullptr};
+  hephaestus::ProblemBuilder * _problem_builder{nullptr};
+
   /**
    * The ProblemBuildSequencer works with any builder instance that the client
    * code passes to it. This way, the client code may alter the final type of
@@ -108,8 +109,8 @@ private:
    */
 
 public:
-  ProblemBuildSequencer(hephaestus::ProblemBuilder * problem_builder_)
-    : problem_builder(problem_builder_)
+  ProblemBuildSequencer(hephaestus::ProblemBuilder * problem_builder)
+    : _problem_builder{problem_builder}
   {
   }
 
@@ -120,29 +121,29 @@ public:
   void ConstructOperatorProblem()
   {
     // SteadyStateProblem
-    problem_builder->RegisterFESpaces();
-    problem_builder->RegisterGridFunctions();
-    problem_builder->RegisterAuxSolvers();
-    problem_builder->RegisterCoefficients();
-    problem_builder->InitializeKernels();
-    problem_builder->ConstructOperator();
-    problem_builder->ConstructState();
-    problem_builder->InitializeAuxSolvers();
-    problem_builder->InitializeOutputs();
+    _problem_builder->RegisterFESpaces();
+    _problem_builder->RegisterGridFunctions();
+    _problem_builder->RegisterAuxSolvers();
+    _problem_builder->RegisterCoefficients();
+    _problem_builder->InitializeKernels();
+    _problem_builder->ConstructOperator();
+    _problem_builder->ConstructState();
+    _problem_builder->InitializeAuxSolvers();
+    _problem_builder->InitializeOutputs();
   }
   void ConstructEquationSystemProblem()
   {
-    problem_builder->RegisterFESpaces();
-    problem_builder->RegisterGridFunctions();
-    problem_builder->RegisterAuxSolvers();
-    problem_builder->RegisterCoefficients();
-    problem_builder->ConstructEquationSystem();
-    problem_builder->InitializeKernels();
-    problem_builder->ConstructOperator();
-    problem_builder->ConstructState();
-    problem_builder->ConstructSolver();
-    problem_builder->InitializeAuxSolvers();
-    problem_builder->InitializeOutputs();
+    _problem_builder->RegisterFESpaces();
+    _problem_builder->RegisterGridFunctions();
+    _problem_builder->RegisterAuxSolvers();
+    _problem_builder->RegisterCoefficients();
+    _problem_builder->ConstructEquationSystem();
+    _problem_builder->InitializeKernels();
+    _problem_builder->ConstructOperator();
+    _problem_builder->ConstructState();
+    _problem_builder->ConstructSolver();
+    _problem_builder->InitializeAuxSolvers();
+    _problem_builder->InitializeOutputs();
   }
 };
 

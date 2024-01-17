@@ -14,7 +14,7 @@ public:
                const std::string & electric_conductivity_name,
                const std::string & magnetic_vector_potential_name);
 
-  ~AFormulation(){};
+  ~AFormulation() override {}
 
   // Enable auxiliary calculation of J ∈ H(div)
   virtual void registerCurrentDensityAux(const std::string & j_field_name) override;
