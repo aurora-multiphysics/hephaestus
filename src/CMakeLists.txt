@@ -10,6 +10,7 @@ foreach (_srcFile ${src_files})
 endforeach()
 list (REMOVE_DUPLICATES ${PROJECT_NAME}_INCLUDE_DIRS)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # make a shared object library to link against for testing
 add_library(${PROJECT_LIB_NAME} SHARED ${src_files})
 target_compile_options(${PROJECT_LIB_NAME} PRIVATE ${BUILD_TYPE_COMPILE_FLAGS})
