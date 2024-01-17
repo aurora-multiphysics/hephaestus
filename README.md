@@ -32,9 +32,9 @@ Hephaestus can be built with the following commands from the top level `hephaest
     make
     make test
 
-Running `make test` after `hephaestus` is built will run the entire set of tests found in `hephaestus/test`. Running a specific test is possible by providing the `--gtest_filter` flag when running the corresponding test executable; for example:
+Running `make test` after `hephaestus` is built will run the entire set of tests found in `hephaestus/test`. Running a specific test is possible by providing the test name when running the corresponding test executable; for example:
 ```
-/opt/hephaestus/bin/integration_tests --gtest_filter=TestAFormSource
+/opt/hephaestus/bin/integration_tests TestAFormSource
 ```
 # Examples
 In addition to the set of tests in `hephaestus/test`, longer running examples of Hephaestus being used can be found in `hephaestus/examples`, with associated executables found in `hephaestus/examples/bin`.
