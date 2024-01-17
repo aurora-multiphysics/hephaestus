@@ -94,8 +94,8 @@ private:
 
   // Parent mesh, FE space, and current
   mfem::ParMesh * mesh_parent_;
-  mfem::ParGridFunction * grad_p_parent_;
-  mfem::ParGridFunction * grad_p_t_parent_;
+  mfem::ParGridFunction * grad_phi_parent_;
+  mfem::ParGridFunction * grad_phi_t_parent_;
   mfem::ParGridFunction * V_parent_;
   mfem::ParGridFunction * Vt_parent_;
 
@@ -105,7 +105,7 @@ private:
   mfem::ParFiniteElementSpace * HCurlFESpace_;
 
   // Child GridFunctions
-  mfem::ParGridFunction * grad_p_;
+  mfem::ParGridFunction * grad_phi_;
   mfem::ParGridFunction * V_;
 
   // Child boundary condition objects

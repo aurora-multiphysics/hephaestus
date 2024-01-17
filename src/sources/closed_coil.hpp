@@ -70,9 +70,12 @@ private:
   std::vector<int> old_dom_attrs;
   hephaestus::InputParameters solver_options_;
 
-  // Seting grad_phi_transfer_ to true will negatively affect performance, but
-  // the resulting grad phi gridfunction will be correct for visualisation
-  // purposes. Only set to true if you wish to view the final grad phi.
+  // Here, we are solving for -(σ∇Va,∇ψ) = (σ∇Vt,∇ψ), where ∇Vt is grad_phi_t (within its relevant
+  // mesh), ∇Va is grad_phi_aux, and their sum ∇Vt+∇Va is the full grad_phi, which is, up to an
+  // overall sign, equal to the electric field in the electrostatic case. Seting grad_phi_transfer_
+  // to true will negatively affect performance, but the final grad_phi function will be transferred
+  // to a GridFunction for viewing purposes. Only set to true if you wish to visualise the final
+  // grad_phi.
   bool grad_phi_transfer_;
 
   // Names
