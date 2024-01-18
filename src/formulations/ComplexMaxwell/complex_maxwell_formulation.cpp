@@ -55,14 +55,14 @@ ComplexMaxwellOperator::Solve(mfem::Vector & X)
   mfem::VectorConstantCoefficient zeroCoef(zeroVec);
 
   mfem::ParSesquilinearForm a1_(u_->ParFESpace(), conv_);
-  a1_.AddDomainIntegrator(new mfem::CurlCurlIntegrator(*stiffCoef_), NULL);
+  a1_.AddDomainIntegrator(new mfem::CurlCurlIntegrator(*stiffCoef_), nullptr);
   if (massCoef_)
   {
-    a1_.AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*massCoef_), NULL);
+    a1_.AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*massCoef_), nullptr);
   }
   if (lossCoef_)
   {
-    a1_.AddDomainIntegrator(NULL, new mfem::VectorFEMassIntegrator(*lossCoef_));
+    a1_.AddDomainIntegrator(nullptr, new mfem::VectorFEMassIntegrator(*lossCoef_));
   }
 
   mfem::ParLinearForm b1_real_(u_->ParFESpace());
@@ -87,12 +87,12 @@ ComplexMaxwellOperator::Solve(mfem::Vector & X)
   a1_.FormLinearSystem(ess_bdr_tdofs_, *u_, b1_, A1, U, RHS);
 
   mfem::ComplexHypreParMatrix * A1Z = A1.As<mfem::ComplexHypreParMatrix>();
-  mfem::HypreParMatrix * A1C = A1Z->GetSystemMatrix();
+  auto A1C = std::unique_ptr<mfem::HypreParMatrix>(A1Z->GetSystemMatrix());
+
   mfem::SuperLURowLocMatrix A_SuperLU(*A1C);
   mfem::SuperLUSolver solver(MPI_COMM_WORLD);
   solver.SetOperator(A_SuperLU);
   solver.Mult(RHS, U);
-  delete A1C;
 
   a1_.RecoverFEMSolution(U, b1_, *u_);
 

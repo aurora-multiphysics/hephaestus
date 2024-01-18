@@ -44,12 +44,13 @@ public:
 
   std::string h_curl_var_complex_name, h_curl_var_real_name, h_curl_var_imag_name,
       stiffness_coef_name, mass_coef_name, loss_coef_name;
-  mfem::ParComplexGridFunction * u_;
-  mfem::ComplexOperator::Convention conv_ = mfem::ComplexOperator::HERMITIAN;
 
-  mfem::Coefficient * stiffCoef_; // Dia/Paramagnetic Material Coefficient
-  mfem::Coefficient * massCoef_;  // -omega^2 epsilon
-  mfem::Coefficient * lossCoef_;  // omega sigma
+  mfem::ComplexOperator::Convention conv_{mfem::ComplexOperator::HERMITIAN};
+
+  mfem::ParComplexGridFunction * u_{nullptr};
+  mfem::Coefficient * stiffCoef_{nullptr}; // Dia/Paramagnetic Material Coefficient
+  mfem::Coefficient * massCoef_{nullptr};  // -omega^2 epsilon
+  mfem::Coefficient * lossCoef_{nullptr};  // omega sigma
 
   mfem::Array<int> ess_bdr_tdofs_;
 };
