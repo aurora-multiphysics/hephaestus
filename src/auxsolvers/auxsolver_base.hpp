@@ -17,6 +17,9 @@ class AuxSolver
 public:
   AuxSolver() = default;
 
+  // NB: require virtual destructor to avoid leaks.
+  virtual ~AuxSolver() {}
+
   virtual void Init(const hephaestus::GridFunctions & gridfunctions,
                     hephaestus::Coefficients & coefficients) = 0;
 

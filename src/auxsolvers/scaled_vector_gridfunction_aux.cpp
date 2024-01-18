@@ -100,6 +100,4 @@ ScaledVectorGridFunctionAux::Solve(double t)
   scaled_gf->SetFromTrueDofs(X);
 }
 
-ScaledVectorGridFunctionAux::~ScaledVectorGridFunctionAux() {}
-
 } // namespace hephaestus

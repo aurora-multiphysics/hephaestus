@@ -10,10 +10,10 @@ namespace hephaestus
 class VectorGridFunctionDotProductCoefficient : public mfem::Coefficient
 {
 private:
-  const mfem::ParGridFunction * _u_gf_re;
-  const mfem::ParGridFunction * _u_gf_im;
-  const mfem::ParGridFunction * _v_gf_re;
-  const mfem::ParGridFunction * _v_gf_im;
+  const mfem::ParGridFunction * _u_gf_re{nullptr};
+  const mfem::ParGridFunction * _u_gf_im{nullptr};
+  const mfem::ParGridFunction * _v_gf_re{nullptr};
+  const mfem::ParGridFunction * _v_gf_im{nullptr};
   mfem::Coefficient & _coef;
 
 public:
@@ -25,8 +25,10 @@ public:
     : _u_gf_re(u_gf_re), _u_gf_im(u_gf_im), _v_gf_re(v_gf_re), _v_gf_im(v_gf_im), _coef(coef)
   {
   }
+
+  ~VectorGridFunctionDotProductCoefficient() override {}
+
   virtual double Eval(mfem::ElementTransformation & T, const mfem::IntegrationPoint & ip);
-  virtual ~VectorGridFunctionDotProductCoefficient() {}
 };
 
 // Auxsolver to project the dot product of two vector gridfunctions onto a third
@@ -34,11 +36,11 @@ public:
 class VectorGridFunctionDotProductAux : public CoefficientAux
 {
 private:
-  mfem::Coefficient * _scaling_coef;
-  mfem::ParGridFunction * _u_gf_re;
-  mfem::ParGridFunction * _u_gf_im;
-  mfem::ParGridFunction * _v_gf_re;
-  mfem::ParGridFunction * _v_gf_im;
+  mfem::Coefficient * _scaling_coef{nullptr};
+  mfem::ParGridFunction * _u_gf_re{nullptr};
+  mfem::ParGridFunction * _u_gf_im{nullptr};
+  mfem::ParGridFunction * _v_gf_re{nullptr};
+  mfem::ParGridFunction * _v_gf_im{nullptr};
 
   const std::string _u_gf_real_name;
   const std::string _v_gf_real_name;
@@ -56,6 +58,8 @@ public:
                                   const std::string & u_gf_imag_name = "",
                                   const std::string & v_gf_imag_name = "",
                                   const bool complex_average = false);
+
+  ~VectorGridFunctionDotProductAux() override {}
 
   void Init(const hephaestus::GridFunctions & gridfunctions,
             hephaestus::Coefficients & coefficients) override;

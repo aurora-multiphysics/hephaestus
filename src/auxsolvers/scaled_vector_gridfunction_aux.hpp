@@ -16,7 +16,9 @@ public:
       const std::string & coef_name,
       const double & aConst = 1.0,
       const hephaestus::InputParameters & solver_options = hephaestus::InputParameters());
-  virtual ~ScaledVectorGridFunctionAux();
+
+  ~ScaledVectorGridFunctionAux() override {}
+
   virtual void Init(const hephaestus::GridFunctions & gridfunctions,
                     hephaestus::Coefficients & coefficients) override;
   virtual void buildBilinearForm();

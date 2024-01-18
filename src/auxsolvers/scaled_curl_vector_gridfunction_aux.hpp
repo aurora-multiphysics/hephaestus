@@ -16,6 +16,9 @@ public:
       const std::string & coef_name,
       const double & aConst = 1.0,
       const hephaestus::InputParameters & solver_options = hephaestus::InputParameters());
+
+  ~ScaledCurlVectorGridFunctionAux() override {}
+
   virtual void buildMixedBilinearForm() override;
 };
 } // namespace hephaestus
