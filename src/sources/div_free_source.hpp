@@ -28,18 +28,18 @@ public:
   const hephaestus::InputParameters solver_options;
   bool perform_helmholtz_projection;
 
-  mfem::ParFiniteElementSpace * H1FESpace_;
-  mfem::ParFiniteElementSpace * HCurlFESpace_;
+  mfem::ParFiniteElementSpace * H1FESpace_{nullptr};
+  mfem::ParFiniteElementSpace * HCurlFESpace_{nullptr};
 
   std::unique_ptr<mfem::ParGridFunction> q_; // Potential
 
-  hephaestus::BCMap * bc_map_;
-  hephaestus::GridFunctions * gridfunctions_;
-  const hephaestus::FESpaces * fespaces_;
+  hephaestus::BCMap * bc_map_{nullptr};
+  hephaestus::GridFunctions * gridfunctions_{nullptr};
+  const hephaestus::FESpaces * fespaces_{nullptr};
 
   std::unique_ptr<mfem::ParBilinearForm> h_curl_mass;
 
-  mfem::VectorCoefficient * sourceVecCoef;
+  mfem::VectorCoefficient * sourceVecCoef{nullptr};
 
   // H(Curl) projection of user specified source
   std::unique_ptr<mfem::ParGridFunction> g;
@@ -47,7 +47,7 @@ public:
   // Divergence free projected source
   std::unique_ptr<mfem::ParGridFunction> div_free_src_gf;
 
-  mfem::Solver * solver;
+  mfem::Solver * solver{nullptr};
 };
 
 }; // namespace hephaestus
