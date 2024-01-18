@@ -3,7 +3,7 @@
 const char * DATA_DIR = "../../data/";
 
 static void
-zeroVec(const mfem::Vector & x, mfem::Vector & V)
+constVec(const mfem::Vector & x, mfem::Vector & V)
 {
   V = 1.0;
 }
@@ -12,15 +12,13 @@ hephaestus::Coefficients
 defineCoefficients(double Itotal)
 {
 
-  hephaestus::Subdomain coil("coil", 1);
-  coil.scalar_coefficients.Register(
-      "electrical_conductivity", new mfem::ConstantCoefficient(3.526e7), true);
-  hephaestus::Subdomain air("air", 2);
-  air.scalar_coefficients.Register(
-      "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
-  hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({coil, air}));
+  hephaestus::Coefficients coefficients;
   coefficients.scalars.Register(
       "magnetic_permeability", new mfem::ConstantCoefficient(M_PI * 4.0e-7), true);
+
+  // Electrical conductivity
+  coefficients.scalars.Register(
+      "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
 
   // Time-dependent current
   coefficients.scalars.Register("I", new mfem::ConstantCoefficient(Itotal), true);
@@ -33,9 +31,10 @@ defineSources(std::pair<int, int> elec, mfem::Array<int> coil_domains)
 {
 
   hephaestus::InputParameters coilsolver_pars;
-  coilsolver_pars.SetParam("SourceName", std::string("source_current_density"));
+  coilsolver_pars.SetParam("GradPotentialName", std::string("grad_phi"));
   coilsolver_pars.SetParam("PotentialName", std::string("auxiliary_potential"));
   coilsolver_pars.SetParam("IFuncCoefName", std::string("I"));
+  coilsolver_pars.SetParam("ConductivityCoefName", std::string("electrical_conductivity"));
 
   hephaestus::Sources sources;
   sources.Register(
@@ -138,7 +137,7 @@ main(int argc, char * argv[])
   problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P1"));
   problem_builder->AddFESpace(std::string("HDiv"), std::string("RT_3D_P0"));
   problem_builder->AddGridFunction(std::string("magnetic_vector_potential"), std::string("HCurl"));
-  problem_builder->AddGridFunction(std::string("source_current_density"), std::string("HCurl"));
+  problem_builder->AddGridFunction(std::string("grad_phi"), std::string("HCurl"));
   problem_builder->AddGridFunction(std::string("magnetic_flux_density"), std::string("HDiv"));
   problem_builder->registerMagneticFluxDensityAux("magnetic_flux_density");
   hephaestus::Coefficients coefficients = defineCoefficients(Itotal);
@@ -148,7 +147,7 @@ main(int argc, char * argv[])
   A_DBC_bdr[1] = 2;
   A_DBC_bdr[2] = 4;
   hephaestus::VectorDirichletBC A_DBC(
-      "magnetic_vector_potential", A_DBC_bdr, new mfem::VectorFunctionCoefficient(3, zeroVec));
+      "magnetic_vector_potential", A_DBC_bdr, new mfem::VectorFunctionCoefficient(3, constVec));
 
   problem_builder->AddBoundaryCondition("A_DBC", &A_DBC, false);
 

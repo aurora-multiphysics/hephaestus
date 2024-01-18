@@ -20,7 +20,7 @@ public:
   void buildWeakDiv();
   void buildGrad();
 
-  std::string src_gf_name;
+  std::string grad_phi_name_;
   std::string src_coef_name;
   std::string potential_gf_name;
   std::string hcurl_fespace_name;
