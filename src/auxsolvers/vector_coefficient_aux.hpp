@@ -8,9 +8,9 @@ namespace hephaestus
 class VectorCoefficientAux : public AuxSolver
 {
 public:
-  VectorCoefficientAux(const std::string & gf_name, const std::string & vec_coef_name);
+  VectorCoefficientAux(std::string  gf_name, std::string  vec_coef_name);
 
-  ~VectorCoefficientAux() override {}
+  ~VectorCoefficientAux() override = default;
 
   void Init(const hephaestus::GridFunctions & gridfunctions,
             hephaestus::Coefficients & coefficients) override;

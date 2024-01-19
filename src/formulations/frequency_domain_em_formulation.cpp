@@ -3,6 +3,6 @@
 namespace hephaestus
 {
 
-FrequencyDomainEMFormulation::FrequencyDomainEMFormulation(){};
+FrequencyDomainEMFormulation::FrequencyDomainEMFormulation() = default;
 
 } // namespace hephaestus

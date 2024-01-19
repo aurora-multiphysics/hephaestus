@@ -1,5 +1,7 @@
 #include "coefficients.hpp"
 
+#include <utility>
+
 namespace hephaestus
 {
 
@@ -14,11 +16,11 @@ fracFunc(double a, double b)
   return a / b;
 }
 
-Subdomain::Subdomain(const std::string & name_, int id_) : name(name_), id(id_) {}
+Subdomain::Subdomain(std::string  name_, int id_) : name(std::move(name_)), id(id_) {}
 
 Coefficients::Coefficients() { registerDefaultCoefficients(); }
 
-Coefficients::Coefficients(std::vector<Subdomain> subdomains_) : subdomains(subdomains_)
+Coefficients::Coefficients(std::vector<Subdomain> subdomains_) : subdomains(std::move(subdomains_))
 {
   AddGlobalCoefficientsFromSubdomains();
   registerDefaultCoefficients();
@@ -59,11 +61,11 @@ Coefficients::AddGlobalCoefficientsFromSubdomains()
   mfem::Array<int> subdomain_ids;
   std::unordered_set<std::string> scalar_property_names;
 
-  for (std::size_t i = 0; i < subdomains.size(); i++)
+  for (auto & subdomain : subdomains)
   {
-    subdomain_ids.Append(subdomains[i].id);
+    subdomain_ids.Append(subdomain.id);
     // accumulate property names on subdomains, ignoring duplicates
-    for (auto const & [name, coeff_] : subdomains[i].scalar_coefficients)
+    for (auto const & [name, coeff_] : subdomain.scalar_coefficients)
     {
       scalar_property_names.insert(name);
     }
@@ -74,9 +76,9 @@ Coefficients::AddGlobalCoefficientsFromSubdomains()
   for (auto & scalar_property_name : scalar_property_names)
   {
     mfem::Array<mfem::Coefficient *> subdomain_coefs;
-    for (std::size_t i = 0; i < subdomains.size(); i++)
+    for (auto & subdomain : subdomains)
     {
-      subdomain_coefs.Append(subdomains[i].scalar_coefficients.Get(scalar_property_name));
+      subdomain_coefs.Append(subdomain.scalar_coefficients.Get(scalar_property_name));
     }
     if (!scalars.Has(scalar_property_name))
     {

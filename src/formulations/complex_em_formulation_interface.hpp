@@ -8,7 +8,7 @@ namespace hephaestus
 class ComplexEMFormulationInterface
 {
 public:
-  ComplexEMFormulationInterface(){};
+  ComplexEMFormulationInterface() = default;
 
   // Enable auxiliary calculation of J ∈ H(div)
   virtual void registerCurrentDensityAux(const std::string & j_field_real_name,

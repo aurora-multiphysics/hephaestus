@@ -46,10 +46,10 @@ private:
   virtual hephaestus::Problem * GetProblem() = 0;
 
 public:
-  ProblemBuilder(){};
+  ProblemBuilder() = default;
 
   // Virtual destructor required to prevent leaks.
-  virtual ~ProblemBuilder() {}
+  virtual ~ProblemBuilder() = default;
 
   void SetMesh(std::shared_ptr<mfem::ParMesh> pmesh);
   void SetFESpaces(hephaestus::FESpaces & fespaces);

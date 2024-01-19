@@ -14,9 +14,9 @@ template <typename T>
 class NamedFieldsMap
 {
 public:
-  typedef std::map<std::string, T *> MapType;
-  typedef typename MapType::iterator iterator;
-  typedef typename MapType::const_iterator const_iterator;
+  using MapType = std::map<std::string, T *>;
+  using iterator = typename MapType::iterator;
+  using const_iterator = typename MapType::const_iterator;
 
   /// Default initializer.
   NamedFieldsMap() = default;
@@ -58,12 +58,12 @@ public:
   }
 
   /// Predicate to check if a field is associated with name @a field_name.
-  inline bool Has(const std::string & field_name) const { return find(field_name) != end(); }
+  [[nodiscard]] inline bool Has(const std::string & field_name) const { return find(field_name) != end(); }
 
   /// Get a pointer to the field associated with name @a field_name.
-  inline T * Get(const std::string & field_name) const
+  [[nodiscard]] inline T * Get(const std::string & field_name) const
   {
-    const_iterator it = find(field_name);
+    auto it = find(field_name);
     return it != _field_map.end() ? it->second : nullptr;
   }
 
@@ -91,31 +91,31 @@ public:
   inline MapType & GetMap() { return _field_map; }
 
   /// Returns const-reference to field map.
-  inline const MapType & GetMap() const { return _field_map; }
+  [[nodiscard]] inline const MapType & GetMap() const { return _field_map; }
 
   /// Returns a begin iterator to the registered fields.
   inline iterator begin() { return _field_map.begin(); }
 
   /// Returns a begin const iterator to the registered fields.
-  inline const_iterator begin() const { return _field_map.begin(); }
+  [[nodiscard]] inline const_iterator begin() const { return _field_map.begin(); }
 
   /// Returns an end iterator to the registered fields.
   inline iterator end() { return _field_map.end(); }
 
   /// Returns an end const iterator to the registered fields.
-  inline const_iterator end() const { return _field_map.end(); }
+  [[nodiscard]] inline const_iterator end() const { return _field_map.end(); }
 
   /// Returns an iterator to the field @a field_name.
   inline iterator find(const std::string & field_name) { return _field_map.find(field_name); }
 
   /// Returns a const iterator to the field @a field_name.
-  inline const_iterator find(const std::string & field_name) const
+  [[nodiscard]] inline const_iterator find(const std::string & field_name) const
   {
     return _field_map.find(field_name);
   }
 
   /// Returns the number of registered fields.
-  inline int NumFields() const { return _field_map.size(); }
+  [[nodiscard]] inline int NumFields() const { return _field_map.size(); }
 
 protected:
   /// Check for double-registration of a field. A double-registered field may

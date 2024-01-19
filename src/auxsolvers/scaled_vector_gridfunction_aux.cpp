@@ -1,25 +1,23 @@
 #include "scaled_vector_gridfunction_aux.hpp"
 
+#include <utility>
+
 namespace hephaestus
 {
 
 ScaledVectorGridFunctionAux::ScaledVectorGridFunctionAux(
-    const std::string & input_gf_name,
-    const std::string & scaled_gf_name,
-    const std::string & coef_name,
+    std::string  input_gf_name,
+    std::string  scaled_gf_name,
+    std::string  coef_name,
     const double & aConst,
-    const hephaestus::InputParameters & solver_options)
-  : AuxSolver(),
-    _input_gf_name(input_gf_name),
-    _scaled_gf_name(scaled_gf_name),
-    _coef_name(coef_name),
+    hephaestus::InputParameters  solver_options)
+  : 
+    _input_gf_name(std::move(input_gf_name)),
+    _scaled_gf_name(std::move(scaled_gf_name)),
+    _coef_name(std::move(coef_name)),
     _aConst(aConst),
-    _solver_options(solver_options),
-    coef(nullptr),
-    input_gf(nullptr),
-    scaled_gf(nullptr),
-    test_fes(nullptr),
-    trial_fes(nullptr),
+    _solver_options(std::move(solver_options)),
+    
     a(nullptr),
     a_mixed(nullptr),
     a_mat(nullptr),

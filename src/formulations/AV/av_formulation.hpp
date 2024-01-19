@@ -10,21 +10,21 @@ namespace hephaestus
 class AVFormulation : public TimeDomainEMFormulation
 {
 public:
-  AVFormulation(const std::string & alpha_coef_name,
-                const std::string & inv_alpha_coef_name,
-                const std::string & beta_coef_name,
-                const std::string & vector_potential_name,
-                const std::string & scalar_potential_name);
+  AVFormulation(std::string  alpha_coef_name,
+                std::string  inv_alpha_coef_name,
+                std::string  beta_coef_name,
+                std::string  vector_potential_name,
+                std::string  scalar_potential_name);
 
-  ~AVFormulation() override {}
+  ~AVFormulation() override = default;
 
-  virtual void ConstructEquationSystem() override;
+  void ConstructEquationSystem() override;
 
-  virtual void ConstructOperator() override;
+  void ConstructOperator() override;
 
-  virtual void RegisterGridFunctions() override;
+  void RegisterGridFunctions() override;
 
-  virtual void RegisterCoefficients() override;
+  void RegisterCoefficients() override;
 
 protected:
   const std::string _alpha_coef_name;
@@ -39,13 +39,13 @@ class AVEquationSystem : public TimeDependentEquationSystem
 public:
   AVEquationSystem(const hephaestus::InputParameters & params);
 
-  ~AVEquationSystem() override {}
+  ~AVEquationSystem() override = default;
 
-  virtual void Init(hephaestus::GridFunctions & gridfunctions,
+  void Init(hephaestus::GridFunctions & gridfunctions,
                     const hephaestus::FESpaces & fespaces,
                     hephaestus::BCMap & bc_map,
-                    hephaestus::Coefficients & coefficients);
-  virtual void addKernels() override;
+                    hephaestus::Coefficients & coefficients) override;
+  void addKernels() override;
 
   std::string a_name, v_name, coupled_variable_name, alpha_coef_name, beta_coef_name,
       dtalpha_coef_name, neg_beta_coef_name;
@@ -63,7 +63,7 @@ public:
              hephaestus::Sources & sources,
              hephaestus::InputParameters & solver_options);
 
-  ~AVOperator() override {}
+  ~AVOperator() override = default;
 
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
 };

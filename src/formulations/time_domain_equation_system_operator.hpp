@@ -24,8 +24,7 @@ public:
                                    hephaestus::Coefficients & coefficients,
                                    hephaestus::Sources & sources,
                                    hephaestus::InputParameters & solver_options)
-    : myid_(0),
-      num_procs_(1),
+    : 
       pmesh_(&pmesh),
       _fespaces(fespaces),
       _gridfunctions(gridfunctions),
@@ -34,11 +33,11 @@ public:
       _coefficients(coefficients),
       _solver_options(solver_options){};
 
-  ~TimeDomainEquationSystemOperator() override {}
+  ~TimeDomainEquationSystemOperator() override = default;
 
   virtual void SetGridFunctions();
   virtual void Init(mfem::Vector & X);
-  virtual void
+  void
   ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
   void SetEquationSystem(hephaestus::TimeDependentEquationSystem * equation_system);
 
@@ -57,8 +56,8 @@ public:
 
   hephaestus::TimeDependentEquationSystem * _equation_system;
 
-  int myid_;
-  int num_procs_;
+  int myid_{0};
+  int num_procs_{1};
   mfem::ParMesh * pmesh_;
   hephaestus::FESpaces & _fespaces;
   hephaestus::GridFunctions & _gridfunctions;

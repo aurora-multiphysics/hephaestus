@@ -19,12 +19,12 @@ protected:
 public:
   CoupledCoefficient(const hephaestus::InputParameters & params);
 
-  ~CoupledCoefficient() override {}
+  ~CoupledCoefficient() override = default;
 
-  virtual void Init(const hephaestus::GridFunctions & gridfunctions,
+  void Init(const hephaestus::GridFunctions & gridfunctions,
                     hephaestus::Coefficients & coefficients) override;
 
-  virtual double Eval(mfem::ElementTransformation & T, const mfem::IntegrationPoint & ip) override;
+  double Eval(mfem::ElementTransformation & T, const mfem::IntegrationPoint & ip) override;
 
   void Solve(double t = 0.0) override{};
 

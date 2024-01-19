@@ -10,15 +10,15 @@ namespace hephaestus
 class StaticsFormulation : public SteadyStateEMFormulation
 {
 public:
-  StaticsFormulation(const std::string & alpha_coef_name, const std::string & h_curl_var_name);
+  StaticsFormulation(std::string alpha_coef_name, std::string h_curl_var_name);
 
-  ~StaticsFormulation() override {}
+  ~StaticsFormulation() override = default;
 
-  virtual void ConstructOperator() override;
+  void ConstructOperator() override;
 
-  virtual void RegisterGridFunctions() override;
+  void RegisterGridFunctions() override;
 
-  virtual void RegisterCoefficients() override;
+  void RegisterCoefficients() override;
 
 protected:
   const std::string _alpha_coef_name;
@@ -36,11 +36,11 @@ public:
                   hephaestus::Sources & sources,
                   hephaestus::InputParameters & solver_options);
 
-  ~StaticsOperator(){};
+  ~StaticsOperator() override = default;
 
-  virtual void SetGridFunctions() override;
-  virtual void Init(mfem::Vector & X) override;
-  virtual void Solve(mfem::Vector & X) override;
+  void SetGridFunctions() override;
+  void Init(mfem::Vector & X) override;
+  void Solve(mfem::Vector & X) override;
 
 private:
   std::string h_curl_var_name, stiffness_coef_name;

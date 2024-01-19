@@ -11,7 +11,7 @@ class FrequencyDomainEMFormulation : public hephaestus::SteadyStateProblemBuilde
 {
 public:
   FrequencyDomainEMFormulation();
-  ~FrequencyDomainEMFormulation() override{};
+  ~FrequencyDomainEMFormulation() override = default;
 
 protected:
   mfem::ConstantCoefficient * freqCoef{nullptr};

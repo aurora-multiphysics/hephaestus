@@ -1,10 +1,12 @@
 #include "curl_aux.hpp"
 
+#include <utility>
+
 namespace hephaestus
 {
 
-CurlAuxSolver::CurlAuxSolver(const std::string & input_gf_name, const std::string & curl_gf_name)
-  : AuxSolver(), _input_gf_name(input_gf_name), _curl_gf_name(curl_gf_name)
+CurlAuxSolver::CurlAuxSolver(std::string  input_gf_name, std::string  curl_gf_name)
+  :  _input_gf_name(std::move(input_gf_name)), _curl_gf_name(std::move(curl_gf_name))
 {
 }
 

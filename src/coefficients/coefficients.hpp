@@ -15,7 +15,7 @@ double fracFunc(double a, double b);
 class Subdomain
 {
 public:
-  Subdomain(const std::string & name_, int id_);
+  Subdomain(std::string name_, int id_);
 
   std::string name;
   int id;
@@ -33,7 +33,7 @@ class Coefficients
   double t; // Time at which time-dependent coefficients are evaluated
 public:
   Coefficients();
-  ~Coefficients(){};
+  ~Coefficients() = default;
 
   Coefficients(std::vector<Subdomain> subdomains_);
   void SetTime(double t);

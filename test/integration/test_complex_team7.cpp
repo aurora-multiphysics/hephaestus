@@ -109,7 +109,7 @@ protected:
     hephaestus::AuxSolvers preprocessors;
 
     hephaestus::Sources sources;
-    mfem::VectorFunctionCoefficient * JSrcCoef =
+    auto * JSrcCoef =
         new mfem::VectorFunctionCoefficient(3, source_current);
     mfem::Array<mfem::VectorCoefficient *> sourcecoefs(4);
     sourcecoefs[0] = JSrcCoef;
@@ -121,7 +121,7 @@ protected:
     coilsegments[1] = 4;
     coilsegments[2] = 5;
     coilsegments[3] = 6;
-    mfem::PWVectorCoefficient * JSrcRestricted =
+    auto * JSrcRestricted =
         new mfem::PWVectorCoefficient(3, coilsegments, sourcecoefs);
     coefficients.vectors.Register("source", JSrcRestricted, true);
 
@@ -164,13 +164,13 @@ TEST_CASE_METHOD(TestComplexTeam7, "TestComplexTeam7", "[CheckRun]")
   hephaestus::InputParameters params(test_params());
   auto pmesh = std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
 
-  hephaestus::BCMap bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-  hephaestus::Coefficients coefficients(params.GetParam<hephaestus::Coefficients>("Coefficients"));
-  hephaestus::AuxSolvers preprocessors(params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
-  hephaestus::AuxSolvers postprocessors(params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
-  hephaestus::Sources sources(params.GetParam<hephaestus::Sources>("Sources"));
-  hephaestus::Outputs outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
-  hephaestus::InputParameters solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
+  auto bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
+  auto coefficients(params.GetParam<hephaestus::Coefficients>("Coefficients"));
+  auto preprocessors(params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
+  auto postprocessors(params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
+  auto sources(params.GetParam<hephaestus::Sources>("Sources"));
+  auto outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
+  auto solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
       "SolverOptions", hephaestus::InputParameters()));
 
   auto problem_builder =

@@ -12,13 +12,13 @@ class VectorFEWeakDivergenceKernel : public Kernel<mfem::ParMixedBilinearForm>
 public:
   VectorFEWeakDivergenceKernel(const hephaestus::InputParameters & params);
 
-  ~VectorFEWeakDivergenceKernel() override{};
+  ~VectorFEWeakDivergenceKernel() override = default;
 
-  virtual void Init(hephaestus::GridFunctions & gridfunctions,
-                    const hephaestus::FESpaces & fespaces,
-                    hephaestus::BCMap & bc_map,
-                    hephaestus::Coefficients & coefficients) override;
-  virtual void Apply(mfem::ParMixedBilinearForm * mblf) override;
+  void Init(hephaestus::GridFunctions & gridfunctions,
+            const hephaestus::FESpaces & fespaces,
+            hephaestus::BCMap & bc_map,
+            hephaestus::Coefficients & coefficients) override;
+  void Apply(mfem::ParMixedBilinearForm * mblf) override;
   std::string coef_name;
   mfem::Coefficient * coef;
 };

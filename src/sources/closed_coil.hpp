@@ -15,7 +15,7 @@ class ClosedCoilSolver : public hephaestus::Source
 
 public:
   ClosedCoilSolver(const hephaestus::InputParameters & params,
-                   const mfem::Array<int> & coil_dom,
+                   mfem::Array<int>  coil_dom,
                    const int electrode_face);
 
   // Override virtual Source destructor to avoid leaks.
@@ -131,7 +131,7 @@ public:
 
 private:
   std::unique_ptr<mfem::Vector> u{nullptr};
-  double d;
+  double d{0};
 };
 
 } // namespace hephaestus

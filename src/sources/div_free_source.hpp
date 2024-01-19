@@ -10,7 +10,7 @@ public:
   DivFreeSource(const hephaestus::InputParameters & params);
 
   // Override virtual Source destructor to avoid leaks.
-  ~DivFreeSource() override{};
+  ~DivFreeSource() override = default;
 
   void Init(hephaestus::GridFunctions & gridfunctions,
             const hephaestus::FESpaces & fespaces,

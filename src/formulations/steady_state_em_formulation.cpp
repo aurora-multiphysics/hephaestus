@@ -3,6 +3,6 @@
 namespace hephaestus
 {
 
-SteadyStateEMFormulation::SteadyStateEMFormulation(){};
+SteadyStateEMFormulation::SteadyStateEMFormulation() = default;
 
 } // namespace hephaestus

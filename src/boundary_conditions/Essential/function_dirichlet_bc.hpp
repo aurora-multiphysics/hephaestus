@@ -13,7 +13,7 @@ public:
                     mfem::Coefficient * coeff_,
                     mfem::Coefficient * coeff_im_ = nullptr);
 
-  virtual void applyBC(mfem::GridFunction & gridfunc, mfem::Mesh * mesh_) override;
+  void applyBC(mfem::GridFunction & gridfunc, mfem::Mesh * mesh_) override;
 
   mfem::Coefficient * coeff;
   mfem::Coefficient * coeff_im;

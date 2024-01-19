@@ -15,12 +15,12 @@ mixed and nonlinear forms) and build methods
 class EquationSystem
 {
 public:
-  typedef hephaestus::Kernel<mfem::ParBilinearForm> ParBilinearFormKernel;
-  typedef hephaestus::Kernel<mfem::ParLinearForm> ParLinearFormKernel;
-  typedef hephaestus::Kernel<mfem::ParNonlinearForm> ParNonlinearFormKernel;
-  typedef hephaestus::Kernel<mfem::ParMixedBilinearForm> ParMixedBilinearFormKernel;
+  using ParBilinearFormKernel = hephaestus::Kernel<mfem::ParBilinearForm>;
+  using ParLinearFormKernel = hephaestus::Kernel<mfem::ParLinearForm>;
+  using ParNonlinearFormKernel = hephaestus::Kernel<mfem::ParNonlinearForm>;
+  using ParMixedBilinearFormKernel = hephaestus::Kernel<mfem::ParMixedBilinearForm>;
 
-  EquationSystem(){};
+  EquationSystem() = default;
   EquationSystem(const hephaestus::InputParameters & params);
 
   virtual ~EquationSystem();
@@ -111,13 +111,13 @@ class TimeDependentEquationSystem : public EquationSystem
 {
 public:
   TimeDependentEquationSystem(const hephaestus::InputParameters & params);
-  ~TimeDependentEquationSystem() override{};
+  ~TimeDependentEquationSystem() override = default;
 
   static std::string GetTimeDerivativeName(std::string name)
   {
     return std::string("d") + name + std::string("_dt");
   }
-  virtual void addVariableNameIfMissing(const std::string & var_name) override;
+  void addVariableNameIfMissing(const std::string & var_name) override;
 
   virtual void setTimeStep(double dt);
   virtual void updateEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);

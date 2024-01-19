@@ -15,11 +15,11 @@ public:
   TimeDomainProblem() = default;
   ~TimeDomainProblem() override;
 
-  virtual hephaestus::TimeDependentEquationSystem * GetEquationSystem()
+  hephaestus::TimeDependentEquationSystem * GetEquationSystem() override
   {
     return td_equation_system.get();
   };
-  virtual hephaestus::TimeDomainEquationSystemOperator * GetOperator()
+  hephaestus::TimeDomainEquationSystemOperator * GetOperator() override
   {
     return td_operator.get();
   };
@@ -31,7 +31,7 @@ class TimeDomainProblemBuilder : public hephaestus::ProblemBuilder
 public:
   TimeDomainProblemBuilder() : problem(std::make_unique<hephaestus::TimeDomainProblem>()){};
 
-  ~TimeDomainProblemBuilder() override {}
+  ~TimeDomainProblemBuilder() override = default;
 
   virtual std::unique_ptr<hephaestus::TimeDomainProblem> ReturnProblem()
   {
@@ -42,29 +42,29 @@ public:
   RegisterTimeDerivatives(std::vector<std::string> gridfunction_names,
                           hephaestus::GridFunctions & gridfunctions);
 
-  virtual void RegisterFESpaces() override{};
+  void RegisterFESpaces() override{};
 
-  virtual void RegisterGridFunctions() override;
+  void RegisterGridFunctions() override;
 
-  virtual void RegisterAuxSolvers() override{};
+  void RegisterAuxSolvers() override{};
 
-  virtual void RegisterCoefficients() override{};
+  void RegisterCoefficients() override{};
 
-  virtual void ConstructEquationSystem() override;
+  void ConstructEquationSystem() override;
 
-  virtual void InitializeKernels() override;
+  void InitializeKernels() override;
 
-  virtual void ConstructOperator() override;
+  void ConstructOperator() override;
 
-  virtual void ConstructState() override;
+  void ConstructState() override;
 
-  virtual void ConstructSolver() override;
+  void ConstructSolver() override;
 
 protected:
   std::unique_ptr<hephaestus::TimeDomainProblem> problem{nullptr};
   mfem::ConstantCoefficient oneCoef{1.0};
 
-  virtual hephaestus::TimeDomainProblem * GetProblem() override { return problem.get(); };
+  hephaestus::TimeDomainProblem * GetProblem() override { return problem.get(); };
 };
 
 } // namespace hephaestus

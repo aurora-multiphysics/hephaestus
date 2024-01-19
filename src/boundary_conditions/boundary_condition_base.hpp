@@ -11,7 +11,7 @@ namespace hephaestus
 class BoundaryCondition
 {
 public:
-  BoundaryCondition(const std::string & name_, mfem::Array<int> bdr_attributes_);
+  BoundaryCondition(std::string  name_, mfem::Array<int> bdr_attributes_);
   mfem::Array<int> getMarkers(mfem::Mesh & mesh);
 
   std::string name;

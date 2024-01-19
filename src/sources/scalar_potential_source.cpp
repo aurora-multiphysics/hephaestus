@@ -77,7 +77,7 @@ ScalarPotentialSource::Init(hephaestus::GridFunctions & gridfunctions,
   B0 = std::make_unique<mfem::Vector>();
 }
 
-ScalarPotentialSource::~ScalarPotentialSource() {}
+ScalarPotentialSource::~ScalarPotentialSource() = default;
 
 void
 ScalarPotentialSource::buildM1(mfem::Coefficient * Sigma)

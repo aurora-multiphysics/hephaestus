@@ -18,10 +18,10 @@ private:
 public:
   VectorPowerLawNLFIntegrator(mfem::Coefficient & q) : Q(&q) {}
 
-  virtual void AssembleElementGrad(const mfem::FiniteElement & el,
+  void AssembleElementGrad(const mfem::FiniteElement & el,
                                    mfem::ElementTransformation & Ttr,
                                    const mfem::Vector & elfun,
-                                   mfem::DenseMatrix & elmat)
+                                   mfem::DenseMatrix & elmat) override
   {
 
     int nd = el.GetDof();
@@ -60,10 +60,10 @@ public:
     }
   };
 
-  virtual void AssembleElementVector(const mfem::FiniteElement & el,
+  void AssembleElementVector(const mfem::FiniteElement & el,
                                      mfem::ElementTransformation & Ttr,
                                      const mfem::Vector & elfun,
-                                     mfem::Vector & elvect)
+                                     mfem::Vector & elvect) override
   {
     int nd = el.GetDof(), dim = el.GetDim();
 
@@ -120,9 +120,9 @@ class NonlinearOperator : public mfem::Operator
 private:
   mfem::ParBilinearForm * blf;
   mfem::ParNonlinearForm * nlf;
-  mutable mfem::HypreParMatrix * Jacobian;
-  double dt;
-  const mfem::Vector * x0;
+  mutable mfem::HypreParMatrix * Jacobian{nullptr};
+  double dt{0.0};
+  const mfem::Vector * x0{nullptr};
   mutable mfem::Vector x1;
   const mfem::Array<int> & ess_tdof_list;
 
@@ -133,9 +133,7 @@ public:
     : Operator(blf_->ParFESpace()->TrueVSize()),
       blf(blf_),
       nlf(nlf_),
-      Jacobian(NULL),
-      dt(0.0),
-      x0(NULL),
+      
       x1(height),
       ess_tdof_list(ess_tdof_list_){};
 
@@ -148,7 +146,7 @@ public:
 
   //* residual = (ρ(∇×H), ∇×v) + (μdH/dt, v) + (dBᵉ/dt, v) - <(ρ∇×H)×n, v>  = 0
   /// Compute y = H(x0 + dt* dx/dt) + M dx/dt
-  virtual void Mult(const mfem::Vector & dx_dt, mfem::Vector & residual) const
+  void Mult(const mfem::Vector & dx_dt, mfem::Vector & residual) const override
   {
     add(*x0, dt, dx_dt, x1);
     nlf->Mult(x1, residual);
@@ -157,7 +155,7 @@ public:
 
   /// Compute J = dy/d(dx/dt)
   /// Compute J = M + dt grad_H(x0 + dt* dx/dt)
-  virtual mfem::Operator & GetGradient(const mfem::Vector & dx_dt) const
+  mfem::Operator & GetGradient(const mfem::Vector & dx_dt) const override
   {
     add(*x0, dt, dx_dt, x1);
     delete Jacobian;
@@ -169,7 +167,7 @@ public:
     return *Jacobian;
   };
 
-  virtual ~NonlinearOperator() { delete Jacobian; };
+  ~NonlinearOperator() override { delete Jacobian; };
 };
 
 TEST_CASE("NonlinearIntegratorTest", "[CheckData]")

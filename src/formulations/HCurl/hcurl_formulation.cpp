@@ -38,16 +38,18 @@
 // b1(u') = (s0_{n+1}, u') - (α∇×u_{n}, ∇×u') + <(α∇×u_{n+1}) × n, u'>
 #include "hcurl_formulation.hpp"
 
+#include <utility>
+
 namespace hephaestus
 {
 
-HCurlFormulation::HCurlFormulation(const std::string & alpha_coef_name,
-                                   const std::string & beta_coef_name,
-                                   const std::string & h_curl_var_name)
-  : TimeDomainEMFormulation(),
-    _alpha_coef_name(alpha_coef_name),
-    _beta_coef_name(beta_coef_name),
-    _h_curl_var_name(h_curl_var_name)
+HCurlFormulation::HCurlFormulation(std::string  alpha_coef_name,
+                                   std::string  beta_coef_name,
+                                   std::string  h_curl_var_name)
+  : 
+    _alpha_coef_name(std::move(alpha_coef_name)),
+    _beta_coef_name(std::move(beta_coef_name)),
+    _h_curl_var_name(std::move(h_curl_var_name))
 {
 }
 

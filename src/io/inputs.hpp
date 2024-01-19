@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <utility>
 
 #include "boundary_conditions.hpp"
 #include "coefficients.hpp"
@@ -18,11 +19,11 @@ protected:
   std::map<std::string, std::any> params;
 
 public:
-  InputParameters(){};
-  InputParameters(std::map<std::string, std::any> _params) : params(_params){};
+  InputParameters() = default;
+  InputParameters(std::map<std::string, std::any> _params) : params(std::move(_params)){};
   void SetParam(std::string param_name, std::any value) { params[param_name] = value; };
   template <typename T>
-  T GetParam(std::string param_name) const
+  [[nodiscard]] [[nodiscard]] T GetParam(std::string param_name) const
   {
     T param;
     try
@@ -36,7 +37,8 @@ public:
     return param;
   };
   template <typename T>
-  T GetOptionalParam(std::string param_name, T value) const
+  [[nodiscard]] [[nodiscard]] [[nodiscard]] T GetOptionalParam(std::string param_name,
+                                                               T value) const
   {
     T param;
     try

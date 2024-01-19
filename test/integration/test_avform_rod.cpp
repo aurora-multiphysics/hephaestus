@@ -39,7 +39,7 @@ protected:
         "magnetic_permeability", new mfem::ConstantCoefficient(1.0), true);
 
     hephaestus::BCMap bc_map;
-    mfem::VectorFunctionCoefficient * adotVecCoef = new mfem::VectorFunctionCoefficient(3, adot_bc);
+    auto * adotVecCoef = new mfem::VectorFunctionCoefficient(3, adot_bc);
     bc_map.Register("tangential_dAdt",
                     new hephaestus::VectorDirichletBC(std::string("dmagnetic_vector_potential_dt"),
                                                       mfem::Array<int>({1, 2, 3}),
@@ -65,7 +65,7 @@ protected:
                                           new mfem::FunctionCoefficient(potential_ground)),
         true);
 
-    mfem::VectorFunctionCoefficient * JSrcCoef =
+    auto * JSrcCoef =
         new mfem::VectorFunctionCoefficient(3, source_current);
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./cylinder-hex-q2.gen")).c_str(), 1, 1);
@@ -108,13 +108,13 @@ TEST_CASE_METHOD(TestAVFormRod, "TestAVFormRod", "[CheckRun]")
                                                                      "magnetic_vector_potential",
                                                                      "electric_potential");
 
-  hephaestus::BCMap bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-  hephaestus::Coefficients coefficients(params.GetParam<hephaestus::Coefficients>("Coefficients"));
-  hephaestus::AuxSolvers preprocessors(params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
-  hephaestus::AuxSolvers postprocessors(params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
-  hephaestus::Sources sources(params.GetParam<hephaestus::Sources>("Sources"));
-  hephaestus::Outputs outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
-  hephaestus::InputParameters solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
+  auto bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
+  auto coefficients(params.GetParam<hephaestus::Coefficients>("Coefficients"));
+  auto preprocessors(params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
+  auto postprocessors(params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
+  auto sources(params.GetParam<hephaestus::Sources>("Sources"));
+  auto outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
+  auto solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
       "SolverOptions", hephaestus::InputParameters()));
 
   problem_builder->SetMesh(pmesh);

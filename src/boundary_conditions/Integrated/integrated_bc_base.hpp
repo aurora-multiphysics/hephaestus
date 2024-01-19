@@ -17,9 +17,9 @@ public:
   std::unique_ptr<mfem::LinearFormIntegrator> lfi_re;
   std::unique_ptr<mfem::LinearFormIntegrator> lfi_im;
 
-  virtual void applyBC(mfem::LinearForm & b) override;
-  virtual void applyBC(mfem::ComplexLinearForm & b) override;
-  virtual void applyBC(mfem::ParComplexLinearForm & b) override;
+  void applyBC(mfem::LinearForm & b) override;
+  void applyBC(mfem::ComplexLinearForm & b) override;
+  void applyBC(mfem::ParComplexLinearForm & b) override;
 };
 
 } // namespace hephaestus

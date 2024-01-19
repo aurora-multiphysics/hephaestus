@@ -1,10 +1,12 @@
 #include "boundary_condition_base.hpp"
 
+#include <utility>
+
 namespace hephaestus
 {
 
-BoundaryCondition::BoundaryCondition(const std::string & name_, mfem::Array<int> bdr_attributes_)
-  : name(name_), bdr_attributes(bdr_attributes_)
+BoundaryCondition::BoundaryCondition(std::string  name_, mfem::Array<int> bdr_attributes_)
+  : name(std::move(name_)), bdr_attributes(std::move(bdr_attributes_))
 {
 }
 

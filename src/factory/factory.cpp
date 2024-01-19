@@ -158,7 +158,7 @@ Factory::createTimeDomainEMFormulation(std::string & formulation)
 mfem::ParFiniteElementSpace *
 Factory::createParFESpace(hephaestus::InputParameters params, mfem::ParMesh & pmesh)
 {
-  std::string FEType(params.GetParam<std::string>("FESpaceType"));
+  auto FEType(params.GetParam<std::string>("FESpaceType"));
   int order(params.GetParam<int>("order"));
   int components(params.GetParam<int>("components")); // spatial dimension of mesh. Use
                                                       // FiniteElementCollection::New instead
