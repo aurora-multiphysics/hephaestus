@@ -14,6 +14,8 @@ public:
   L2ErrorVectorPostprocessor(){};
   L2ErrorVectorPostprocessor(const hephaestus::InputParameters & params);
 
+  ~L2ErrorVectorPostprocessor() override {}
+
   void Init(const hephaestus::GridFunctions & gridfunctions,
             hephaestus::Coefficients & coefficients) override;
 
@@ -25,8 +27,9 @@ public:
   mfem::Array<double> times;
   mfem::Array<HYPRE_BigInt> ndofs;
   mfem::Array<double> l2_errs;
-  mfem::ParGridFunction * gf;
-  mfem::VectorCoefficient * vec_coeff;
+
+  mfem::ParGridFunction * gf{nullptr};
+  mfem::VectorCoefficient * vec_coeff{nullptr};
 };
 
 } // namespace hephaestus

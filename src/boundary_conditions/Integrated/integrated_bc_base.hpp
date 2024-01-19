@@ -13,8 +13,9 @@ public:
                mfem::LinearFormIntegrator * lfi_re_,
                mfem::LinearFormIntegrator * lfi_im_ = nullptr);
 
-  mfem::LinearFormIntegrator * lfi_re;
-  mfem::LinearFormIntegrator * lfi_im;
+  // NB: assume ownership of pointers.
+  std::unique_ptr<mfem::LinearFormIntegrator> lfi_re;
+  std::unique_ptr<mfem::LinearFormIntegrator> lfi_im;
 
   virtual void applyBC(mfem::LinearForm & b) override;
   virtual void applyBC(mfem::ComplexLinearForm & b) override;

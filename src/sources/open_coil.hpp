@@ -13,9 +13,6 @@ double calcFlux(mfem::GridFunction * v_field, int face_attr);
 
 double calcFlux(mfem::GridFunction * v_field, int face_attr, mfem::Coefficient & q);
 
-template <typename T>
-void ifDelete(T * ptr);
-
 void inheritBdrAttributes(const mfem::ParMesh * parent_mesh, mfem::ParSubMesh * child_mesh);
 
 // Applies the HelmholtzProjector onto the J GridFunction to clean it of any
@@ -79,12 +76,17 @@ private:
   int order_hcurl_;
   int ref_face_;
   bool grad_phi_transfer_;
+
   std::pair<int, int> elec_attrs_;
   mfem::Array<int> coil_domains_;
   mfem::Array<int> coil_markers_;
-  mfem::Coefficient * sigma_;
-  mfem::Coefficient * Itotal_;
   hephaestus::InputParameters solver_options_;
+
+  mfem::Coefficient * sigma_{nullptr};
+  mfem::Coefficient * Itotal_{nullptr};
+
+  bool owns_sigma_{false};
+  bool owns_Itotal_{false};
 
   // Names
   std::string grad_phi_name_;
@@ -93,35 +95,42 @@ private:
   std::string cond_coef_name_;
 
   // Parent mesh, FE space, and current
-  mfem::ParMesh * mesh_parent_;
-  mfem::ParGridFunction * grad_phi_parent_;
-  mfem::ParGridFunction * grad_phi_t_parent_;
-  mfem::ParGridFunction * V_parent_;
-  mfem::ParGridFunction * Vt_parent_;
+  mfem::ParMesh * mesh_parent_{nullptr};
+
+  mfem::ParGridFunction * grad_phi_parent_{nullptr};
+  std::unique_ptr<mfem::ParGridFunction> grad_phi_t_parent_{nullptr};
+
+  mfem::ParGridFunction * V_parent_{nullptr};
+  std::unique_ptr<mfem::ParGridFunction> Vt_parent_{nullptr};
 
   // Child mesh and FE spaces
-  mfem::ParSubMesh * mesh_;
-  mfem::ParFiniteElementSpace * H1FESpace_;
-  mfem::ParFiniteElementSpace * HCurlFESpace_;
+  std::unique_ptr<mfem::ParSubMesh> mesh_{nullptr};
+
+  std::unique_ptr<mfem::ParFiniteElementSpace> H1FESpace_{nullptr};
+  std::unique_ptr<mfem::H1_FECollection> H1FESpace_fec_{nullptr};
+
+  std::unique_ptr<mfem::ParFiniteElementSpace> HCurlFESpace_{nullptr};
+  std::unique_ptr<mfem::ND_FECollection> HCurlFESpace_fec{nullptr};
 
   // Child GridFunctions
-  mfem::ParGridFunction * grad_phi_;
-  mfem::ParGridFunction * V_;
+  std::unique_ptr<mfem::ParGridFunction> grad_phi_{nullptr};
+  std::unique_ptr<mfem::ParGridFunction> V_{nullptr};
 
   // Child boundary condition objects
   mfem::FunctionCoefficient high_src_;
   mfem::FunctionCoefficient low_src_;
+
   mfem::Array<int> high_terminal_;
   mfem::Array<int> low_terminal_;
 
   // Mass Matrix
-  mfem::ParBilinearForm * m1_;
+  std::unique_ptr<mfem::ParBilinearForm> m1_{nullptr};
 
   // BC Map
   hephaestus::BCMap bc_maps;
 
   // Final LinearForm
-  mfem::ParLinearForm * final_lf_;
+  std::unique_ptr<mfem::ParLinearForm> final_lf_{nullptr};
 };
 
 } // namespace hephaestus

@@ -21,13 +21,15 @@ public:
   TransientExecutioner() = default;
   explicit TransientExecutioner(const hephaestus::InputParameters & params);
 
+  ~TransientExecutioner() override {}
+
   void Step(double dt, int it) const;
 
   void Solve() const override;
 
   void Execute() const override;
 
-  hephaestus::TimeDomainProblem * problem;
+  hephaestus::TimeDomainProblem * problem{nullptr};
 };
 
 } // namespace hephaestus

@@ -14,7 +14,7 @@ public:
                const std::string & magnetic_permeability_name,
                const std::string & h_field_name);
 
-  ~HFormulation(){};
+  ~HFormulation() override {}
 
   // Enable auxiliary calculation of J ∈ H(div)
   virtual void registerCurrentDensityAux(const std::string & j_field_name) override;

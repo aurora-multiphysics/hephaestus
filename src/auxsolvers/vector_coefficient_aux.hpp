@@ -10,6 +10,8 @@ class VectorCoefficientAux : public AuxSolver
 public:
   VectorCoefficientAux(const std::string & gf_name, const std::string & vec_coef_name);
 
+  ~VectorCoefficientAux() override {}
+
   void Init(const hephaestus::GridFunctions & gridfunctions,
             hephaestus::Coefficients & coefficients) override;
 
@@ -19,8 +21,8 @@ protected:
   const std::string _gf_name;       // name of the variable
   const std::string _vec_coef_name; // name of the vector coefficient
 
-  mfem::ParGridFunction * gf;
-  mfem::VectorCoefficient * vec_coef;
+  mfem::ParGridFunction * gf{nullptr};
+  mfem::VectorCoefficient * vec_coef{nullptr};
 };
 
 } // namespace hephaestus

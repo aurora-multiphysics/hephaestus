@@ -37,6 +37,8 @@ public:
                       const std::string & magnetic_vector_potential_real_name,
                       const std::string & magnetic_vector_potential_imag_name);
 
+  ~ComplexAFormulation() override {}
+
   // Enable auxiliary calculation of J ∈ H(div)
   //* Induced electric current, Jind = σE = -iωσA
   virtual void registerCurrentDensityAux(const std::string & j_field_real_name,

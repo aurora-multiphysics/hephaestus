@@ -11,6 +11,9 @@ class MixedVectorGradientKernel : public Kernel<mfem::ParMixedBilinearForm>
 {
 public:
   MixedVectorGradientKernel(const hephaestus::InputParameters & params);
+
+  ~MixedVectorGradientKernel() override{};
+
   virtual void Init(hephaestus::GridFunctions & gridfunctions,
                     const hephaestus::FESpaces & fespaces,
                     hephaestus::BCMap & bc_map,

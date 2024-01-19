@@ -134,18 +134,18 @@ TEST_CASE_METHOD(TestAFormSource, "TestAForm", "[CheckRun]")
   int num_conv_refinements = 3;
   for (int par_ref_levels = 0; par_ref_levels < num_conv_refinements; ++par_ref_levels)
   {
-
-    std::shared_ptr<mfem::ParMesh> pmesh = std::make_shared<mfem::ParMesh>(unrefined_pmesh);
+    auto pmesh = std::make_shared<mfem::ParMesh>(unrefined_pmesh);
 
     for (int l = 0; l < par_ref_levels; l++)
     {
       pmesh->UniformRefinement();
     }
-    hephaestus::TimeDomainProblemBuilder * problem_builder =
-        new hephaestus::AFormulation("magnetic_reluctivity",
-                                     "magnetic_permeability",
-                                     "electrical_conductivity",
-                                     "magnetic_vector_potential");
+
+    auto problem_builder = std::make_unique<hephaestus::AFormulation>("magnetic_reluctivity",
+                                                                      "magnetic_permeability",
+                                                                      "electrical_conductivity",
+                                                                      "magnetic_vector_potential");
+
     hephaestus::BCMap bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
     hephaestus::Coefficients coefficients(
         params.GetParam<hephaestus::Coefficients>("Coefficients"));
@@ -172,7 +172,7 @@ TEST_CASE_METHOD(TestAFormSource, "TestAForm", "[CheckRun]")
     problem_builder->SetOutputs(outputs);
     problem_builder->SetSolverOptions(solver_options);
 
-    hephaestus::ProblemBuildSequencer sequencer(problem_builder);
+    hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
     sequencer.ConstructEquationSystemProblem();
     std::unique_ptr<hephaestus::TimeDomainProblem> problem = problem_builder->ReturnProblem();
 
@@ -182,12 +182,10 @@ TEST_CASE_METHOD(TestAFormSource, "TestAForm", "[CheckRun]")
     exec_params.SetParam("EndTime", float(0.05));
     exec_params.SetParam("VisualisationSteps", int(1));
     exec_params.SetParam("Problem", problem.get());
-    hephaestus::TransientExecutioner * executioner =
-        new hephaestus::TransientExecutioner(exec_params);
+
+    auto executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
 
     executioner->Execute();
-
-    delete executioner;
   }
 
   hephaestus::L2ErrorVectorPostprocessor l2errpostprocessor =

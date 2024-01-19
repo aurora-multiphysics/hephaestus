@@ -84,21 +84,23 @@ defineCoefficients()
   coefficients.scalars.Register(
       "dielectric_permittivity", new mfem::ConstantCoefficient(8.854e-12), true);
 
-  mfem::VectorFunctionCoefficient * JSrcCoef =
-      new mfem::VectorFunctionCoefficient(3, source_current);
+  auto JSrcCoef = std::make_unique<mfem::VectorFunctionCoefficient>(3, source_current);
+
   mfem::Array<mfem::VectorCoefficient *> sourcecoefs(4);
-  sourcecoefs[0] = JSrcCoef;
-  sourcecoefs[1] = JSrcCoef;
-  sourcecoefs[2] = JSrcCoef;
-  sourcecoefs[3] = JSrcCoef;
+  sourcecoefs[0] = JSrcCoef.get();
+  sourcecoefs[1] = JSrcCoef.get();
+  sourcecoefs[2] = JSrcCoef.get();
+  sourcecoefs[3] = JSrcCoef.get();
+
   mfem::Array<int> coilsegments(4);
   coilsegments[0] = 3;
   coilsegments[1] = 4;
   coilsegments[2] = 5;
   coilsegments[3] = 6;
-  mfem::PWVectorCoefficient * JSrcRestricted =
-      new mfem::PWVectorCoefficient(3, coilsegments, sourcecoefs);
+
+  auto JSrcRestricted = new mfem::PWVectorCoefficient(3, coilsegments, sourcecoefs);
   coefficients.vectors.Register("source", JSrcRestricted, true);
+
   return coefficients;
 }
 
@@ -137,18 +139,20 @@ main(int argc, char * argv[])
   MPI_Init(&argc, &argv);
 
   // Create Formulation
-  hephaestus::ComplexAFormulation * problem_builder =
-      new hephaestus::ComplexAFormulation("magnetic_reluctivity",
-                                          "electrical_conductivity",
-                                          "dielectric_permittivity",
-                                          "frequency",
-                                          "magnetic_vector_potential",
-                                          "magnetic_vector_potential_real",
-                                          "magnetic_vector_potential_imag");
+  auto problem_builder =
+      std::make_unique<hephaestus::ComplexAFormulation>("magnetic_reluctivity",
+                                                        "electrical_conductivity",
+                                                        "dielectric_permittivity",
+                                                        "frequency",
+                                                        "magnetic_vector_potential",
+                                                        "magnetic_vector_potential_real",
+                                                        "magnetic_vector_potential_imag");
+
   // Set Mesh
   mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team7.g")).c_str(), 1, 1);
-  std::shared_ptr<mfem::ParMesh> pmesh =
-      std::make_shared<mfem::ParMesh>(mfem::ParMesh(MPI_COMM_WORLD, mesh));
+
+  auto pmesh = std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mesh);
+
   problem_builder->SetMesh(pmesh);
   problem_builder->AddFESpace("HCurl", "ND_3D_P1");
   problem_builder->AddFESpace("H1", "H1_3D_P1");
@@ -192,13 +196,14 @@ main(int argc, char * argv[])
   solver_options.SetParam("PrintLevel", 0);
   problem_builder->SetSolverOptions(solver_options);
 
-  hephaestus::ProblemBuildSequencer sequencer(problem_builder);
+  hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
   sequencer.ConstructOperatorProblem();
-  std::unique_ptr<hephaestus::SteadyStateProblem> problem = problem_builder->ReturnProblem();
+  auto problem = problem_builder->ReturnProblem();
 
   hephaestus::InputParameters exec_params;
   exec_params.SetParam("Problem", problem.get());
-  hephaestus::SteadyExecutioner * executioner = new hephaestus::SteadyExecutioner(exec_params);
+
+  auto executioner = std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
 
   std::cout << "Created exec ";
   executioner->Execute();

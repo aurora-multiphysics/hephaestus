@@ -11,7 +11,9 @@ class WeakCurlKernel : public Kernel<mfem::ParLinearForm>
 {
 public:
   WeakCurlKernel(const hephaestus::InputParameters & params);
-  ~WeakCurlKernel();
+
+  ~WeakCurlKernel() override{};
+
   virtual void Init(hephaestus::GridFunctions & gridfunctions,
                     const hephaestus::FESpaces & fespaces,
                     hephaestus::BCMap & bc_map,
@@ -22,7 +24,8 @@ public:
   std::string coef_name;
   mfem::ParGridFunction *u_, *v_; //
   mfem::Coefficient * coef;
-  mfem::ParMixedBilinearForm * weakCurl;
+
+  std::unique_ptr<mfem::ParMixedBilinearForm> weakCurl;
 };
 
 }; // namespace hephaestus

@@ -8,7 +8,6 @@ class HelmholtzProjector
 {
 public:
   HelmholtzProjector(const hephaestus::InputParameters & params);
-  ~HelmholtzProjector();
 
   void Project(hephaestus::GridFunctions & gridfunctions,
                const hephaestus::FESpaces & fespaces,
@@ -29,13 +28,16 @@ private:
   mfem::ParFiniteElementSpace * H1FESpace_;
   mfem::ParFiniteElementSpace * HCurlFESpace_;
   mfem::ParGridFunction * q_;
-  mfem::ParGridFunction * g;                // H(Curl) projection of user specified source
+
+  // H(Curl) projection of user specified source
+  std::unique_ptr<mfem::ParGridFunction> g;
+
   mfem::ParGridFunction * div_free_src_gf_; // Divergence free projected source
 
-  mfem::ParLinearForm * gDiv_;
-  mfem::ParBilinearForm * a0_;
-  mfem::ParMixedBilinearForm * weakDiv_;
-  mfem::ParDiscreteLinearOperator * grad_;
+  std::unique_ptr<mfem::ParLinearForm> gDiv_;
+  std::unique_ptr<mfem::ParBilinearForm> a0_;
+  std::unique_ptr<mfem::ParMixedBilinearForm> weakDiv_;
+  std::unique_ptr<mfem::ParDiscreteLinearOperator> grad_;
 
   mfem::Array<int> ess_bdr_tdofs_;
   hephaestus::BCMap * bc_map_;

@@ -14,8 +14,7 @@ TEST_CASE("OpenCoilTest", "[CheckData]")
   int order = 1;
 
   mfem::Mesh mesh((std::string(DATA_DIR) + "coil.gen").c_str(), 1, 1);
-  std::shared_ptr<mfem::ParMesh> pmesh =
-      std::make_shared<mfem::ParMesh>(mfem::ParMesh(MPI_COMM_WORLD, mesh));
+  auto pmesh = std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mesh);
 
   for (int l = 0; l < par_ref_lvl; ++l)
     pmesh->UniformRefinement();
@@ -24,8 +23,9 @@ TEST_CASE("OpenCoilTest", "[CheckData]")
   mfem::ParFiniteElementSpace HCurlFESpace(pmesh.get(), &HCurl_Collection);
   mfem::ParGridFunction E(&HCurlFESpace);
 
-  double Ival = 10.0;
-  double cond_val = 1e6;
+  const double Ival = 10.0;
+  const double cond_val = 1e6;
+
   mfem::ConstantCoefficient Itot(Ival);
   mfem::ConstantCoefficient Conductivity(cond_val);
 

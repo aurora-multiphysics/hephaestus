@@ -10,6 +10,7 @@ SteadyStateProblemBuilder::InitializeKernels()
   problem->sources.Init(
       problem->gridfunctions, problem->fespaces, problem->bc_map, problem->coefficients);
 }
+
 void
 SteadyStateProblemBuilder::ConstructOperator()
 {

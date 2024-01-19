@@ -9,7 +9,7 @@ RWTE10PortRBC::RWTE10PortRBC(const std::string & name_,
                              double port_length_vector_[3],
                              double port_width_vector_[3],
                              bool input_port_)
-  : RobinBC(name_, bdr_attributes_, NULL, NULL, NULL, NULL),
+  : RobinBC(name_, bdr_attributes_, nullptr, nullptr, nullptr, nullptr),
     input_port(input_port_),
     omega_(2 * M_PI * frequency_),
     a1Vec(port_length_vector_, 3),
@@ -27,19 +27,19 @@ RWTE10PortRBC::RWTE10PortRBC(const std::string & name_,
   k_a *= M_PI / V;
   k_c *= k_.imag() / a3Vec.Norml2();
 
-  robin_coef_im = new mfem::ConstantCoefficient(k_.imag() / mu0_);
-  blfi_im = new mfem::VectorFEMassIntegrator(robin_coef_im);
+  robin_coef_im = std::make_unique<mfem::ConstantCoefficient>(k_.imag() / mu0_);
+  blfi_im = std::make_unique<mfem::VectorFEMassIntegrator>(robin_coef_im.get());
 
   if (input_port)
   {
-    u_real = new mfem::VectorFunctionCoefficient(
+    u_real = std::make_unique<mfem::VectorFunctionCoefficient>(
         3, [this](const mfem::Vector & x, mfem::Vector & v) { return RWTE10_real(x, v); });
 
-    u_imag = new mfem::VectorFunctionCoefficient(
+    u_imag = std::make_unique<mfem::VectorFunctionCoefficient>(
         3, [this](const mfem::Vector & x, mfem::Vector & v) { return RWTE10_imag(x, v); });
 
-    lfi_re = new mfem::VectorFEBoundaryTangentLFIntegrator(*u_real);
-    lfi_im = new mfem::VectorFEBoundaryTangentLFIntegrator(*u_imag);
+    lfi_re = std::make_unique<mfem::VectorFEBoundaryTangentLFIntegrator>(*u_real);
+    lfi_im = std::make_unique<mfem::VectorFEBoundaryTangentLFIntegrator>(*u_imag);
   }
 }
 

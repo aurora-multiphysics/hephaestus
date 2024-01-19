@@ -17,7 +17,7 @@ public:
   Problem() = default;
   virtual ~Problem();
 
-  std::shared_ptr<mfem::ParMesh> pmesh;
+  std::shared_ptr<mfem::ParMesh> pmesh{nullptr};
   hephaestus::BCMap bc_map;
   hephaestus::Coefficients coefficients;
   hephaestus::AuxSolvers preprocessors;
@@ -48,6 +48,9 @@ private:
 public:
   ProblemBuilder(){};
 
+  // Virtual destructor required to prevent leaks.
+  virtual ~ProblemBuilder() {}
+
   void SetMesh(std::shared_ptr<mfem::ParMesh> pmesh);
   void SetFESpaces(hephaestus::FESpaces & fespaces);
   void SetGridFunctions(hephaestus::GridFunctions & gridfunctions);
@@ -64,12 +67,21 @@ public:
                   int vdim = 1,
                   int ordering = mfem::Ordering::byNODES);
   void AddGridFunction(std::string gridfunction_name, std::string fespace_name);
+
+  template <class T>
+  void AddKernel(std::string var_name, std::unique_ptr<hephaestus::Kernel<T>> && kernel)
+  {
+    GetProblem()->GetEquationSystem()->addVariableNameIfMissing(var_name);
+    GetProblem()->GetEquationSystem()->addKernel(var_name, kernel);
+  }
+
   template <class T>
   void AddKernel(std::string var_name, hephaestus::Kernel<T> * kernel)
   {
     GetProblem()->GetEquationSystem()->addVariableNameIfMissing(var_name);
-    GetProblem()->GetEquationSystem()->addKernel(var_name, kernel);
-  };
+    GetProblem()->GetEquationSystem()->addKernel(var_name, std::unique_ptr<Kernel<T>>(kernel));
+  }
+
   void AddBoundaryCondition(std::string bc_name, hephaestus::BoundaryCondition * bc, bool own_data);
   void AddAuxSolver(std::string auxsolver_name, hephaestus::AuxSolver * aux, bool own_data);
   void AddPostprocessor(std::string auxsolver_name, hephaestus::AuxSolver * aux, bool own_data);
@@ -96,7 +108,8 @@ class ProblemBuildSequencer
    * @var Builder
    */
 private:
-  std::unique_ptr<hephaestus::ProblemBuilder> problem_builder;
+  hephaestus::ProblemBuilder * _problem_builder{nullptr};
+
   /**
    * The ProblemBuildSequencer works with any builder instance that the client
    * code passes to it. This way, the client code may alter the final type of
@@ -104,8 +117,8 @@ private:
    */
 
 public:
-  ProblemBuildSequencer(hephaestus::ProblemBuilder * problem_builder_)
-    : problem_builder(problem_builder_)
+  ProblemBuildSequencer(hephaestus::ProblemBuilder * problem_builder)
+    : _problem_builder{problem_builder}
   {
   }
 
@@ -116,29 +129,29 @@ public:
   void ConstructOperatorProblem()
   {
     // SteadyStateProblem
-    problem_builder->RegisterFESpaces();
-    problem_builder->RegisterGridFunctions();
-    problem_builder->RegisterAuxSolvers();
-    problem_builder->RegisterCoefficients();
-    problem_builder->InitializeKernels();
-    problem_builder->ConstructOperator();
-    problem_builder->ConstructState();
-    problem_builder->InitializeAuxSolvers();
-    problem_builder->InitializeOutputs();
+    _problem_builder->RegisterFESpaces();
+    _problem_builder->RegisterGridFunctions();
+    _problem_builder->RegisterAuxSolvers();
+    _problem_builder->RegisterCoefficients();
+    _problem_builder->InitializeKernels();
+    _problem_builder->ConstructOperator();
+    _problem_builder->ConstructState();
+    _problem_builder->InitializeAuxSolvers();
+    _problem_builder->InitializeOutputs();
   }
   void ConstructEquationSystemProblem()
   {
-    problem_builder->RegisterFESpaces();
-    problem_builder->RegisterGridFunctions();
-    problem_builder->RegisterAuxSolvers();
-    problem_builder->RegisterCoefficients();
-    problem_builder->ConstructEquationSystem();
-    problem_builder->InitializeKernels();
-    problem_builder->ConstructOperator();
-    problem_builder->ConstructState();
-    problem_builder->ConstructSolver();
-    problem_builder->InitializeAuxSolvers();
-    problem_builder->InitializeOutputs();
+    _problem_builder->RegisterFESpaces();
+    _problem_builder->RegisterGridFunctions();
+    _problem_builder->RegisterAuxSolvers();
+    _problem_builder->RegisterCoefficients();
+    _problem_builder->ConstructEquationSystem();
+    _problem_builder->InitializeKernels();
+    _problem_builder->ConstructOperator();
+    _problem_builder->ConstructState();
+    _problem_builder->ConstructSolver();
+    _problem_builder->InitializeAuxSolvers();
+    _problem_builder->InitializeOutputs();
   }
 };
 

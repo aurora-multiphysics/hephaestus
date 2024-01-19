@@ -16,7 +16,7 @@ ScaledCurlVectorGridFunctionAux::ScaledCurlVectorGridFunctionAux(
 void
 ScaledCurlVectorGridFunctionAux::buildMixedBilinearForm()
 {
-  a_mixed = new mfem::ParMixedBilinearForm(trial_fes, test_fes);
+  a_mixed = std::make_unique<mfem::ParMixedBilinearForm>(trial_fes, test_fes);
   a_mixed->AddDomainIntegrator(new mfem::MixedVectorCurlIntegrator(*coef));
   a_mixed->Assemble();
   a_mixed->Finalize();

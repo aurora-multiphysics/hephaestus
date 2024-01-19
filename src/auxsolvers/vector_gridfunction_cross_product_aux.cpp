@@ -41,13 +41,13 @@ VectorGridFunctionCrossProductAux::Init(const hephaestus::GridFunctions & gridfu
                                         hephaestus::Coefficients & coefficients)
 {
   _u_gf = gridfunctions.Get(_u_gf_name);
-  if (_u_gf == NULL)
+  if (_u_gf == nullptr)
   {
     MFEM_ABORT("GridFunction " << _u_gf_name
                                << " not found when initializing VectorGridFunctionCrossProductAux");
   }
   _v_gf = gridfunctions.Get(_v_gf_name);
-  if (_v_gf == NULL)
+  if (_v_gf == nullptr)
   {
     MFEM_ABORT("GridFunction " << _v_gf_name
                                << " not found when initializing ScaledVectorGridFunctionAux");

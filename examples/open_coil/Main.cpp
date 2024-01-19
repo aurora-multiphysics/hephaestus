@@ -29,7 +29,6 @@ defineCoefficients(double Itotal)
 hephaestus::Sources
 defineSources(std::pair<int, int> elec, mfem::Array<int> coil_domains)
 {
-
   hephaestus::InputParameters coilsolver_pars;
   coilsolver_pars.SetParam("GradPotentialName", std::string("grad_phi"));
   coilsolver_pars.SetParam("PotentialName", std::string("auxiliary_potential"));
@@ -45,7 +44,6 @@ defineSources(std::pair<int, int> elec, mfem::Array<int> coil_domains)
 hephaestus::Outputs
 defineOutputs()
 {
-
   hephaestus::Outputs outputs;
   outputs.Register(
       "ParaViewDataCollection", new mfem::ParaViewDataCollection("OpenCoilParaView"), true);
@@ -99,8 +97,8 @@ main(int argc, char * argv[])
 
   // Set Mesh
   mfem::Mesh mesh((std::string(DATA_DIR) + mesh_filename).c_str(), 1, 1);
-  std::shared_ptr<mfem::ParMesh> pmesh =
-      std::make_shared<mfem::ParMesh>(mfem::ParMesh(MPI_COMM_WORLD, mesh));
+  auto pmesh = std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mesh);
+
   for (int l = 0; l < par_ref_lvl; ++l)
     pmesh->UniformRefinement();
 
@@ -129,8 +127,9 @@ main(int argc, char * argv[])
   elec_attrs.second = elec_bdr_array[1];
 
   // Create Formulation
-  hephaestus::MagnetostaticFormulation * problem_builder = new hephaestus::MagnetostaticFormulation(
+  auto problem_builder = std::make_unique<hephaestus::MagnetostaticFormulation>(
       "magnetic_reluctivity", "magnetic_permeability", "magnetic_vector_potential");
+
   // Set Mesh
   problem_builder->SetMesh(pmesh);
   problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P1"));
@@ -166,9 +165,9 @@ main(int argc, char * argv[])
   solver_options.SetParam("PrintLevel", 2);
   problem_builder->SetSolverOptions(solver_options);
 
-  hephaestus::ProblemBuildSequencer sequencer(problem_builder);
+  hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
   sequencer.ConstructEquationSystemProblem();
-  std::unique_ptr<hephaestus::SteadyStateProblem> problem = problem_builder->ReturnProblem();
+  auto problem = problem_builder->ReturnProblem();
   hephaestus::InputParameters exec_params;
   exec_params.SetParam("VisualisationSteps", int(1));
   exec_params.SetParam("UseGLVis", true);

@@ -10,14 +10,6 @@ WeakCurlCurlKernel::WeakCurlCurlKernel(const hephaestus::InputParameters & param
 {
 }
 
-WeakCurlCurlKernel::~WeakCurlCurlKernel()
-{
-  if (curlCurl != NULL)
-  {
-    delete curlCurl;
-  }
-}
-
 void
 WeakCurlCurlKernel::Init(hephaestus::GridFunctions & gridfunctions,
                          const hephaestus::FESpaces & fespaces,
@@ -28,7 +20,7 @@ WeakCurlCurlKernel::Init(hephaestus::GridFunctions & gridfunctions,
   u_ = gridfunctions.Get(coupled_gf_name);
   coef = coefficients.scalars.Get(coef_name);
 
-  curlCurl = new mfem::ParBilinearForm(u_->ParFESpace());
+  curlCurl = std::make_unique<mfem::ParBilinearForm>(u_->ParFESpace());
   curlCurl->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*coef));
   curlCurl->Assemble();
 }

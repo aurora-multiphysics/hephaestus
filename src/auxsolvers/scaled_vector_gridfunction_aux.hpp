@@ -16,7 +16,9 @@ public:
       const std::string & coef_name,
       const double & aConst = 1.0,
       const hephaestus::InputParameters & solver_options = hephaestus::InputParameters());
-  virtual ~ScaledVectorGridFunctionAux();
+
+  ~ScaledVectorGridFunctionAux() override {}
+
   virtual void Init(const hephaestus::GridFunctions & gridfunctions,
                     hephaestus::Coefficients & coefficients) override;
   virtual void buildBilinearForm();
@@ -29,8 +31,8 @@ protected:
   mfem::ParFiniteElementSpace * test_fes;
 
   // Bilinear forms
-  mfem::ParBilinearForm * a;
-  mfem::ParMixedBilinearForm * a_mixed;
+  std::unique_ptr<mfem::ParBilinearForm> a{nullptr};
+  std::unique_ptr<mfem::ParMixedBilinearForm> a_mixed{nullptr};
 
   // Coefficient to scale input gridfunction by
   mfem::Coefficient * coef;
@@ -50,10 +52,10 @@ private:
   mfem::ParGridFunction * scaled_gf;
 
   // Operator matrices
-  mfem::HypreParMatrix * a_mat;
-  mfem::HypreParMatrix * mixed_mat;
+  std::unique_ptr<mfem::HypreParMatrix> a_mat{nullptr};
+  std::unique_ptr<mfem::HypreParMatrix> mixed_mat{nullptr};
 
   // Solver
-  hephaestus::DefaultJacobiPCGSolver * solver;
+  std::unique_ptr<hephaestus::DefaultJacobiPCGSolver> solver{nullptr};
 };
 } // namespace hephaestus

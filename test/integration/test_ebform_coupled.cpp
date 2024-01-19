@@ -154,12 +154,13 @@ protected:
 TEST_CASE_METHOD(TestEBFormCoupled, "TestEBFormCoupled", "[CheckRun]")
 {
   hephaestus::InputParameters params(test_params());
-  hephaestus::TimeDomainProblemBuilder * problem_builder =
-      new hephaestus::EBDualFormulation("magnetic_reluctivity",
-                                        "magnetic_permeability",
-                                        "electrical_conductivity",
-                                        "electric_field",
-                                        "magnetic_flux_density");
+
+  auto problem_builder = std::make_unique<hephaestus::EBDualFormulation>("magnetic_reluctivity",
+                                                                         "magnetic_permeability",
+                                                                         "electrical_conductivity",
+                                                                         "electric_field",
+                                                                         "magnetic_flux_density");
+
   hephaestus::BCMap bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
   hephaestus::Coefficients coefficients(params.GetParam<hephaestus::Coefficients>("Coefficients"));
   hephaestus::AuxSolvers preprocessors(params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
@@ -186,7 +187,7 @@ TEST_CASE_METHOD(TestEBFormCoupled, "TestEBFormCoupled", "[CheckRun]")
   problem_builder->SetOutputs(outputs);
   problem_builder->SetSolverOptions(solver_options);
 
-  hephaestus::ProblemBuildSequencer sequencer(problem_builder);
+  hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
   sequencer.ConstructEquationSystemProblem();
   std::unique_ptr<hephaestus::TimeDomainProblem> problem = problem_builder->ReturnProblem();
   hephaestus::InputParameters exec_params;
@@ -195,8 +196,8 @@ TEST_CASE_METHOD(TestEBFormCoupled, "TestEBFormCoupled", "[CheckRun]")
   exec_params.SetParam("EndTime", float(2.5));
   exec_params.SetParam("VisualisationSteps", int(1));
   exec_params.SetParam("Problem", problem.get());
-  hephaestus::TransientExecutioner * executioner =
-      new hephaestus::TransientExecutioner(exec_params);
+
+  auto executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
 
   executioner->Execute();
 }

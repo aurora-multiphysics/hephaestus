@@ -11,14 +11,6 @@ WeakCurlKernel::WeakCurlKernel(const hephaestus::InputParameters & params)
 {
 }
 
-WeakCurlKernel::~WeakCurlKernel()
-{
-  if (weakCurl != NULL)
-  {
-    delete weakCurl;
-  }
-}
-
 void
 WeakCurlKernel::Init(hephaestus::GridFunctions & gridfunctions,
                      const hephaestus::FESpaces & fespaces,
@@ -31,7 +23,7 @@ WeakCurlKernel::Init(hephaestus::GridFunctions & gridfunctions,
 
   coef = coefficients.scalars.Get(coef_name);
 
-  weakCurl = new mfem::ParMixedBilinearForm(u_->ParFESpace(), v_->ParFESpace());
+  weakCurl = std::make_unique<mfem::ParMixedBilinearForm>(u_->ParFESpace(), v_->ParFESpace());
   weakCurl->AddDomainIntegrator(new mfem::VectorFECurlIntegrator(*coef));
 }
 

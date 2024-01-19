@@ -14,6 +14,8 @@ public:
                    const std::string & beta_coef_name,
                    const std::string & h_curl_var_name);
 
+  ~HCurlFormulation() override {}
+
   virtual void ConstructEquationSystem() override;
 
   virtual void ConstructOperator() override;
@@ -53,7 +55,7 @@ public:
                 hephaestus::Sources & sources,
                 hephaestus::InputParameters & solver_options);
 
-  ~HCurlOperator(){};
+  ~HCurlOperator() override {}
 
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
 };

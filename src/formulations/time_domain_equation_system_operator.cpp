@@ -93,11 +93,10 @@ TimeDomainEquationSystemOperator::ImplicitSolve(const double dt,
   _equation_system->updateEquationSystem(_bc_map, _sources);
 
   _equation_system->FormLinearSystem(blockA, trueX, trueRhs);
-  if (solver != NULL)
-  {
-    delete solver;
-  }
-  solver = new hephaestus::DefaultGMRESSolver(_solver_options, *blockA.As<mfem::HypreParMatrix>());
+
+  solver = std::make_unique<hephaestus::DefaultGMRESSolver>(_solver_options,
+                                                            *blockA.As<mfem::HypreParMatrix>());
+
   solver->Mult(trueRhs, trueX);
   _equation_system->RecoverFEMSolution(trueX, _gridfunctions);
 }

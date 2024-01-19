@@ -28,7 +28,7 @@ public:
       _coefficients(coefficients),
       _solver_options(solver_options){};
 
-  ~EquationSystemOperator(){};
+  ~EquationSystemOperator() override {}
 
   virtual void SetGridFunctions();
   virtual void Init(mfem::Vector & X);

@@ -18,7 +18,8 @@ public:
                    const mfem::Array<int> & coil_dom,
                    const int electrode_face);
 
-  ~ClosedCoilSolver();
+  // Override virtual Source destructor to avoid leaks.
+  ~ClosedCoilSolver() override;
 
   void Init(hephaestus::GridFunctions & gridfunctions,
             const hephaestus::FESpaces & fespaces,
@@ -65,10 +66,15 @@ private:
   mfem::Array<int> coil_markers_;
   mfem::Array<int> transition_domain_;
   mfem::Array<int> transition_markers_;
-  mfem::Coefficient * sigma_;
-  mfem::Coefficient * Itotal_;
+  mfem::Coefficient * sigma_{nullptr};
+  mfem::Coefficient * Itotal_{nullptr};
   std::vector<int> old_dom_attrs;
   hephaestus::InputParameters solver_options_;
+
+  bool owns_sigma{false};
+  bool owns_Itotal_{false};
+  bool owns_grad_phi_parent_{false};
+  bool owns_H1FESpace_parent_{false};
 
   // Here, we are solving for -(σ∇Va,∇ψ) = (σ∇Vt,∇ψ), where ∇Vt is grad_phi_t (within its relevant
   // mesh), ∇Va is grad_phi_aux, and their sum ∇Vt+∇Va is the full grad_phi, which is, up to an
@@ -76,7 +82,7 @@ private:
   // to true will negatively affect performance, but the final grad_phi function will be transferred
   // to a GridFunction for viewing purposes. Only set to true if you wish to visualise the final
   // grad_phi.
-  bool grad_phi_transfer_;
+  bool grad_phi_transfer_{false};
 
   // Names
   std::string hcurl_fespace_name_;
@@ -86,23 +92,28 @@ private:
   std::string I_coef_name_;
 
   // Parent mesh, FE space, and current
-  mfem::ParMesh * mesh_parent_;
-  mfem::ParGridFunction * grad_phi_parent_;
-  mfem::ParFiniteElementSpace * HCurlFESpace_parent_;
-  mfem::ParFiniteElementSpace * H1FESpace_parent_;
+  mfem::ParMesh * mesh_parent_{nullptr};
+  mfem::ParGridFunction * grad_phi_parent_{nullptr};
+  mfem::ParFiniteElementSpace * HCurlFESpace_parent_{nullptr};
+  mfem::ParFiniteElementSpace * H1FESpace_parent_{nullptr};
+
+  std::unique_ptr<mfem::H1_FECollection> H1FESpace_parent_fec_{nullptr};
 
   // In case J transfer is true
-  mfem::ParGridFunction * grad_phi_t_parent_;
+  std::unique_ptr<mfem::ParGridFunction> grad_phi_t_parent_{nullptr};
 
   // Coil mesh, FE Space, and current
-  mfem::ParSubMesh * mesh_coil_;
-  mfem::ParSubMesh * mesh_t_;
-  mfem::ParFiniteElementSpace * H1FESpace_coil_;
-  mfem::ParGridFunction * grad_phi_aux_coil_;
-  mfem::ParGridFunction * V_coil_;
+  std::unique_ptr<mfem::ParSubMesh> mesh_coil_{nullptr};
+  std::unique_ptr<mfem::ParSubMesh> mesh_t_{nullptr};
+  std::unique_ptr<mfem::ParFiniteElementSpace> H1FESpace_coil_{nullptr};
+  std::unique_ptr<mfem::ParGridFunction> grad_phi_aux_coil_{nullptr};
+  std::unique_ptr<mfem::ParGridFunction> V_coil_{nullptr};
+
+  std::unique_ptr<mfem::ND_FECollection> grad_phi_aux_coil_fec_{nullptr};
+  std::unique_ptr<mfem::ParFiniteElementSpace> grad_phi_aux_coil_fes{nullptr};
 
   // Final LinearForm
-  mfem::ParLinearForm * final_lf_;
+  std::unique_ptr<mfem::ParLinearForm> final_lf_{nullptr};
 };
 
 class Plane3D
@@ -110,7 +121,6 @@ class Plane3D
 
 public:
   Plane3D();
-  ~Plane3D();
 
   // Constructs a mathematical 3D plane from a mesh face
   void make3DPlane(const mfem::ParMesh * pm, const int face);
@@ -120,7 +130,7 @@ public:
   int side(const mfem::Vector v);
 
 private:
-  mfem::Vector * u;
+  std::unique_ptr<mfem::Vector> u{nullptr};
   double d;
 };
 

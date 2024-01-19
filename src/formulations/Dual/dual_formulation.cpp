@@ -167,17 +167,17 @@ WeakCurlEquationSystem::addKernels()
   weakCurlParams.SetParam("HCurlVarName", _h_curl_var_name);
   weakCurlParams.SetParam("HDivVarName", _h_div_var_name);
   weakCurlParams.SetParam("CoefficientName", _alpha_coef_name);
-  addKernel(_h_curl_var_name, new hephaestus::WeakCurlKernel(weakCurlParams));
+  addKernel(_h_curl_var_name, std::make_unique<hephaestus::WeakCurlKernel>(weakCurlParams));
 
   // (αdt∇×u_{n+1}, ∇×u')
   hephaestus::InputParameters curlCurlParams;
   curlCurlParams.SetParam("CoefficientName", _dtalpha_coef_name);
-  addKernel(_h_curl_var_name, new hephaestus::CurlCurlKernel(curlCurlParams));
+  addKernel(_h_curl_var_name, std::make_unique<hephaestus::CurlCurlKernel>(curlCurlParams));
 
   // (βu_{n+1}, u')
   hephaestus::InputParameters vectorFEMassParams;
   vectorFEMassParams.SetParam("CoefficientName", _beta_coef_name);
-  addKernel(_h_curl_var_name, new hephaestus::VectorFEMassKernel(vectorFEMassParams));
+  addKernel(_h_curl_var_name, std::make_unique<hephaestus::VectorFEMassKernel>(vectorFEMassParams));
 }
 
 DualOperator::DualOperator(mfem::ParMesh & pmesh,
@@ -204,7 +204,8 @@ DualOperator::Init(mfem::Vector & X)
   dv_ = _gridfunctions.Get(GetTimeDerivativeName(_h_div_var_name));
   HCurlFESpace_ = u_->ParFESpace();
   HDivFESpace_ = dv_->ParFESpace();
-  curl = new mfem::ParDiscreteLinearOperator(HCurlFESpace_, HDivFESpace_);
+
+  curl = std::make_unique<mfem::ParDiscreteLinearOperator>(HCurlFESpace_, HDivFESpace_);
   curl->AddDomainInterpolator(new mfem::CurlInterpolator);
   curl->Assemble();
 }
@@ -225,12 +226,9 @@ DualOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vecto
 
   _equation_system->FormLinearSystem(blockA, trueX, trueRhs);
 
-  if (a1_solver != NULL)
-  {
-    delete a1_solver;
-  }
-  a1_solver = new hephaestus::DefaultHCurlPCGSolver(
+  a1_solver = std::make_unique<hephaestus::DefaultHCurlPCGSolver>(
       _solver_options, *blockA.As<mfem::HypreParMatrix>(), _equation_system->test_pfespaces.at(0));
+
   a1_solver->Mult(trueRhs, trueX);
   _equation_system->RecoverFEMSolution(trueX, _gridfunctions);
 

@@ -33,19 +33,19 @@ ScaledVectorGridFunctionAux::Init(const hephaestus::GridFunctions & gridfunction
                                   hephaestus::Coefficients & coefficients)
 {
   input_gf = gridfunctions.Get(_input_gf_name);
-  if (input_gf == NULL)
+  if (input_gf == nullptr)
   {
     MFEM_ABORT("GridFunction " << _input_gf_name
                                << " not found when initializing ScaledVectorGridFunctionAux");
   }
   scaled_gf = gridfunctions.Get(_scaled_gf_name);
-  if (scaled_gf == NULL)
+  if (scaled_gf == nullptr)
   {
     MFEM_ABORT("GridFunction " << _scaled_gf_name
                                << " not found when initializing ScaledVectorGridFunctionAux");
   }
   coef = dynamic_cast<mfem::Coefficient *>(coefficients.scalars.Get(_coef_name));
-  if (coef == NULL)
+  if (coef == nullptr)
   {
     MFEM_ABORT("Coefficient " << _coef_name
                               << " not found when initializing ScaledVectorGridFunctionAux");
@@ -55,18 +55,15 @@ ScaledVectorGridFunctionAux::Init(const hephaestus::GridFunctions & gridfunction
   trial_fes = input_gf->ParFESpace();
   buildBilinearForm();
   buildMixedBilinearForm();
-  a_mat = a->ParallelAssemble();
-  solver = new hephaestus::DefaultJacobiPCGSolver(_solver_options, *a_mat);
+  a_mat = std::unique_ptr<mfem::HypreParMatrix>(a->ParallelAssemble());
+
+  solver = std::make_unique<hephaestus::DefaultJacobiPCGSolver>(_solver_options, *a_mat);
 }
 
 void
 ScaledVectorGridFunctionAux::buildBilinearForm()
 {
-  if (a != nullptr)
-  {
-    delete a;
-  }
-  a = new mfem::ParBilinearForm(test_fes);
+  a = std::make_unique<mfem::ParBilinearForm>(test_fes);
   a->AddDomainIntegrator(new mfem::VectorFEMassIntegrator());
   a->Assemble();
   a->Finalize();
@@ -75,11 +72,7 @@ ScaledVectorGridFunctionAux::buildBilinearForm()
 void
 ScaledVectorGridFunctionAux::buildMixedBilinearForm()
 {
-  if (a_mixed != nullptr)
-  {
-    delete a_mixed;
-  }
-  a_mixed = new mfem::ParMixedBilinearForm(trial_fes, test_fes);
+  a_mixed = std::make_unique<mfem::ParMixedBilinearForm>(trial_fes, test_fes);
   a_mixed->AddDomainIntegrator(new mfem::MixedVectorMassIntegrator(*coef));
   a_mixed->Assemble();
   a_mixed->Finalize();
@@ -98,28 +91,13 @@ ScaledVectorGridFunctionAux::Solve(double t)
   a_mixed->Update();
   a_mixed->Assemble();
   a_mixed->Finalize();
-  if (mixed_mat != nullptr)
-    delete mixed_mat;
-  mixed_mat = a_mixed->ParallelAssemble();
+
+  mixed_mat = std::unique_ptr<mfem::HypreParMatrix>(a_mixed->ParallelAssemble());
   mixed_mat->AddMult(P, B, _aConst);
 
   X = 0.0;
   solver->Mult(B, X);
   scaled_gf->SetFromTrueDofs(X);
-}
-
-ScaledVectorGridFunctionAux::~ScaledVectorGridFunctionAux()
-{
-  if (a != nullptr)
-    delete a;
-  if (a_mixed != nullptr)
-    delete a_mixed;
-  if (mixed_mat != nullptr)
-    delete mixed_mat;
-  if (a_mat != nullptr)
-    delete a_mat;
-  if (solver != nullptr)
-    delete solver;
 }
 
 } // namespace hephaestus

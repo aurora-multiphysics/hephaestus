@@ -130,17 +130,17 @@ CurlCurlEquationSystem::addKernels()
   hephaestus::InputParameters weakCurlCurlParams;
   weakCurlCurlParams.SetParam("CoupledVariableName", h_curl_var_name);
   weakCurlCurlParams.SetParam("CoefficientName", alpha_coef_name);
-  addKernel(dh_curl_var_dt, new hephaestus::WeakCurlCurlKernel(weakCurlCurlParams));
+  addKernel(dh_curl_var_dt, std::make_unique<hephaestus::WeakCurlCurlKernel>(weakCurlCurlParams));
 
   // (αdt∇×du/dt_{n+1}, ∇×u')
   hephaestus::InputParameters curlCurlParams;
   curlCurlParams.SetParam("CoefficientName", dtalpha_coef_name);
-  addKernel(dh_curl_var_dt, new hephaestus::CurlCurlKernel(curlCurlParams));
+  addKernel(dh_curl_var_dt, std::make_unique<hephaestus::CurlCurlKernel>(curlCurlParams));
 
   // (βdu/dt_{n+1}, u')
   hephaestus::InputParameters vectorFEMassParams;
   vectorFEMassParams.SetParam("CoefficientName", beta_coef_name);
-  addKernel(dh_curl_var_dt, new hephaestus::VectorFEMassKernel(vectorFEMassParams));
+  addKernel(dh_curl_var_dt, std::make_unique<hephaestus::VectorFEMassKernel>(vectorFEMassParams));
 }
 
 void
@@ -201,12 +201,9 @@ HCurlOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vect
 
   _equation_system->FormLinearSystem(blockA, trueX, trueRhs);
 
-  if (a1_solver != NULL)
-  {
-    delete a1_solver;
-  }
-  a1_solver = new hephaestus::DefaultHCurlPCGSolver(
+  a1_solver = std::make_unique<hephaestus::DefaultHCurlPCGSolver>(
       _solver_options, *blockA.As<mfem::HypreParMatrix>(), _equation_system->test_pfespaces.at(0));
+
   a1_solver->Mult(trueRhs, trueX);
   _equation_system->RecoverFEMSolution(trueX, _gridfunctions);
 }

@@ -22,6 +22,6 @@ void
 DiffusionKernel::Apply(mfem::ParBilinearForm * blf)
 {
   blf->AddDomainIntegrator(new mfem::DiffusionIntegrator(*coef));
-};
+}
 
 } // namespace hephaestus

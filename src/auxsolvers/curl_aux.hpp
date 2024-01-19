@@ -10,6 +10,8 @@ class CurlAuxSolver : public AuxSolver
 public:
   CurlAuxSolver(const std::string & input_gf_name, const std::string & curl_gf_name);
 
+  ~CurlAuxSolver() override {}
+
   void Init(const hephaestus::GridFunctions & gridfunctions,
             hephaestus::Coefficients & coefficients) override;
 
@@ -20,7 +22,7 @@ private:
   const std::string _curl_gf_name;  // Variable in which to store curl
 
   mfem::ParGridFunction *u_, *curl_u_;
-  mfem::ParDiscreteLinearOperator * curl;
+  std::unique_ptr<mfem::ParDiscreteLinearOperator> curl;
 };
 
 } // namespace hephaestus

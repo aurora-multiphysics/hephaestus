@@ -9,10 +9,11 @@ namespace hephaestus
 class FrequencyDomainEMFormulation : public hephaestus::SteadyStateProblemBuilder,
                                      public hephaestus::ComplexEMFormulationInterface
 {
-protected:
-  mfem::ConstantCoefficient * freqCoef;
-
 public:
   FrequencyDomainEMFormulation();
+  ~FrequencyDomainEMFormulation() override{};
+
+protected:
+  mfem::ConstantCoefficient * freqCoef{nullptr};
 };
 } // namespace hephaestus

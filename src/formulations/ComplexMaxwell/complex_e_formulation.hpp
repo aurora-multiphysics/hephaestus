@@ -36,6 +36,8 @@ public:
                       const std::string & e_field_real_name,
                       const std::string & e_field_imag_name);
 
+  ~ComplexEFormulation() override {}
+
   // Enable auxiliary calculation of J ∈ H(div)
   //* Induced electric current, Jind = σE
   virtual void registerCurrentDensityAux(const std::string & j_field_real_name,

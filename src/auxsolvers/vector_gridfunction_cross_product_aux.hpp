@@ -21,9 +21,11 @@ public:
     : mfem::VectorCoefficient(3), _u_gf(u_gf), _v_gf(v_gf)
   {
   }
+
+  virtual ~VectorGridFunctionCrossProductCoefficient() {}
+
   virtual void
   Eval(mfem::Vector & uxv, mfem::ElementTransformation & T, const mfem::IntegrationPoint & ip);
-  virtual ~VectorGridFunctionCrossProductCoefficient() {}
 };
 
 // Auxsolver to project the cross product of two vector gridfunctions onto a

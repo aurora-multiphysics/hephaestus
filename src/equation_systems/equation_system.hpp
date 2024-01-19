@@ -15,6 +15,11 @@ mixed and nonlinear forms) and build methods
 class EquationSystem
 {
 public:
+  typedef hephaestus::Kernel<mfem::ParBilinearForm> ParBilinearFormKernel;
+  typedef hephaestus::Kernel<mfem::ParLinearForm> ParLinearFormKernel;
+  typedef hephaestus::Kernel<mfem::ParNonlinearForm> ParNonlinearFormKernel;
+  typedef hephaestus::Kernel<mfem::ParMixedBilinearForm> ParMixedBilinearFormKernel;
+
   EquationSystem(){};
   EquationSystem(const hephaestus::InputParameters & params);
 
@@ -35,17 +40,23 @@ public:
       mblfs; // named according to trial variable
 
   // add test variable to EquationSystem;
-  virtual void addTestVariableNameIfMissing(std::string test_var_name);
-  virtual void addVariableNameIfMissing(std::string var_name);
+  virtual void addTestVariableNameIfMissing(const std::string & test_var_name);
+  virtual void addVariableNameIfMissing(const std::string & var_name);
 
-  // Add kernels. EquationSystem takes ownership.
-  void addKernel(std::string test_var_name, hephaestus::Kernel<mfem::ParBilinearForm> * blf_kernel);
-  void addKernel(std::string test_var_name, hephaestus::Kernel<mfem::ParLinearForm> * lf_kernel);
-  void addKernel(std::string test_var_name,
-                 hephaestus::Kernel<mfem::ParNonlinearForm> * nlf_kernel);
-  void addKernel(std::string trial_var_name,
-                 std::string test_var_name,
-                 hephaestus::Kernel<mfem::ParMixedBilinearForm> * mblf_kernel);
+  // Add kernels.
+  void addKernel(const std::string & test_var_name,
+                 std::unique_ptr<ParBilinearFormKernel> && blf_kernel);
+
+  void addKernel(const std::string & test_var_name,
+                 std::unique_ptr<ParLinearFormKernel> && lf_kernel);
+
+  void addKernel(const std::string & test_var_name,
+                 std::unique_ptr<ParNonlinearFormKernel> && nlf_kernel);
+
+  void addKernel(const std::string & trial_var_name,
+                 const std::string & test_var_name,
+                 std::unique_ptr<ParMixedBilinearFormKernel> && mblf_kernel);
+
   virtual void applyBoundaryConditions(hephaestus::BCMap & bc_map);
 
   // override to add kernels
@@ -71,20 +82,25 @@ public:
                                   hephaestus::GridFunctions & gridfunctions);
 
 protected:
+  bool vectorContainsName(const std::vector<std::string> & the_vector,
+                          const std::string & name) const;
+
   // gridfunctions for setting Dirichlet BCs
   std::vector<mfem::Array<int>> ess_tdof_lists;
-  std::vector<mfem::ParGridFunction *> xs;
+  std::vector<std::unique_ptr<mfem::ParGridFunction>> xs;
 
   mfem::Array2D<mfem::HypreParMatrix *> hBlocks;
+
   // Arrays to store kernels to act on each component of weak form. Named
   // according to test variable
-  hephaestus::NamedFieldsMap<mfem::Array<hephaestus::Kernel<mfem::ParBilinearForm> *>>
-      blf_kernels_map;
-  hephaestus::NamedFieldsMap<mfem::Array<hephaestus::Kernel<mfem::ParLinearForm> *>> lf_kernels_map;
-  hephaestus::NamedFieldsMap<mfem::Array<hephaestus::Kernel<mfem::ParNonlinearForm> *>>
-      nlf_kernels_map;
+  hephaestus::NamedFieldsMap<std::vector<std::unique_ptr<ParBilinearFormKernel>>> blf_kernels_map;
+
+  hephaestus::NamedFieldsMap<std::vector<std::unique_ptr<ParLinearFormKernel>>> lf_kernels_map;
+
+  hephaestus::NamedFieldsMap<std::vector<std::unique_ptr<ParNonlinearFormKernel>>> nlf_kernels_map;
+
   hephaestus::NamedFieldsMap<
-      hephaestus::NamedFieldsMap<mfem::Array<hephaestus::Kernel<mfem::ParMixedBilinearForm> *>>>
+      hephaestus::NamedFieldsMap<std::vector<std::unique_ptr<ParMixedBilinearFormKernel>>>>
       mblf_kernels_map_map;
 };
 
@@ -95,12 +111,13 @@ class TimeDependentEquationSystem : public EquationSystem
 {
 public:
   TimeDependentEquationSystem(const hephaestus::InputParameters & params);
+  ~TimeDependentEquationSystem() override{};
 
   static std::string GetTimeDerivativeName(std::string name)
   {
     return std::string("d") + name + std::string("_dt");
   }
-  virtual void addVariableNameIfMissing(std::string var_name) override;
+  virtual void addVariableNameIfMissing(const std::string & var_name) override;
 
   virtual void setTimeStep(double dt);
   virtual void updateEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);

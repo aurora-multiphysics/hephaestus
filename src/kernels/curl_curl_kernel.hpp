@@ -11,6 +11,9 @@ class CurlCurlKernel : public Kernel<mfem::ParBilinearForm>
 {
 public:
   CurlCurlKernel(const hephaestus::InputParameters & params);
+
+  ~CurlCurlKernel() override{};
+
   virtual void Init(hephaestus::GridFunctions & gridfunctions,
                     const hephaestus::FESpaces & fespaces,
                     hephaestus::BCMap & bc_map,

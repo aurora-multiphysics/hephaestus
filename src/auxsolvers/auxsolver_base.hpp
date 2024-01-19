@@ -10,26 +10,33 @@
 namespace hephaestus
 {
 
+class AuxSolver;
+
 class AuxSolver
 {
 public:
   AuxSolver() = default;
-  int priority{0};
+
+  // NB: require virtual destructor to avoid leaks.
+  virtual ~AuxSolver() {}
 
   virtual void Init(const hephaestus::GridFunctions & gridfunctions,
                     hephaestus::Coefficients & coefficients) = 0;
 
   virtual void Solve(double t = 0.0) = 0;
-  // Set priority. Lower values are evaluated first.
-  void SetPriority(int prty) { priority = prty; };
-};
 
-struct AuxCompare
-{
-  bool const operator()(AuxSolver * lhs, AuxSolver * rhs) const
+  // Set priority. Lower values are evaluated first.
+  void SetPriority(const int priority) { _priority = priority; };
+
+  inline int Priority() const { return _priority; }
+
+  static bool PriorityComparator(const AuxSolver * first, const AuxSolver * second)
   {
-    return (lhs->priority) < (rhs->priority);
+    return (first->Priority() < second->Priority());
   }
+
+private:
+  int _priority{0};
 };
 
 } // namespace hephaestus

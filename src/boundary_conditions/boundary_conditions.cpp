@@ -16,7 +16,7 @@ BCMap::getEssentialBdrMarkers(const std::string & name_, mfem::Mesh * mesh_)
     if (bc_->name == name_)
     {
       bc = dynamic_cast<hephaestus::EssentialBC *>(bc_);
-      if (bc != NULL)
+      if (bc != nullptr)
       {
         ess_bdrs = bc->getMarkers(*mesh_);
         for (auto it = 0; it != mesh_->bdr_attributes.Max(); ++it)
@@ -41,7 +41,7 @@ BCMap::applyEssentialBCs(const std::string & name_,
     if (bc_->name == name_)
     {
       hephaestus::EssentialBC * bc = dynamic_cast<hephaestus::EssentialBC *>(bc_);
-      if (bc != NULL)
+      if (bc != nullptr)
       {
         bc->applyBC(gridfunc, mesh_);
       }
@@ -63,7 +63,7 @@ BCMap::applyEssentialBCs(const std::string & name_,
     if (bc_->name == name_)
     {
       hephaestus::EssentialBC * bc = dynamic_cast<hephaestus::EssentialBC *>(bc_);
-      if (bc != NULL)
+      if (bc != nullptr)
       {
         bc->applyBC(gridfunc, mesh_);
       }
@@ -82,7 +82,7 @@ BCMap::applyIntegratedBCs(const std::string & name_, mfem::LinearForm & lf, mfem
     if (bc_->name == name_)
     {
       hephaestus::IntegratedBC * bc = dynamic_cast<hephaestus::IntegratedBC *>(bc_);
-      if (bc != NULL)
+      if (bc != nullptr)
       {
         bc->getMarkers(*mesh_);
         bc->applyBC(lf);
@@ -102,7 +102,7 @@ BCMap::applyIntegratedBCs(const std::string & name_,
     if (bc_->name == name_)
     {
       hephaestus::IntegratedBC * bc = dynamic_cast<hephaestus::IntegratedBC *>(bc_);
-      if (bc != NULL)
+      if (bc != nullptr)
       {
         bc->getMarkers(*mesh_);
         bc->applyBC(clf);
@@ -122,7 +122,7 @@ BCMap::applyIntegratedBCs(const std::string & name_,
     if (bc_->name == name_)
     {
       hephaestus::RobinBC * bc = dynamic_cast<hephaestus::RobinBC *>(bc_);
-      if (bc != NULL)
+      if (bc != nullptr)
       {
         bc->getMarkers(*mesh_);
         bc->applyBC(slf);

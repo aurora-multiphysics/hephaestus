@@ -59,7 +59,7 @@ VectorGridFunctionDotProductAux::Init(const hephaestus::GridFunctions & gridfunc
 {
 
   _scaling_coef = coefficients.scalars.Get(_scaling_coef_name);
-  if (_scaling_coef == NULL)
+  if (_scaling_coef == nullptr)
   {
     MFEM_ABORT("Conductivity coefficient not found for Joule heating");
   }
@@ -67,25 +67,25 @@ VectorGridFunctionDotProductAux::Init(const hephaestus::GridFunctions & gridfunc
   if (_complex_average)
   {
     _u_gf_re = gridfunctions.Get(_u_gf_real_name);
-    if (_u_gf_re == NULL)
+    if (_u_gf_re == nullptr)
     {
       MFEM_ABORT("GridFunction " << _u_gf_real_name
                                  << " not found when initializing VectorGridFunctionDotProductAux");
     }
     _v_gf_re = gridfunctions.Get(_v_gf_real_name);
-    if (_v_gf_re == NULL)
+    if (_v_gf_re == nullptr)
     {
       MFEM_ABORT("GridFunction " << _v_gf_real_name
                                  << " not found when initializing VectorGridFunctionDotProductAux");
     }
     _u_gf_im = gridfunctions.Get(_u_gf_imag_name);
-    if (_u_gf_im == NULL)
+    if (_u_gf_im == nullptr)
     {
       MFEM_ABORT("GridFunction " << _u_gf_imag_name
                                  << " not found when initializing VectorGridFunctionDotProductAux");
     }
     _v_gf_im = gridfunctions.Get(_v_gf_imag_name);
-    if (_v_gf_im == NULL)
+    if (_v_gf_im == nullptr)
     {
       MFEM_ABORT("GridFunction " << _v_gf_imag_name
                                  << " not found when initializing VectorGridFunctionDotProductAux");
@@ -94,13 +94,13 @@ VectorGridFunctionDotProductAux::Init(const hephaestus::GridFunctions & gridfunc
   else
   {
     _u_gf_re = gridfunctions.Get(_u_gf_real_name);
-    if (_u_gf_re == NULL)
+    if (_u_gf_re == nullptr)
     {
       MFEM_ABORT("GridFunction " << _u_gf_real_name
                                  << " not found when initializing VectorGridFunctionDotProductAux");
     }
     _v_gf_re = gridfunctions.Get(_v_gf_real_name);
-    if (_v_gf_re == NULL)
+    if (_v_gf_re == nullptr)
     {
       MFEM_ABORT("GridFunction " << _v_gf_real_name
                                  << " not found when initializing VectorGridFunctionDotProductAux");

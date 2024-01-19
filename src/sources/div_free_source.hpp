@@ -8,6 +8,10 @@ class DivFreeSource : public hephaestus::Source
 {
 public:
   DivFreeSource(const hephaestus::InputParameters & params);
+
+  // Override virtual Source destructor to avoid leaks.
+  ~DivFreeSource() override{};
+
   void Init(hephaestus::GridFunctions & gridfunctions,
             const hephaestus::FESpaces & fespaces,
             hephaestus::BCMap & bc_map,
@@ -24,19 +28,26 @@ public:
   const hephaestus::InputParameters solver_options;
   bool perform_helmholtz_projection;
 
-  mfem::ParFiniteElementSpace * H1FESpace_;
-  mfem::ParFiniteElementSpace * HCurlFESpace_;
-  mfem::ParGridFunction * q_; // Potential
-  hephaestus::BCMap * bc_map_;
-  hephaestus::GridFunctions * gridfunctions_;
-  const hephaestus::FESpaces * fespaces_;
+  mfem::ParFiniteElementSpace * H1FESpace_{nullptr};
+  mfem::ParFiniteElementSpace * HCurlFESpace_{nullptr};
 
-  mfem::ParBilinearForm * h_curl_mass;
+  std::unique_ptr<mfem::ParGridFunction> q_; // Potential
 
-  mfem::VectorCoefficient * sourceVecCoef;
-  mfem::ParGridFunction * g;               // H(Curl) projection of user specified source
-  mfem::ParGridFunction * div_free_src_gf; // Divergence free projected source
-  mfem::Solver * solver;
+  hephaestus::BCMap * bc_map_{nullptr};
+  hephaestus::GridFunctions * gridfunctions_{nullptr};
+  const hephaestus::FESpaces * fespaces_{nullptr};
+
+  std::unique_ptr<mfem::ParBilinearForm> h_curl_mass;
+
+  mfem::VectorCoefficient * sourceVecCoef{nullptr};
+
+  // H(Curl) projection of user specified source
+  std::unique_ptr<mfem::ParGridFunction> g;
+
+  // Divergence free projected source
+  std::unique_ptr<mfem::ParGridFunction> div_free_src_gf;
+
+  mfem::Solver * solver{nullptr};
 };
 
 }; // namespace hephaestus

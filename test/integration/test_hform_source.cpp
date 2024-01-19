@@ -158,11 +158,12 @@ TEST_CASE_METHOD(TestHFormSource, "TestHFormSource", "[CheckRun]")
     {
       pmesh->UniformRefinement();
     }
-    hephaestus::TimeDomainProblemBuilder * problem_builder =
-        new hephaestus::HFormulation("electrical_resistivity",
-                                     "electrical_conductivity",
-                                     "magnetic_permeability",
-                                     "magnetic_field");
+
+    auto problem_builder = std::make_unique<hephaestus::HFormulation>("electrical_resistivity",
+                                                                      "electrical_conductivity",
+                                                                      "magnetic_permeability",
+                                                                      "magnetic_field");
+
     hephaestus::BCMap bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
     hephaestus::Coefficients coefficients(
         params.GetParam<hephaestus::Coefficients>("Coefficients"));
@@ -190,7 +191,7 @@ TEST_CASE_METHOD(TestHFormSource, "TestHFormSource", "[CheckRun]")
     problem_builder->SetOutputs(outputs);
     problem_builder->SetSolverOptions(solver_options);
 
-    hephaestus::ProblemBuildSequencer sequencer(problem_builder);
+    hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
     sequencer.ConstructEquationSystemProblem();
     std::unique_ptr<hephaestus::TimeDomainProblem> problem = problem_builder->ReturnProblem();
 
@@ -200,8 +201,8 @@ TEST_CASE_METHOD(TestHFormSource, "TestHFormSource", "[CheckRun]")
     exec_params.SetParam("EndTime", float(0.05));
     exec_params.SetParam("VisualisationSteps", int(1));
     exec_params.SetParam("Problem", problem.get());
-    hephaestus::TransientExecutioner * executioner =
-        new hephaestus::TransientExecutioner(exec_params);
+
+    auto executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
 
     executioner->Execute();
   }
