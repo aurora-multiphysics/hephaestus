@@ -116,7 +116,7 @@ protected:
 
     hephaestus::Sources sources;
     hephaestus::InputParameters scalar_potential_source_params;
-    scalar_potential_source_params.SetParam("SourceName", std::string("source"));
+    scalar_potential_source_params.SetParam("GradPotentialName", std::string("source"));
     scalar_potential_source_params.SetParam("PotentialName", std::string("electric_potential"));
     scalar_potential_source_params.SetParam("HCurlFESpaceName", std::string("HCurlSource"));
     scalar_potential_source_params.SetParam("H1FESpaceName", std::string("H1Source"));

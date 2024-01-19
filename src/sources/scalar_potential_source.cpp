@@ -7,7 +7,7 @@ namespace hephaestus
 // J0_{n+1} ∈ H(div) source field, where J0 = -β∇p and β is a conductivity
 // coefficient.
 ScalarPotentialSource::ScalarPotentialSource(const hephaestus::InputParameters & params)
-  : src_gf_name(params.GetParam<std::string>("SourceName")),
+  : grad_phi_name_(params.GetParam<std::string>("GradPotentialName")),
     potential_gf_name(params.GetParam<std::string>("PotentialName")),
     hcurl_fespace_name(params.GetParam<std::string>("HCurlFESpaceName")),
     h1_fespace_name(params.GetParam<std::string>("H1FESpaceName")),
@@ -52,12 +52,11 @@ ScalarPotentialSource::Init(hephaestus::GridFunctions & gridfunctions,
     gridfunctions.Register(potential_gf_name, p_, true);
   }
 
-  grad_p_ = gridfunctions.Get(src_gf_name);
+  grad_p_ = gridfunctions.Get(grad_phi_name_);
   if (grad_p_ == nullptr)
   {
-    // NB: Register to avoid leaks.
     grad_p_ = new mfem::ParGridFunction(HCurlFESpace_);
-    gridfunctions.Register(src_gf_name, grad_p_, true);
+    gridfunctions.Register(grad_phi_name_, grad_p_, true);
   }
 
   _bc_map = &bc_map;

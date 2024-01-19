@@ -13,9 +13,6 @@ double calcFlux(mfem::GridFunction * v_field, int face_attr);
 
 double calcFlux(mfem::GridFunction * v_field, int face_attr, mfem::Coefficient & q);
 
-template <typename T>
-void ifDelete(T * ptr);
-
 void inheritBdrAttributes(const mfem::ParMesh * parent_mesh, mfem::ParSubMesh * child_mesh);
 
 // Applies the HelmholtzProjector onto the J GridFunction to clean it of any
@@ -78,42 +75,45 @@ private:
   int order_h1_;
   int order_hcurl_;
   int ref_face_;
+  bool grad_phi_transfer_;
+
   std::pair<int, int> elec_attrs_;
   mfem::Array<int> coil_domains_;
   mfem::Array<int> coil_markers_;
-
-  mfem::Coefficient * coef1_{nullptr};
-  mfem::Coefficient * Itotal_{nullptr};
-
-  bool owns_coef1_{false};
-  bool owns_Itotal_{false};
-
   hephaestus::InputParameters solver_options_;
 
+  mfem::Coefficient * sigma_{nullptr};
+  mfem::Coefficient * Itotal_{nullptr};
+
+  bool owns_sigma_{false};
+  bool owns_Itotal_{false};
+
   // Names
-  std::string J_gf_name_;
+  std::string grad_phi_name_;
   std::string V_gf_name_;
   std::string I_coef_name_;
   std::string cond_coef_name_;
 
   // Parent mesh, FE space, and current
   mfem::ParMesh * mesh_parent_{nullptr};
-  mfem::ParGridFunction * J_parent_{nullptr};
-  mfem::ParGridFunction * V_parent_{nullptr};
 
-  std::unique_ptr<mfem::ParGridFunction> Jt_parent_{nullptr};
+  mfem::ParGridFunction * grad_phi_parent_{nullptr};
+  std::unique_ptr<mfem::ParGridFunction> grad_phi_t_parent_{nullptr};
+
+  mfem::ParGridFunction * V_parent_{nullptr};
   std::unique_ptr<mfem::ParGridFunction> Vt_parent_{nullptr};
 
   // Child mesh and FE spaces
   std::unique_ptr<mfem::ParSubMesh> mesh_{nullptr};
-  std::unique_ptr<mfem::ParFiniteElementSpace> H1FESpace_{nullptr};
-  std::unique_ptr<mfem::ParFiniteElementSpace> HCurlFESpace_{nullptr};
 
+  std::unique_ptr<mfem::ParFiniteElementSpace> H1FESpace_{nullptr};
   std::unique_ptr<mfem::H1_FECollection> H1FESpace_fec_{nullptr};
+
+  std::unique_ptr<mfem::ParFiniteElementSpace> HCurlFESpace_{nullptr};
   std::unique_ptr<mfem::ND_FECollection> HCurlFESpace_fec{nullptr};
 
   // Child GridFunctions
-  std::unique_ptr<mfem::ParGridFunction> J_{nullptr};
+  std::unique_ptr<mfem::ParGridFunction> grad_phi_{nullptr};
   std::unique_ptr<mfem::ParGridFunction> V_{nullptr};
 
   // Child boundary condition objects

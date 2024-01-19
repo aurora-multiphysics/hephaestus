@@ -66,45 +66,51 @@ private:
   mfem::Array<int> coil_markers_;
   mfem::Array<int> transition_domain_;
   mfem::Array<int> transition_markers_;
+  mfem::Coefficient * sigma_{nullptr};
+  mfem::Coefficient * Itotal_{nullptr};
   std::vector<int> old_dom_attrs;
   hephaestus::InputParameters solver_options_;
 
-  mfem::Coefficient * Itotal_{nullptr};
+  bool owns_sigma{false};
   bool owns_Itotal_{false};
+  bool owns_grad_phi_parent_{false};
+  bool owns_H1FESpace_parent_{false};
 
-  // Seting J_transfer_ to true will negatively affect performance, but
-  // the resulting source current will be correct for visualisation purposes.
-  // Only set to true if you wish to view the final current.
-  bool J_transfer_;
+  // Here, we are solving for -(σ∇Va,∇ψ) = (σ∇Vt,∇ψ), where ∇Vt is grad_phi_t (within its relevant
+  // mesh), ∇Va is grad_phi_aux, and their sum ∇Vt+∇Va is the full grad_phi, which is, up to an
+  // overall sign, equal to the electric field in the electrostatic case. Seting grad_phi_transfer_
+  // to true will negatively affect performance, but the final grad_phi function will be transferred
+  // to a GridFunction for viewing purposes. Only set to true if you wish to visualise the final
+  // grad_phi.
+  bool grad_phi_transfer_{false};
 
   // Names
   std::string hcurl_fespace_name_;
+  std::string cond_coef_name_;
   std::string h1_fespace_name_;
-  std::string J_gf_name_;
+  std::string grad_phi_name_;
   std::string I_coef_name_;
 
   // Parent mesh, FE space, and current
   mfem::ParMesh * mesh_parent_{nullptr};
-  mfem::ParGridFunction * J_parent_{nullptr};
+  mfem::ParGridFunction * grad_phi_parent_{nullptr};
   mfem::ParFiniteElementSpace * HCurlFESpace_parent_{nullptr};
   mfem::ParFiniteElementSpace * H1FESpace_parent_{nullptr};
 
-  // H1 Finite-Element Collection. We need to retain ownership.
   std::unique_ptr<mfem::H1_FECollection> H1FESpace_parent_fec_{nullptr};
-  std::unique_ptr<mfem::H1_FECollection> H1FESpace_coil_fec_{nullptr};
-  std::unique_ptr<mfem::ND_FECollection> Jaux_coil_fec_{nullptr};
-  std::unique_ptr<mfem::ND_FECollection> Jaux_t_fec_{nullptr};
 
   // In case J transfer is true
-  std::unique_ptr<mfem::ParGridFunction> Jt_parent_{nullptr};
+  std::unique_ptr<mfem::ParGridFunction> grad_phi_t_parent_{nullptr};
 
   // Coil mesh, FE Space, and current
   std::unique_ptr<mfem::ParSubMesh> mesh_coil_{nullptr};
   std::unique_ptr<mfem::ParSubMesh> mesh_t_{nullptr};
-
   std::unique_ptr<mfem::ParFiniteElementSpace> H1FESpace_coil_{nullptr};
-  std::unique_ptr<mfem::ParGridFunction> Jaux_coil_{nullptr};
+  std::unique_ptr<mfem::ParGridFunction> grad_phi_aux_coil_{nullptr};
   std::unique_ptr<mfem::ParGridFunction> V_coil_{nullptr};
+
+  std::unique_ptr<mfem::ND_FECollection> grad_phi_aux_coil_fec_{nullptr};
+  std::unique_ptr<mfem::ParFiniteElementSpace> grad_phi_aux_coil_fes{nullptr};
 
   // Final LinearForm
   std::unique_ptr<mfem::ParLinearForm> final_lf_{nullptr};

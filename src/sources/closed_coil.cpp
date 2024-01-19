@@ -22,17 +22,6 @@ pushIfUnique(std::vector<T> & vec, const T el)
     vec.push_back(el);
 }
 
-// Deletes and clears a vector of pointers
-template <typename T>
-void
-deleteAndClear(std::vector<T *> v)
-{
-
-  for (auto p : v)
-    delete p;
-  v.clear();
-}
-
 // Base class methods
 
 ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters & params,
@@ -40,12 +29,12 @@ ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters & params,
                                    const int electrode_face)
   : hcurl_fespace_name_(params.GetParam<std::string>("HCurlFESpaceName")),
     h1_fespace_name_(params.GetParam<std::string>("H1FESpaceName")),
-    J_gf_name_(params.GetParam<std::string>("JGridFunctionName")),
+    grad_phi_name_(params.GetParam<std::string>("GradPotentialName")),
     I_coef_name_(params.GetParam<std::string>("IFuncCoefName")),
-    J_transfer_(params.GetOptionalParam<bool>("JTransfer", false)),
+    cond_coef_name_(params.GetParam<std::string>("ConductivityCoefName")),
+    grad_phi_transfer_(params.GetOptionalParam<bool>("GradPhiTransfer", false)),
     coil_domains_(coil_dom)
 {
-
   hephaestus::InputParameters default_pars;
   default_pars.SetParam("Tolerance", float(1e-18));
   default_pars.SetParam("AbsTolerance", float(1e-18));
@@ -60,8 +49,14 @@ ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters & params,
 
 ClosedCoilSolver::~ClosedCoilSolver()
 {
+  if (owns_sigma)
+    delete sigma_;
   if (owns_Itotal_)
     delete Itotal_;
+  if (owns_grad_phi_parent_)
+    delete grad_phi_parent_;
+  if (owns_H1FESpace_parent_)
+    delete H1FESpace_parent_;
 }
 
 void
@@ -92,25 +87,26 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     std::cout << h1_fespace_name_ + " not found in fespaces when "
                                     "creating ClosedCoilSolver. Creating from mesh.\n";
 
-    // Need to free this memory after use. FEC not freed by
-    // ParFiniteElementSpace destructor!
+    // Need to free this memory after use. FEC not freed by ParFiniteElementSpace destructor!
     H1FESpace_parent_fec_ =
         std::make_unique<mfem::H1_FECollection>(order_h1_, mesh_parent_->Dimension());
 
     H1FESpace_parent_ = new mfem::ParFiniteElementSpace(mesh_parent_, H1FESpace_parent_fec_.get());
+    owns_H1FESpace_parent_ = true;
   }
 
-  J_parent_ = gridfunctions.Get(J_gf_name_);
-  if (J_parent_ == nullptr)
+  grad_phi_parent_ = gridfunctions.Get(grad_phi_name_);
+  if (grad_phi_parent_ == nullptr)
   {
-    std::cout << J_gf_name_ + " not found in gridfunctions when "
-                              "creating OpenCoilSolver. Creating new GridFunction.\n";
-    J_parent_ = new mfem::ParGridFunction(HCurlFESpace_parent_);
+    std::cout << grad_phi_name_ + " not found in gridfunctions when "
+                                  "creating OpenCoilSolver. Creating new GridFunction.\n";
+    grad_phi_parent_ = new mfem::ParGridFunction(HCurlFESpace_parent_);
+    owns_grad_phi_parent_ = true;
   }
-  else if (J_parent_->ParFESpace()->FEColl()->GetContType() !=
+  else if (grad_phi_parent_->ParFESpace()->FEColl()->GetContType() !=
            mfem::FiniteElementCollection::TANGENTIAL)
   {
-    mfem::mfem_error("J GridFunction must be of HCurl type.");
+    mfem::mfem_error("GradPhi GridFunction must be of HCurl type.");
   }
 
   Itotal_ = coefficients.scalars.Get(I_coef_name_);
@@ -124,6 +120,21 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     owns_Itotal_ = true; // Responsible for deleting this.
   }
 
+  sigma_ = coefficients.scalars.Get(cond_coef_name_);
+  if (sigma_ == nullptr)
+  {
+    std::cout << cond_coef_name_ + " not found in coefficients when "
+                                   "creating ClosedCoilSolver. "
+                                   "Assuming unit conductivity.\n";
+    std::cout << "Warning: GradPhi field undefined. The GridFunction "
+                 "associated with it will be set to zero.\n";
+
+    sigma_ = new mfem::ConstantCoefficient(1.0);
+    owns_sigma = true;
+
+    grad_phi_transfer_ = false;
+  }
+
   if (final_lf_ == nullptr)
   {
     final_lf_ = std::make_unique<mfem::ParLinearForm>(HCurlFESpace_parent_);
@@ -135,16 +146,6 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
   solveTransition();
   solveCoil();
   restoreAttributes();
-
-  // Cleanup memory.
-  if (!fespaces.Has(h1_fespace_name_))
-  {
-    delete H1FESpace_parent_;
-    H1FESpace_parent_fec_.reset();
-  }
-
-  if (!gridfunctions.Has(J_gf_name_))
-    delete J_parent_;
 }
 
 void
@@ -160,10 +161,10 @@ ClosedCoilSolver::Apply(mfem::ParLinearForm * lf)
   double I = Itotal_->Eval(*Tr, ip);
   lf->Add(I, *final_lf_);
 
-  if (J_transfer_)
+  *grad_phi_parent_ = 0.0;
+  if (grad_phi_transfer_)
   {
-    *J_parent_ = 0.0;
-    J_parent_->Add(I, *Jt_parent_);
+    grad_phi_parent_->Add(I, *grad_phi_t_parent_);
   }
 }
 
@@ -177,7 +178,6 @@ ClosedCoilSolver::SubtractSource(mfem::ParGridFunction * gf)
 void
 ClosedCoilSolver::makeWedge()
 {
-
   std::vector<int> bdr_els;
 
   // First we save the current domain attributes so they may be restored later
@@ -330,20 +330,17 @@ ClosedCoilSolver::makeWedge()
 void
 ClosedCoilSolver::prepareCoilSubmesh()
 {
-
   mesh_coil_ = std::make_unique<mfem::ParSubMesh>(
       mfem::ParSubMesh::CreateFromDomain(*mesh_parent_, coil_domains_));
 
-  H1FESpace_coil_fec_ = std::make_unique<mfem::H1_FECollection>(order_h1_, mesh_coil_->Dimension());
+  grad_phi_aux_coil_fec_ =
+      std::make_unique<mfem::ND_FECollection>(order_hcurl_, mesh_coil_->Dimension());
 
-  H1FESpace_coil_ =
-      std::make_unique<mfem::ParFiniteElementSpace>(mesh_coil_.get(), H1FESpace_coil_fec_.get());
+  grad_phi_aux_coil_fes =
+      std::make_unique<mfem::ParFiniteElementSpace>(mesh_coil_.get(), grad_phi_aux_coil_fec_.get());
 
-  Jaux_coil_fec_ = std::make_unique<mfem::ND_FECollection>(order_hcurl_, mesh_coil_->Dimension());
-
-  Jaux_coil_ = std::make_unique<mfem::ParGridFunction>(
-      new mfem::ParFiniteElementSpace(mesh_coil_.get(), Jaux_coil_fec_.get()));
-  *Jaux_coil_ = 0.0;
+  grad_phi_aux_coil_ = std::make_unique<mfem::ParGridFunction>(grad_phi_aux_coil_fes.get());
+  *grad_phi_aux_coil_ = 0.0;
 
   V_coil_ = std::make_unique<mfem::ParGridFunction>(H1FESpace_coil_.get());
   *V_coil_ = 0.0;
@@ -360,15 +357,18 @@ ClosedCoilSolver::solveTransition()
   V_parent = 0.0;
 
   hephaestus::FESpaces fespaces;
-  hephaestus::Coefficients coefs;
   hephaestus::BCMap bc_maps;
 
+  hephaestus::Coefficients coefs;
+  coefs.scalars.Register("electrical_conductivity", sigma_, false);
+
   hephaestus::GridFunctions gridfunctions;
-  gridfunctions.Register("J_parent", J_parent_, false);
+  gridfunctions.Register("GradPhi_parent", grad_phi_parent_, false);
   gridfunctions.Register("V_parent", &V_parent, false);
 
   hephaestus::InputParameters ocs_params;
-  ocs_params.SetParam("SourceName", std::string("J_parent"));
+  ocs_params.SetParam("GradPotentialName", std::string("GradPhi_parent"));
+  ocs_params.SetParam("ConductivityCoefName", std::string("electrical_conductivity"));
   ocs_params.SetParam("IFuncCoefName", std::string("I"));
   ocs_params.SetParam("PotentialName", std::string("V_parent"));
   ocs_params.SetParam("SolverOptions", solver_options_);
@@ -384,7 +384,7 @@ ClosedCoilSolver::solveTransition()
 void
 ClosedCoilSolver::solveCoil()
 {
-  // (∇Va,∇ψ) = (∇Vt,∇ψ)
+  // -(σ∇Va,∇ψ) = (σ∇Vt,∇ψ)
   // where Va is Vaux_coil_, the auxiliary continuous "potential"
   // ψ are the H1 test functions
   // Vt is the transition potential
@@ -399,13 +399,13 @@ ClosedCoilSolver::solveCoil()
   b_coil = 0.0;
 
   attrToMarker(transition_domain_, transition_markers_, mesh_coil_->attributes.Max());
-  a_t.AddDomainIntegrator(new mfem::DiffusionIntegrator, transition_markers_);
+  a_t.AddDomainIntegrator(new mfem::DiffusionIntegrator(*sigma_), transition_markers_);
   a_t.Assemble();
   a_t.Finalize();
   a_t.AddMult(*V_coil_, b_coil, 1.0);
 
   mfem::ParBilinearForm a_coil(H1FESpace_coil_.get());
-  a_coil.AddDomainIntegrator(new mfem::DiffusionIntegrator);
+  a_coil.AddDomainIntegrator(new mfem::DiffusionIntegrator(*sigma_));
   a_coil.Assemble();
 
   mfem::Array<int> ess_bdr_tdofs_coil;
@@ -443,45 +443,47 @@ ClosedCoilSolver::solveCoil()
   a_coil.RecoverFEMSolution(X0_coil, b_coil, Vaux_coil);
 
   // Now we form the final coil current
-  mfem::ParDiscreteLinearOperator grad(H1FESpace_coil_.get(), Jaux_coil_->ParFESpace());
+  mfem::ParDiscreteLinearOperator grad(H1FESpace_coil_.get(), grad_phi_aux_coil_->ParFESpace());
   grad.AddDomainInterpolator(new mfem::GradientInterpolator());
   grad.Assemble();
-  grad.Mult(Vaux_coil, *Jaux_coil_);
+  grad.Mult(Vaux_coil, *grad_phi_aux_coil_);
 
-  if (J_transfer_)
-    Jt_parent_ = std::make_unique<mfem::ParGridFunction>(*J_parent_);
+  if (grad_phi_transfer_)
+    grad_phi_t_parent_ = std::make_unique<mfem::ParGridFunction>(*grad_phi_parent_);
 
-  *J_parent_ = 0.0;
-  mesh_coil_->Transfer(*Jaux_coil_, *J_parent_);
+  *grad_phi_parent_ = 0.0;
+  mesh_coil_->Transfer(*grad_phi_aux_coil_, *grad_phi_parent_);
 
   mfem::ParBilinearForm m1(HCurlFESpace_parent_);
   hephaestus::attrToMarker(coil_domains_, coil_markers_, mesh_parent_->attributes.Max());
 
-  auto constant_coeff = std::make_unique<mfem::ConstantCoefficient>(1.0);
-  m1.AddDomainIntegrator(new mfem::VectorFEMassIntegrator(constant_coeff.get()), coil_markers_);
+  m1.AddDomainIntegrator(new mfem::VectorFEMassIntegrator(sigma_), coil_markers_);
   m1.Assemble();
-  m1.AddMult(*J_parent_, *final_lf_, -1.0);
+  m1.AddMult(*grad_phi_parent_, *final_lf_, -1.0);
 
   // We can't properly calculate the flux of Jaux on the parent mesh, so we
   // transfer it first to the transition mesh. This will be used in the
   // normalisation step
-  Jaux_t_fec_ = std::make_unique<mfem::ND_FECollection>(
-      mfem::ND_FECollection(order_hcurl_, mesh_t_->Dimension()));
+  auto grad_phi_aux_t_fec =
+      std::make_unique<mfem::ND_FECollection>(order_hcurl_, mesh_t_->Dimension());
 
-  mfem::ParGridFunction Jaux_t_(new mfem::ParFiniteElementSpace(mesh_t_.get(), Jaux_t_fec_.get()));
-  Jaux_t_ = 0.0;
+  auto grad_phi_aux_t_pfes =
+      std::make_unique<mfem::ParFiniteElementSpace>(mesh_t_.get(), grad_phi_aux_t_fec.get());
 
-  mesh_t_->Transfer(*J_parent_, Jaux_t_);
+  auto grad_phi_aux_t = std::make_unique<mfem::ParGridFunction>(grad_phi_aux_t_pfes.get());
+  *grad_phi_aux_t = 0.0;
+
+  mesh_t_->Transfer(*grad_phi_parent_, *grad_phi_aux_t);
 
   // The total flux across the electrode face is Φ_t-Φ_aux
   // where Φ_t is the transition flux, already normalised to be 1
-  double flux = 1.0 - calcFlux(&Jaux_t_, elec_attrs_.first);
+  double flux = 1.0 - calcFlux(grad_phi_aux_t.get(), elec_attrs_.first, *sigma_);
 
-  if (J_transfer_)
+  if (grad_phi_transfer_)
   {
-    *J_parent_ -= *Jt_parent_;
-    *J_parent_ /= -flux;
-    *Jt_parent_ = *J_parent_;
+    *grad_phi_parent_ -= *grad_phi_t_parent_;
+    *grad_phi_parent_ /= -flux;
+    *grad_phi_t_parent_ = *grad_phi_parent_;
   }
 
   *final_lf_ /= flux;
@@ -490,7 +492,6 @@ ClosedCoilSolver::solveCoil()
 void
 ClosedCoilSolver::restoreAttributes()
 {
-
   // Domain attributes
   for (int e = 0; e < mesh_parent_->GetNE(); ++e)
   {
@@ -557,7 +558,6 @@ ClosedCoilSolver::elementCentre(int el, mfem::ParMesh * pm)
 
 Plane3D::Plane3D() : d(0)
 {
-
   u = std::make_unique<mfem::Vector>(3);
   *u = 0.0;
 }

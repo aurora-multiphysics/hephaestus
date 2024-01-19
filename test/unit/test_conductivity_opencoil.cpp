@@ -4,30 +4,33 @@
 
 extern const char * DATA_DIR;
 
-TEST_CASE("OpenCoilTest", "[CheckData]")
+// Conductivity ratio between the two materials
+const double r = 3;
+
+double
+sigma(const mfem::Vector & x, double t)
+{
+  return x[1] > 0 ? 1 : r;
+}
+
+TEST_CASE("ConductivityOpenCoil", "[CheckData]")
 {
 
   // Floating point error tolerance
   const double eps{1e-10};
-
-  int par_ref_lvl = -1;
   int order = 1;
 
-  mfem::Mesh mesh((std::string(DATA_DIR) + "coil.gen").c_str(), 1, 1);
-  auto pmesh = std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mesh);
-
-  for (int l = 0; l < par_ref_lvl; ++l)
-    pmesh->UniformRefinement();
+  mfem::Mesh mesh((std::string(DATA_DIR) + "inhomogeneous_beam.g").c_str(), 1, 1);
+  std::shared_ptr<mfem::ParMesh> pmesh =
+      std::make_shared<mfem::ParMesh>(mfem::ParMesh(MPI_COMM_WORLD, mesh));
 
   mfem::ND_FECollection HCurl_Collection(order, pmesh.get()->Dimension());
   mfem::ParFiniteElementSpace HCurlFESpace(pmesh.get(), &HCurl_Collection);
   mfem::ParGridFunction E(&HCurlFESpace);
 
-  const double Ival = 10.0;
-  const double cond_val = 1e6;
-
+  double Ival = 10.0;
   mfem::ConstantCoefficient Itot(Ival);
-  mfem::ConstantCoefficient Conductivity(cond_val);
+  mfem::FunctionCoefficient Conductivity(sigma);
 
   hephaestus::InputParameters ocs_params;
   hephaestus::BCMap bc_maps;
@@ -46,8 +49,9 @@ TEST_CASE("OpenCoilTest", "[CheckData]")
   ocs_params.SetParam("IFuncCoefName", std::string("Itotal"));
   ocs_params.SetParam("PotentialName", std::string("V"));
   ocs_params.SetParam("ConductivityCoefName", std::string("Conductivity"));
+  ocs_params.SetParam("GradPhiTransfer", true);
 
-  std::pair<int, int> elec_attrs{1, 2};
+  std::pair<int, int> elec_attrs{2, 3};
   mfem::Array<int> submesh_domains;
   submesh_domains.Append(1);
 
@@ -56,7 +60,9 @@ TEST_CASE("OpenCoilTest", "[CheckData]")
   mfem::ParLinearForm dummy(&HCurlFESpace);
   opencoil.Apply(&dummy);
 
-  double flux = hephaestus::calcFlux(&E, elec_attrs.first, Conductivity);
+  double flux1 = hephaestus::calcFlux(&E, 4, Conductivity);
+  double flux2 = hephaestus::calcFlux(&E, 5, Conductivity);
 
-  REQUIRE_THAT(flux, Catch::Matchers::WithinAbs(Ival, eps));
+  REQUIRE_THAT(flux1 + flux2, Catch::Matchers::WithinAbs(Ival, eps));
+  REQUIRE_THAT(flux1 / flux2, Catch::Matchers::WithinAbs(r, eps));
 }
