@@ -37,6 +37,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install 
     libglm-dev \
     libhdf5-mpich-dev \
     libnetcdf-dev \
+    libomp-14-dev \
     libpng-dev \
     libsdl2-dev \
     libssl-dev \
