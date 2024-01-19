@@ -47,12 +47,11 @@
 namespace hephaestus
 {
 
-DualFormulation::DualFormulation(std::string  alpha_coef_name,
-                                 std::string  beta_coef_name,
-                                 std::string  h_curl_var_name,
-                                 std::string  h_div_var_name)
-  : 
-    _alpha_coef_name(std::move(alpha_coef_name)),
+DualFormulation::DualFormulation(std::string alpha_coef_name,
+                                 std::string beta_coef_name,
+                                 std::string h_curl_var_name,
+                                 std::string h_div_var_name)
+  : _alpha_coef_name(std::move(alpha_coef_name)),
     _beta_coef_name(std::move(beta_coef_name)),
     _h_curl_var_name(std::move(h_curl_var_name)),
     _h_div_var_name(std::move(h_div_var_name))
@@ -198,8 +197,7 @@ void
 DualOperator::Init(mfem::Vector & X)
 {
   TimeDomainEquationSystemOperator::Init(X);
-  auto * eqs =
-      dynamic_cast<hephaestus::WeakCurlEquationSystem *>(_equation_system);
+  auto * eqs = dynamic_cast<hephaestus::WeakCurlEquationSystem *>(_equation_system);
   _h_curl_var_name = eqs->_h_curl_var_name;
   _h_div_var_name = eqs->_h_div_var_name;
   u_ = _gridfunctions.Get(_h_curl_var_name);

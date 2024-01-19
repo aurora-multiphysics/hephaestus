@@ -52,6 +52,7 @@ namespace hephaestus
 //   }
 // }
 
-TimeDomainEMFormulation::TimeDomainEMFormulation()  = default;;
+TimeDomainEMFormulation::TimeDomainEMFormulation() = default;
+;
 
 } // namespace hephaestus

@@ -15,9 +15,9 @@ public:
   ~DiffusionKernel() override = default;
 
   void Init(hephaestus::GridFunctions & gridfunctions,
-                    const hephaestus::FESpaces & fespaces,
-                    hephaestus::BCMap & bc_map,
-                    hephaestus::Coefficients & coefficients) override;
+            const hephaestus::FESpaces & fespaces,
+            hephaestus::BCMap & bc_map,
+            hephaestus::Coefficients & coefficients) override;
   void Apply(mfem::ParBilinearForm * blf) override;
 
   std::string coef_name;

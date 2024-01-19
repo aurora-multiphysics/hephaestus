@@ -43,11 +43,10 @@
 namespace hephaestus
 {
 
-HCurlFormulation::HCurlFormulation(std::string  alpha_coef_name,
-                                   std::string  beta_coef_name,
-                                   std::string  h_curl_var_name)
-  : 
-    _alpha_coef_name(std::move(alpha_coef_name)),
+HCurlFormulation::HCurlFormulation(std::string alpha_coef_name,
+                                   std::string beta_coef_name,
+                                   std::string h_curl_var_name)
+  : _alpha_coef_name(std::move(alpha_coef_name)),
     _beta_coef_name(std::move(beta_coef_name)),
     _h_curl_var_name(std::move(h_curl_var_name))
 {

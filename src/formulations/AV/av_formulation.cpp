@@ -33,13 +33,12 @@
 namespace hephaestus
 {
 
-AVFormulation::AVFormulation(std::string  alpha_coef_name,
-                             std::string  inv_alpha_coef_name,
-                             std::string  beta_coef_name,
-                             std::string  vector_potential_name,
-                             std::string  scalar_potential_name)
-  : 
-    _alpha_coef_name(std::move(alpha_coef_name)),
+AVFormulation::AVFormulation(std::string alpha_coef_name,
+                             std::string inv_alpha_coef_name,
+                             std::string beta_coef_name,
+                             std::string vector_potential_name,
+                             std::string scalar_potential_name)
+  : _alpha_coef_name(std::move(alpha_coef_name)),
     _inv_alpha_coef_name(std::move(inv_alpha_coef_name)),
     _beta_coef_name(std::move(beta_coef_name)),
     _vector_potential_name(std::move(vector_potential_name)),

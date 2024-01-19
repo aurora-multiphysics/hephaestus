@@ -5,7 +5,7 @@
 namespace hephaestus
 {
 
-BoundaryCondition::BoundaryCondition(std::string  name_, mfem::Array<int> bdr_attributes_)
+BoundaryCondition::BoundaryCondition(std::string name_, mfem::Array<int> bdr_attributes_)
   : name(std::move(name_)), bdr_attributes(std::move(bdr_attributes_))
 {
 }

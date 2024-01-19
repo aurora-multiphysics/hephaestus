@@ -3,11 +3,7 @@
 namespace hephaestus
 {
 
-EquationSystem::EquationSystem(const hephaestus::InputParameters & params)
-  
-    
-{
-}
+EquationSystem::EquationSystem(const hephaestus::InputParameters & params) {}
 
 EquationSystem::~EquationSystem() { hBlocks.DeleteAll(); }
 
@@ -336,8 +332,7 @@ EquationSystem::buildMixedBilinearForms()
   for (int i = 0; i < test_var_names.size(); i++)
   {
     auto test_var_name = test_var_names.at(i);
-    auto * test_mblfs =
-        new hephaestus::NamedFieldsMap<mfem::ParMixedBilinearForm>;
+    auto * test_mblfs = new hephaestus::NamedFieldsMap<mfem::ParMixedBilinearForm>;
     for (int j = 0; j < test_var_names.size(); j++)
     {
       auto trial_var_name = test_var_names.at(j);
@@ -348,8 +343,7 @@ EquationSystem::buildMixedBilinearForms()
           mblf_kernels_map_map.Get(test_var_name)->Has(trial_var_name))
       {
         auto mblf_kernels = mblf_kernels_map_map.Get(test_var_name)->Get(trial_var_name);
-        auto * mblf =
-            new mfem::ParMixedBilinearForm(test_pfespaces.at(j), test_pfespaces.at(i));
+        auto * mblf = new mfem::ParMixedBilinearForm(test_pfespaces.at(j), test_pfespaces.at(i));
         // Apply all mixed kernels with this test/trial pair
         for (auto & mblf_kernel : *mblf_kernels)
         {
@@ -377,7 +371,7 @@ EquationSystem::buildEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sour
 }
 
 TimeDependentEquationSystem::TimeDependentEquationSystem(const hephaestus::InputParameters & params)
-  : EquationSystem(params),  dtCoef(1.0)
+  : EquationSystem(params), dtCoef(1.0)
 {
 }
 

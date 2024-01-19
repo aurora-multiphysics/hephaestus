@@ -18,8 +18,7 @@ public:
                          hephaestus::Coefficients & coefficients,
                          hephaestus::Sources & sources,
                          hephaestus::InputParameters & solver_options)
-    : 
-      pmesh_(&pmesh),
+    : pmesh_(&pmesh),
       _fespaces(fespaces),
       _gridfunctions(gridfunctions),
       _bc_map(bc_map),

@@ -19,7 +19,7 @@ namespace hephaestus
 {
 
 HFormulation::HFormulation(const std::string & electric_resistivity_name,
-                           std::string  electric_conductivity_name,
+                           std::string electric_conductivity_name,
                            const std::string & magnetic_permeability_name,
                            const std::string & h_field_name)
   : HCurlFormulation(electric_resistivity_name, magnetic_permeability_name, h_field_name),

@@ -74,12 +74,10 @@ protected:
     coefficients.scalars.Register(
         "magnetic_permeability", new mfem::ConstantCoefficient(1.0), true);
 
-    auto * dBdtSrcCoef =
-        new mfem::VectorFunctionCoefficient(3, source_field);
+    auto * dBdtSrcCoef = new mfem::VectorFunctionCoefficient(3, source_field);
     coefficients.vectors.Register("source", dBdtSrcCoef, true);
 
-    auto * H_exact =
-        new mfem::VectorFunctionCoefficient(3, H_exact_expr);
+    auto * H_exact = new mfem::VectorFunctionCoefficient(3, H_exact_expr);
     coefficients.vectors.Register("h_exact_coeff", H_exact, true);
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./beam-tet.mesh")).c_str(), 1, 1);
@@ -165,15 +163,13 @@ TEST_CASE_METHOD(TestHFormSource, "TestHFormSource", "[CheckRun]")
                                                                       "magnetic_field");
 
     auto bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-    auto coefficients(
-        params.GetParam<hephaestus::Coefficients>("Coefficients"));
+    auto coefficients(params.GetParam<hephaestus::Coefficients>("Coefficients"));
     //   hephaestus::FESpaces fespaces(
     //       params.GetParam<hephaestus::FESpaces>("FESpaces"));
     //   hephaestus::GridFunctions gridfunctions(
     //       params.GetParam<hephaestus::GridFunctions>("GridFunctions"));
     auto preprocessors(params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
-    auto postprocessors(
-        params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
+    auto postprocessors(params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
     auto sources(params.GetParam<hephaestus::Sources>("Sources"));
     auto outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
     auto solver_options(params.GetOptionalParam<hephaestus::InputParameters>(

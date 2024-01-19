@@ -5,19 +5,17 @@
 namespace hephaestus
 {
 
-ScaledVectorGridFunctionAux::ScaledVectorGridFunctionAux(
-    std::string  input_gf_name,
-    std::string  scaled_gf_name,
-    std::string  coef_name,
-    const double & aConst,
-    hephaestus::InputParameters  solver_options)
-  : 
-    _input_gf_name(std::move(input_gf_name)),
+ScaledVectorGridFunctionAux::ScaledVectorGridFunctionAux(std::string input_gf_name,
+                                                         std::string scaled_gf_name,
+                                                         std::string coef_name,
+                                                         const double & aConst,
+                                                         hephaestus::InputParameters solver_options)
+  : _input_gf_name(std::move(input_gf_name)),
     _scaled_gf_name(std::move(scaled_gf_name)),
     _coef_name(std::move(coef_name)),
     _aConst(aConst),
     _solver_options(std::move(solver_options)),
-    
+
     a(nullptr),
     a_mixed(nullptr),
     a_mat(nullptr),

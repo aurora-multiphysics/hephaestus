@@ -27,7 +27,7 @@ pushIfUnique(std::vector<T> & vec, const T el)
 // Base class methods
 
 ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters & params,
-                                   mfem::Array<int>  coil_dom,
+                                   mfem::Array<int> coil_dom,
                                    const int electrode_face)
   : hcurl_fespace_name_(params.GetParam<std::string>("HCurlFESpaceName")),
     h1_fespace_name_(params.GetParam<std::string>("H1FESpaceName")),
@@ -558,7 +558,7 @@ ClosedCoilSolver::elementCentre(int el, mfem::ParMesh * pm)
 
 // 3D Plane constructor and methods
 
-Plane3D::Plane3D()  
+Plane3D::Plane3D()
 {
   u = std::make_unique<mfem::Vector>(3);
   *u = 0.0;

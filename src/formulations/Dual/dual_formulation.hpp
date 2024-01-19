@@ -9,10 +9,10 @@ namespace hephaestus
 class DualFormulation : public TimeDomainEMFormulation
 {
 public:
-  DualFormulation(std::string  alpha_coef_name,
-                  std::string  beta_coef_name,
-                  std::string  h_curl_var_name,
-                  std::string  h_div_var_name);
+  DualFormulation(std::string alpha_coef_name,
+                  std::string beta_coef_name,
+                  std::string h_curl_var_name,
+                  std::string h_div_var_name);
 
   ~DualFormulation() override = default;
 
@@ -38,9 +38,9 @@ public:
   ~WeakCurlEquationSystem() override = default;
 
   void Init(hephaestus::GridFunctions & gridfunctions,
-                    const hephaestus::FESpaces & fespaces,
-                    hephaestus::BCMap & bc_map,
-                    hephaestus::Coefficients & coefficients) override;
+            const hephaestus::FESpaces & fespaces,
+            hephaestus::BCMap & bc_map,
+            hephaestus::Coefficients & coefficients) override;
   void addKernels() override;
 
   std::string _h_curl_var_name, _h_div_var_name, _alpha_coef_name, _beta_coef_name,

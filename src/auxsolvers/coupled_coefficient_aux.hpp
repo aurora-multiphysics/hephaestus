@@ -22,7 +22,7 @@ public:
   ~CoupledCoefficient() override = default;
 
   void Init(const hephaestus::GridFunctions & gridfunctions,
-                    hephaestus::Coefficients & coefficients) override;
+            hephaestus::Coefficients & coefficients) override;
 
   double Eval(mfem::ElementTransformation & T, const mfem::IntegrationPoint & ip) override;
 

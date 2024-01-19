@@ -11,16 +11,16 @@ class ScaledVectorGridFunctionAux : public AuxSolver
 {
 public:
   ScaledVectorGridFunctionAux(
-      std::string  input_gf_name,
-      std::string  scaled_gf_name,
-      std::string  coef_name,
+      std::string input_gf_name,
+      std::string scaled_gf_name,
+      std::string coef_name,
       const double & aConst = 1.0,
-      hephaestus::InputParameters  solver_options = hephaestus::InputParameters());
+      hephaestus::InputParameters solver_options = hephaestus::InputParameters());
 
   ~ScaledVectorGridFunctionAux() override = default;
 
   void Init(const hephaestus::GridFunctions & gridfunctions,
-                    hephaestus::Coefficients & coefficients) override;
+            hephaestus::Coefficients & coefficients) override;
   virtual void buildBilinearForm();
   virtual void buildMixedBilinearForm();
   void Solve(double t = 0.0) override;

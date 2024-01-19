@@ -79,8 +79,7 @@ protected:
                     true);
     coefficients.scalars.Register("ground_potential", ground_coeff, true);
 
-    auto * A_exact =
-        new mfem::VectorFunctionCoefficient(3, A_exact_expr);
+    auto * A_exact = new mfem::VectorFunctionCoefficient(3, A_exact_expr);
     coefficients.vectors.Register("a_exact_coeff", A_exact, true);
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./beam-tet.mesh")).c_str(), 1, 1);
@@ -104,8 +103,7 @@ protected:
     hephaestus::AuxSolvers preprocessors;
 
     hephaestus::Sources sources;
-    auto * JSrcCoef =
-        new mfem::VectorFunctionCoefficient(3, source_field);
+    auto * JSrcCoef = new mfem::VectorFunctionCoefficient(3, source_field);
     coefficients.vectors.Register("source", JSrcCoef, true);
     hephaestus::InputParameters div_free_source_params;
     div_free_source_params.SetParam("SourceName", std::string("source"));
@@ -156,15 +154,13 @@ TEST_CASE_METHOD(TestAVFormSource, "TestAVFormSource", "[CheckRun]")
                                                                        "electric_potential");
 
     auto bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-    auto coefficients(
-        params.GetParam<hephaestus::Coefficients>("Coefficients"));
+    auto coefficients(params.GetParam<hephaestus::Coefficients>("Coefficients"));
     //   hephaestus::FESpaces fespaces(
     //       params.GetParam<hephaestus::FESpaces>("FESpaces"));
     //   hephaestus::GridFunctions gridfunctions(
     //       params.GetParam<hephaestus::GridFunctions>("GridFunctions"));
     auto preprocessors(params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
-    auto postprocessors(
-        params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
+    auto postprocessors(params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
     auto sources(params.GetParam<hephaestus::Sources>("Sources"));
     auto outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
     auto solver_options(params.GetOptionalParam<hephaestus::InputParameters>(

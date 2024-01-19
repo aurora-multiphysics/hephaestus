@@ -24,8 +24,7 @@ public:
                                    hephaestus::Coefficients & coefficients,
                                    hephaestus::Sources & sources,
                                    hephaestus::InputParameters & solver_options)
-    : 
-      pmesh_(&pmesh),
+    : pmesh_(&pmesh),
       _fespaces(fespaces),
       _gridfunctions(gridfunctions),
       _bc_map(bc_map),
@@ -37,8 +36,7 @@ public:
 
   virtual void SetGridFunctions();
   virtual void Init(mfem::Vector & X);
-  void
-  ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
+  void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
   void SetEquationSystem(hephaestus::TimeDependentEquationSystem * equation_system);
 
   mfem::Array<int> true_offsets, block_trueOffsets;

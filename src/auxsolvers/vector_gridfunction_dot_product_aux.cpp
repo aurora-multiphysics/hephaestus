@@ -34,11 +34,11 @@ VectorGridFunctionDotProductCoefficient::Eval(mfem::ElementTransformation & T,
 VectorGridFunctionDotProductAux::VectorGridFunctionDotProductAux(
     const std::string & dot_product_gf_name,
     const std::string & dot_product_coef_name,
-    std::string  scaling_coef_name,
-    std::string  u_gf_real_name,
-    std::string  v_gf_real_name,
-    std::string  u_gf_imag_name,
-    std::string  v_gf_imag_name,
+    std::string scaling_coef_name,
+    std::string u_gf_real_name,
+    std::string v_gf_real_name,
+    std::string u_gf_imag_name,
+    std::string v_gf_imag_name,
     const bool complex_average)
   : CoefficientAux(dot_product_gf_name, dot_product_coef_name),
     _u_gf_real_name(std::move(u_gf_real_name)),
@@ -47,7 +47,7 @@ VectorGridFunctionDotProductAux::VectorGridFunctionDotProductAux(
     _v_gf_imag_name(std::move(v_gf_imag_name)),
     _scaling_coef_name(std::move(scaling_coef_name)),
     _complex_average(complex_average)
-    
+
 {
 }
 

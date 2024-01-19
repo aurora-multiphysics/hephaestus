@@ -8,7 +8,7 @@ namespace hephaestus
 class VectorCoefficientAux : public AuxSolver
 {
 public:
-  VectorCoefficientAux(std::string  gf_name, std::string  vec_coef_name);
+  VectorCoefficientAux(std::string gf_name, std::string vec_coef_name);
 
   ~VectorCoefficientAux() override = default;
 

@@ -58,7 +58,10 @@ public:
   }
 
   /// Predicate to check if a field is associated with name @a field_name.
-  [[nodiscard]] inline bool Has(const std::string & field_name) const { return find(field_name) != end(); }
+  [[nodiscard]] inline bool Has(const std::string & field_name) const
+  {
+    return find(field_name) != end();
+  }
 
   /// Get a pointer to the field associated with name @a field_name.
   [[nodiscard]] inline T * Get(const std::string & field_name) const

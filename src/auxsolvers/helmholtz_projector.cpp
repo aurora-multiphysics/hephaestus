@@ -8,9 +8,9 @@ HelmholtzProjector::HelmholtzProjector(const hephaestus::InputParameters & param
     hcurl_fespace_name_(params.GetOptionalParam<std::string>("HCurlFESpaceName", "HCurlFES_Name")),
     gf_grad_name_(params.GetParam<std::string>("VectorGridFunctionName")),
     gf_name_(params.GetOptionalParam<std::string>("ScalarGridFunctionName", "ScalarGF_Name")),
-    
+
     g(nullptr),
-    
+
     gDiv_(nullptr),
     weakDiv_(nullptr),
     grad_(nullptr),

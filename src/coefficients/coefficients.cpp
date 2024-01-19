@@ -16,7 +16,7 @@ fracFunc(double a, double b)
   return a / b;
 }
 
-Subdomain::Subdomain(std::string  name_, int id_) : name(std::move(name_)), id(id_) {}
+Subdomain::Subdomain(std::string name_, int id_) : name(std::move(name_)), id(id_) {}
 
 Coefficients::Coefficients() { registerDefaultCoefficients(); }
 

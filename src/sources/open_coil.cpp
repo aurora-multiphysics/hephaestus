@@ -176,7 +176,7 @@ cleanDivergence(hephaestus::GridFunctions & gfs,
 /////////////////////////////////////////////////////////////////////
 
 OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters & params,
-                               mfem::Array<int>  coil_dom,
+                               mfem::Array<int> coil_dom,
                                const std::pair<int, int> electrodes)
   : grad_phi_name_(params.GetParam<std::string>("GradPotentialName")),
     V_gf_name_(params.GetParam<std::string>("PotentialName")),

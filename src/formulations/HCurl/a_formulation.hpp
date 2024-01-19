@@ -10,7 +10,7 @@ class AFormulation : public hephaestus::HCurlFormulation
 {
 public:
   AFormulation(const std::string & magnetic_reluctivity_name,
-               std::string  magnetic_permeability_name,
+               std::string magnetic_permeability_name,
                const std::string & electric_conductivity_name,
                const std::string & magnetic_vector_potential_name);
 
@@ -30,13 +30,13 @@ public:
 
   // Enable auxiliary calculation of F ∈ L2
   void registerLorentzForceDensityAux(const std::string & f_field_name,
-                                              const std::string & b_field_name,
-                                              const std::string & j_field_name) override;
+                                      const std::string & b_field_name,
+                                      const std::string & j_field_name) override;
 
   // Enable auxiliary calculation of P ∈ L2
   void registerJouleHeatingDensityAux(const std::string & p_field_name,
-                                              const std::string & e_field_name,
-                                              const std::string & conductivity_coef_name) override;
+                                      const std::string & e_field_name,
+                                      const std::string & conductivity_coef_name) override;
 
   void RegisterCoefficients() override;
 

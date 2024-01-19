@@ -8,7 +8,7 @@ namespace hephaestus
 class CoefficientAux : public AuxSolver
 {
 public:
-  CoefficientAux(std::string  gf_name, std::string  coef_name);
+  CoefficientAux(std::string gf_name, std::string coef_name);
 
   ~CoefficientAux() override = default;
 

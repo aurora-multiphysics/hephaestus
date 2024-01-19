@@ -33,7 +33,7 @@ class OpenCoilSolver : public hephaestus::Source
 
 public:
   OpenCoilSolver(const hephaestus::InputParameters & params,
-                 mfem::Array<int>  coil_dom,
+                 mfem::Array<int> coil_dom,
                  const std::pair<int, int> electrodes);
 
   ~OpenCoilSolver() override;

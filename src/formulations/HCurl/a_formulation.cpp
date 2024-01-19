@@ -21,7 +21,7 @@ namespace hephaestus
 {
 
 AFormulation::AFormulation(const std::string & magnetic_reluctivity_name,
-                           std::string  magnetic_permeability_name,
+                           std::string magnetic_permeability_name,
                            const std::string & electric_conductivity_name,
                            const std::string & magnetic_vector_potential_name)
   : HCurlFormulation(

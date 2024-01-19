@@ -24,8 +24,9 @@ public:
 
   ~VectorGridFunctionCrossProductCoefficient() override = default;
 
-  void
-  Eval(mfem::Vector & uxv, mfem::ElementTransformation & T, const mfem::IntegrationPoint & ip) override;
+  void Eval(mfem::Vector & uxv,
+            mfem::ElementTransformation & T,
+            const mfem::IntegrationPoint & ip) override;
 };
 
 // Auxsolver to project the cross product of two vector gridfunctions onto a
@@ -42,8 +43,8 @@ private:
 public:
   VectorGridFunctionCrossProductAux(const std::string & cross_product_gf_name,
                                     const std::string & cross_product_coef_name,
-                                    std::string  u_gf_name,
-                                    std::string  v_gf_name);
+                                    std::string u_gf_name,
+                                    std::string v_gf_name);
 
   void Init(const hephaestus::GridFunctions & gridfunctions,
             hephaestus::Coefficients & coefficients) override;

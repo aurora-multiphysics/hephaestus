@@ -19,9 +19,9 @@ public:
   VectorPowerLawNLFIntegrator(mfem::Coefficient & q) : Q(&q) {}
 
   void AssembleElementGrad(const mfem::FiniteElement & el,
-                                   mfem::ElementTransformation & Ttr,
-                                   const mfem::Vector & elfun,
-                                   mfem::DenseMatrix & elmat) override
+                           mfem::ElementTransformation & Ttr,
+                           const mfem::Vector & elfun,
+                           mfem::DenseMatrix & elmat) override
   {
 
     int nd = el.GetDof();
@@ -61,9 +61,9 @@ public:
   };
 
   void AssembleElementVector(const mfem::FiniteElement & el,
-                                     mfem::ElementTransformation & Ttr,
-                                     const mfem::Vector & elfun,
-                                     mfem::Vector & elvect) override
+                             mfem::ElementTransformation & Ttr,
+                             const mfem::Vector & elfun,
+                             mfem::Vector & elvect) override
   {
     int nd = el.GetDof(), dim = el.GetDim();
 
@@ -133,7 +133,7 @@ public:
     : Operator(blf_->ParFESpace()->TrueVSize()),
       blf(blf_),
       nlf(nlf_),
-      
+
       x1(height),
       ess_tdof_list(ess_tdof_list_){};
 

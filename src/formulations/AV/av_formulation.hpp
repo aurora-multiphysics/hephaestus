@@ -10,11 +10,11 @@ namespace hephaestus
 class AVFormulation : public TimeDomainEMFormulation
 {
 public:
-  AVFormulation(std::string  alpha_coef_name,
-                std::string  inv_alpha_coef_name,
-                std::string  beta_coef_name,
-                std::string  vector_potential_name,
-                std::string  scalar_potential_name);
+  AVFormulation(std::string alpha_coef_name,
+                std::string inv_alpha_coef_name,
+                std::string beta_coef_name,
+                std::string vector_potential_name,
+                std::string scalar_potential_name);
 
   ~AVFormulation() override = default;
 
@@ -42,9 +42,9 @@ public:
   ~AVEquationSystem() override = default;
 
   void Init(hephaestus::GridFunctions & gridfunctions,
-                    const hephaestus::FESpaces & fespaces,
-                    hephaestus::BCMap & bc_map,
-                    hephaestus::Coefficients & coefficients) override;
+            const hephaestus::FESpaces & fespaces,
+            hephaestus::BCMap & bc_map,
+            hephaestus::Coefficients & coefficients) override;
   void addKernels() override;
 
   std::string a_name, v_name, coupled_variable_name, alpha_coef_name, beta_coef_name,

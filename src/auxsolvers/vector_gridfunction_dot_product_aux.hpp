@@ -52,11 +52,11 @@ private:
 public:
   VectorGridFunctionDotProductAux(const std::string & dot_product_gf_name,
                                   const std::string & dot_product_coef_name,
-                                  std::string  scaling_coef_name,
-                                  std::string  u_gf_real_name,
-                                  std::string  v_gf_real_name,
-                                  std::string  u_gf_imag_name = "",
-                                  std::string  v_gf_imag_name = "",
+                                  std::string scaling_coef_name,
+                                  std::string u_gf_real_name,
+                                  std::string v_gf_real_name,
+                                  std::string u_gf_imag_name = "",
+                                  std::string v_gf_imag_name = "",
                                   const bool complex_average = false);
 
   ~VectorGridFunctionDotProductAux() override = default;

@@ -4,8 +4,7 @@ namespace hephaestus
 {
 
 L2ErrorVectorPostprocessor::L2ErrorVectorPostprocessor(const hephaestus::InputParameters & params)
-  : 
-    var_name(params.GetParam<std::string>("VariableName")),
+  : var_name(params.GetParam<std::string>("VariableName")),
     vec_coef_name(params.GetParam<std::string>("VectorCoefficientName"))
 {
 }

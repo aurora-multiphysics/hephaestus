@@ -28,12 +28,12 @@ VectorGridFunctionCrossProductCoefficient::Eval(mfem::Vector & uxv,
 VectorGridFunctionCrossProductAux::VectorGridFunctionCrossProductAux(
     const std::string & cross_product_gf_name,
     const std::string & cross_product_coef_name,
-    std::string  u_gf_name,
-    std::string  v_gf_name)
+    std::string u_gf_name,
+    std::string v_gf_name)
   : VectorCoefficientAux(cross_product_gf_name, cross_product_coef_name),
     _u_gf_name(std::move(u_gf_name)),
     _v_gf_name(std::move(v_gf_name))
-    
+
 {
 }
 

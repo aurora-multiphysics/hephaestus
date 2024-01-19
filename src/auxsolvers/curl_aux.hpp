@@ -8,7 +8,7 @@ namespace hephaestus
 class CurlAuxSolver : public AuxSolver
 {
 public:
-  CurlAuxSolver(std::string  input_gf_name, std::string  curl_gf_name);
+  CurlAuxSolver(std::string input_gf_name, std::string curl_gf_name);
 
   ~CurlAuxSolver() override = default;
 

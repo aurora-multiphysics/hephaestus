@@ -21,7 +21,7 @@ namespace hephaestus
 
 MagnetostaticFormulation::MagnetostaticFormulation(
     const std::string & magnetic_reluctivity_name,
-    std::string  magnetic_permeability_name,
+    std::string magnetic_permeability_name,
     const std::string & magnetic_vector_potential_name)
   : StaticsFormulation(magnetic_reluctivity_name, magnetic_vector_potential_name),
     _magnetic_permeability_name(std::move(magnetic_permeability_name))

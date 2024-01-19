@@ -6,7 +6,7 @@ namespace hephaestus
 {
 
 EBDualFormulation::EBDualFormulation(const std::string & magnetic_reluctivity_name,
-                                     std::string  magnetic_permeability_name,
+                                     std::string magnetic_permeability_name,
                                      const std::string & electric_conductivity_name,
                                      const std::string & e_field_name,
                                      const std::string & b_field_name)

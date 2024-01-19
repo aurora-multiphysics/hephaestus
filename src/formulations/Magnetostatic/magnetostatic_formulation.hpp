@@ -10,7 +10,7 @@ class MagnetostaticFormulation : public hephaestus::StaticsFormulation
 {
 public:
   MagnetostaticFormulation(const std::string & magnetic_reluctivity_name,
-                           std::string  magnetic_permeability_name,
+                           std::string magnetic_permeability_name,
                            const std::string & magnetic_vector_potential_name);
 
   ~MagnetostaticFormulation() override = default;
@@ -23,8 +23,8 @@ public:
 
   // Enable auxiliary calculation of F ∈ L2
   void registerLorentzForceDensityAux(const std::string & f_field_name,
-                                              const std::string & b_field_name,
-                                              const std::string & j_field_name) override;
+                                      const std::string & b_field_name,
+                                      const std::string & j_field_name) override;
 
   void RegisterCoefficients() override;
 

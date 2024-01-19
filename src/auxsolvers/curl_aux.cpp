@@ -5,8 +5,8 @@
 namespace hephaestus
 {
 
-CurlAuxSolver::CurlAuxSolver(std::string  input_gf_name, std::string  curl_gf_name)
-  :  _input_gf_name(std::move(input_gf_name)), _curl_gf_name(std::move(curl_gf_name))
+CurlAuxSolver::CurlAuxSolver(std::string input_gf_name, std::string curl_gf_name)
+  : _input_gf_name(std::move(input_gf_name)), _curl_gf_name(std::move(curl_gf_name))
 {
 }
 

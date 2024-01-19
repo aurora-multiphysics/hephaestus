@@ -102,15 +102,14 @@ ComplexMaxwellOperator::Solve(mfem::Vector & X)
   *_gridfunctions.Get(state_var_names.at(1)) = u_->imag();
 }
 
-ComplexMaxwellFormulation::ComplexMaxwellFormulation(std::string  alpha_coef_name,
-                                                     std::string  beta_coef_name,
-                                                     std::string  zeta_coef_name,
-                                                     std::string  frequency_coef_name,
-                                                     std::string  h_curl_var_complex_name,
-                                                     std::string  h_curl_var_real_name,
-                                                     std::string  h_curl_var_imag_name)
-  : 
-    _alpha_coef_name(std::move(alpha_coef_name)),
+ComplexMaxwellFormulation::ComplexMaxwellFormulation(std::string alpha_coef_name,
+                                                     std::string beta_coef_name,
+                                                     std::string zeta_coef_name,
+                                                     std::string frequency_coef_name,
+                                                     std::string h_curl_var_complex_name,
+                                                     std::string h_curl_var_real_name,
+                                                     std::string h_curl_var_imag_name)
+  : _alpha_coef_name(std::move(alpha_coef_name)),
     _beta_coef_name(std::move(beta_coef_name)),
     _zeta_coef_name(std::move(zeta_coef_name)),
     _frequency_coef_name(std::move(frequency_coef_name)),

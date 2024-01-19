@@ -10,9 +10,9 @@ namespace hephaestus
 class HCurlFormulation : public TimeDomainEMFormulation
 {
 public:
-  HCurlFormulation(std::string  alpha_coef_name,
-                   std::string  beta_coef_name,
-                   std::string  h_curl_var_name);
+  HCurlFormulation(std::string alpha_coef_name,
+                   std::string beta_coef_name,
+                   std::string h_curl_var_name);
 
   ~HCurlFormulation() override = default;
 
@@ -36,9 +36,9 @@ public:
   CurlCurlEquationSystem(const hephaestus::InputParameters & params);
 
   void Init(hephaestus::GridFunctions & gridfunctions,
-                    const hephaestus::FESpaces & fespaces,
-                    hephaestus::BCMap & bc_map,
-                    hephaestus::Coefficients & coefficients) override;
+            const hephaestus::FESpaces & fespaces,
+            hephaestus::BCMap & bc_map,
+            hephaestus::Coefficients & coefficients) override;
   void addKernels() override;
 
   std::string h_curl_var_name, alpha_coef_name, beta_coef_name, dtalpha_coef_name;

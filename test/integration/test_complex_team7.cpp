@@ -109,8 +109,7 @@ protected:
     hephaestus::AuxSolvers preprocessors;
 
     hephaestus::Sources sources;
-    auto * JSrcCoef =
-        new mfem::VectorFunctionCoefficient(3, source_current);
+    auto * JSrcCoef = new mfem::VectorFunctionCoefficient(3, source_current);
     mfem::Array<mfem::VectorCoefficient *> sourcecoefs(4);
     sourcecoefs[0] = JSrcCoef;
     sourcecoefs[1] = JSrcCoef;
@@ -121,8 +120,7 @@ protected:
     coilsegments[1] = 4;
     coilsegments[2] = 5;
     coilsegments[3] = 6;
-    auto * JSrcRestricted =
-        new mfem::PWVectorCoefficient(3, coilsegments, sourcecoefs);
+    auto * JSrcRestricted = new mfem::PWVectorCoefficient(3, coilsegments, sourcecoefs);
     coefficients.vectors.Register("source", JSrcRestricted, true);
 
     hephaestus::InputParameters div_free_source_params;

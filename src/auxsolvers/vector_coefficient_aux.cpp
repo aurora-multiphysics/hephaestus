@@ -5,9 +5,8 @@
 namespace hephaestus
 {
 
-VectorCoefficientAux::VectorCoefficientAux(std::string  gf_name,
-                                           std::string  vec_coef_name)
-  :  _gf_name(std::move(gf_name)), _vec_coef_name(std::move(vec_coef_name))
+VectorCoefficientAux::VectorCoefficientAux(std::string gf_name, std::string vec_coef_name)
+  : _gf_name(std::move(gf_name)), _vec_coef_name(std::move(vec_coef_name))
 {
 }
 

@@ -65,8 +65,7 @@ protected:
                                           new mfem::FunctionCoefficient(potential_ground)),
         true);
 
-    auto * JSrcCoef =
-        new mfem::VectorFunctionCoefficient(3, source_current);
+    auto * JSrcCoef = new mfem::VectorFunctionCoefficient(3, source_current);
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./cylinder-hex-q2.gen")).c_str(), 1, 1);
 
