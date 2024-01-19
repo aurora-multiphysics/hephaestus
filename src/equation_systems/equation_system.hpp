@@ -45,16 +45,17 @@ public:
 
   // Add kernels.
   void addKernel(const std::string & test_var_name,
-                 std::unique_ptr<ParBilinearFormKernel> &&blf_kernel);
-
-  void addKernel(const std::string & test_var_name, std::unique_ptr<ParLinearFormKernel> &&lf_kernel);
+                 std::unique_ptr<ParBilinearFormKernel> && blf_kernel);
 
   void addKernel(const std::string & test_var_name,
-                 std::unique_ptr<ParNonlinearFormKernel> &&nlf_kernel);
+                 std::unique_ptr<ParLinearFormKernel> && lf_kernel);
+
+  void addKernel(const std::string & test_var_name,
+                 std::unique_ptr<ParNonlinearFormKernel> && nlf_kernel);
 
   void addKernel(const std::string & trial_var_name,
                  const std::string & test_var_name,
-                 std::unique_ptr<ParMixedBilinearFormKernel> &&mblf_kernel);
+                 std::unique_ptr<ParMixedBilinearFormKernel> && mblf_kernel);
 
   virtual void applyBoundaryConditions(hephaestus::BCMap & bc_map);
 
