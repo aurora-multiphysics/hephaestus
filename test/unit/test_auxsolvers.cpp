@@ -29,22 +29,22 @@ TEST_CASE("AuxSolverTest", "[CheckQueue]")
 
   hephaestus::AuxSolvers auxsolvers;
 
-  DummyAuxSolver * auxsolver1 = new DummyAuxSolver(string_arg1, string_base);
+  auto * auxsolver1 = new DummyAuxSolver(string_arg1, string_base);
   auxsolver1->SetPriority(-1);
   auxsolvers.Register("OneAuxSolver", auxsolver1, true);
 
-  DummyAuxSolver * auxsolver2 = new DummyAuxSolver(string_arg2, string_base);
+  auto * auxsolver2 = new DummyAuxSolver(string_arg2, string_base);
   auxsolvers.Register("AnotherAuxSolver", auxsolver2, true);
 
-  DummyAuxSolver * auxsolver3 = new DummyAuxSolver(string_arg3, string_base);
+  auto * auxsolver3 = new DummyAuxSolver(string_arg3, string_base);
   auxsolver3->SetPriority(3);
   auxsolvers.Register("AThirdAuxSolver", auxsolver3, true);
 
-  DummyAuxSolver * auxsolver4 = new DummyAuxSolver(string_arg4, string_base);
+  auto * auxsolver4 = new DummyAuxSolver(string_arg4, string_base);
   auxsolver4->SetPriority(4);
   auxsolvers.Register("YetAnotherAuxSolver", auxsolver4, true);
 
-  DummyAuxSolver * auxsolver5 = new DummyAuxSolver(string_arg5, string_base);
+  auto * auxsolver5 = new DummyAuxSolver(string_arg5, string_base);
   auxsolver5->SetPriority(4);
   auxsolvers.Register("AFinalAuxSolver", auxsolver5, true);
 

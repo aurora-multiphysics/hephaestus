@@ -8,9 +8,9 @@ namespace hephaestus
 class CurlAuxSolver : public AuxSolver
 {
 public:
-  CurlAuxSolver(const std::string & input_gf_name, const std::string & curl_gf_name);
+  CurlAuxSolver(std::string input_gf_name, std::string curl_gf_name);
 
-  ~CurlAuxSolver() override {}
+  ~CurlAuxSolver() override = default;
 
   void Init(const hephaestus::GridFunctions & gridfunctions,
             hephaestus::Coefficients & coefficients) override;

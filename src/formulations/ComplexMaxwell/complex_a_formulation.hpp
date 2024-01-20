@@ -37,27 +37,27 @@ public:
                       const std::string & magnetic_vector_potential_real_name,
                       const std::string & magnetic_vector_potential_imag_name);
 
-  ~ComplexAFormulation() override {}
+  ~ComplexAFormulation() override = default;
 
   // Enable auxiliary calculation of J ∈ H(div)
   //* Induced electric current, Jind = σE = -iωσA
-  virtual void registerCurrentDensityAux(const std::string & j_field_real_name,
-                                         const std::string & j_field_imag_name) override;
+  void registerCurrentDensityAux(const std::string & j_field_real_name,
+                                 const std::string & j_field_imag_name) override;
 
   //* Magnetic flux density B = curl A
-  virtual void registerMagneticFluxDensityAux(const std::string & b_field_real_name,
-                                              const std::string & b_field_imag_name) override;
+  void registerMagneticFluxDensityAux(const std::string & b_field_real_name,
+                                      const std::string & b_field_imag_name) override;
 
   //* Electric field E =-dA/dt=-iωA
-  virtual void registerElectricFieldAux(const std::string & e_field_real_name,
-                                        const std::string & e_field_imag_name) override;
+  void registerElectricFieldAux(const std::string & e_field_real_name,
+                                const std::string & e_field_imag_name) override;
 
   // Enable auxiliary calculation of P ∈ L2
   // Time averaged Joule heating density E.J
-  virtual void registerJouleHeatingDensityAux(const std::string & p_field_name,
-                                              const std::string & e_field_real_name,
-                                              const std::string & e_field_imag_name,
-                                              const std::string & conductivity_coef_name) override;
+  void registerJouleHeatingDensityAux(const std::string & p_field_name,
+                                      const std::string & e_field_real_name,
+                                      const std::string & e_field_imag_name,
+                                      const std::string & conductivity_coef_name) override;
 
 protected:
   const std::string & _magnetic_reluctivity_name =

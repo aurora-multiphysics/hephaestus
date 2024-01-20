@@ -11,31 +11,31 @@ class ScaledVectorGridFunctionAux : public AuxSolver
 {
 public:
   ScaledVectorGridFunctionAux(
-      const std::string & input_gf_name,
-      const std::string & scaled_gf_name,
-      const std::string & coef_name,
+      std::string input_gf_name,
+      std::string scaled_gf_name,
+      std::string coef_name,
       const double & aConst = 1.0,
-      const hephaestus::InputParameters & solver_options = hephaestus::InputParameters());
+      hephaestus::InputParameters solver_options = hephaestus::InputParameters());
 
-  ~ScaledVectorGridFunctionAux() override {}
+  ~ScaledVectorGridFunctionAux() override = default;
 
-  virtual void Init(const hephaestus::GridFunctions & gridfunctions,
-                    hephaestus::Coefficients & coefficients) override;
+  void Init(const hephaestus::GridFunctions & gridfunctions,
+            hephaestus::Coefficients & coefficients) override;
   virtual void buildBilinearForm();
   virtual void buildMixedBilinearForm();
-  virtual void Solve(double t = 0.0) override;
+  void Solve(double t = 0.0) override;
 
 protected:
   // Pointers to store trial and test FE spaces
-  mfem::ParFiniteElementSpace * trial_fes;
-  mfem::ParFiniteElementSpace * test_fes;
+  mfem::ParFiniteElementSpace * trial_fes{nullptr};
+  mfem::ParFiniteElementSpace * test_fes{nullptr};
 
   // Bilinear forms
   std::unique_ptr<mfem::ParBilinearForm> a{nullptr};
   std::unique_ptr<mfem::ParMixedBilinearForm> a_mixed{nullptr};
 
   // Coefficient to scale input gridfunction by
-  mfem::Coefficient * coef;
+  mfem::Coefficient * coef{nullptr};
   // Optional constant to scale input gridfunction by
 
 private:
@@ -46,10 +46,10 @@ private:
   const hephaestus::InputParameters _solver_options;
 
   // Input gridfunction to be scaled by a scalar coefficient
-  mfem::ParGridFunction * input_gf;
+  mfem::ParGridFunction * input_gf{nullptr};
 
   // Gridfunction in which to store result
-  mfem::ParGridFunction * scaled_gf;
+  mfem::ParGridFunction * scaled_gf{nullptr};
 
   // Operator matrices
   std::unique_ptr<mfem::HypreParMatrix> a_mat{nullptr};

@@ -95,17 +95,17 @@ private:
   // Register fields (gridfunctions) to write to DataCollections
   void RegisterOutputFields()
   {
-    for (auto output = begin(); output != end(); ++output)
+    for (auto & output : *this)
     {
-      auto const & dc_(output->second);
+      auto const & dc_(output.second);
       mfem::ParMesh * pmesh_(_gridfunctions->begin()->second->ParFESpace()->GetParMesh());
       dc_->SetMesh(pmesh_);
 
       if (_output_field_names.empty())
       {
-        for (auto var = _gridfunctions->begin(); var != _gridfunctions->end(); ++var)
+        for (auto & _gridfunction : *_gridfunctions)
         {
-          dc_->RegisterField(var->first, var->second);
+          dc_->RegisterField(_gridfunction.first, _gridfunction.second);
         }
       }
       else
@@ -122,9 +122,9 @@ private:
   void WriteOutputFields(double t)
   {
     // Write fields to disk
-    for (auto output = begin(); output != end(); ++output)
+    for (auto & output : *this)
     {
-      auto const & dc_(output->second);
+      auto const & dc_(output.second);
       dc_->SetCycle(_cycle);
       dc_->SetTime(t);
       dc_->Save();
@@ -150,10 +150,10 @@ private:
       std::cout << "Opening GLVis sockets." << std::endl;
     }
 
-    for (auto var = _gridfunctions->begin(); var != _gridfunctions->end(); ++var)
+    for (auto & _gridfunction : *_gridfunctions)
     {
-      socks_[var->first] = new mfem::socketstream;
-      socks_[var->first]->precision(8);
+      socks_[_gridfunction.first] = new mfem::socketstream;
+      socks_[_gridfunction.first]->precision(8);
     }
 
     if (_my_rank == 0)
@@ -172,13 +172,13 @@ private:
     int Ww = 350, Wh = 350;             // window size
     int offx = Ww + 10, offy = Wh + 45; // window offsets
 
-    for (auto var = _gridfunctions->begin(); var != _gridfunctions->end(); ++var)
+    for (auto & _gridfunction : *_gridfunctions)
     {
-      mfem::common::VisualizeField(*socks_[var->first],
+      mfem::common::VisualizeField(*socks_[_gridfunction.first],
                                    vishost,
                                    visport,
-                                   *(var->second),
-                                   (var->first).c_str(),
+                                   *(_gridfunction.second),
+                                   (_gridfunction.first).c_str(),
                                    Wx,
                                    Wy,
                                    Ww,

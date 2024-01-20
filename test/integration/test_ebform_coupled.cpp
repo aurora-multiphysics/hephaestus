@@ -8,7 +8,7 @@ class CopperConductivityCoefficient : public hephaestus::CoupledCoefficient
 public:
   CopperConductivityCoefficient(const hephaestus::InputParameters & params)
     : hephaestus::CoupledCoefficient(params){};
-  virtual double Eval(mfem::ElementTransformation & T, const mfem::IntegrationPoint & ip)
+  double Eval(mfem::ElementTransformation & T, const mfem::IntegrationPoint & ip) override
   {
     return 2.0 * M_PI * 10 + 0.001 * (gf->GetValue(T, ip));
   }
@@ -70,7 +70,7 @@ protected:
     preprocessors.Register("CoupledCoefficient", wireConductivity, false);
 
     hephaestus::BCMap bc_map;
-    mfem::VectorFunctionCoefficient * edotVecCoef = new mfem::VectorFunctionCoefficient(3, edot_bc);
+    auto * edotVecCoef = new mfem::VectorFunctionCoefficient(3, edot_bc);
     bc_map.Register("tangential_dEdt",
                     new hephaestus::VectorDirichletBC(
                         std::string("electric_field"), mfem::Array<int>({1, 2, 3}), edotVecCoef),
@@ -81,7 +81,7 @@ protected:
 
     mfem::Array<int> high_terminal(1);
     high_terminal[0] = 1;
-    mfem::FunctionCoefficient * potential_src = new mfem::FunctionCoefficient(potential_high);
+    auto * potential_src = new mfem::FunctionCoefficient(potential_high);
     bc_map.Register("high_potential",
                     new hephaestus::ScalarDirichletBC(
                         std::string("electric_potential"), high_terminal, potential_src),
@@ -161,13 +161,13 @@ TEST_CASE_METHOD(TestEBFormCoupled, "TestEBFormCoupled", "[CheckRun]")
                                                                          "electric_field",
                                                                          "magnetic_flux_density");
 
-  hephaestus::BCMap bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-  hephaestus::Coefficients coefficients(params.GetParam<hephaestus::Coefficients>("Coefficients"));
-  hephaestus::AuxSolvers preprocessors(params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
-  hephaestus::AuxSolvers postprocessors(params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
-  hephaestus::Sources sources(params.GetParam<hephaestus::Sources>("Sources"));
-  hephaestus::Outputs outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
-  hephaestus::InputParameters solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
+  auto bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
+  auto coefficients(params.GetParam<hephaestus::Coefficients>("Coefficients"));
+  auto preprocessors(params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
+  auto postprocessors(params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
+  auto sources(params.GetParam<hephaestus::Sources>("Sources"));
+  auto outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
+  auto solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
       "SolverOptions", hephaestus::InputParameters()));
 
   std::shared_ptr<mfem::ParMesh> pmesh =

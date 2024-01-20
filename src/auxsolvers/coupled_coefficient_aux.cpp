@@ -4,7 +4,7 @@ namespace hephaestus
 {
 
 CoupledCoefficient::CoupledCoefficient(const hephaestus::InputParameters & params)
-  : AuxSolver(), coupled_var_name(params.GetParam<std::string>("CoupledVariableName"))
+  : coupled_var_name(params.GetParam<std::string>("CoupledVariableName"))
 {
 }
 

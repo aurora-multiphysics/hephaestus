@@ -1,5 +1,7 @@
 #include "open_coil.hpp"
 
+#include <utility>
+
 namespace hephaestus
 {
 
@@ -174,14 +176,14 @@ cleanDivergence(hephaestus::GridFunctions & gfs,
 /////////////////////////////////////////////////////////////////////
 
 OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters & params,
-                               const mfem::Array<int> & coil_dom,
+                               mfem::Array<int> coil_dom,
                                const std::pair<int, int> electrodes)
   : grad_phi_name_(params.GetParam<std::string>("GradPotentialName")),
     V_gf_name_(params.GetParam<std::string>("PotentialName")),
     I_coef_name_(params.GetParam<std::string>("IFuncCoefName")),
     cond_coef_name_(params.GetParam<std::string>("ConductivityCoefName")),
     grad_phi_transfer_(params.GetOptionalParam<bool>("GradPhiTransfer", true)),
-    coil_domains_(coil_dom),
+    coil_domains_(std::move(coil_dom)),
     elec_attrs_(electrodes),
     high_src_(highV),
     low_src_(lowV),

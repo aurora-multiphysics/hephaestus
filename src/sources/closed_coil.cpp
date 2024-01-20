@@ -1,5 +1,7 @@
 #include "closed_coil.hpp"
 
+#include <utility>
+
 namespace hephaestus
 {
 
@@ -25,7 +27,7 @@ pushIfUnique(std::vector<T> & vec, const T el)
 // Base class methods
 
 ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters & params,
-                                   const mfem::Array<int> & coil_dom,
+                                   mfem::Array<int> coil_dom,
                                    const int electrode_face)
   : hcurl_fespace_name_(params.GetParam<std::string>("HCurlFESpaceName")),
     h1_fespace_name_(params.GetParam<std::string>("H1FESpaceName")),
@@ -33,7 +35,7 @@ ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters & params,
     I_coef_name_(params.GetParam<std::string>("IFuncCoefName")),
     cond_coef_name_(params.GetParam<std::string>("ConductivityCoefName")),
     grad_phi_transfer_(params.GetOptionalParam<bool>("GradPhiTransfer", false)),
-    coil_domains_(coil_dom)
+    coil_domains_(std::move(coil_dom))
 {
   hephaestus::InputParameters default_pars;
   default_pars.SetParam("Tolerance", float(1e-18));
@@ -556,7 +558,7 @@ ClosedCoilSolver::elementCentre(int el, mfem::ParMesh * pm)
 
 // 3D Plane constructor and methods
 
-Plane3D::Plane3D() : d(0)
+Plane3D::Plane3D()
 {
   u = std::make_unique<mfem::Vector>(3);
   *u = 0.0;

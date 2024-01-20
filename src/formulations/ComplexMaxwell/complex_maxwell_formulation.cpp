@@ -1,5 +1,7 @@
 #include "complex_maxwell_formulation.hpp"
 
+#include <utility>
+
 namespace hephaestus
 {
 
@@ -86,7 +88,7 @@ ComplexMaxwellOperator::Solve(mfem::Vector & X)
 
   a1_.FormLinearSystem(ess_bdr_tdofs_, *u_, b1_, A1, U, RHS);
 
-  mfem::ComplexHypreParMatrix * A1Z = A1.As<mfem::ComplexHypreParMatrix>();
+  auto * A1Z = A1.As<mfem::ComplexHypreParMatrix>();
   auto A1C = std::unique_ptr<mfem::HypreParMatrix>(A1Z->GetSystemMatrix());
 
   mfem::SuperLURowLocMatrix A_SuperLU(*A1C);
@@ -100,21 +102,20 @@ ComplexMaxwellOperator::Solve(mfem::Vector & X)
   *_gridfunctions.Get(state_var_names.at(1)) = u_->imag();
 }
 
-ComplexMaxwellFormulation::ComplexMaxwellFormulation(const std::string & alpha_coef_name,
-                                                     const std::string & beta_coef_name,
-                                                     const std::string & zeta_coef_name,
-                                                     const std::string & frequency_coef_name,
-                                                     const std::string & h_curl_var_complex_name,
-                                                     const std::string & h_curl_var_real_name,
-                                                     const std::string & h_curl_var_imag_name)
-  : FrequencyDomainEMFormulation(),
-    _alpha_coef_name(alpha_coef_name),
-    _beta_coef_name(beta_coef_name),
-    _zeta_coef_name(zeta_coef_name),
-    _frequency_coef_name(frequency_coef_name),
-    _h_curl_var_complex_name(h_curl_var_complex_name),
-    _h_curl_var_real_name(h_curl_var_real_name),
-    _h_curl_var_imag_name(h_curl_var_imag_name),
+ComplexMaxwellFormulation::ComplexMaxwellFormulation(std::string alpha_coef_name,
+                                                     std::string beta_coef_name,
+                                                     std::string zeta_coef_name,
+                                                     std::string frequency_coef_name,
+                                                     std::string h_curl_var_complex_name,
+                                                     std::string h_curl_var_real_name,
+                                                     std::string h_curl_var_imag_name)
+  : _alpha_coef_name(std::move(alpha_coef_name)),
+    _beta_coef_name(std::move(beta_coef_name)),
+    _zeta_coef_name(std::move(zeta_coef_name)),
+    _frequency_coef_name(std::move(frequency_coef_name)),
+    _h_curl_var_complex_name(std::move(h_curl_var_complex_name)),
+    _h_curl_var_real_name(std::move(h_curl_var_real_name)),
+    _h_curl_var_imag_name(std::move(h_curl_var_imag_name)),
     _mass_coef_name(std::string("maxwell_mass")),
     _loss_coef_name(std::string("maxwell_loss"))
 {

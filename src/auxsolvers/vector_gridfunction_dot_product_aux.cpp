@@ -1,5 +1,7 @@
 #include "vector_gridfunction_dot_product_aux.hpp"
 
+#include <utility>
+
 namespace hephaestus
 {
 
@@ -32,24 +34,20 @@ VectorGridFunctionDotProductCoefficient::Eval(mfem::ElementTransformation & T,
 VectorGridFunctionDotProductAux::VectorGridFunctionDotProductAux(
     const std::string & dot_product_gf_name,
     const std::string & dot_product_coef_name,
-    const std::string & scaling_coef_name,
-    const std::string & u_gf_real_name,
-    const std::string & v_gf_real_name,
-    const std::string & u_gf_imag_name,
-    const std::string & v_gf_imag_name,
+    std::string scaling_coef_name,
+    std::string u_gf_real_name,
+    std::string v_gf_real_name,
+    std::string u_gf_imag_name,
+    std::string v_gf_imag_name,
     const bool complex_average)
   : CoefficientAux(dot_product_gf_name, dot_product_coef_name),
-    _u_gf_real_name(u_gf_real_name),
-    _v_gf_real_name(v_gf_real_name),
-    _u_gf_imag_name(u_gf_imag_name),
-    _v_gf_imag_name(v_gf_imag_name),
-    _scaling_coef_name(scaling_coef_name),
-    _complex_average(complex_average),
-    _scaling_coef(nullptr),
-    _u_gf_re(nullptr),
-    _u_gf_im(nullptr),
-    _v_gf_re(nullptr),
-    _v_gf_im(nullptr)
+    _u_gf_real_name(std::move(u_gf_real_name)),
+    _v_gf_real_name(std::move(v_gf_real_name)),
+    _u_gf_imag_name(std::move(u_gf_imag_name)),
+    _v_gf_imag_name(std::move(v_gf_imag_name)),
+    _scaling_coef_name(std::move(scaling_coef_name)),
+    _complex_average(complex_average)
+
 {
 }
 

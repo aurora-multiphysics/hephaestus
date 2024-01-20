@@ -1,10 +1,12 @@
 #include "coefficient_aux.hpp"
 
+#include <utility>
+
 namespace hephaestus
 {
 
-CoefficientAux::CoefficientAux(const std::string & gf_name, const std::string & coef_name)
-  : AuxSolver(), _gf_name(gf_name), _coef_name(coef_name)
+CoefficientAux::CoefficientAux(std::string gf_name, std::string coef_name)
+  : _gf_name(std::move(gf_name)), _coef_name(std::move(coef_name))
 {
 }
 

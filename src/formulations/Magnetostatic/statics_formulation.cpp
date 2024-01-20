@@ -27,12 +27,13 @@
 // b1(u') = (s0, u') + <(α∇×u) × n, u'>
 #include "statics_formulation.hpp"
 
+#include <utility>
+
 namespace hephaestus
 {
 
-StaticsFormulation::StaticsFormulation(const std::string & alpha_coef_name,
-                                       const std::string & h_curl_var_name)
-  : SteadyStateEMFormulation(), _alpha_coef_name(alpha_coef_name), _h_curl_var_name(h_curl_var_name)
+StaticsFormulation::StaticsFormulation(std::string alpha_coef_name, std::string h_curl_var_name)
+  : _alpha_coef_name(std::move(alpha_coef_name)), _h_curl_var_name(std::move(h_curl_var_name))
 {
 }
 

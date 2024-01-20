@@ -1,16 +1,18 @@
 #include "eb_dual_formulation.hpp"
 
+#include <utility>
+
 namespace hephaestus
 {
 
 EBDualFormulation::EBDualFormulation(const std::string & magnetic_reluctivity_name,
-                                     const std::string & magnetic_permeability_name,
+                                     std::string magnetic_permeability_name,
                                      const std::string & electric_conductivity_name,
                                      const std::string & e_field_name,
                                      const std::string & b_field_name)
   : DualFormulation(
         magnetic_reluctivity_name, electric_conductivity_name, e_field_name, b_field_name),
-    _magnetic_permeability_name(magnetic_permeability_name)
+    _magnetic_permeability_name(std::move(magnetic_permeability_name))
 {
 }
 

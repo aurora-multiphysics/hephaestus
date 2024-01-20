@@ -15,16 +15,18 @@
 
 #include "a_formulation.hpp"
 
+#include <utility>
+
 namespace hephaestus
 {
 
 AFormulation::AFormulation(const std::string & magnetic_reluctivity_name,
-                           const std::string & magnetic_permeability_name,
+                           std::string magnetic_permeability_name,
                            const std::string & electric_conductivity_name,
                            const std::string & magnetic_vector_potential_name)
   : HCurlFormulation(
         magnetic_reluctivity_name, electric_conductivity_name, magnetic_vector_potential_name),
-    _magnetic_permeability_name(magnetic_permeability_name)
+    _magnetic_permeability_name(std::move(magnetic_permeability_name))
 {
 }
 

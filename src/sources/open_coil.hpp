@@ -33,10 +33,10 @@ class OpenCoilSolver : public hephaestus::Source
 
 public:
   OpenCoilSolver(const hephaestus::InputParameters & params,
-                 const mfem::Array<int> & coil_dom,
+                 mfem::Array<int> coil_dom,
                  const std::pair<int, int> electrodes);
 
-  ~OpenCoilSolver();
+  ~OpenCoilSolver() override;
 
   void Init(hephaestus::GridFunctions & gridfunctions,
             const hephaestus::FESpaces & fespaces,

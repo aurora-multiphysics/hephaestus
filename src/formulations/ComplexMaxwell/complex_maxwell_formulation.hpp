@@ -36,11 +36,11 @@ public:
                          hephaestus::Sources & sources,
                          hephaestus::InputParameters & solver_options);
 
-  ~ComplexMaxwellOperator() override {}
+  ~ComplexMaxwellOperator() override = default;
 
-  virtual void SetGridFunctions() override;
-  virtual void Init(mfem::Vector & X) override;
-  virtual void Solve(mfem::Vector & X) override;
+  void SetGridFunctions() override;
+  void Init(mfem::Vector & X) override;
+  void Solve(mfem::Vector & X) override;
 
   std::string h_curl_var_complex_name, h_curl_var_real_name, h_curl_var_imag_name,
       stiffness_coef_name, mass_coef_name, loss_coef_name;
@@ -60,21 +60,21 @@ public:
 class ComplexMaxwellFormulation : public hephaestus::FrequencyDomainEMFormulation
 {
 public:
-  ComplexMaxwellFormulation(const std::string & frequency_coef_name,
-                            const std::string & alpha_coef_name,
-                            const std::string & beta_coef_name,
-                            const std::string & zeta_coef_name,
-                            const std::string & h_curl_var_complex_name,
-                            const std::string & h_curl_var_real_name,
-                            const std::string & h_curl_var_imag_name);
+  ComplexMaxwellFormulation(std::string frequency_coef_name,
+                            std::string alpha_coef_name,
+                            std::string beta_coef_name,
+                            std::string zeta_coef_name,
+                            std::string h_curl_var_complex_name,
+                            std::string h_curl_var_real_name,
+                            std::string h_curl_var_imag_name);
 
-  ~ComplexMaxwellFormulation() override{};
+  ~ComplexMaxwellFormulation() override = default;
 
-  virtual void ConstructOperator() override;
+  void ConstructOperator() override;
 
-  virtual void RegisterGridFunctions() override;
+  void RegisterGridFunctions() override;
 
-  virtual void RegisterCoefficients() override;
+  void RegisterCoefficients() override;
 
   // std::vector<mfem::ParGridFunction *> local_trial_vars, local_test_vars;
 protected:

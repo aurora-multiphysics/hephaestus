@@ -10,19 +10,19 @@ namespace hephaestus
 class HCurlFormulation : public TimeDomainEMFormulation
 {
 public:
-  HCurlFormulation(const std::string & alpha_coef_name,
-                   const std::string & beta_coef_name,
-                   const std::string & h_curl_var_name);
+  HCurlFormulation(std::string alpha_coef_name,
+                   std::string beta_coef_name,
+                   std::string h_curl_var_name);
 
-  ~HCurlFormulation() override {}
+  ~HCurlFormulation() override = default;
 
-  virtual void ConstructEquationSystem() override;
+  void ConstructEquationSystem() override;
 
-  virtual void ConstructOperator() override;
+  void ConstructOperator() override;
 
-  virtual void RegisterGridFunctions() override;
+  void RegisterGridFunctions() override;
 
-  virtual void RegisterCoefficients() override;
+  void RegisterCoefficients() override;
 
 protected:
   const std::string _alpha_coef_name;
@@ -35,11 +35,11 @@ class CurlCurlEquationSystem : public TimeDependentEquationSystem
 public:
   CurlCurlEquationSystem(const hephaestus::InputParameters & params);
 
-  virtual void Init(hephaestus::GridFunctions & gridfunctions,
-                    const hephaestus::FESpaces & fespaces,
-                    hephaestus::BCMap & bc_map,
-                    hephaestus::Coefficients & coefficients) override;
-  virtual void addKernels() override;
+  void Init(hephaestus::GridFunctions & gridfunctions,
+            const hephaestus::FESpaces & fespaces,
+            hephaestus::BCMap & bc_map,
+            hephaestus::Coefficients & coefficients) override;
+  void addKernels() override;
 
   std::string h_curl_var_name, alpha_coef_name, beta_coef_name, dtalpha_coef_name;
 };
@@ -55,7 +55,7 @@ public:
                 hephaestus::Sources & sources,
                 hephaestus::InputParameters & solver_options);
 
-  ~HCurlOperator() override {}
+  ~HCurlOperator() override = default;
 
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
 };

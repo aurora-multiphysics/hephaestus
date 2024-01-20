@@ -26,9 +26,9 @@ public:
   {
   }
 
-  ~VectorGridFunctionDotProductCoefficient() override {}
+  ~VectorGridFunctionDotProductCoefficient() override = default;
 
-  virtual double Eval(mfem::ElementTransformation & T, const mfem::IntegrationPoint & ip);
+  double Eval(mfem::ElementTransformation & T, const mfem::IntegrationPoint & ip) override;
 };
 
 // Auxsolver to project the dot product of two vector gridfunctions onto a third
@@ -52,14 +52,14 @@ private:
 public:
   VectorGridFunctionDotProductAux(const std::string & dot_product_gf_name,
                                   const std::string & dot_product_coef_name,
-                                  const std::string & scaling_coef_name,
-                                  const std::string & u_gf_real_name,
-                                  const std::string & v_gf_real_name,
-                                  const std::string & u_gf_imag_name = "",
-                                  const std::string & v_gf_imag_name = "",
+                                  std::string scaling_coef_name,
+                                  std::string u_gf_real_name,
+                                  std::string v_gf_real_name,
+                                  std::string u_gf_imag_name = "",
+                                  std::string v_gf_imag_name = "",
                                   const bool complex_average = false);
 
-  ~VectorGridFunctionDotProductAux() override {}
+  ~VectorGridFunctionDotProductAux() override = default;
 
   void Init(const hephaestus::GridFunctions & gridfunctions,
             hephaestus::Coefficients & coefficients) override;

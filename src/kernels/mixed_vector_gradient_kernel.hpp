@@ -12,13 +12,13 @@ class MixedVectorGradientKernel : public Kernel<mfem::ParMixedBilinearForm>
 public:
   MixedVectorGradientKernel(const hephaestus::InputParameters & params);
 
-  ~MixedVectorGradientKernel() override{};
+  ~MixedVectorGradientKernel() override = default;
 
-  virtual void Init(hephaestus::GridFunctions & gridfunctions,
-                    const hephaestus::FESpaces & fespaces,
-                    hephaestus::BCMap & bc_map,
-                    hephaestus::Coefficients & coefficients) override;
-  virtual void Apply(mfem::ParMixedBilinearForm * mblf) override;
+  void Init(hephaestus::GridFunctions & gridfunctions,
+            const hephaestus::FESpaces & fespaces,
+            hephaestus::BCMap & bc_map,
+            hephaestus::Coefficients & coefficients) override;
+  void Apply(mfem::ParMixedBilinearForm * mblf) override;
   std::string coef_name;
   mfem::Coefficient * coef;
 };

@@ -17,8 +17,8 @@ public:
       const double & aConst = 1.0,
       const hephaestus::InputParameters & solver_options = hephaestus::InputParameters());
 
-  ~ScaledCurlVectorGridFunctionAux() override {}
+  ~ScaledCurlVectorGridFunctionAux() override = default;
 
-  virtual void buildMixedBilinearForm() override;
+  void buildMixedBilinearForm() override;
 };
 } // namespace hephaestus

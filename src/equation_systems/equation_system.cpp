@@ -3,18 +3,7 @@
 namespace hephaestus
 {
 
-EquationSystem::EquationSystem(const hephaestus::InputParameters & params)
-  : var_names(),
-    test_var_names(),
-    test_pfespaces(),
-    blfs(),
-    lfs(),
-    nlfs(),
-    mblfs(),
-    ess_tdof_lists(),
-    xs()
-{
-}
+EquationSystem::EquationSystem(const hephaestus::InputParameters & params) {}
 
 EquationSystem::~EquationSystem() { hBlocks.DeleteAll(); }
 
@@ -240,25 +229,25 @@ EquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
 
   for (const auto & [test_var_name, blf_kernels] : blf_kernels_map.GetMap())
   {
-    for (int i = 0; i < blf_kernels->size(); i++)
+    for (auto & i : *blf_kernels)
     {
-      (*blf_kernels)[i]->Init(gridfunctions, fespaces, bc_map, coefficients);
+      i->Init(gridfunctions, fespaces, bc_map, coefficients);
     }
   }
   // Initialise linear form kernels
   for (const auto & [test_var_name, lf_kernels] : lf_kernels_map.GetMap())
   {
-    for (int i = 0; i < lf_kernels->size(); i++)
+    for (auto & i : *lf_kernels)
     {
-      (*lf_kernels)[i]->Init(gridfunctions, fespaces, bc_map, coefficients);
+      i->Init(gridfunctions, fespaces, bc_map, coefficients);
     }
   }
   // Initialise nonlinear form kernels
   for (const auto & [test_var_name, nlf_kernels] : nlf_kernels_map.GetMap())
   {
-    for (int i = 0; i < nlf_kernels->size(); i++)
+    for (auto & i : *nlf_kernels)
     {
-      (*nlf_kernels)[i]->Init(gridfunctions, fespaces, bc_map, coefficients);
+      i->Init(gridfunctions, fespaces, bc_map, coefficients);
     }
   }
   // Initialise mixed bilinear form kernels
@@ -266,9 +255,9 @@ EquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
   {
     for (const auto & [trial_var_name, mblf_kernels] : mblf_kernels_map->GetMap())
     {
-      for (int i = 0; i < mblf_kernels->size(); i++)
+      for (auto & i : *mblf_kernels)
       {
-        (*mblf_kernels)[i]->Init(gridfunctions, fespaces, bc_map, coefficients);
+        i->Init(gridfunctions, fespaces, bc_map, coefficients);
       }
     }
   }
@@ -343,8 +332,7 @@ EquationSystem::buildMixedBilinearForms()
   for (int i = 0; i < test_var_names.size(); i++)
   {
     auto test_var_name = test_var_names.at(i);
-    hephaestus::NamedFieldsMap<mfem::ParMixedBilinearForm> * test_mblfs =
-        new hephaestus::NamedFieldsMap<mfem::ParMixedBilinearForm>;
+    auto * test_mblfs = new hephaestus::NamedFieldsMap<mfem::ParMixedBilinearForm>;
     for (int j = 0; j < test_var_names.size(); j++)
     {
       auto trial_var_name = test_var_names.at(j);
@@ -355,8 +343,7 @@ EquationSystem::buildMixedBilinearForms()
           mblf_kernels_map_map.Get(test_var_name)->Has(trial_var_name))
       {
         auto mblf_kernels = mblf_kernels_map_map.Get(test_var_name)->Get(trial_var_name);
-        mfem::ParMixedBilinearForm * mblf =
-            new mfem::ParMixedBilinearForm(test_pfespaces.at(j), test_pfespaces.at(i));
+        auto * mblf = new mfem::ParMixedBilinearForm(test_pfespaces.at(j), test_pfespaces.at(i));
         // Apply all mixed kernels with this test/trial pair
         for (auto & mblf_kernel : *mblf_kernels)
         {
@@ -384,7 +371,7 @@ EquationSystem::buildEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sour
 }
 
 TimeDependentEquationSystem::TimeDependentEquationSystem(const hephaestus::InputParameters & params)
-  : EquationSystem(params), var_time_derivative_names(), dtCoef(1.0)
+  : EquationSystem(params), dtCoef(1.0)
 {
 }
 
@@ -407,9 +394,8 @@ TimeDependentEquationSystem::setTimeStep(double dt)
   if (fabs(dt - dtCoef.constant) > 1.0e-12 * dt)
   {
     dtCoef.constant = dt;
-    for (int i = 0; i < test_var_names.size(); i++)
+    for (auto test_var_name : test_var_names)
     {
-      auto test_var_name = test_var_names.at(i);
       auto blf = blfs.Get(test_var_name);
       blf->Update();
       blf->Assemble();

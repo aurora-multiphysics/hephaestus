@@ -18,9 +18,7 @@ public:
                          hephaestus::Coefficients & coefficients,
                          hephaestus::Sources & sources,
                          hephaestus::InputParameters & solver_options)
-    : myid_(0),
-      num_procs_(1),
-      pmesh_(&pmesh),
+    : pmesh_(&pmesh),
       _fespaces(fespaces),
       _gridfunctions(gridfunctions),
       _bc_map(bc_map),
@@ -28,7 +26,7 @@ public:
       _coefficients(coefficients),
       _solver_options(solver_options){};
 
-  ~EquationSystemOperator() override {}
+  ~EquationSystemOperator() override = default;
 
   virtual void SetGridFunctions();
   virtual void Init(mfem::Vector & X);
@@ -48,8 +46,8 @@ public:
 
   std::vector<mfem::ParGridFunction *> local_test_vars;
 
-  int myid_;
-  int num_procs_;
+  int myid_{0};
+  int num_procs_{1};
   mfem::ParMesh * pmesh_;
   hephaestus::FESpaces & _fespaces;
   hephaestus::GridFunctions & _gridfunctions;

@@ -21,7 +21,7 @@ public:
   TransientExecutioner() = default;
   explicit TransientExecutioner(const hephaestus::InputParameters & params);
 
-  ~TransientExecutioner() override {}
+  ~TransientExecutioner() override = default;
 
   void Step(double dt, int it) const;
 

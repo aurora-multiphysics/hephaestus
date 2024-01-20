@@ -19,7 +19,7 @@ TEST_CASE("InputParametersTest", "[CheckData]")
 
   REQUIRE(params.GetParam<std::string>("StringParam") == example_string);
 
-  mfem::Array<int> stored_array = params.GetParam<mfem::Array<int>>("ArrayParam");
+  auto stored_array = params.GetParam<mfem::Array<int>>("ArrayParam");
 
   for (int i = 0; i < example_array.Size(); ++i)
     REQUIRE(example_array[i] == stored_array[i]);

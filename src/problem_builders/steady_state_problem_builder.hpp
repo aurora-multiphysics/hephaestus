@@ -11,10 +11,10 @@ public:
   std::unique_ptr<hephaestus::EquationSystemOperator> eq_sys_operator{nullptr};
 
   SteadyStateProblem() = default;
-  ~SteadyStateProblem() override {}
+  ~SteadyStateProblem() override = default;
 
-  virtual hephaestus::EquationSystem * GetEquationSystem() { return eq_sys.get(); };
-  virtual hephaestus::EquationSystemOperator * GetOperator() { return eq_sys_operator.get(); };
+  hephaestus::EquationSystem * GetEquationSystem() override { return eq_sys.get(); };
+  hephaestus::EquationSystemOperator * GetOperator() override { return eq_sys_operator.get(); };
 };
 
 // Builder class of a frequency-domain problem.
@@ -23,36 +23,36 @@ class SteadyStateProblemBuilder : public hephaestus::ProblemBuilder
 public:
   SteadyStateProblemBuilder() : problem(std::make_unique<hephaestus::SteadyStateProblem>()){};
 
-  ~SteadyStateProblemBuilder() override {}
+  ~SteadyStateProblemBuilder() override = default;
 
   virtual std::unique_ptr<hephaestus::SteadyStateProblem> ReturnProblem()
   {
     return std::move(problem);
   };
 
-  virtual void RegisterFESpaces() override{};
+  void RegisterFESpaces() override{};
 
-  virtual void RegisterGridFunctions() override{};
+  void RegisterGridFunctions() override{};
 
-  virtual void RegisterAuxSolvers() override{};
+  void RegisterAuxSolvers() override{};
 
-  virtual void RegisterCoefficients() override{};
+  void RegisterCoefficients() override{};
 
-  virtual void InitializeKernels() override;
+  void InitializeKernels() override;
 
-  virtual void ConstructEquationSystem() override{};
+  void ConstructEquationSystem() override{};
 
-  virtual void ConstructOperator() override;
+  void ConstructOperator() override;
 
-  virtual void ConstructState() override;
+  void ConstructState() override;
 
-  virtual void ConstructSolver() override{};
+  void ConstructSolver() override{};
 
 protected:
   std::unique_ptr<hephaestus::SteadyStateProblem> problem{nullptr};
   mfem::ConstantCoefficient oneCoef{1.0};
 
-  virtual hephaestus::SteadyStateProblem * GetProblem() override { return problem.get(); };
+  hephaestus::SteadyStateProblem * GetProblem() override { return problem.get(); };
 };
 
 } // namespace hephaestus

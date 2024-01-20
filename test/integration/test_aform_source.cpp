@@ -62,7 +62,7 @@ protected:
         "magnetic_permeability", new mfem::FunctionCoefficient(mu_expr), true);
 
     hephaestus::BCMap bc_map;
-    mfem::VectorFunctionCoefficient * adotVecCoef = new mfem::VectorFunctionCoefficient(3, adot_bc);
+    auto * adotVecCoef = new mfem::VectorFunctionCoefficient(3, adot_bc);
     bc_map.Register("tangential_dAdt",
                     new hephaestus::VectorDirichletBC(std::string("dmagnetic_vector_potential_dt"),
                                                       mfem::Array<int>({1, 2, 3}),
@@ -70,8 +70,7 @@ protected:
                     true);
     coefficients.vectors.Register("surface_tangential_dAdt", adotVecCoef, true);
 
-    mfem::VectorFunctionCoefficient * A_exact =
-        new mfem::VectorFunctionCoefficient(3, A_exact_expr);
+    auto * A_exact = new mfem::VectorFunctionCoefficient(3, A_exact_expr);
     coefficients.vectors.Register("a_exact_coeff", A_exact, true);
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./beam-tet.mesh")).c_str(), 1, 1);
@@ -87,14 +86,13 @@ protected:
                             new hephaestus::L2ErrorVectorPostprocessor(l2errpostprocparams),
                             true);
 
-    hephaestus::VectorCoefficientAux * vec_coef_aux =
+    auto * vec_coef_aux =
         new hephaestus::VectorCoefficientAux("analytic_vector_potential", "a_exact_coeff");
     vec_coef_aux->SetPriority(-1);
     postprocessors.Register("VectorCoefficientAux", vec_coef_aux, true);
 
     hephaestus::Sources sources;
-    mfem::VectorFunctionCoefficient * JSrcCoef =
-        new mfem::VectorFunctionCoefficient(3, source_field);
+    auto * JSrcCoef = new mfem::VectorFunctionCoefficient(3, source_field);
     coefficients.vectors.Register("source", JSrcCoef, true);
     hephaestus::InputParameters div_free_source_params;
     div_free_source_params.SetParam("SourceName", std::string("source"));
@@ -129,7 +127,7 @@ protected:
 TEST_CASE_METHOD(TestAFormSource, "TestAForm", "[CheckRun]")
 {
   hephaestus::InputParameters params(test_params());
-  mfem::ParMesh unrefined_pmesh(params.GetParam<mfem::ParMesh>("Mesh"));
+  auto unrefined_pmesh(params.GetParam<mfem::ParMesh>("Mesh"));
 
   int num_conv_refinements = 3;
   for (int par_ref_levels = 0; par_ref_levels < num_conv_refinements; ++par_ref_levels)
@@ -146,18 +144,16 @@ TEST_CASE_METHOD(TestAFormSource, "TestAForm", "[CheckRun]")
                                                                       "electrical_conductivity",
                                                                       "magnetic_vector_potential");
 
-    hephaestus::BCMap bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-    hephaestus::Coefficients coefficients(
-        params.GetParam<hephaestus::Coefficients>("Coefficients"));
+    auto bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
+    auto coefficients(params.GetParam<hephaestus::Coefficients>("Coefficients"));
     //   hephaestus::FESpaces fespaces(
     //       params.GetParam<hephaestus::FESpaces>("FESpaces"));
     //   hephaestus::GridFunctions gridfunctions(
     //       params.GetParam<hephaestus::GridFunctions>("GridFunctions"));
-    hephaestus::AuxSolvers postprocessors(
-        params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
-    hephaestus::Sources sources(params.GetParam<hephaestus::Sources>("Sources"));
-    hephaestus::Outputs outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
-    hephaestus::InputParameters solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
+    auto postprocessors(params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
+    auto sources(params.GetParam<hephaestus::Sources>("Sources"));
+    auto outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
+    auto solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
         "SolverOptions", hephaestus::InputParameters()));
 
     problem_builder->SetMesh(pmesh);

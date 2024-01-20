@@ -23,9 +23,9 @@ public:
                     mfem::VectorCoefficient * vec_coeff_im_ = nullptr,
                     APPLY_TYPE boundary_apply_type = TANGENTIAL);
 
-  virtual void applyBC(mfem::GridFunction & gridfunc, mfem::Mesh * mesh_) override;
+  void applyBC(mfem::GridFunction & gridfunc, mfem::Mesh * mesh_) override;
 
-  virtual void applyBC(mfem::ParComplexGridFunction & gridfunc, mfem::Mesh * mesh_) override;
+  void applyBC(mfem::ParComplexGridFunction & gridfunc, mfem::Mesh * mesh_) override;
 
   mfem::VectorCoefficient * vec_coeff;
   mfem::VectorCoefficient * vec_coeff_im;

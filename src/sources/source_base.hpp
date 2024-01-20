@@ -11,17 +11,17 @@ namespace hephaestus
 class Source : public hephaestus::Kernel<mfem::ParLinearForm>
 {
 public:
-  Source(){};
+  Source() = default;
 
   // NB: must be virtual to avoid leaks (ensure correct subclass destructor!)
-  virtual ~Source(){};
+  ~Source() override = default;
 
-  virtual void Init(hephaestus::GridFunctions & gridfunctions,
-                    const hephaestus::FESpaces & fespaces,
-                    hephaestus::BCMap & bc_map,
-                    hephaestus::Coefficients & coefficients){};
+  void Init(hephaestus::GridFunctions & gridfunctions,
+            const hephaestus::FESpaces & fespaces,
+            hephaestus::BCMap & bc_map,
+            hephaestus::Coefficients & coefficients) override{};
 
-  virtual void Apply(mfem::ParLinearForm * lf) override = 0;
+  void Apply(mfem::ParLinearForm * lf) override = 0;
   virtual void SubtractSource(mfem::ParGridFunction * gf) = 0;
 };
 

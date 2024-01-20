@@ -9,20 +9,20 @@ namespace hephaestus
 class DualFormulation : public TimeDomainEMFormulation
 {
 public:
-  DualFormulation(const std::string & alpha_coef_name,
-                  const std::string & beta_coef_name,
-                  const std::string & h_curl_var_name,
-                  const std::string & h_div_var_name);
+  DualFormulation(std::string alpha_coef_name,
+                  std::string beta_coef_name,
+                  std::string h_curl_var_name,
+                  std::string h_div_var_name);
 
-  ~DualFormulation() override {}
+  ~DualFormulation() override = default;
 
-  virtual void ConstructEquationSystem() override;
+  void ConstructEquationSystem() override;
 
-  virtual void ConstructOperator() override;
+  void ConstructOperator() override;
 
-  virtual void RegisterGridFunctions() override;
+  void RegisterGridFunctions() override;
 
-  virtual void RegisterCoefficients() override;
+  void RegisterCoefficients() override;
 
 protected:
   const std::string _alpha_coef_name;
@@ -35,13 +35,13 @@ class WeakCurlEquationSystem : public TimeDependentEquationSystem
 {
 public:
   WeakCurlEquationSystem(const hephaestus::InputParameters & params);
-  ~WeakCurlEquationSystem() override {}
+  ~WeakCurlEquationSystem() override = default;
 
-  virtual void Init(hephaestus::GridFunctions & gridfunctions,
-                    const hephaestus::FESpaces & fespaces,
-                    hephaestus::BCMap & bc_map,
-                    hephaestus::Coefficients & coefficients) override;
-  virtual void addKernels() override;
+  void Init(hephaestus::GridFunctions & gridfunctions,
+            const hephaestus::FESpaces & fespaces,
+            hephaestus::BCMap & bc_map,
+            hephaestus::Coefficients & coefficients) override;
+  void addKernels() override;
 
   std::string _h_curl_var_name, _h_div_var_name, _alpha_coef_name, _beta_coef_name,
       _dtalpha_coef_name;
@@ -58,12 +58,12 @@ public:
                hephaestus::Sources & sources,
                hephaestus::InputParameters & solver_options);
 
-  ~DualOperator() override {}
+  ~DualOperator() override = default;
 
   void Init(mfem::Vector & X) override;
 
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
-  virtual void SetGridFunctions() override;
+  void SetGridFunctions() override;
   mfem::ParFiniteElementSpace * HCurlFESpace_;
   mfem::ParFiniteElementSpace * HDivFESpace_;
 

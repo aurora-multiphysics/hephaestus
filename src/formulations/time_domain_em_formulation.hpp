@@ -11,6 +11,6 @@ class TimeDomainEMFormulation : public hephaestus::TimeDomainProblemBuilder,
 {
 public:
   TimeDomainEMFormulation();
-  ~TimeDomainEMFormulation() override {}
+  ~TimeDomainEMFormulation() override = default;
 };
 } // namespace hephaestus

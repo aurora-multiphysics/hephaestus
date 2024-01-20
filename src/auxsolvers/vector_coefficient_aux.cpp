@@ -1,11 +1,12 @@
 #include "vector_coefficient_aux.hpp"
 
+#include <utility>
+
 namespace hephaestus
 {
 
-VectorCoefficientAux::VectorCoefficientAux(const std::string & gf_name,
-                                           const std::string & vec_coef_name)
-  : AuxSolver(), _gf_name(gf_name), _vec_coef_name(vec_coef_name)
+VectorCoefficientAux::VectorCoefficientAux(std::string gf_name, std::string vec_coef_name)
+  : _gf_name(std::move(gf_name)), _vec_coef_name(std::move(vec_coef_name))
 {
 }
 

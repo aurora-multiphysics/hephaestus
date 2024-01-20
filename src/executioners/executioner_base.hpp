@@ -10,7 +10,7 @@ public:
   Executioner() = default;
   explicit Executioner(const hephaestus::InputParameters & params){};
 
-  virtual ~Executioner() {}
+  virtual ~Executioner() = default;
 
   // Solve the current system of equations
   virtual void Solve() const = 0;

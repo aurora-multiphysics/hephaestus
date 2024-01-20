@@ -60,7 +60,7 @@ protected:
 
     mfem::Array<int> high_terminal(1);
     high_terminal[0] = 1;
-    mfem::FunctionCoefficient * potential_src = new mfem::FunctionCoefficient(potential_high);
+    auto * potential_src = new mfem::FunctionCoefficient(potential_high);
     bc_map.Register("high_potential",
                     new hephaestus::ScalarDirichletBC(
                         std::string("electric_potential"), high_terminal, potential_src),
@@ -138,13 +138,13 @@ TEST_CASE_METHOD(TestComplexAFormRod, "TestComplexAFormRod", "[CheckRun]")
                                                         "magnetic_vector_potential_real",
                                                         "magnetic_vector_potential_imag");
 
-  hephaestus::BCMap bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-  hephaestus::Coefficients coefficients(params.GetParam<hephaestus::Coefficients>("Coefficients"));
-  hephaestus::AuxSolvers preprocessors(params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
-  hephaestus::AuxSolvers postprocessors(params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
-  hephaestus::Sources sources(params.GetParam<hephaestus::Sources>("Sources"));
-  hephaestus::Outputs outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
-  hephaestus::InputParameters solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
+  auto bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
+  auto coefficients(params.GetParam<hephaestus::Coefficients>("Coefficients"));
+  auto preprocessors(params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
+  auto postprocessors(params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
+  auto sources(params.GetParam<hephaestus::Sources>("Sources"));
+  auto outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
+  auto solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
       "SolverOptions", hephaestus::InputParameters()));
 
   problem_builder->SetMesh(pmesh);

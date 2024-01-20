@@ -12,13 +12,13 @@ class WeakCurlCurlKernel : public Kernel<mfem::ParLinearForm>
 public:
   WeakCurlCurlKernel(const hephaestus::InputParameters & params);
 
-  ~WeakCurlCurlKernel() override{};
+  ~WeakCurlCurlKernel() override = default;
 
-  virtual void Init(hephaestus::GridFunctions & gridfunctions,
-                    const hephaestus::FESpaces & fespaces,
-                    hephaestus::BCMap & bc_map,
-                    hephaestus::Coefficients & coefficients) override;
-  virtual void Apply(mfem::ParLinearForm * lf) override;
+  void Init(hephaestus::GridFunctions & gridfunctions,
+            const hephaestus::FESpaces & fespaces,
+            hephaestus::BCMap & bc_map,
+            hephaestus::Coefficients & coefficients) override;
+  void Apply(mfem::ParLinearForm * lf) override;
 
   std::string coupled_gf_name;
   std::string coef_name;

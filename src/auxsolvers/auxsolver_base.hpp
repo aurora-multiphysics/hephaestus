@@ -18,7 +18,7 @@ public:
   AuxSolver() = default;
 
   // NB: require virtual destructor to avoid leaks.
-  virtual ~AuxSolver() {}
+  virtual ~AuxSolver() = default;
 
   virtual void Init(const hephaestus::GridFunctions & gridfunctions,
                     hephaestus::Coefficients & coefficients) = 0;
@@ -28,7 +28,7 @@ public:
   // Set priority. Lower values are evaluated first.
   void SetPriority(const int priority) { _priority = priority; };
 
-  inline int Priority() const { return _priority; }
+  [[nodiscard]] inline int Priority() const { return _priority; }
 
   static bool PriorityComparator(const AuxSolver * first, const AuxSolver * second)
   {
