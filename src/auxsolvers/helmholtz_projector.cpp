@@ -4,17 +4,17 @@ namespace hephaestus
 {
 
 HelmholtzProjector::HelmholtzProjector(const hephaestus::InputParameters & params)
-  : h1_fespace_name_(params.GetOptionalParam<std::string>("H1FESpaceName", "H1FES_Name")),
-    hcurl_fespace_name_(params.GetOptionalParam<std::string>("HCurlFESpaceName", "HCurlFES_Name")),
-    gf_grad_name_(params.GetParam<std::string>("VectorGridFunctionName")),
-    gf_name_(params.GetOptionalParam<std::string>("ScalarGridFunctionName", "ScalarGF_Name")),
+  : _h1_fespace_name(params.GetOptionalParam<std::string>("H1FESpaceName", "H1FES_Name")),
+    _hcurl_fespace_name(params.GetOptionalParam<std::string>("HCurlFESpaceName", "HCurlFES_Name")),
+    _gf_grad_name(params.GetParam<std::string>("VectorGridFunctionName")),
+    _gf_name(params.GetOptionalParam<std::string>("ScalarGridFunctionName", "ScalarGF_Name")),
 
-    g(nullptr),
+    _g(nullptr),
 
-    gDiv_(nullptr),
-    weakDiv_(nullptr),
-    grad_(nullptr),
-    a0_(nullptr)
+    _g_div(nullptr),
+    _weak_div(nullptr),
+    _grad(nullptr),
+    _a0(nullptr)
 {
 
   hephaestus::InputParameters default_pars;
@@ -23,7 +23,7 @@ HelmholtzProjector::HelmholtzProjector(const hephaestus::InputParameters & param
   default_pars.SetParam("MaxIter", (unsigned int)1000);
   default_pars.SetParam("PrintLevel", 1);
 
-  solver_options_ =
+  _solver_options =
       params.GetOptionalParam<hephaestus::InputParameters>("SolverOptions", default_pars);
 }
 
@@ -34,154 +34,154 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
 {
 
   // Retrieving vector GridFunction. This is the only mandatory one
-  div_free_src_gf_ = gridfunctions.Get(gf_grad_name_);
-  if (div_free_src_gf_ == nullptr)
+  _div_free_src_gf = gridfunctions.Get(_gf_grad_name);
+  if (_div_free_src_gf == nullptr)
   {
-    const std::string error_message = gf_grad_name_ + " not found in gridfunctions when "
+    const std::string error_message = _gf_grad_name + " not found in gridfunctions when "
                                                       "creating HelmholtzProjector\n";
     mfem::mfem_error(error_message.c_str());
   }
 
-  HCurlFESpace_ = fespaces.Get(hcurl_fespace_name_);
-  if (HCurlFESpace_ == nullptr)
+  _h_curl_fe_space = fespaces.Get(_hcurl_fespace_name);
+  if (_h_curl_fe_space == nullptr)
   {
-    std::cout << hcurl_fespace_name_ + " not found in fespaces when "
+    std::cout << _hcurl_fespace_name + " not found in fespaces when "
                                        "creating HelmholtzProjector. "
                                        "Obtaining from vector GridFunction.\n";
-    HCurlFESpace_ = div_free_src_gf_->ParFESpace();
+    _h_curl_fe_space = _div_free_src_gf->ParFESpace();
   }
 
-  H1FESpace_ = fespaces.Get(h1_fespace_name_);
-  if (H1FESpace_ == nullptr)
+  _h1_fe_space = fespaces.Get(_h1_fespace_name);
+  if (_h1_fe_space == nullptr)
   {
-    std::cout << h1_fespace_name_ + " not found in fespaces when "
+    std::cout << _h1_fespace_name + " not found in fespaces when "
                                     "creating HelmholtzProjector. "
                                     " Extracting from GridFunction\n";
 
     // Creates an H1 FES on the same mesh and with the same order as the HCurl
     // FES
-    H1FESpace_ = new mfem::ParFiniteElementSpace(
-        HCurlFESpace_->GetParMesh(),
-        new mfem::H1_FECollection(HCurlFESpace_->GetMaxElementOrder(),
-                                  HCurlFESpace_->GetParMesh()->Dimension()));
+    _h1_fe_space = new mfem::ParFiniteElementSpace(
+        _h_curl_fe_space->GetParMesh(),
+        new mfem::H1_FECollection(_h_curl_fe_space->GetMaxElementOrder(),
+                                  _h_curl_fe_space->GetParMesh()->Dimension()));
   }
 
-  q_ = gridfunctions.Get(gf_name_);
-  if (q_ == nullptr)
+  _q = gridfunctions.Get(_gf_name);
+  if (_q == nullptr)
   {
-    std::cout << gf_name_ + " not found in gridfunctions when "
+    std::cout << _gf_name + " not found in gridfunctions when "
                             "creating HelmholtzProjector. "
                             "Creating new GridFunction\n";
-    q_ = new mfem::ParGridFunction(H1FESpace_);
+    _q = new mfem::ParGridFunction(_h1_fe_space);
   }
 
-  g = std::make_unique<mfem::ParGridFunction>(HCurlFESpace_);
-  *g = *div_free_src_gf_;
-  *q_ = 0.0;
+  _g = std::make_unique<mfem::ParGridFunction>(_h_curl_fe_space);
+  *_g = *_div_free_src_gf;
+  *_q = 0.0;
 
-  bc_map_ = &bc_map;
+  _bc_map = &bc_map;
 
-  setForms();
-  setGrad();
-  setBCs();
-  solveLinearSystem();
+  SetForms();
+  SetGrad();
+  SetBCs();
+  SolveLinearSystem();
 
   // Compute the irrotational component of g
   // P(g) = g - ∇Q
-  grad_->Mult(*q_, *div_free_src_gf_);
-  *div_free_src_gf_ -= *g;
-  *div_free_src_gf_ *= -1.0;
+  _grad->Mult(*_q, *_div_free_src_gf);
+  *_div_free_src_gf -= *_g;
+  *_div_free_src_gf *= -1.0;
 
-  if (!gridfunctions.Has(gf_name_))
-    delete q_;
-  if (!fespaces.Has(h1_fespace_name_))
-    delete H1FESpace_;
+  if (!gridfunctions.Has(_gf_name))
+    delete _q;
+  if (!fespaces.Has(_h1_fespace_name))
+    delete _h1_fe_space;
 }
 
 void
-HelmholtzProjector::setForms()
+HelmholtzProjector::SetForms()
 {
 
-  if (gDiv_ == nullptr)
-    gDiv_ = std::make_unique<mfem::ParLinearForm>(H1FESpace_);
+  if (_g_div == nullptr)
+    _g_div = std::make_unique<mfem::ParLinearForm>(_h1_fe_space);
 
-  if (weakDiv_ == nullptr)
+  if (_weak_div == nullptr)
   {
-    weakDiv_ = std::make_unique<mfem::ParMixedBilinearForm>(HCurlFESpace_, H1FESpace_);
-    weakDiv_->AddDomainIntegrator(new mfem::VectorFEWeakDivergenceIntegrator);
-    weakDiv_->Assemble();
-    weakDiv_->Finalize();
+    _weak_div = std::make_unique<mfem::ParMixedBilinearForm>(_h_curl_fe_space, _h1_fe_space);
+    _weak_div->AddDomainIntegrator(new mfem::VectorFEWeakDivergenceIntegrator);
+    _weak_div->Assemble();
+    _weak_div->Finalize();
   }
 
-  if (a0_ == nullptr)
+  if (_a0 == nullptr)
   {
-    a0_ = std::make_unique<mfem::ParBilinearForm>(H1FESpace_);
-    a0_->AddDomainIntegrator(new mfem::DiffusionIntegrator);
-    a0_->Assemble();
-    a0_->Finalize();
+    _a0 = std::make_unique<mfem::ParBilinearForm>(_h1_fe_space);
+    _a0->AddDomainIntegrator(new mfem::DiffusionIntegrator);
+    _a0->Assemble();
+    _a0->Finalize();
   }
 }
 
 void
-HelmholtzProjector::setGrad()
+HelmholtzProjector::SetGrad()
 {
 
-  if (grad_ == nullptr)
+  if (_grad == nullptr)
   {
-    grad_ = std::make_unique<mfem::ParDiscreteLinearOperator>(H1FESpace_, HCurlFESpace_);
-    grad_->AddDomainInterpolator(new mfem::GradientInterpolator());
-    grad_->Assemble();
-    grad_->Finalize();
+    _grad = std::make_unique<mfem::ParDiscreteLinearOperator>(_h1_fe_space, _h_curl_fe_space);
+    _grad->AddDomainInterpolator(new mfem::GradientInterpolator());
+    _grad->Assemble();
+    _grad->Finalize();
   }
 }
 
 void
-HelmholtzProjector::setBCs()
+HelmholtzProjector::SetBCs()
 {
 
   // Begin Divergence-free projection
   // (g, ∇q) - (∇Q, ∇q) - <P(g).n, q> = 0
-  int myid = H1FESpace_->GetMyRank();
+  int myid = _h1_fe_space->GetMyRank();
 
   // <P(g).n, q>
-  bc_map_->applyEssentialBCs(gf_name_, ess_bdr_tdofs_, *q_, (H1FESpace_->GetParMesh()));
-  bc_map_->applyIntegratedBCs(gf_name_, *gDiv_, (H1FESpace_->GetParMesh()));
+  _bc_map->ApplyEssentialBCs(_gf_name, _ess_bdr_tdofs, *_q, (_h1_fe_space->GetParMesh()));
+  _bc_map->ApplyIntegratedBCs(_gf_name, *_g_div, (_h1_fe_space->GetParMesh()));
 
   // Apply essential BC. Necessary to ensure potential at least one point is
   // fixed.
-  int localsize = ess_bdr_tdofs_.Size();
+  int localsize = _ess_bdr_tdofs.Size();
   int fullsize;
   MPI_Allreduce(&fullsize, &localsize, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
 
   if (fullsize == 0 && myid == 0)
   {
-    ess_bdr_tdofs_.SetSize(1);
-    ess_bdr_tdofs_[0] = 0;
+    _ess_bdr_tdofs.SetSize(1);
+    _ess_bdr_tdofs[0] = 0;
   }
 }
 
 void
-HelmholtzProjector::solveLinearSystem()
+HelmholtzProjector::SolveLinearSystem()
 {
 
-  gDiv_->Assemble();
+  _g_div->Assemble();
 
   // Compute the divergence of g
   // (g, ∇q)
-  weakDiv_->AddMult(*g, *gDiv_, -1.0);
+  _weak_div->AddMult(*_g, *_g_div, -1.0);
 
   // Form linear system
   // (g, ∇q) - (∇Q, ∇q) - <P(g).n, q> = 0
   // (∇Q, ∇q) = (g, ∇q) - <P(g).n, q>
-  mfem::HypreParMatrix A0;
-  mfem::Vector X0;
-  mfem::Vector B0;
-  a0_->FormLinearSystem(ess_bdr_tdofs_, *q_, *gDiv_, A0, X0, B0);
+  mfem::HypreParMatrix a0;
+  mfem::Vector x0;
+  mfem::Vector b0;
+  _a0->FormLinearSystem(_ess_bdr_tdofs, *_q, *_g_div, a0, x0, b0);
 
-  hephaestus::DefaultGMRESSolver a0_solver(solver_options_, A0);
+  hephaestus::DefaultGMRESSolver a0_solver(_solver_options, a0);
 
-  a0_solver.Mult(B0, X0);
-  a0_->RecoverFEMSolution(X0, *gDiv_, *q_);
+  a0_solver.Mult(b0, x0);
+  _a0->RecoverFEMSolution(x0, *_g_div, *_q);
 }
 
 } // namespace hephaestus

@@ -31,28 +31,28 @@ EFormulation::EFormulation(const std::string & magnetic_reluctivity_name,
 void
 EFormulation::RegisterCoefficients()
 {
-  hephaestus::Coefficients & coefficients = GetProblem()->coefficients;
-  if (!coefficients.scalars.Has(_magnetic_permeability_name))
+  hephaestus::Coefficients & coefficients = GetProblem()->_coefficients;
+  if (!coefficients._scalars.Has(_magnetic_permeability_name))
   {
     MFEM_ABORT(_magnetic_permeability_name + " coefficient not found.");
   }
-  if (!coefficients.scalars.Has(_electric_conductivity_name))
+  if (!coefficients._scalars.Has(_electric_conductivity_name))
   {
     MFEM_ABORT(_electric_conductivity_name + " coefficient not found.");
   }
-  coefficients.scalars.Register(
+  coefficients._scalars.Register(
       _magnetic_reluctivity_name,
       new mfem::TransformedCoefficient(
-          &oneCoef, coefficients.scalars.Get(_magnetic_permeability_name), fracFunc),
+          &_one_coef, coefficients._scalars.Get(_magnetic_permeability_name), fracFunc),
       true);
 }
 
 void
-EFormulation::registerCurrentDensityAux(const std::string & j_field_name)
+EFormulation::RegisterCurrentDensityAux(const std::string & j_field_name)
 {
   //* Current density J = Jᵉ + σE
   //* Induced electric field, Jind = σE
-  hephaestus::AuxSolvers & auxsolvers = GetProblem()->postprocessors;
+  hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(j_field_name,
                       new hephaestus::ScaledVectorGridFunctionAux(
                           _h_curl_var_name, j_field_name, _electric_conductivity_name),
@@ -60,12 +60,12 @@ EFormulation::registerCurrentDensityAux(const std::string & j_field_name)
 }
 
 void
-EFormulation::registerJouleHeatingDensityAux(const std::string & p_field_name,
+EFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_name,
                                              const std::string & e_field_name,
                                              const std::string & conductivity_coef_name)
 {
   //* Joule heating density = E.J
-  hephaestus::AuxSolvers & auxsolvers = GetProblem()->postprocessors;
+  hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(
       p_field_name,
       new hephaestus::VectorGridFunctionDotProductAux(

@@ -21,15 +21,15 @@ public:
 
   void Solve(double t = 0.0) override;
 
-  std::string var_name;      // name of the variable
-  std::string vec_coef_name; // name of the vector coefficient
+  std::string _var_name;      // name of the variable
+  std::string _vec_coef_name; // name of the vector coefficient
 
-  mfem::Array<double> times;
-  mfem::Array<HYPRE_BigInt> ndofs;
-  mfem::Array<double> l2_errs;
+  mfem::Array<double> _times;
+  mfem::Array<HYPRE_BigInt> _ndofs;
+  mfem::Array<double> _l2_errs;
 
-  mfem::ParGridFunction * gf{nullptr};
-  mfem::VectorCoefficient * vec_coeff{nullptr};
+  mfem::ParGridFunction * _gf{nullptr};
+  mfem::VectorCoefficient * _vec_coeff{nullptr};
 };
 
 } // namespace hephaestus

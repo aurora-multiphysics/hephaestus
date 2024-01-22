@@ -17,9 +17,9 @@ class Subdomain
 public:
   Subdomain(std::string name_, int id_);
 
-  std::string name;
-  int id;
-  hephaestus::NamedFieldsMap<mfem::Coefficient> scalar_coefficients;
+  std::string _name;
+  int _id;
+  hephaestus::NamedFieldsMap<mfem::Coefficient> _scalar_coefficients;
 };
 
 // Coefficients - stores all scalar and vector coefficients
@@ -30,7 +30,7 @@ public:
 // Stores all coefficients defined over
 class Coefficients
 {
-  double t; // Time at which time-dependent coefficients are evaluated
+  double _t; // Time at which time-dependent coefficients are evaluated
 public:
   Coefficients();
   ~Coefficients() = default;
@@ -38,11 +38,11 @@ public:
   Coefficients(std::vector<Subdomain> subdomains_);
   void SetTime(double t);
   void AddGlobalCoefficientsFromSubdomains();
-  void registerDefaultCoefficients();
+  void RegisterDefaultCoefficients();
 
-  hephaestus::NamedFieldsMap<mfem::Coefficient> scalars;
-  hephaestus::NamedFieldsMap<mfem::VectorCoefficient> vectors;
-  std::vector<Subdomain> subdomains;
+  hephaestus::NamedFieldsMap<mfem::Coefficient> _scalars;
+  hephaestus::NamedFieldsMap<mfem::VectorCoefficient> _vectors;
+  std::vector<Subdomain> _subdomains;
 };
 
 } // namespace hephaestus

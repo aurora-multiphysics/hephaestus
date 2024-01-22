@@ -13,34 +13,34 @@ public:
                const hephaestus::FESpaces & fespaces,
                hephaestus::BCMap & bc_map);
 
-  void setForms();
-  void setGrad();
-  void setBCs();
-  void solveLinearSystem();
+  void SetForms();
+  void SetGrad();
+  void SetBCs();
+  void SolveLinearSystem();
 
 private:
-  std::string hcurl_fespace_name_;
-  std::string h1_fespace_name_;
-  std::string gf_grad_name_;
-  std::string gf_name_;
-  hephaestus::InputParameters solver_options_;
+  std::string _hcurl_fespace_name;
+  std::string _h1_fespace_name;
+  std::string _gf_grad_name;
+  std::string _gf_name;
+  hephaestus::InputParameters _solver_options;
 
-  mfem::ParFiniteElementSpace * H1FESpace_{nullptr};
-  mfem::ParFiniteElementSpace * HCurlFESpace_{nullptr};
-  mfem::ParGridFunction * q_{nullptr};
+  mfem::ParFiniteElementSpace * _h1_fe_space{nullptr};
+  mfem::ParFiniteElementSpace * _h_curl_fe_space{nullptr};
+  mfem::ParGridFunction * _q{nullptr};
 
   // H(Curl) projection of user specified source
-  std::unique_ptr<mfem::ParGridFunction> g;
+  std::unique_ptr<mfem::ParGridFunction> _g;
 
-  mfem::ParGridFunction * div_free_src_gf_{nullptr}; // Divergence free projected source
+  mfem::ParGridFunction * _div_free_src_gf{nullptr}; // Divergence free projected source
 
-  std::unique_ptr<mfem::ParLinearForm> gDiv_;
-  std::unique_ptr<mfem::ParBilinearForm> a0_;
-  std::unique_ptr<mfem::ParMixedBilinearForm> weakDiv_;
-  std::unique_ptr<mfem::ParDiscreteLinearOperator> grad_;
+  std::unique_ptr<mfem::ParLinearForm> _g_div;
+  std::unique_ptr<mfem::ParBilinearForm> _a0;
+  std::unique_ptr<mfem::ParMixedBilinearForm> _weak_div;
+  std::unique_ptr<mfem::ParDiscreteLinearOperator> _grad;
 
-  mfem::Array<int> ess_bdr_tdofs_;
-  hephaestus::BCMap * bc_map_;
+  mfem::Array<int> _ess_bdr_tdofs;
+  hephaestus::BCMap * _bc_map;
 };
 
 } // namespace hephaestus

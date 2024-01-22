@@ -28,20 +28,20 @@ HFormulation::HFormulation(const std::string & electric_resistivity_name,
 }
 
 void
-HFormulation::registerCurrentDensityAux(const std::string & j_field_name)
+HFormulation::RegisterCurrentDensityAux(const std::string & j_field_name)
 {
   //* Current density J = ∇×H
-  hephaestus::AuxSolvers & auxsolvers = GetProblem()->postprocessors;
+  hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(
       j_field_name, new hephaestus::CurlAuxSolver(_h_curl_var_name, j_field_name), true);
 }
 
 void
-HFormulation::registerMagneticFluxDensityAux(const std::string & b_field_name)
+HFormulation::RegisterMagneticFluxDensityAux(const std::string & b_field_name)
 {
   //* Magnetic flux density, B = Bᵉ + μH
   //* Induced flux density, B = μH
-  hephaestus::AuxSolvers & auxsolvers = GetProblem()->postprocessors;
+  hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(b_field_name,
                       new hephaestus::ScaledVectorGridFunctionAux(
                           _h_curl_var_name, b_field_name, _magnetic_permeability_name),
@@ -49,10 +49,10 @@ HFormulation::registerMagneticFluxDensityAux(const std::string & b_field_name)
 }
 
 void
-HFormulation::registerElectricFieldAux(const std::string & e_field_name)
+HFormulation::RegisterElectricFieldAux(const std::string & e_field_name)
 {
   //* Electric field, E = ρ∇×H
-  hephaestus::AuxSolvers & auxsolvers = GetProblem()->postprocessors;
+  hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(e_field_name,
                       new hephaestus::ScaledCurlVectorGridFunctionAux(
                           _h_curl_var_name, e_field_name, _electric_resistivity_name),
@@ -60,18 +60,18 @@ HFormulation::registerElectricFieldAux(const std::string & e_field_name)
 }
 
 void
-HFormulation::registerMagneticFieldAux(const std::string & h_field_name)
+HFormulation::RegisterMagneticFieldAux(const std::string & h_field_name)
 {
   //* Magnetic field H is a state variable; no additional calculation needed
 }
 
 void
-HFormulation::registerLorentzForceDensityAux(const std::string & f_field_name,
+HFormulation::RegisterLorentzForceDensityAux(const std::string & f_field_name,
                                              const std::string & b_field_name,
                                              const std::string & j_field_name)
 {
   //* Lorentz force density = J x B
-  hephaestus::AuxSolvers & auxsolvers = GetProblem()->postprocessors;
+  hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(f_field_name,
                       new hephaestus::VectorGridFunctionCrossProductAux(
                           f_field_name, f_field_name, j_field_name, b_field_name),
@@ -80,12 +80,12 @@ HFormulation::registerLorentzForceDensityAux(const std::string & f_field_name,
 }
 
 void
-HFormulation::registerJouleHeatingDensityAux(const std::string & p_field_name,
+HFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_name,
                                              const std::string & e_field_name,
                                              const std::string & conductivity_coef_name)
 {
   //* Joule heating density = E.J
-  hephaestus::AuxSolvers & auxsolvers = GetProblem()->postprocessors;
+  hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(
       p_field_name,
       new hephaestus::VectorGridFunctionDotProductAux(
@@ -97,15 +97,15 @@ HFormulation::registerJouleHeatingDensityAux(const std::string & p_field_name,
 void
 HFormulation::RegisterCoefficients()
 {
-  hephaestus::Coefficients & coefficients = GetProblem()->coefficients;
-  if (!coefficients.scalars.Has(_electric_conductivity_name))
+  hephaestus::Coefficients & coefficients = GetProblem()->_coefficients;
+  if (!coefficients._scalars.Has(_electric_conductivity_name))
   {
     MFEM_ABORT(_electric_conductivity_name + " coefficient not found.");
   }
-  coefficients.scalars.Register(
+  coefficients._scalars.Register(
       _electric_resistivity_name,
       new mfem::TransformedCoefficient(
-          &oneCoef, coefficients.scalars.Get(_electric_conductivity_name), fracFunc),
+          &_one_coef, coefficients._scalars.Get(_electric_conductivity_name), fracFunc),
       true);
   HCurlFormulation::RegisterCoefficients();
 }

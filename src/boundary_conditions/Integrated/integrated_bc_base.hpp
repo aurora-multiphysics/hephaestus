@@ -14,12 +14,12 @@ public:
                mfem::LinearFormIntegrator * lfi_im_ = nullptr);
 
   // NB: assume ownership of pointers.
-  std::unique_ptr<mfem::LinearFormIntegrator> lfi_re;
-  std::unique_ptr<mfem::LinearFormIntegrator> lfi_im;
+  std::unique_ptr<mfem::LinearFormIntegrator> _lfi_re;
+  std::unique_ptr<mfem::LinearFormIntegrator> _lfi_im;
 
-  void applyBC(mfem::LinearForm & b) override;
-  void applyBC(mfem::ComplexLinearForm & b) override;
-  void applyBC(mfem::ParComplexLinearForm & b) override;
+  void ApplyBC(mfem::LinearForm & b) override;
+  void ApplyBC(mfem::ComplexLinearForm & b) override;
+  void ApplyBC(mfem::ParComplexLinearForm & b) override;
 };
 
 } // namespace hephaestus

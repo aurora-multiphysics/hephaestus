@@ -14,12 +14,12 @@ ScaledCurlVectorGridFunctionAux::ScaledCurlVectorGridFunctionAux(
 }
 
 void
-ScaledCurlVectorGridFunctionAux::buildMixedBilinearForm()
+ScaledCurlVectorGridFunctionAux::BuildMixedBilinearForm()
 {
-  a_mixed = std::make_unique<mfem::ParMixedBilinearForm>(trial_fes, test_fes);
-  a_mixed->AddDomainIntegrator(new mfem::MixedVectorCurlIntegrator(*coef));
-  a_mixed->Assemble();
-  a_mixed->Finalize();
+  _a_mixed = std::make_unique<mfem::ParMixedBilinearForm>(_trial_fes, _test_fes);
+  _a_mixed->AddDomainIntegrator(new mfem::MixedVectorCurlIntegrator(*_coef));
+  _a_mixed->Assemble();
+  _a_mixed->Finalize();
 }
 
 } // namespace hephaestus

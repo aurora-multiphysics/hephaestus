@@ -6,30 +6,30 @@ namespace hephaestus
 void
 SteadyStateProblemBuilder::InitializeKernels()
 {
-  problem->preprocessors.Init(problem->gridfunctions, problem->coefficients);
-  problem->sources.Init(
-      problem->gridfunctions, problem->fespaces, problem->bc_map, problem->coefficients);
+  _problem->_preprocessors.Init(_problem->_gridfunctions, _problem->_coefficients);
+  _problem->_sources.Init(
+      _problem->_gridfunctions, _problem->_fespaces, _problem->_bc_map, _problem->_coefficients);
 }
 
 void
 SteadyStateProblemBuilder::ConstructOperator()
 {
-  problem->eq_sys_operator =
-      std::make_unique<hephaestus::EquationSystemOperator>(*(problem->pmesh),
-                                                           problem->fespaces,
-                                                           problem->gridfunctions,
-                                                           problem->bc_map,
-                                                           problem->coefficients,
-                                                           problem->sources,
-                                                           problem->solver_options);
-  problem->eq_sys_operator->SetGridFunctions();
+  _problem->_eq_sys_operator =
+      std::make_unique<hephaestus::EquationSystemOperator>(*(_problem->_pmesh),
+                                                           _problem->_fespaces,
+                                                           _problem->_gridfunctions,
+                                                           _problem->_bc_map,
+                                                           _problem->_coefficients,
+                                                           _problem->_sources,
+                                                           _problem->_solver_options);
+  _problem->_eq_sys_operator->SetGridFunctions();
 }
 
 void
 SteadyStateProblemBuilder::ConstructState()
 {
-  problem->F =
-      std::make_unique<mfem::BlockVector>(problem->eq_sys_operator->true_offsets); // Vector of dofs
-  problem->eq_sys_operator->Init(*(problem->F)); // Set up initial conditions
+  _problem->_f = std::make_unique<mfem::BlockVector>(
+      _problem->_eq_sys_operator->_true_offsets);    // Vector of dofs
+  _problem->_eq_sys_operator->Init(*(_problem->_f)); // Set up initial conditions
 }
 } // namespace hephaestus

@@ -9,13 +9,13 @@ class DummyAuxSolver : public hephaestus::AuxSolver
 {
 public:
   DummyAuxSolver(std::string & _string_to_append, std::string & _string_modified)
-    : string_to_append(_string_to_append), string_modified(_string_modified){};
+    : _string_to_append(_string_to_append), _string_modified(_string_modified){};
   void Init(const hephaestus::GridFunctions & gridfunctions,
             hephaestus::Coefficients & coefficients) override{};
 
-  void Solve(double t = 0.0) override { string_modified = string_modified + string_to_append; };
-  std::string & string_to_append;
-  std::string & string_modified;
+  void Solve(double t = 0.0) override { _string_modified = _string_modified + _string_to_append; };
+  std::string & _string_to_append;
+  std::string & _string_modified;
 };
 
 TEST_CASE("AuxSolverTest", "[CheckQueue]")

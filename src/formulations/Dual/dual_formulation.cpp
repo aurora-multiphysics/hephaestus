@@ -66,29 +66,29 @@ DualFormulation::ConstructEquationSystem()
   weak_form_params.SetParam("HDivVarName", _h_div_var_name);
   weak_form_params.SetParam("AlphaCoefName", _alpha_coef_name);
   weak_form_params.SetParam("BetaCoefName", _beta_coef_name);
-  GetProblem()->td_equation_system =
+  GetProblem()->_td_equation_system =
       std::make_unique<hephaestus::WeakCurlEquationSystem>(weak_form_params);
 }
 
 void
 DualFormulation::ConstructOperator()
 {
-  problem->td_operator = std::make_unique<hephaestus::DualOperator>(*(problem->pmesh),
-                                                                    problem->fespaces,
-                                                                    problem->gridfunctions,
-                                                                    problem->bc_map,
-                                                                    problem->coefficients,
-                                                                    problem->sources,
-                                                                    problem->solver_options);
-  problem->td_operator->SetEquationSystem(problem->td_equation_system.get());
-  problem->td_operator->SetGridFunctions();
+  _problem->_td_operator = std::make_unique<hephaestus::DualOperator>(*(_problem->_pmesh),
+                                                                      _problem->_fespaces,
+                                                                      _problem->_gridfunctions,
+                                                                      _problem->_bc_map,
+                                                                      _problem->_coefficients,
+                                                                      _problem->_sources,
+                                                                      _problem->_solver_options);
+  _problem->_td_operator->SetEquationSystem(_problem->_td_equation_system.get());
+  _problem->_td_operator->SetGridFunctions();
 };
 
 void
 DualFormulation::RegisterGridFunctions()
 {
-  int & myid = GetProblem()->myid_;
-  hephaestus::GridFunctions & gridfunctions = GetProblem()->gridfunctions;
+  int & myid = GetProblem()->_myid;
+  hephaestus::GridFunctions & gridfunctions = GetProblem()->_gridfunctions;
 
   // Register default ParGridFunctions of state gridfunctions if not provided
   if (!gridfunctions.Has(_h_curl_var_name))
@@ -121,13 +121,13 @@ DualFormulation::RegisterGridFunctions()
 void
 DualFormulation::RegisterCoefficients()
 {
-  hephaestus::Coefficients & coefficients = GetProblem()->coefficients;
+  hephaestus::Coefficients & coefficients = GetProblem()->_coefficients;
 
-  if (!coefficients.scalars.Has(_alpha_coef_name))
+  if (!coefficients._scalars.Has(_alpha_coef_name))
   {
     MFEM_ABORT(_alpha_coef_name + " coefficient not found.");
   }
-  if (!coefficients.scalars.Has(_beta_coef_name))
+  if (!coefficients._scalars.Has(_beta_coef_name))
   {
     MFEM_ABORT(_beta_coef_name + " coefficient not found.");
   }
@@ -149,36 +149,38 @@ WeakCurlEquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
                              hephaestus::BCMap & bc_map,
                              hephaestus::Coefficients & coefficients)
 {
-  coefficients.scalars.Register(_dtalpha_coef_name,
-                                new mfem::TransformedCoefficient(
-                                    &dtCoef, coefficients.scalars.Get(_alpha_coef_name), prodFunc),
-                                true);
+  coefficients._scalars.Register(
+      _dtalpha_coef_name,
+      new mfem::TransformedCoefficient(
+          &_dt_coef, coefficients._scalars.Get(_alpha_coef_name), prodFunc),
+      true);
   TimeDependentEquationSystem::Init(gridfunctions, fespaces, bc_map, coefficients);
 }
 
 void
-WeakCurlEquationSystem::addKernels()
+WeakCurlEquationSystem::AddKernels()
 {
-  addVariableNameIfMissing(_h_curl_var_name);
-  addVariableNameIfMissing(_h_div_var_name);
+  AddVariableNameIfMissing(_h_curl_var_name);
+  AddVariableNameIfMissing(_h_div_var_name);
   std::string dh_curl_var_dt = GetTimeDerivativeName(_h_curl_var_name);
 
   // (αv_{n}, ∇×u')
-  hephaestus::InputParameters weakCurlParams;
-  weakCurlParams.SetParam("HCurlVarName", _h_curl_var_name);
-  weakCurlParams.SetParam("HDivVarName", _h_div_var_name);
-  weakCurlParams.SetParam("CoefficientName", _alpha_coef_name);
-  addKernel(_h_curl_var_name, std::make_unique<hephaestus::WeakCurlKernel>(weakCurlParams));
+  hephaestus::InputParameters weak_curl_params;
+  weak_curl_params.SetParam("HCurlVarName", _h_curl_var_name);
+  weak_curl_params.SetParam("HDivVarName", _h_div_var_name);
+  weak_curl_params.SetParam("CoefficientName", _alpha_coef_name);
+  AddKernel(_h_curl_var_name, std::make_unique<hephaestus::WeakCurlKernel>(weak_curl_params));
 
   // (αdt∇×u_{n+1}, ∇×u')
-  hephaestus::InputParameters curlCurlParams;
-  curlCurlParams.SetParam("CoefficientName", _dtalpha_coef_name);
-  addKernel(_h_curl_var_name, std::make_unique<hephaestus::CurlCurlKernel>(curlCurlParams));
+  hephaestus::InputParameters curl_curl_params;
+  curl_curl_params.SetParam("CoefficientName", _dtalpha_coef_name);
+  AddKernel(_h_curl_var_name, std::make_unique<hephaestus::CurlCurlKernel>(curl_curl_params));
 
   // (βu_{n+1}, u')
-  hephaestus::InputParameters vectorFEMassParams;
-  vectorFEMassParams.SetParam("CoefficientName", _beta_coef_name);
-  addKernel(_h_curl_var_name, std::make_unique<hephaestus::VectorFEMassKernel>(vectorFEMassParams));
+  hephaestus::InputParameters vector_fe_mass_params;
+  vector_fe_mass_params.SetParam("CoefficientName", _beta_coef_name);
+  AddKernel(_h_curl_var_name,
+            std::make_unique<hephaestus::VectorFEMassKernel>(vector_fe_mass_params));
 }
 
 DualOperator::DualOperator(mfem::ParMesh & pmesh,
@@ -200,44 +202,46 @@ DualOperator::Init(mfem::Vector & X)
   auto * eqs = dynamic_cast<hephaestus::WeakCurlEquationSystem *>(_equation_system);
   _h_curl_var_name = eqs->_h_curl_var_name;
   _h_div_var_name = eqs->_h_div_var_name;
-  u_ = _gridfunctions.Get(_h_curl_var_name);
-  dv_ = _gridfunctions.Get(GetTimeDerivativeName(_h_div_var_name));
-  HCurlFESpace_ = u_->ParFESpace();
-  HDivFESpace_ = dv_->ParFESpace();
+  _u = _gridfunctions.Get(_h_curl_var_name);
+  _dv = _gridfunctions.Get(GetTimeDerivativeName(_h_div_var_name));
+  _h_curl_fe_space = _u->ParFESpace();
+  _h_div_fe_space = _dv->ParFESpace();
 
-  curl = std::make_unique<mfem::ParDiscreteLinearOperator>(HCurlFESpace_, HDivFESpace_);
-  curl->AddDomainInterpolator(new mfem::CurlInterpolator);
-  curl->Assemble();
+  _curl = std::make_unique<mfem::ParDiscreteLinearOperator>(_h_curl_fe_space, _h_div_fe_space);
+  _curl->AddDomainInterpolator(new mfem::CurlInterpolator);
+  _curl->Assemble();
 }
 
 void
 DualOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt)
 {
-  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind)
+  for (unsigned int ind = 0; ind < _local_test_vars.size(); ++ind)
   {
-    local_test_vars.at(ind)->MakeRef(
-        local_test_vars.at(ind)->ParFESpace(), const_cast<mfem::Vector &>(X), true_offsets[ind]);
-    local_trial_vars.at(ind)->MakeRef(
-        local_trial_vars.at(ind)->ParFESpace(), dX_dt, true_offsets[ind]);
+    _local_test_vars.at(ind)->MakeRef(
+        _local_test_vars.at(ind)->ParFESpace(), const_cast<mfem::Vector &>(X), _true_offsets[ind]);
+    _local_trial_vars.at(ind)->MakeRef(
+        _local_trial_vars.at(ind)->ParFESpace(), dX_dt, _true_offsets[ind]);
   }
   _coefficients.SetTime(GetTime());
-  _equation_system->setTimeStep(dt);
-  _equation_system->updateEquationSystem(_bc_map, _sources);
+  _equation_system->SetTimeStep(dt);
+  _equation_system->UpdateEquationSystem(_bc_map, _sources);
 
-  _equation_system->FormLinearSystem(blockA, trueX, trueRhs);
+  _equation_system->FormLinearSystem(_block_a, _true_x, _true_rhs);
 
-  a1_solver = std::make_unique<hephaestus::DefaultHCurlPCGSolver>(
-      _solver_options, *blockA.As<mfem::HypreParMatrix>(), _equation_system->test_pfespaces.at(0));
+  _jacobian_solver =
+      std::make_unique<hephaestus::DefaultHCurlPCGSolver>(_solver_options,
+                                                          *_block_a.As<mfem::HypreParMatrix>(),
+                                                          _equation_system->_test_pfespaces.at(0));
 
-  a1_solver->Mult(trueRhs, trueX);
-  _equation_system->RecoverFEMSolution(trueX, _gridfunctions);
+  _jacobian_solver->Mult(_true_rhs, _true_x);
+  _equation_system->RecoverFEMSolution(_true_x, _gridfunctions);
 
   // Subtract off contribution from source
-  _sources.SubtractSources(u_);
+  _sources.SubtractSources(_u);
 
   // dv/dt_{n+1} = -∇×u
-  curl->Mult(*u_, *dv_);
-  *dv_ *= -1.0;
+  _curl->Mult(*_u, *_dv);
+  *_dv *= -1.0;
 }
 
 void
@@ -247,16 +251,16 @@ DualOperator::SetGridFunctions()
   // Blocks for solution vector are smaller than the operator size
   // for DualOperator, as curl is stored separately.
   // Block operator only has the HCurl TrueVSize;
-  block_trueOffsets.SetSize(local_test_vars.size());
-  block_trueOffsets[0] = 0;
-  for (unsigned int ind = 0; ind < local_test_vars.size() - 1; ++ind)
+  _block_true_offsets.SetSize(_local_test_vars.size());
+  _block_true_offsets[0] = 0;
+  for (unsigned int ind = 0; ind < _local_test_vars.size() - 1; ++ind)
   {
-    block_trueOffsets[ind + 1] = local_test_vars.at(ind)->ParFESpace()->TrueVSize();
+    _block_true_offsets[ind + 1] = _local_test_vars.at(ind)->ParFESpace()->TrueVSize();
   }
-  block_trueOffsets.PartialSum();
+  _block_true_offsets.PartialSum();
 
-  trueX.Update(block_trueOffsets);
-  trueRhs.Update(block_trueOffsets);
+  _true_x.Update(_block_true_offsets);
+  _true_rhs.Update(_block_true_offsets);
 }
 
 } // namespace hephaestus

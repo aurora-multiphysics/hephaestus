@@ -27,50 +27,50 @@ public:
 
   // Names of all gridfunctions corresponding to gridfunctions. This may differ
   // from test_var_names when test gridfunctions include time derivatives.
-  std::vector<std::string> var_names;
+  std::vector<std::string> _var_names;
   // Names of all test gridfunctions with kernels in this equation system.
-  std::vector<std::string> test_var_names;
-  std::vector<mfem::ParFiniteElementSpace *> test_pfespaces;
+  std::vector<std::string> _test_var_names;
+  std::vector<mfem::ParFiniteElementSpace *> _test_pfespaces;
 
   // Components of weak form. // Named according to test variable
-  hephaestus::NamedFieldsMap<mfem::ParBilinearForm> blfs;
-  hephaestus::NamedFieldsMap<mfem::ParLinearForm> lfs;
-  hephaestus::NamedFieldsMap<mfem::ParNonlinearForm> nlfs;
+  hephaestus::NamedFieldsMap<mfem::ParBilinearForm> _blfs;
+  hephaestus::NamedFieldsMap<mfem::ParLinearForm> _lfs;
+  hephaestus::NamedFieldsMap<mfem::ParNonlinearForm> _nlfs;
   hephaestus::NamedFieldsMap<hephaestus::NamedFieldsMap<mfem::ParMixedBilinearForm>>
-      mblfs; // named according to trial variable
+      _mblfs; // named according to trial variable
 
   // add test variable to EquationSystem;
-  virtual void addTestVariableNameIfMissing(const std::string & test_var_name);
-  virtual void addVariableNameIfMissing(const std::string & var_name);
+  virtual void AddTestVariableNameIfMissing(const std::string & test_var_name);
+  virtual void AddVariableNameIfMissing(const std::string & var_name);
 
   // Add kernels.
-  void addKernel(const std::string & test_var_name,
+  void AddKernel(const std::string & test_var_name,
                  std::unique_ptr<ParBilinearFormKernel> && blf_kernel);
 
-  void addKernel(const std::string & test_var_name,
+  void AddKernel(const std::string & test_var_name,
                  std::unique_ptr<ParLinearFormKernel> && lf_kernel);
 
-  void addKernel(const std::string & test_var_name,
+  void AddKernel(const std::string & test_var_name,
                  std::unique_ptr<ParNonlinearFormKernel> && nlf_kernel);
 
-  void addKernel(const std::string & trial_var_name,
+  void AddKernel(const std::string & trial_var_name,
                  const std::string & test_var_name,
                  std::unique_ptr<ParMixedBilinearFormKernel> && mblf_kernel);
 
-  virtual void applyBoundaryConditions(hephaestus::BCMap & bc_map);
+  virtual void ApplyBoundaryConditions(hephaestus::BCMap & bc_map);
 
   // override to add kernels
-  virtual void addKernels(){};
+  virtual void AddKernels(){};
 
   // Build forms
   virtual void Init(hephaestus::GridFunctions & gridfunctions,
                     const hephaestus::FESpaces & fespaces,
                     hephaestus::BCMap & bc_map,
                     hephaestus::Coefficients & coefficients);
-  virtual void buildLinearForms(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);
-  virtual void buildBilinearForms();
-  virtual void buildMixedBilinearForms();
-  virtual void buildEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);
+  virtual void BuildLinearForms(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);
+  virtual void BuildBilinearForms();
+  virtual void BuildMixedBilinearForms();
+  virtual void BuildEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);
 
   // Form linear system, with essential boundary conditions accounted for
   virtual void FormLinearSystem(mfem::OperatorHandle & op,
@@ -82,26 +82,26 @@ public:
                                   hephaestus::GridFunctions & gridfunctions);
 
 protected:
-  bool vectorContainsName(const std::vector<std::string> & the_vector,
+  bool VectorContainsName(const std::vector<std::string> & the_vector,
                           const std::string & name) const;
 
   // gridfunctions for setting Dirichlet BCs
-  std::vector<mfem::Array<int>> ess_tdof_lists;
-  std::vector<std::unique_ptr<mfem::ParGridFunction>> xs;
+  std::vector<mfem::Array<int>> _ess_tdof_lists;
+  std::vector<std::unique_ptr<mfem::ParGridFunction>> _xs;
 
-  mfem::Array2D<mfem::HypreParMatrix *> hBlocks;
+  mfem::Array2D<mfem::HypreParMatrix *> _h_blocks;
 
   // Arrays to store kernels to act on each component of weak form. Named
   // according to test variable
-  hephaestus::NamedFieldsMap<std::vector<std::unique_ptr<ParBilinearFormKernel>>> blf_kernels_map;
+  hephaestus::NamedFieldsMap<std::vector<std::unique_ptr<ParBilinearFormKernel>>> _blf_kernels_map;
 
-  hephaestus::NamedFieldsMap<std::vector<std::unique_ptr<ParLinearFormKernel>>> lf_kernels_map;
+  hephaestus::NamedFieldsMap<std::vector<std::unique_ptr<ParLinearFormKernel>>> _lf_kernels_map;
 
-  hephaestus::NamedFieldsMap<std::vector<std::unique_ptr<ParNonlinearFormKernel>>> nlf_kernels_map;
+  hephaestus::NamedFieldsMap<std::vector<std::unique_ptr<ParNonlinearFormKernel>>> _nlf_kernels_map;
 
   hephaestus::NamedFieldsMap<
       hephaestus::NamedFieldsMap<std::vector<std::unique_ptr<ParMixedBilinearFormKernel>>>>
-      mblf_kernels_map_map;
+      _mblf_kernels_map_map;
 };
 
 /*
@@ -117,12 +117,12 @@ public:
   {
     return std::string("d") + name + std::string("_dt");
   }
-  void addVariableNameIfMissing(const std::string & var_name) override;
+  void AddVariableNameIfMissing(const std::string & var_name) override;
 
-  virtual void setTimeStep(double dt);
-  virtual void updateEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);
-  mfem::ConstantCoefficient dtCoef; // Coefficient for timestep scaling
-  std::vector<std::string> var_time_derivative_names;
+  virtual void SetTimeStep(double dt);
+  virtual void UpdateEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);
+  mfem::ConstantCoefficient _dt_coef; // Coefficient for timestep scaling
+  std::vector<std::string> _var_time_derivative_names;
 };
 
 } // namespace hephaestus

@@ -5,8 +5,8 @@ namespace hephaestus
 
 TimeDomainProblem::~TimeDomainProblem()
 {
-  td_equation_system.reset();
-  td_operator.reset();
+  _td_equation_system.reset();
+  _td_operator.reset();
 }
 
 std::vector<mfem::ParGridFunction *>
@@ -30,61 +30,61 @@ void
 TimeDomainProblemBuilder::RegisterGridFunctions()
 {
   std::vector<std::string> gridfunction_names;
-  for (auto const & [name, gf] : problem->gridfunctions)
+  for (auto const & [name, gf] : _problem->_gridfunctions)
   {
     gridfunction_names.push_back(name);
   }
-  RegisterTimeDerivatives(gridfunction_names, problem->gridfunctions);
+  RegisterTimeDerivatives(gridfunction_names, _problem->_gridfunctions);
 }
 
 void
 TimeDomainProblemBuilder::ConstructEquationSystem()
 {
   hephaestus::InputParameters params;
-  problem->td_equation_system = std::make_unique<hephaestus::TimeDependentEquationSystem>(params);
+  _problem->_td_equation_system = std::make_unique<hephaestus::TimeDependentEquationSystem>(params);
 }
 
 void
 TimeDomainProblemBuilder::InitializeKernels()
 {
-  problem->td_equation_system->Init(
-      problem->gridfunctions, problem->fespaces, problem->bc_map, problem->coefficients);
+  _problem->_td_equation_system->Init(
+      _problem->_gridfunctions, _problem->_fespaces, _problem->_bc_map, _problem->_coefficients);
 
-  problem->preprocessors.Init(problem->gridfunctions, problem->coefficients);
-  problem->sources.Init(
-      problem->gridfunctions, problem->fespaces, problem->bc_map, problem->coefficients);
+  _problem->_preprocessors.Init(_problem->_gridfunctions, _problem->_coefficients);
+  _problem->_sources.Init(
+      _problem->_gridfunctions, _problem->_fespaces, _problem->_bc_map, _problem->_coefficients);
 }
 
 void
 TimeDomainProblemBuilder::ConstructOperator()
 {
-  problem->td_operator =
-      std::make_unique<hephaestus::TimeDomainEquationSystemOperator>(*(problem->pmesh),
-                                                                     problem->fespaces,
-                                                                     problem->gridfunctions,
-                                                                     problem->bc_map,
-                                                                     problem->coefficients,
-                                                                     problem->sources,
-                                                                     problem->solver_options);
-  problem->td_operator->SetEquationSystem(problem->td_equation_system.get());
-  problem->td_operator->SetGridFunctions();
+  _problem->_td_operator =
+      std::make_unique<hephaestus::TimeDomainEquationSystemOperator>(*(_problem->_pmesh),
+                                                                     _problem->_fespaces,
+                                                                     _problem->_gridfunctions,
+                                                                     _problem->_bc_map,
+                                                                     _problem->_coefficients,
+                                                                     _problem->_sources,
+                                                                     _problem->_solver_options);
+  _problem->_td_operator->SetEquationSystem(_problem->_td_equation_system.get());
+  _problem->_td_operator->SetGridFunctions();
 }
 
 void
 TimeDomainProblemBuilder::ConstructState()
 {
   // Vector of dofs.
-  problem->F = std::make_unique<mfem::BlockVector>(problem->td_operator->true_offsets);
-  *(problem->F) = 0.0;                       // give initial value
-  problem->td_operator->Init(*(problem->F)); // Set up initial conditions
-  problem->td_operator->SetTime(0.0);
+  _problem->_f = std::make_unique<mfem::BlockVector>(_problem->_td_operator->_true_offsets);
+  *(_problem->_f) = 0.0;                         // give initial value
+  _problem->_td_operator->Init(*(_problem->_f)); // Set up initial conditions
+  _problem->_td_operator->SetTime(0.0);
 }
 
 void
 TimeDomainProblemBuilder::ConstructSolver()
 {
-  problem->ode_solver = std::make_unique<mfem::BackwardEulerSolver>();
-  problem->ode_solver->Init(*(problem->td_operator));
+  _problem->_ode_solver = std::make_unique<mfem::BackwardEulerSolver>();
+  _problem->_ode_solver->Init(*(_problem->_td_operator));
 }
 
 } // namespace hephaestus

@@ -8,14 +8,14 @@ source_current(const mfem::Vector & xv, double t, mfem::Vector & J)
   double x0(194e-3); // Coil centre x coordinate
   double y0(100e-3); // Coil centre y coordinate
   double a(50e-3);   // Coil thickness
-  double I0(2742);   // Coil current in Ampere-turns
-  double S(2.5e-3);  // Coil cross sectional area
+  double i0(2742);   // Coil current in Ampere-turns
+  double s(2.5e-3);  // Coil cross sectional area
 
   double x = xv(0);
   double y = xv(1);
 
   // Current density magnitude
-  double Jmag = (I0 / S);
+  double jmag = (i0 / s);
 
   // Calculate x component of current density unit vector
   if (abs(x - x0) < a)
@@ -51,42 +51,42 @@ source_current(const mfem::Vector & xv, double t, mfem::Vector & J)
   J(2) = 0.0;
 
   // Scale by current density magnitude
-  J *= Jmag;
+  J *= jmag;
 }
 
 hephaestus::Coefficients
 defineCoefficients()
 {
   hephaestus::Subdomain air("air", 1);
-  air.scalar_coefficients.Register(
+  air._scalar_coefficients.Register(
       "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
   hephaestus::Subdomain plate("plate", 2);
-  plate.scalar_coefficients.Register(
+  plate._scalar_coefficients.Register(
       "electrical_conductivity", new mfem::ConstantCoefficient(3.526e7), true);
   hephaestus::Subdomain coil1("coil1", 3);
-  coil1.scalar_coefficients.Register(
+  coil1._scalar_coefficients.Register(
       "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
   hephaestus::Subdomain coil2("coil2", 4);
-  coil2.scalar_coefficients.Register(
+  coil2._scalar_coefficients.Register(
       "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
   hephaestus::Subdomain coil3("coil3", 5);
-  coil3.scalar_coefficients.Register(
+  coil3._scalar_coefficients.Register(
       "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
   hephaestus::Subdomain coil4("coil4", 6);
-  coil4.scalar_coefficients.Register(
+  coil4._scalar_coefficients.Register(
       "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
   hephaestus::Coefficients coefficients(
       std::vector<hephaestus::Subdomain>({air, plate, coil1, coil2, coil3, coil4}));
-  coefficients.scalars.Register(
+  coefficients._scalars.Register(
       "magnetic_permeability", new mfem::ConstantCoefficient(M_PI * 4.0e-7), true);
 
-  auto JSrcCoef = std::make_unique<mfem::VectorFunctionCoefficient>(3, source_current);
+  auto j_src_coef = std::make_unique<mfem::VectorFunctionCoefficient>(3, source_current);
 
   mfem::Array<mfem::VectorCoefficient *> sourcecoefs(4);
-  sourcecoefs[0] = JSrcCoef.get();
-  sourcecoefs[1] = JSrcCoef.get();
-  sourcecoefs[2] = JSrcCoef.get();
-  sourcecoefs[3] = JSrcCoef.get();
+  sourcecoefs[0] = j_src_coef.get();
+  sourcecoefs[1] = j_src_coef.get();
+  sourcecoefs[2] = j_src_coef.get();
+  sourcecoefs[3] = j_src_coef.get();
 
   mfem::Array<int> coilsegments(4);
   coilsegments[0] = 3;
@@ -94,8 +94,8 @@ defineCoefficients()
   coilsegments[2] = 5;
   coilsegments[3] = 6;
 
-  auto JSrcRestricted = new mfem::PWVectorCoefficient(3, coilsegments, sourcecoefs);
-  coefficients.vectors.Register("source", JSrcRestricted, true);
+  auto j_src_restricted = new mfem::PWVectorCoefficient(3, coilsegments, sourcecoefs);
+  coefficients._vectors.Register("source", j_src_restricted, true);
 
   return coefficients;
 }

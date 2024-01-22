@@ -9,8 +9,8 @@ double
 VectorGridFunctionDotProductCoefficient::Eval(mfem::ElementTransformation & T,
                                               const mfem::IntegrationPoint & ip)
 {
-  double coefValue;
-  coefValue = _coef.Eval(T, ip);
+  double coef_value;
+  coef_value = _coef.Eval(T, ip);
 
   mfem::Vector u_re;
   mfem::Vector u_im;
@@ -21,13 +21,13 @@ VectorGridFunctionDotProductCoefficient::Eval(mfem::ElementTransformation & T,
   _v_gf_re->GetVectorValue(T, ip, v_re);
   if (_u_gf_im == nullptr || _v_gf_im == nullptr)
   {
-    return coefValue * (u_re * v_re);
+    return coef_value * (u_re * v_re);
   }
   else
   {
     _u_gf_im->GetVectorValue(T, ip, u_im);
     _v_gf_im->GetVectorValue(T, ip, v_im);
-    return 0.5 * coefValue * (u_re * v_re + u_im * v_im);
+    return 0.5 * coef_value * (u_re * v_re + u_im * v_im);
   }
 }
 
@@ -56,7 +56,7 @@ VectorGridFunctionDotProductAux::Init(const hephaestus::GridFunctions & gridfunc
                                       hephaestus::Coefficients & coefficients)
 {
 
-  _scaling_coef = coefficients.scalars.Get(_scaling_coef_name);
+  _scaling_coef = coefficients._scalars.Get(_scaling_coef_name);
   if (_scaling_coef == nullptr)
   {
     MFEM_ABORT("Conductivity coefficient not found for Joule heating");
@@ -105,10 +105,10 @@ VectorGridFunctionDotProductAux::Init(const hephaestus::GridFunctions & gridfunc
     }
   }
 
-  coefficients.scalars.Register(_coef_name,
-                                new VectorGridFunctionDotProductCoefficient(
-                                    *_scaling_coef, _u_gf_re, _v_gf_re, _u_gf_im, _v_gf_im),
-                                true);
+  coefficients._scalars.Register(_coef_name,
+                                 new VectorGridFunctionDotProductCoefficient(
+                                     *_scaling_coef, _u_gf_re, _v_gf_re, _u_gf_im, _v_gf_im),
+                                 true);
 
   CoefficientAux::Init(gridfunctions, coefficients);
 }

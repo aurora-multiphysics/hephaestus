@@ -43,9 +43,9 @@ public:
   void Solve(mfem::Vector & X) override;
 
 private:
-  std::string h_curl_var_name, stiffness_coef_name;
+  std::string _h_curl_var_name, _stiffness_coef_name;
 
-  mfem::Coefficient * stiffCoef_; // Stiffness Material Coefficient
+  mfem::Coefficient * _stiff_coef; // Stiffness Material Coefficient
 };
 
 } // namespace hephaestus

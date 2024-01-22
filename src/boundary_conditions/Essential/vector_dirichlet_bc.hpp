@@ -23,13 +23,13 @@ public:
                     mfem::VectorCoefficient * vec_coeff_im_ = nullptr,
                     APPLY_TYPE boundary_apply_type = TANGENTIAL);
 
-  void applyBC(mfem::GridFunction & gridfunc, mfem::Mesh * mesh_) override;
+  void ApplyBC(mfem::GridFunction & gridfunc, mfem::Mesh * mesh_) override;
 
-  void applyBC(mfem::ParComplexGridFunction & gridfunc, mfem::Mesh * mesh_) override;
+  void ApplyBC(mfem::ParComplexGridFunction & gridfunc, mfem::Mesh * mesh_) override;
 
-  mfem::VectorCoefficient * vec_coeff;
-  mfem::VectorCoefficient * vec_coeff_im;
-  APPLY_TYPE boundary_apply_type;
+  mfem::VectorCoefficient * _vec_coeff;
+  mfem::VectorCoefficient * _vec_coeff_im;
+  APPLY_TYPE _boundary_apply_type;
 };
 
 } // namespace hephaestus

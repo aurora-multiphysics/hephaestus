@@ -11,16 +11,16 @@ AuxSolvers::Init(const hephaestus::GridFunctions & gridfunctions,
   for (const auto & [name, auxsolver] : GetMap())
   {
     auxsolver->Init(gridfunctions, coefficients);
-    aux_queue.push_back(auxsolver);
+    _aux_queue.push_back(auxsolver);
   }
 
-  std::sort(aux_queue.begin(), aux_queue.end(), AuxSolver::PriorityComparator);
+  std::sort(_aux_queue.begin(), _aux_queue.end(), AuxSolver::PriorityComparator);
 }
 
 void
 AuxSolvers::Solve(double t)
 {
-  for (auto & auxsolver : aux_queue)
+  for (auto & auxsolver : _aux_queue)
   {
     auxsolver->Solve(t);
   }

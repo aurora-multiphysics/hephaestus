@@ -59,30 +59,30 @@ HCurlFormulation::ConstructEquationSystem()
   weak_form_params.SetParam("HCurlVarName", _h_curl_var_name);
   weak_form_params.SetParam("AlphaCoefName", _alpha_coef_name);
   weak_form_params.SetParam("BetaCoefName", _beta_coef_name);
-  GetProblem()->td_equation_system =
+  GetProblem()->_td_equation_system =
       std::make_unique<hephaestus::CurlCurlEquationSystem>(weak_form_params);
 }
 
 void
 HCurlFormulation::ConstructOperator()
 {
-  problem->td_operator = std::make_unique<hephaestus::HCurlOperator>(*(problem->pmesh),
-                                                                     problem->fespaces,
-                                                                     problem->gridfunctions,
-                                                                     problem->bc_map,
-                                                                     problem->coefficients,
-                                                                     problem->sources,
-                                                                     problem->solver_options);
-  problem->td_operator->SetEquationSystem(problem->td_equation_system.get());
-  problem->td_operator->SetGridFunctions();
+  _problem->_td_operator = std::make_unique<hephaestus::HCurlOperator>(*(_problem->_pmesh),
+                                                                       _problem->_fespaces,
+                                                                       _problem->_gridfunctions,
+                                                                       _problem->_bc_map,
+                                                                       _problem->_coefficients,
+                                                                       _problem->_sources,
+                                                                       _problem->_solver_options);
+  _problem->_td_operator->SetEquationSystem(_problem->_td_equation_system.get());
+  _problem->_td_operator->SetGridFunctions();
 };
 
 void
 HCurlFormulation::RegisterGridFunctions()
 {
-  int & myid = GetProblem()->myid_;
-  hephaestus::GridFunctions & gridfunctions = GetProblem()->gridfunctions;
-  hephaestus::FESpaces & fespaces = GetProblem()->fespaces;
+  int & myid = GetProblem()->_myid;
+  hephaestus::GridFunctions & gridfunctions = GetProblem()->_gridfunctions;
+  hephaestus::FESpaces & fespaces = GetProblem()->_fespaces;
 
   // Register default ParGridFunctions of state gridfunctions if not provided
   if (!gridfunctions.Has(_h_curl_var_name))
@@ -101,10 +101,10 @@ HCurlFormulation::RegisterGridFunctions()
 
 CurlCurlEquationSystem::CurlCurlEquationSystem(const hephaestus::InputParameters & params)
   : TimeDependentEquationSystem(params),
-    h_curl_var_name(params.GetParam<std::string>("HCurlVarName")),
-    alpha_coef_name(params.GetParam<std::string>("AlphaCoefName")),
-    beta_coef_name(params.GetParam<std::string>("BetaCoefName")),
-    dtalpha_coef_name(std::string("dt_") + alpha_coef_name)
+    _h_curl_var_name(params.GetParam<std::string>("HCurlVarName")),
+    _alpha_coef_name(params.GetParam<std::string>("AlphaCoefName")),
+    _beta_coef_name(params.GetParam<std::string>("BetaCoefName")),
+    _dtalpha_coef_name(std::string("dt_") + _alpha_coef_name)
 {
 }
 
@@ -114,45 +114,48 @@ CurlCurlEquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
                              hephaestus::BCMap & bc_map,
                              hephaestus::Coefficients & coefficients)
 {
-  coefficients.scalars.Register(dtalpha_coef_name,
-                                new mfem::TransformedCoefficient(
-                                    &dtCoef, coefficients.scalars.Get(alpha_coef_name), prodFunc),
-                                true);
+  coefficients._scalars.Register(
+      _dtalpha_coef_name,
+      new mfem::TransformedCoefficient(
+          &_dt_coef, coefficients._scalars.Get(_alpha_coef_name), prodFunc),
+      true);
   TimeDependentEquationSystem::Init(gridfunctions, fespaces, bc_map, coefficients);
 }
 
 void
-CurlCurlEquationSystem::addKernels()
+CurlCurlEquationSystem::AddKernels()
 {
-  addVariableNameIfMissing(h_curl_var_name);
-  std::string dh_curl_var_dt = GetTimeDerivativeName(h_curl_var_name);
+  AddVariableNameIfMissing(_h_curl_var_name);
+  std::string dh_curl_var_dt = GetTimeDerivativeName(_h_curl_var_name);
 
   // (α∇×u_{n}, ∇×u')
-  hephaestus::InputParameters weakCurlCurlParams;
-  weakCurlCurlParams.SetParam("CoupledVariableName", h_curl_var_name);
-  weakCurlCurlParams.SetParam("CoefficientName", alpha_coef_name);
-  addKernel(dh_curl_var_dt, std::make_unique<hephaestus::WeakCurlCurlKernel>(weakCurlCurlParams));
+  hephaestus::InputParameters weak_curl_curl_params;
+  weak_curl_curl_params.SetParam("CoupledVariableName", _h_curl_var_name);
+  weak_curl_curl_params.SetParam("CoefficientName", _alpha_coef_name);
+  AddKernel(dh_curl_var_dt,
+            std::make_unique<hephaestus::WeakCurlCurlKernel>(weak_curl_curl_params));
 
   // (αdt∇×du/dt_{n+1}, ∇×u')
-  hephaestus::InputParameters curlCurlParams;
-  curlCurlParams.SetParam("CoefficientName", dtalpha_coef_name);
-  addKernel(dh_curl_var_dt, std::make_unique<hephaestus::CurlCurlKernel>(curlCurlParams));
+  hephaestus::InputParameters curl_curl_params;
+  curl_curl_params.SetParam("CoefficientName", _dtalpha_coef_name);
+  AddKernel(dh_curl_var_dt, std::make_unique<hephaestus::CurlCurlKernel>(curl_curl_params));
 
   // (βdu/dt_{n+1}, u')
-  hephaestus::InputParameters vectorFEMassParams;
-  vectorFEMassParams.SetParam("CoefficientName", beta_coef_name);
-  addKernel(dh_curl_var_dt, std::make_unique<hephaestus::VectorFEMassKernel>(vectorFEMassParams));
+  hephaestus::InputParameters vector_fe_mass_params;
+  vector_fe_mass_params.SetParam("CoefficientName", _beta_coef_name);
+  AddKernel(dh_curl_var_dt,
+            std::make_unique<hephaestus::VectorFEMassKernel>(vector_fe_mass_params));
 }
 
 void
 HCurlFormulation::RegisterCoefficients()
 {
-  hephaestus::Coefficients & coefficients = GetProblem()->coefficients;
-  if (!coefficients.scalars.Has(_alpha_coef_name))
+  hephaestus::Coefficients & coefficients = GetProblem()->_coefficients;
+  if (!coefficients._scalars.Has(_alpha_coef_name))
   {
     MFEM_ABORT(_alpha_coef_name + " coefficient not found.");
   }
-  if (!coefficients.scalars.Has(_beta_coef_name))
+  if (!coefficients._scalars.Has(_beta_coef_name))
   {
     MFEM_ABORT(_beta_coef_name + " coefficient not found.");
   }
@@ -189,24 +192,26 @@ u_{n+1} = u_{n} + dt du/dt_{n+1}
 void
 HCurlOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt)
 {
-  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind)
+  for (unsigned int ind = 0; ind < _local_test_vars.size(); ++ind)
   {
-    local_test_vars.at(ind)->MakeRef(
-        local_test_vars.at(ind)->ParFESpace(), const_cast<mfem::Vector &>(X), true_offsets[ind]);
-    local_trial_vars.at(ind)->MakeRef(
-        local_trial_vars.at(ind)->ParFESpace(), dX_dt, true_offsets[ind]);
+    _local_test_vars.at(ind)->MakeRef(
+        _local_test_vars.at(ind)->ParFESpace(), const_cast<mfem::Vector &>(X), _true_offsets[ind]);
+    _local_trial_vars.at(ind)->MakeRef(
+        _local_trial_vars.at(ind)->ParFESpace(), dX_dt, _true_offsets[ind]);
   }
   _coefficients.SetTime(GetTime());
-  _equation_system->setTimeStep(dt);
-  _equation_system->updateEquationSystem(_bc_map, _sources);
+  _equation_system->SetTimeStep(dt);
+  _equation_system->UpdateEquationSystem(_bc_map, _sources);
 
-  _equation_system->FormLinearSystem(blockA, trueX, trueRhs);
+  _equation_system->FormLinearSystem(_block_a, _true_x, _true_rhs);
 
-  a1_solver = std::make_unique<hephaestus::DefaultHCurlPCGSolver>(
-      _solver_options, *blockA.As<mfem::HypreParMatrix>(), _equation_system->test_pfespaces.at(0));
+  _jacobian_solver =
+      std::make_unique<hephaestus::DefaultHCurlPCGSolver>(_solver_options,
+                                                          *_block_a.As<mfem::HypreParMatrix>(),
+                                                          _equation_system->_test_pfespaces.at(0));
 
-  a1_solver->Mult(trueRhs, trueX);
-  _equation_system->RecoverFEMSolution(trueX, _gridfunctions);
+  _jacobian_solver->Mult(_true_rhs, _true_x);
+  _equation_system->RecoverFEMSolution(_true_x, _gridfunctions);
 }
 
 } // namespace hephaestus

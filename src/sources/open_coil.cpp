@@ -25,8 +25,8 @@ calcFlux(mfem::GridFunction * v_field, int face_attr, mfem::Coefficient & q)
   double flux = 0.0;
   double area = 0.0;
 
-  mfem::FiniteElementSpace * FES = v_field->FESpace();
-  mfem::Mesh * mesh = FES->GetMesh();
+  mfem::FiniteElementSpace * fes = v_field->FESpace();
+  mfem::Mesh * mesh = fes->GetMesh();
 
   mfem::Vector local_dofs, normal_vec;
   mfem::DenseMatrix dshape;
@@ -38,18 +38,18 @@ calcFlux(mfem::GridFunction * v_field, int face_attr, mfem::Coefficient & q)
     if (mesh->GetBdrAttribute(i) != face_attr)
       continue;
 
-    mfem::FaceElementTransformations * FTr =
+    mfem::FaceElementTransformations * f_tr =
         mesh->GetFaceElementTransformations(mesh->GetBdrElementFaceIndex(i));
-    if (FTr == nullptr)
+    if (f_tr == nullptr)
       continue;
 
-    const mfem::FiniteElement & elem = *FES->GetFE(FTr->Elem1No);
+    const mfem::FiniteElement & elem = *fes->GetFE(f_tr->Elem1No);
     const int int_order = 2 * elem.GetOrder() + 3;
-    const mfem::IntegrationRule & ir = mfem::IntRules.Get(FTr->FaceGeom, int_order);
+    const mfem::IntegrationRule & ir = mfem::IntRules.Get(f_tr->FaceGeom, int_order);
 
-    FES->GetElementDofs(FTr->Elem1No, dof_ids);
+    fes->GetElementDofs(f_tr->Elem1No, dof_ids);
     v_field->GetSubVector(dof_ids, local_dofs);
-    const int space_dim = FTr->Face->GetSpaceDim();
+    const int space_dim = f_tr->Face->GetSpaceDim();
     normal_vec.SetSize(space_dim);
     dshape.SetSize(elem.GetDof(), space_dim);
 
@@ -58,20 +58,20 @@ calcFlux(mfem::GridFunction * v_field, int face_attr, mfem::Coefficient & q)
 
       const mfem::IntegrationPoint & ip = ir.IntPoint(j);
       mfem::IntegrationPoint eip;
-      FTr->Loc1.Transform(ip, eip);
-      FTr->Face->SetIntPoint(&ip);
-      double face_weight = FTr->Face->Weight();
+      f_tr->Loc1.Transform(ip, eip);
+      f_tr->Face->SetIntPoint(&ip);
+      double face_weight = f_tr->Face->Weight();
       double val = 0.0;
-      FTr->Elem1->SetIntPoint(&eip);
-      elem.CalcVShape(*FTr->Elem1, dshape);
-      mfem::CalcOrtho(FTr->Face->Jacobian(), normal_vec);
+      f_tr->Elem1->SetIntPoint(&eip);
+      elem.CalcVShape(*f_tr->Elem1, dshape);
+      mfem::CalcOrtho(f_tr->Face->Jacobian(), normal_vec);
       val += dshape.InnerProduct(normal_vec, local_dofs) / face_weight;
 
       // Measure the area of the boundary
       area += ip.weight * face_weight;
 
       // Integrate alpha * n.Grad(x) + beta * x
-      flux += q.Eval(*FTr, ip) * val * ip.weight * face_weight;
+      flux += q.Eval(*f_tr, ip) * val * ip.weight * face_weight;
     }
   }
 
@@ -93,14 +93,14 @@ SubdomainToArray(const std::vector<hephaestus::Subdomain> & sd, mfem::Array<int>
 {
   arr.DeleteAll();
   for (auto s : sd)
-    arr.Append(s.id);
+    arr.Append(s._id);
 }
 
 void
 SubdomainToArray(const hephaestus::Subdomain & sd, mfem::Array<int> & arr)
 {
   arr.DeleteAll();
-  arr.Append(sd.id);
+  arr.Append(sd._id);
 }
 
 void
@@ -178,17 +178,17 @@ cleanDivergence(hephaestus::GridFunctions & gfs,
 OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters & params,
                                mfem::Array<int> coil_dom,
                                const std::pair<int, int> electrodes)
-  : grad_phi_name_(params.GetParam<std::string>("GradPotentialName")),
-    V_gf_name_(params.GetParam<std::string>("PotentialName")),
-    I_coef_name_(params.GetParam<std::string>("IFuncCoefName")),
-    cond_coef_name_(params.GetParam<std::string>("ConductivityCoefName")),
-    grad_phi_transfer_(params.GetOptionalParam<bool>("GradPhiTransfer", true)),
-    coil_domains_(std::move(coil_dom)),
-    elec_attrs_(electrodes),
-    high_src_(highV),
-    low_src_(lowV),
-    high_terminal_(1),
-    low_terminal_(1)
+  : _grad_phi_name(params.GetParam<std::string>("GradPotentialName")),
+    _v_gf_name(params.GetParam<std::string>("PotentialName")),
+    _i_coef_name(params.GetParam<std::string>("IFuncCoefName")),
+    _cond_coef_name(params.GetParam<std::string>("ConductivityCoefName")),
+    _grad_phi_transfer(params.GetOptionalParam<bool>("GradPhiTransfer", true)),
+    _coil_domains(std::move(coil_dom)),
+    _elec_attrs(electrodes),
+    _high_src(highV),
+    _low_src(lowV),
+    _high_terminal(1),
+    _low_terminal(1)
 {
 
   hephaestus::InputParameters default_pars;
@@ -197,18 +197,18 @@ OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters & params,
   default_pars.SetParam("MaxIter", (unsigned int)1000);
   default_pars.SetParam("PrintLevel", 1);
 
-  solver_options_ =
+  _solver_options =
       params.GetOptionalParam<hephaestus::InputParameters>("SolverOptions", default_pars);
 
-  ref_face_ = elec_attrs_.first;
+  _ref_face = _elec_attrs.first;
 }
 
 OpenCoilSolver::~OpenCoilSolver()
 {
-  if (owns_sigma_)
-    delete sigma_;
-  if (owns_Itotal_)
-    delete Itotal_;
+  if (_owns_sigma)
+    delete _sigma;
+  if (_owns_itotal)
+    delete _itotal;
 }
 
 void
@@ -218,70 +218,70 @@ OpenCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
                      hephaestus::Coefficients & coefficients)
 {
 
-  Itotal_ = coefficients.scalars.Get(I_coef_name_);
-  if (Itotal_ == nullptr)
+  _itotal = coefficients._scalars.Get(_i_coef_name);
+  if (_itotal == nullptr)
   {
-    std::cout << I_coef_name_ + " not found in coefficients when "
+    std::cout << _i_coef_name + " not found in coefficients when "
                                 "creating OpenCoilSolver. "
                                 "Assuming unit current.\n";
-    Itotal_ = new mfem::ConstantCoefficient(1.0);
-    owns_Itotal_ = true;
+    _itotal = new mfem::ConstantCoefficient(1.0);
+    _owns_itotal = true;
   }
 
-  sigma_ = coefficients.scalars.Get(cond_coef_name_);
-  if (sigma_ == nullptr)
+  _sigma = coefficients._scalars.Get(_cond_coef_name);
+  if (_sigma == nullptr)
   {
-    std::cout << cond_coef_name_ + " not found in coefficients when "
+    std::cout << _cond_coef_name + " not found in coefficients when "
                                    "creating OpenCoilSolver. "
                                    "Assuming unit conductivity.\n";
     std::cout << "Warning: GradPhi field undefined. The GridFunction "
                  "associated with it will be set to zero.\n";
 
-    sigma_ = new mfem::ConstantCoefficient(1.0);
-    owns_sigma_ = true;
+    _sigma = new mfem::ConstantCoefficient(1.0);
+    _owns_sigma = true;
 
-    grad_phi_transfer_ = false;
+    _grad_phi_transfer = false;
   }
 
-  grad_phi_parent_ = gridfunctions.Get(grad_phi_name_);
-  if (grad_phi_parent_ == nullptr)
+  _grad_phi_parent = gridfunctions.Get(_grad_phi_name);
+  if (_grad_phi_parent == nullptr)
   {
-    const std::string error_message = grad_phi_name_ + " not found in gridfunctions when "
+    const std::string error_message = _grad_phi_name + " not found in gridfunctions when "
                                                        "creating OpenCoilSolver\n";
     mfem::mfem_error(error_message.c_str());
   }
-  else if (grad_phi_parent_->ParFESpace()->FEColl()->GetContType() !=
+  else if (_grad_phi_parent->ParFESpace()->FEColl()->GetContType() !=
            mfem::FiniteElementCollection::TANGENTIAL)
   {
     mfem::mfem_error("GradPhi GridFunction must be of HCurl type.");
   }
 
-  order_hcurl_ = grad_phi_parent_->ParFESpace()->FEColl()->GetOrder();
+  _order_hcurl = _grad_phi_parent->ParFESpace()->FEColl()->GetOrder();
 
-  V_parent_ = gridfunctions.Get(V_gf_name_);
-  if (V_parent_ == nullptr)
+  _v_parent = gridfunctions.Get(_v_gf_name);
+  if (_v_parent == nullptr)
   {
-    std::cout << V_gf_name_ + " not found in gridfunctions when "
+    std::cout << _v_gf_name + " not found in gridfunctions when "
                               "creating OpenCoilSolver.\n";
-    order_h1_ = order_hcurl_;
+    _order_h1 = _order_hcurl;
   }
-  else if (V_parent_->ParFESpace()->FEColl()->GetContType() !=
+  else if (_v_parent->ParFESpace()->FEColl()->GetContType() !=
            mfem::FiniteElementCollection::CONTINUOUS)
   {
     mfem::mfem_error("V GridFunction must be of H1 type.");
   }
   else
   {
-    order_h1_ = V_parent_->ParFESpace()->FEColl()->GetOrder();
-    Vt_parent_ = std::make_unique<mfem::ParGridFunction>(*V_parent_);
+    _order_h1 = _v_parent->ParFESpace()->FEColl()->GetOrder();
+    _vt_parent = std::make_unique<mfem::ParGridFunction>(*_v_parent);
   }
 
-  mesh_parent_ = grad_phi_parent_->ParFESpace()->GetParMesh();
+  _mesh_parent = _grad_phi_parent->ParFESpace()->GetParMesh();
 
-  initChildMesh();
-  makeFESpaces();
-  makeGridFunctions();
-  setBCs();
+  InitChildMesh();
+  MakeFESpaces();
+  MakeGridFunctions();
+  SetBCs();
   SPSCurrent();
 }
 
@@ -291,23 +291,23 @@ OpenCoilSolver::Apply(mfem::ParLinearForm * lf)
 
   // The transformation and integration points themselves are not relevant, it's
   // just so we can call Eval
-  mfem::ElementTransformation * Tr = mesh_parent_->GetElementTransformation(0);
+  mfem::ElementTransformation * tr = _mesh_parent->GetElementTransformation(0);
   const mfem::IntegrationPoint & ip =
-      mfem::IntRules.Get(grad_phi_parent_->ParFESpace()->GetFE(0)->GetGeomType(), 1).IntPoint(0);
+      mfem::IntRules.Get(_grad_phi_parent->ParFESpace()->GetFE(0)->GetGeomType(), 1).IntPoint(0);
 
-  double I = Itotal_->Eval(*Tr, ip);
+  double i = _itotal->Eval(*tr, ip);
 
-  *grad_phi_parent_ = 0.0;
-  if (grad_phi_transfer_)
-    grad_phi_parent_->Add(I, *grad_phi_t_parent_);
+  *_grad_phi_parent = 0.0;
+  if (_grad_phi_transfer)
+    _grad_phi_parent->Add(i, *_grad_phi_t_parent);
 
-  if (V_parent_ != nullptr)
+  if (_v_parent != nullptr)
   {
-    *V_parent_ = 0.0;
-    V_parent_->Add(I, *Vt_parent_);
+    *_v_parent = 0.0;
+    _v_parent->Add(i, *_vt_parent);
   }
 
-  lf->Add(I, *final_lf_);
+  lf->Add(i, *_final_lf);
 }
 
 void
@@ -316,128 +316,130 @@ OpenCoilSolver::SubtractSource(mfem::ParGridFunction * gf)
 }
 
 void
-OpenCoilSolver::initChildMesh()
+OpenCoilSolver::InitChildMesh()
 {
-  if (mesh_ == nullptr)
-    mesh_ = std::make_unique<mfem::ParSubMesh>(
-        mfem::ParSubMesh::CreateFromDomain(*mesh_parent_, coil_domains_));
+  if (_mesh == nullptr)
+    _mesh = std::make_unique<mfem::ParSubMesh>(
+        mfem::ParSubMesh::CreateFromDomain(*_mesh_parent, _coil_domains));
 }
 
 void
-OpenCoilSolver::makeFESpaces()
+OpenCoilSolver::MakeFESpaces()
 {
-  if (H1FESpace_ == nullptr)
+  if (_h1_fe_space == nullptr)
   {
-    H1FESpace_fec_ = std::make_unique<mfem::H1_FECollection>(order_h1_, mesh_->Dimension());
-    H1FESpace_ = std::make_unique<mfem::ParFiniteElementSpace>(mesh_.get(), H1FESpace_fec_.get());
+    _h1_fe_space_fec = std::make_unique<mfem::H1_FECollection>(_order_h1, _mesh->Dimension());
+    _h1_fe_space =
+        std::make_unique<mfem::ParFiniteElementSpace>(_mesh.get(), _h1_fe_space_fec.get());
   }
 
-  if (HCurlFESpace_ == nullptr)
+  if (_h_curl_fe_space == nullptr)
   {
-    HCurlFESpace_fec = std::make_unique<mfem::ND_FECollection>(order_hcurl_, mesh_->Dimension());
-    HCurlFESpace_ =
-        std::make_unique<mfem::ParFiniteElementSpace>(mesh_.get(), HCurlFESpace_fec.get());
+    _h_curl_fe_space_fec =
+        std::make_unique<mfem::ND_FECollection>(_order_hcurl, _mesh->Dimension());
+    _h_curl_fe_space =
+        std::make_unique<mfem::ParFiniteElementSpace>(_mesh.get(), _h_curl_fe_space_fec.get());
   }
 }
 
 void
-OpenCoilSolver::makeGridFunctions()
+OpenCoilSolver::MakeGridFunctions()
 {
 
-  if (V_ == nullptr)
-    V_ = std::make_unique<mfem::ParGridFunction>(H1FESpace_.get());
+  if (_v == nullptr)
+    _v = std::make_unique<mfem::ParGridFunction>(_h1_fe_space.get());
 
-  if (grad_phi_ == nullptr)
-    grad_phi_ = std::make_unique<mfem::ParGridFunction>(HCurlFESpace_.get());
+  if (_grad_phi == nullptr)
+    _grad_phi = std::make_unique<mfem::ParGridFunction>(_h_curl_fe_space.get());
 
-  if (grad_phi_t_parent_ == nullptr)
-    grad_phi_t_parent_ = std::make_unique<mfem::ParGridFunction>(*grad_phi_parent_);
+  if (_grad_phi_t_parent == nullptr)
+    _grad_phi_t_parent = std::make_unique<mfem::ParGridFunction>(*_grad_phi_parent);
 
-  *V_ = 0.0;
-  *grad_phi_ = 0.0;
-  *grad_phi_t_parent_ = 0.0;
+  *_v = 0.0;
+  *_grad_phi = 0.0;
+  *_grad_phi_t_parent = 0.0;
 }
 
 void
-OpenCoilSolver::setBCs()
+OpenCoilSolver::SetBCs()
 {
 
-  high_terminal_[0] = elec_attrs_.first;
-  low_terminal_[0] = elec_attrs_.second;
+  _high_terminal[0] = _elec_attrs.first;
+  _low_terminal[0] = _elec_attrs.second;
 }
 
 void
 OpenCoilSolver::SPSCurrent()
 {
-  bc_maps.Register("high_potential",
-                   new hephaestus::ScalarDirichletBC(std::string("V"), high_terminal_, &high_src_),
-                   true);
+  _bc_maps.Register("high_potential",
+                    new hephaestus::ScalarDirichletBC(std::string("V"), _high_terminal, &_high_src),
+                    true);
 
-  bc_maps.Register("low_potential",
-                   new hephaestus::ScalarDirichletBC(std::string("V"), low_terminal_, &low_src_),
-                   true);
+  _bc_maps.Register("low_potential",
+                    new hephaestus::ScalarDirichletBC(std::string("V"), _low_terminal, &_low_src),
+                    true);
 
   // NB: register false to avoid double-free.
   hephaestus::FESpaces fespaces;
-  fespaces.Register(std::string("HCurl"), HCurlFESpace_.get(), false);
-  fespaces.Register(std::string("H1"), H1FESpace_.get(), false);
+  fespaces.Register(std::string("HCurl"), _h_curl_fe_space.get(), false);
+  fespaces.Register(std::string("H1"), _h1_fe_space.get(), false);
 
   // NB: register false to avoid double-free.
   hephaestus::GridFunctions gridfunctions;
-  gridfunctions.Register(std::string("GradPhi"), grad_phi_.get(), false);
-  gridfunctions.Register(std::string("V"), V_.get(), false);
+  gridfunctions.Register(std::string("GradPhi"), _grad_phi.get(), false);
+  gridfunctions.Register(std::string("V"), _v.get(), false);
 
   hephaestus::InputParameters sps_params;
   sps_params.SetParam("GradPotentialName", std::string("GradPhi"));
   sps_params.SetParam("PotentialName", std::string("V"));
   sps_params.SetParam("HCurlFESpaceName", std::string("HCurl"));
   sps_params.SetParam("H1FESpaceName", std::string("H1"));
-  sps_params.SetParam("SolverOptions", solver_options_);
+  sps_params.SetParam("SolverOptions", _solver_options);
   sps_params.SetParam("ConductivityCoefName", std::string("electric_conductivity"));
 
   hephaestus::Coefficients coefs;
-  coefs.scalars.Register("electric_conductivity", sigma_, false);
+  coefs._scalars.Register("electric_conductivity", _sigma, false);
 
   hephaestus::ScalarPotentialSource sps(sps_params);
-  sps.Init(gridfunctions, fespaces, bc_maps, coefs);
+  sps.Init(gridfunctions, fespaces, _bc_maps, coefs);
 
-  mfem::ParLinearForm dummy(HCurlFESpace_.get());
+  mfem::ParLinearForm dummy(_h_curl_fe_space.get());
   sps.Apply(&dummy);
 
   // Normalise the current through the wedges and use them as a reference
-  double flux = calcFlux(grad_phi_.get(), ref_face_, *sigma_);
-  *grad_phi_ /= abs(flux);
-  if (V_)
-    *V_ /= abs(flux);
+  double flux = calcFlux(_grad_phi.get(), _ref_face, *_sigma);
+  *_grad_phi /= abs(flux);
+  if (_v)
+    *_v /= abs(flux);
 
-  mesh_->Transfer(*grad_phi_, *grad_phi_t_parent_);
-  if (V_parent_)
-    mesh_->Transfer(*V_, *Vt_parent_);
+  _mesh->Transfer(*_grad_phi, *_grad_phi_t_parent);
+  if (_v_parent)
+    _mesh->Transfer(*_v, *_vt_parent);
 
-  buildM1();
+  BuildM1();
 
-  final_lf_ = std::make_unique<mfem::ParLinearForm>(grad_phi_t_parent_->ParFESpace());
-  *final_lf_ = 0.0;
-  m1_->AddMult(*grad_phi_t_parent_, *final_lf_, 1.0);
+  _final_lf = std::make_unique<mfem::ParLinearForm>(_grad_phi_t_parent->ParFESpace());
+  *_final_lf = 0.0;
+  _m1->AddMult(*_grad_phi_t_parent, *_final_lf, 1.0);
 }
 
 void
-OpenCoilSolver::buildM1()
+OpenCoilSolver::BuildM1()
 {
-  if (m1_ == nullptr)
+  if (_m1 == nullptr)
   {
-    m1_ = std::make_unique<mfem::ParBilinearForm>(grad_phi_parent_->ParFESpace());
-    hephaestus::attrToMarker(coil_domains_, coil_markers_, mesh_parent_->attributes.Max());
-    m1_->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(sigma_), coil_markers_);
-    m1_->Assemble();
-    m1_->Finalize();
+    _m1 = std::make_unique<mfem::ParBilinearForm>(_grad_phi_parent->ParFESpace());
+    hephaestus::attrToMarker(_coil_domains, _coil_markers, _mesh_parent->attributes.Max());
+    _m1->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(_sigma), _coil_markers);
+    _m1->Assemble();
+    _m1->Finalize();
   }
 }
 
 void
-OpenCoilSolver::setRefFace(const int face)
+OpenCoilSolver::SetRefFace(const int face)
 {
-  ref_face_ = face;
+  _ref_face = face;
 }
 
 } // namespace hephaestus

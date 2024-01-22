@@ -29,19 +29,19 @@ MagnetostaticFormulation::MagnetostaticFormulation(
 }
 
 void
-MagnetostaticFormulation::registerMagneticFluxDensityAux(const std::string & b_field_name)
+MagnetostaticFormulation::RegisterMagneticFluxDensityAux(const std::string & b_field_name)
 {
   //* Magnetic flux density, B = ∇×A
-  hephaestus::AuxSolvers & auxsolvers = GetProblem()->postprocessors;
+  hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(
       b_field_name, new hephaestus::CurlAuxSolver(_h_curl_var_name, b_field_name), true);
 }
 
 void
-MagnetostaticFormulation::registerMagneticFieldAux(const std::string & h_field_name)
+MagnetostaticFormulation::RegisterMagneticFieldAux(const std::string & h_field_name)
 {
   //* Magnetic field H = ν∇×A
-  hephaestus::AuxSolvers & auxsolvers = GetProblem()->postprocessors;
+  hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(h_field_name,
                       new hephaestus::ScaledCurlVectorGridFunctionAux(
                           _h_curl_var_name, h_field_name, _magnetic_reluctivity_name),
@@ -49,12 +49,12 @@ MagnetostaticFormulation::registerMagneticFieldAux(const std::string & h_field_n
 }
 
 void
-MagnetostaticFormulation::registerLorentzForceDensityAux(const std::string & f_field_name,
+MagnetostaticFormulation::RegisterLorentzForceDensityAux(const std::string & f_field_name,
                                                          const std::string & b_field_name,
                                                          const std::string & j_field_name)
 {
   //* Lorentz force density = J x B
-  hephaestus::AuxSolvers & auxsolvers = GetProblem()->postprocessors;
+  hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(f_field_name,
                       new hephaestus::VectorGridFunctionCrossProductAux(
                           f_field_name, f_field_name, j_field_name, b_field_name),
@@ -65,15 +65,15 @@ MagnetostaticFormulation::registerLorentzForceDensityAux(const std::string & f_f
 void
 MagnetostaticFormulation::RegisterCoefficients()
 {
-  hephaestus::Coefficients & coefficients = GetProblem()->coefficients;
-  if (!coefficients.scalars.Has(_magnetic_permeability_name))
+  hephaestus::Coefficients & coefficients = GetProblem()->_coefficients;
+  if (!coefficients._scalars.Has(_magnetic_permeability_name))
   {
     MFEM_ABORT(_magnetic_permeability_name + " coefficient not found.");
   }
-  coefficients.scalars.Register(
+  coefficients._scalars.Register(
       _magnetic_reluctivity_name,
       new mfem::TransformedCoefficient(
-          &oneCoef, coefficients.scalars.Get(_magnetic_permeability_name), fracFunc),
+          &_one_coef, coefficients._scalars.Get(_magnetic_permeability_name), fracFunc),
       true);
 }
 } // namespace hephaestus

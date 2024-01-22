@@ -10,25 +10,25 @@ namespace hephaestus
 class BCMap : public hephaestus::NamedFieldsMap<hephaestus::BoundaryCondition>
 {
 public:
-  mfem::Array<int> getEssentialBdrMarkers(const std::string & name_, mfem::Mesh * mesh_);
+  mfem::Array<int> GetEssentialBdrMarkers(const std::string & name_, mfem::Mesh * mesh_);
 
-  void applyEssentialBCs(const std::string & name_,
+  void ApplyEssentialBCs(const std::string & name_,
                          mfem::Array<int> & ess_tdof_list,
                          mfem::GridFunction & gridfunc,
                          mfem::Mesh * mesh_);
 
-  void applyEssentialBCs(const std::string & name_,
+  void ApplyEssentialBCs(const std::string & name_,
                          mfem::Array<int> & ess_tdof_list,
                          mfem::ParComplexGridFunction & gridfunc,
                          mfem::Mesh * mesh_);
 
-  void applyIntegratedBCs(const std::string & name_, mfem::LinearForm & lf, mfem::Mesh * mesh_);
+  void ApplyIntegratedBCs(const std::string & name_, mfem::LinearForm & lf, mfem::Mesh * mesh_);
 
-  void applyIntegratedBCs(const std::string & name_,
+  void ApplyIntegratedBCs(const std::string & name_,
                           mfem::ParComplexLinearForm & clf,
                           mfem::Mesh * mesh_);
 
-  void applyIntegratedBCs(const std::string & name_,
+  void ApplyIntegratedBCs(const std::string & name_,
                           mfem::ParSesquilinearForm & clf,
                           mfem::Mesh * mesh_);
 };

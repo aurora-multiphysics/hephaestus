@@ -5,7 +5,7 @@ namespace hephaestus
 
 VectorFEWeakDivergenceKernel::VectorFEWeakDivergenceKernel(
     const hephaestus::InputParameters & params)
-  : Kernel(params), coef_name(params.GetParam<std::string>("CoefficientName"))
+  : Kernel(params), _coef_name(params.GetParam<std::string>("CoefficientName"))
 {
 }
 
@@ -16,13 +16,13 @@ VectorFEWeakDivergenceKernel::Init(hephaestus::GridFunctions & gridfunctions,
                                    hephaestus::Coefficients & coefficients)
 {
 
-  coef = coefficients.scalars.Get(coef_name);
+  _coef = coefficients._scalars.Get(_coef_name);
 }
 
 void
 VectorFEWeakDivergenceKernel::Apply(mfem::ParMixedBilinearForm * mblf)
 {
-  mblf->AddDomainIntegrator(new mfem::VectorFEWeakDivergenceIntegrator(*coef));
+  mblf->AddDomainIntegrator(new mfem::VectorFEWeakDivergenceIntegrator(*_coef));
 };
 
 } // namespace hephaestus

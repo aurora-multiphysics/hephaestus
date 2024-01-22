@@ -4,7 +4,7 @@ namespace hephaestus
 {
 
 hephaestus::ProblemBuilder *
-Factory::createProblemBuilder(std::string & formulation_name)
+Factory::CreateProblemBuilder(std::string & formulation_name)
 {
   if (formulation_name == "EBForm")
   {
@@ -75,7 +75,7 @@ Factory::createProblemBuilder(std::string & formulation_name)
 };
 
 hephaestus::FrequencyDomainEMFormulation *
-Factory::createFrequencyDomainEMFormulation(std::string & formulation)
+Factory::CreateFrequencyDomainEmFormulation(std::string & formulation)
 {
   if (formulation == "ComplexEForm")
   {
@@ -105,7 +105,7 @@ Factory::createFrequencyDomainEMFormulation(std::string & formulation)
 }
 
 hephaestus::TimeDomainEMFormulation *
-Factory::createTimeDomainEMFormulation(std::string & formulation)
+Factory::CreateTimeDomainEmFormulation(std::string & formulation)
 {
   if (formulation == "EBForm")
   {
@@ -156,31 +156,31 @@ Factory::createTimeDomainEMFormulation(std::string & formulation)
 }
 
 mfem::ParFiniteElementSpace *
-Factory::createParFESpace(hephaestus::InputParameters params, mfem::ParMesh & pmesh)
+Factory::CreateParFESpace(hephaestus::InputParameters params, mfem::ParMesh & pmesh)
 {
-  auto FEType(params.GetParam<std::string>("FESpaceType"));
+  auto fe_type(params.GetParam<std::string>("FESpaceType"));
   int order(params.GetParam<int>("order"));
   int components(params.GetParam<int>("components")); // spatial dimension of mesh. Use
                                                       // FiniteElementCollection::New instead
-  if (FEType == "H1")
+  if (fe_type == "H1")
   {
     return new mfem::common::H1_ParFESpace(&pmesh, order, components);
   }
-  else if (FEType == "ND")
+  else if (fe_type == "ND")
   {
     return new mfem::common::ND_ParFESpace(&pmesh, order, components);
   }
-  else if (FEType == "RT")
+  else if (fe_type == "RT")
   {
     return new mfem::common::RT_ParFESpace(&pmesh, order, components);
   }
-  else if (FEType == "L2")
+  else if (fe_type == "L2")
   {
     return new mfem::common::L2_ParFESpace(&pmesh, order, components);
   }
   else
   {
-    MFEM_WARNING("FESpaceType " << FEType << " not recognised.");
+    MFEM_WARNING("FESpaceType " << fe_type << " not recognised.");
   }
   return nullptr;
 }

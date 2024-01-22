@@ -16,13 +16,13 @@ public:
   ~MagnetostaticFormulation() override = default;
 
   // Enable auxiliary calculation of B ∈ H(div)
-  void registerMagneticFluxDensityAux(const std::string & b_field_name) override;
+  void RegisterMagneticFluxDensityAux(const std::string & b_field_name) override;
 
   // Enable auxiliary calculation of H ∈ H(curl)
-  void registerMagneticFieldAux(const std::string & h_field_name) override;
+  void RegisterMagneticFieldAux(const std::string & h_field_name) override;
 
   // Enable auxiliary calculation of F ∈ L2
-  void registerLorentzForceDensityAux(const std::string & f_field_name,
+  void RegisterLorentzForceDensityAux(const std::string & f_field_name,
                                       const std::string & b_field_name,
                                       const std::string & j_field_name) override;
 

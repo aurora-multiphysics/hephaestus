@@ -54,7 +54,7 @@ VectorGridFunctionCrossProductAux::Init(const hephaestus::GridFunctions & gridfu
                                << " not found when initializing ScaledVectorGridFunctionAux");
   }
 
-  coefficients.vectors.Register(
+  coefficients._vectors.Register(
       _vec_coef_name,
       new hephaestus::VectorGridFunctionCrossProductCoefficient(*_u_gf, *_v_gf),
       true);

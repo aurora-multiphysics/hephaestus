@@ -39,9 +39,9 @@ public:
             const hephaestus::FESpaces & fespaces,
             hephaestus::BCMap & bc_map,
             hephaestus::Coefficients & coefficients) override;
-  void addKernels() override;
+  void AddKernels() override;
 
-  std::string h_curl_var_name, alpha_coef_name, beta_coef_name, dtalpha_coef_name;
+  std::string _h_curl_var_name, _alpha_coef_name, _beta_coef_name, _dtalpha_coef_name;
 };
 
 class HCurlOperator : public TimeDomainEquationSystemOperator

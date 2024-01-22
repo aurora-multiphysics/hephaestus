@@ -24,7 +24,7 @@ public:
                                    hephaestus::Coefficients & coefficients,
                                    hephaestus::Sources & sources,
                                    hephaestus::InputParameters & solver_options)
-    : pmesh_(&pmesh),
+    : _pmesh(&pmesh),
       _fespaces(fespaces),
       _gridfunctions(gridfunctions),
       _bc_map(bc_map),
@@ -39,24 +39,24 @@ public:
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
   void SetEquationSystem(hephaestus::TimeDependentEquationSystem * equation_system);
 
-  mfem::Array<int> true_offsets, block_trueOffsets;
+  mfem::Array<int> _true_offsets, _block_true_offsets;
   // Vector of names of state gridfunctions used in formulation, ordered by
   // appearance in block vector during solve.
-  std::vector<std::string> state_var_names;
+  std::vector<std::string> _state_var_names;
   // Vector of names of recognised auxiliary gridfunctions that can be
   // calculated from formulation,
-  std::vector<std::string> aux_var_names;
+  std::vector<std::string> _aux_var_names;
   // Vector of names of active auxiliary gridfunctions that are being calculated
   // in formulation,
-  std::vector<std::string> active_aux_var_names;
+  std::vector<std::string> _active_aux_var_names;
 
-  std::vector<mfem::ParGridFunction *> local_trial_vars, local_test_vars;
+  std::vector<mfem::ParGridFunction *> _local_trial_vars, _local_test_vars;
 
   hephaestus::TimeDependentEquationSystem * _equation_system;
 
-  int myid_{0};
-  int num_procs_{1};
-  mfem::ParMesh * pmesh_;
+  int _myid{0};
+  int _num_procs{1};
+  mfem::ParMesh * _pmesh;
   hephaestus::FESpaces & _fespaces;
   hephaestus::GridFunctions & _gridfunctions;
   hephaestus::BCMap & _bc_map;
@@ -64,11 +64,11 @@ public:
   hephaestus::Coefficients & _coefficients;
   hephaestus::InputParameters & _solver_options;
 
-  mutable std::unique_ptr<hephaestus::DefaultGMRESSolver> solver{nullptr};
-  mutable std::unique_ptr<hephaestus::DefaultHCurlPCGSolver> a1_solver{nullptr};
+  mutable std::unique_ptr<hephaestus::DefaultGMRESSolver> _solver{nullptr};
+  mutable std::unique_ptr<hephaestus::DefaultHCurlPCGSolver> _jacobian_solver{nullptr};
 
-  mfem::OperatorHandle blockA;
-  mfem::BlockVector trueX, trueRhs;
+  mfem::OperatorHandle _block_a;
+  mfem::BlockVector _true_x, _true_rhs;
 };
 
 } // namespace hephaestus

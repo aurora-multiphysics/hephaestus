@@ -17,7 +17,7 @@ Outputs::Outputs(hephaestus::GridFunctions & gridfunctions) : _gridfunctions(&gr
 
 Outputs::~Outputs()
 {
-  for (const auto & [name, socket_stream] : socks_)
+  for (const auto & [name, socket_stream] : _socks)
   {
     delete socket_stream;
   }

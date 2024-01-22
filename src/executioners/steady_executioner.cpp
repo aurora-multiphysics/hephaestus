@@ -4,7 +4,7 @@ namespace hephaestus
 {
 
 SteadyExecutioner::SteadyExecutioner(const hephaestus::InputParameters & params)
-  : Executioner(params), problem(params.GetParam<hephaestus::SteadyStateProblem *>("Problem"))
+  : Executioner(params), _problem(params.GetParam<hephaestus::SteadyStateProblem *>("Problem"))
 {
 }
 
@@ -12,13 +12,13 @@ void
 SteadyExecutioner::Solve() const
 {
   // Advance time step.
-  problem->preprocessors.Solve();
-  problem->GetOperator()->Solve(*(problem->F));
-  problem->postprocessors.Solve();
+  _problem->_preprocessors.Solve();
+  _problem->GetOperator()->Solve(*(_problem->_f));
+  _problem->_postprocessors.Solve();
 
   // Output data
   // Output timestep summary to console
-  problem->outputs.Write();
+  _problem->_outputs.Write();
 }
 void
 SteadyExecutioner::Execute() const

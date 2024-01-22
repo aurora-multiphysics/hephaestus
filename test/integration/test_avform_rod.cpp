@@ -6,55 +6,54 @@ extern const char * DATA_DIR;
 class TestAVFormRod
 {
 protected:
-  static double potential_high(const mfem::Vector & x, double t)
+  static double PotentialHigh(const mfem::Vector & x, double t)
   {
-    double wj_(2.0 * M_PI / 60.0);
-    return 2 * cos(wj_ * t);
+    double wj(2.0 * M_PI / 60.0);
+    return 2 * cos(wj * t);
   }
-  static double potential_ground(const mfem::Vector & x, double t) { return 0.0; }
+  static double PotentialGround(const mfem::Vector & x, double t) { return 0.0; }
 
-  static void adot_bc(const mfem::Vector & x, double t, mfem::Vector & dAdt) { dAdt = 0.0; }
+  static void AdotBc(const mfem::Vector & x, double t, mfem::Vector & dAdt) { dAdt = 0.0; }
 
-  static void source_current(const mfem::Vector & x, double t, mfem::Vector & J) { J = 0.0; }
+  static void SourceCurrent(const mfem::Vector & x, double t, mfem::Vector & J) { J = 0.0; }
 
-  hephaestus::InputParameters test_params()
+  hephaestus::InputParameters TestParams()
   {
     double sigma = 2.0 * M_PI * 10;
 
-    double sigmaAir;
+    double sigma_air;
 
-    sigmaAir = 1.0e-6 * sigma;
+    sigma_air = 1.0e-6 * sigma;
 
     hephaestus::Subdomain wire("wire", 1);
-    wire.scalar_coefficients.Register(
+    wire._scalar_coefficients.Register(
         "electrical_conductivity", new mfem::ConstantCoefficient(sigma), true);
 
     hephaestus::Subdomain air("air", 2);
-    air.scalar_coefficients.Register(
-        "electrical_conductivity", new mfem::ConstantCoefficient(sigmaAir), true);
+    air._scalar_coefficients.Register(
+        "electrical_conductivity", new mfem::ConstantCoefficient(sigma_air), true);
 
     hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({wire, air}));
 
-    coefficients.scalars.Register(
+    coefficients._scalars.Register(
         "magnetic_permeability", new mfem::ConstantCoefficient(1.0), true);
 
     hephaestus::BCMap bc_map;
-    auto * adotVecCoef = new mfem::VectorFunctionCoefficient(3, adot_bc);
+    auto * adot_vec_coef = new mfem::VectorFunctionCoefficient(3, AdotBc);
     bc_map.Register("tangential_dAdt",
                     new hephaestus::VectorDirichletBC(std::string("dmagnetic_vector_potential_dt"),
                                                       mfem::Array<int>({1, 2, 3}),
-                                                      adotVecCoef),
+                                                      adot_vec_coef),
                     true);
-    coefficients.vectors.Register("surface_tangential_dAdt", adotVecCoef, true);
+    coefficients._vectors.Register("surface_tangential_dAdt", adot_vec_coef, true);
 
     mfem::Array<int> high_terminal(1);
     high_terminal[0] = 1;
-    bc_map.Register(
-        "high_potential",
-        new hephaestus::ScalarDirichletBC(std::string("electric_potential"),
-                                          high_terminal,
-                                          new mfem::FunctionCoefficient(potential_high)),
-        true);
+    bc_map.Register("high_potential",
+                    new hephaestus::ScalarDirichletBC(std::string("electric_potential"),
+                                                      high_terminal,
+                                                      new mfem::FunctionCoefficient(PotentialHigh)),
+                    true);
 
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 2;
@@ -62,10 +61,10 @@ protected:
         "ground_potential",
         new hephaestus::ScalarDirichletBC(std::string("electric_potential"),
                                           ground_terminal,
-                                          new mfem::FunctionCoefficient(potential_ground)),
+                                          new mfem::FunctionCoefficient(PotentialGround)),
         true);
 
-    auto * JSrcCoef = new mfem::VectorFunctionCoefficient(3, source_current);
+    auto * j_src_coef = new mfem::VectorFunctionCoefficient(3, SourceCurrent);
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./cylinder-hex-q2.gen")).c_str(), 1, 1);
 
@@ -97,7 +96,7 @@ protected:
 
 TEST_CASE_METHOD(TestAVFormRod, "TestAVFormRod", "[CheckRun]")
 {
-  hephaestus::InputParameters params(test_params());
+  hephaestus::InputParameters params(TestParams());
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
 

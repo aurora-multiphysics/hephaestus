@@ -7,13 +7,13 @@ extern const char * DATA_DIR;
 class TestComplexIrisWaveguide
 {
 protected:
-  static void e_bc_r(const mfem::Vector & x, mfem::Vector & E)
+  static void EBCR(const mfem::Vector & x, mfem::Vector & E)
   {
     E.SetSize(3);
     E = 0.0;
   }
 
-  static void e_bc_i(const mfem::Vector & x, mfem::Vector & E)
+  static void EBCI(const mfem::Vector & x, mfem::Vector & E)
   {
     E.SetSize(3);
     E = 0.0;
@@ -22,46 +22,45 @@ protected:
   inline static const double epsilon0_ = 8.8541878176e-12; // F/m;
   inline static const double mu0_ = 4.0e-7 * M_PI;         // H/m;
   inline static const double freq_ = 9.3e9;                // 10/2pi
-  double port_length_vector[3] = {0.0, 22.86e-3, 0.0};
-  double port_width_vector[3] = {0.0, 0.0, 10.16e-3};
+  double _port_length_vector[3] = {0.0, 22.86e-3, 0.0};
+  double _port_width_vector[3] = {0.0, 0.0, 10.16e-3};
 
-  hephaestus::InputParameters test_params()
+  hephaestus::InputParameters TestParams()
   {
     hephaestus::Subdomain air("air", 1);
 
-    air.scalar_coefficients.Register(
+    air._scalar_coefficients.Register(
         "real_electrical_conductivity", new mfem::ConstantCoefficient(0.0), true);
-    air.scalar_coefficients.Register(
+    air._scalar_coefficients.Register(
         "imag_electrical_conductivity", new mfem::ConstantCoefficient(0.0), true);
-    air.scalar_coefficients.Register(
+    air._scalar_coefficients.Register(
         "real_rel_permittivity", new mfem::ConstantCoefficient(1.0), true);
-    air.scalar_coefficients.Register(
+    air._scalar_coefficients.Register(
         "imag_rel_permittivity", new mfem::ConstantCoefficient(0.0), true);
-    air.scalar_coefficients.Register(
+    air._scalar_coefficients.Register(
         "real_rel_permeability", new mfem::ConstantCoefficient(1.0), true);
-    air.scalar_coefficients.Register(
+    air._scalar_coefficients.Register(
         "imag_rel_permeability", new mfem::ConstantCoefficient(0.0), true);
 
     hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({air}));
 
-    coefficients.scalars.Register("frequency", new mfem::ConstantCoefficient(freq_), true);
-    coefficients.scalars.Register(
+    coefficients._scalars.Register("frequency", new mfem::ConstantCoefficient(freq_), true);
+    coefficients._scalars.Register(
         "magnetic_permeability", new mfem::ConstantCoefficient(mu0_), true);
-    coefficients.scalars.Register(
+    coefficients._scalars.Register(
         "dielectric_permittivity", new mfem::ConstantCoefficient(epsilon0_), true);
-    coefficients.scalars.Register(
+    coefficients._scalars.Register(
         "electrical_conductivity", new mfem::ConstantCoefficient(0.0), true);
 
     hephaestus::BCMap bc_map;
     mfem::Array<int> dirichlet_attr(1);
     dirichlet_attr[0] = 1;
-    bc_map.Register(
-        "tangential_E",
-        new hephaestus::VectorDirichletBC(std::string("electric_field"),
-                                          dirichlet_attr,
-                                          new mfem::VectorFunctionCoefficient(3, e_bc_r),
-                                          new mfem::VectorFunctionCoefficient(3, e_bc_i)),
-        true);
+    bc_map.Register("tangential_E",
+                    new hephaestus::VectorDirichletBC(std::string("electric_field"),
+                                                      dirichlet_attr,
+                                                      new mfem::VectorFunctionCoefficient(3, EBCR),
+                                                      new mfem::VectorFunctionCoefficient(3, EBCI)),
+                    true);
 
     mfem::Array<int> wgi_in_attr(1);
     wgi_in_attr[0] = 2;
@@ -69,8 +68,8 @@ protected:
                     new hephaestus::RWTE10PortRBC(std::string("electric_field"),
                                                   wgi_in_attr,
                                                   freq_,
-                                                  port_length_vector,
-                                                  port_width_vector,
+                                                  _port_length_vector,
+                                                  _port_width_vector,
                                                   true),
                     true);
 
@@ -80,8 +79,8 @@ protected:
                     new hephaestus::RWTE10PortRBC(std::string("electric_field"),
                                                   wgi_out_attr,
                                                   freq_,
-                                                  port_length_vector,
-                                                  port_width_vector,
+                                                  _port_length_vector,
+                                                  _port_width_vector,
                                                   false),
                     true);
 
@@ -122,7 +121,7 @@ protected:
 
 TEST_CASE_METHOD(TestComplexIrisWaveguide, "TestComplexIrisWaveguide", "[CheckRun]")
 {
-  hephaestus::InputParameters params(test_params());
+  hephaestus::InputParameters params(TestParams());
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
 
@@ -153,15 +152,15 @@ TEST_CASE_METHOD(TestComplexIrisWaveguide, "TestComplexIrisWaveguide", "[CheckRu
 
   problem_builder->AddGridFunction("magnetic_flux_density_real", "HDiv");
   problem_builder->AddGridFunction("magnetic_flux_density_imag", "HDiv");
-  problem_builder->registerMagneticFluxDensityAux("magnetic_flux_density_real",
+  problem_builder->RegisterMagneticFluxDensityAux("magnetic_flux_density_real",
                                                   "magnetic_flux_density_imag");
 
   problem_builder->AddGridFunction("current_density_real", "HDiv");
   problem_builder->AddGridFunction("current_density_imag", "HDiv");
-  problem_builder->registerCurrentDensityAux("current_density_real", "current_density_imag");
+  problem_builder->RegisterCurrentDensityAux("current_density_real", "current_density_imag");
 
   problem_builder->AddGridFunction("joule_heating_density", "Scalar_L2");
-  problem_builder->registerJouleHeatingDensityAux("joule_heating_density",
+  problem_builder->RegisterJouleHeatingDensityAux("joule_heating_density",
                                                   "electric_field_real",
                                                   "electric_field_imag",
                                                   "electrical_conductivity");
@@ -183,14 +182,14 @@ TEST_CASE_METHOD(TestComplexIrisWaveguide, "TestComplexIrisWaveguide", "[CheckRu
 
   executioner->Execute();
 
-  mfem::Vector zeroVec(3);
-  zeroVec = 0.0;
-  mfem::VectorConstantCoefficient zeroCoef(zeroVec);
+  mfem::Vector zero_vec(3);
+  zero_vec = 0.0;
+  mfem::VectorConstantCoefficient zero_coef(zero_vec);
 
   double norm_r =
-      executioner->problem->gridfunctions.Get("electric_field_real")->ComputeMaxError(zeroCoef);
+      executioner->_problem->_gridfunctions.Get("electric_field_real")->ComputeMaxError(zero_coef);
   double norm_i =
-      executioner->problem->gridfunctions.Get("electric_field_imag")->ComputeMaxError(zeroCoef);
+      executioner->_problem->_gridfunctions.Get("electric_field_imag")->ComputeMaxError(zero_coef);
   REQUIRE_THAT(norm_r, Catch::Matchers::WithinAbs(4896.771, 0.001));
   REQUIRE_THAT(norm_i, Catch::Matchers::WithinAbs(5357.650, 0.001));
 }

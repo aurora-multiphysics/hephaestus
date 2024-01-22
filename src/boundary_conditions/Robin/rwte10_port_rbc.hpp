@@ -19,38 +19,38 @@ public:
                 double port_width_vector[3],
                 bool input_port);
 
-  static mfem::Vector cross_product(mfem::Vector & va, mfem::Vector & vb)
+  static mfem::Vector CrossProduct(mfem::Vector & va, mfem::Vector & vb)
   {
-    mfem::Vector Vec;
-    Vec.SetSize(3);
-    Vec[0] = va[1] * vb[2] - va[2] * vb[1];
-    Vec[1] = va[2] * vb[0] - va[0] * vb[2];
-    Vec[2] = va[0] * vb[1] - va[1] * vb[0];
-    return Vec;
+    mfem::Vector vec;
+    vec.SetSize(3);
+    vec[0] = va[1] * vb[2] - va[2] * vb[1];
+    vec[1] = va[2] * vb[0] - va[0] * vb[2];
+    vec[2] = va[0] * vb[1] - va[1] * vb[0];
+    return vec;
   }
   void RWTE10(const mfem::Vector & x, std::vector<std::complex<double>> & E);
-  void RWTE10_real(const mfem::Vector & x, mfem::Vector & v);
-  void RWTE10_imag(const mfem::Vector & x, mfem::Vector & v);
+  void RWTE10Real(const mfem::Vector & x, mfem::Vector & v);
+  void RWTE10Imag(const mfem::Vector & x, mfem::Vector & v);
 
-  bool input_port;
-  double omega_;
-  mfem::Vector a1Vec;
-  mfem::Vector a2Vec;
-  mfem::Vector a3Vec;
-  mfem::Vector a2xa3;
-  mfem::Vector a3xa1;
+  bool _input_port;
+  double _omega;
+  mfem::Vector _a1_vec;
+  mfem::Vector _a2_vec;
+  mfem::Vector _a3_vec;
+  mfem::Vector _a2xa3;
+  mfem::Vector _a3xa1;
 
-  double V;
-  double kc;
-  double k0;
-  std::complex<double> k_;
+  double _v;
+  double _kc;
+  double _k0;
+  std::complex<double> _k;
 
-  mfem::Vector k_a;
-  mfem::Vector k_c;
+  mfem::Vector _k_a;
+  mfem::Vector _k_c;
 
-  std::unique_ptr<mfem::ConstantCoefficient> robin_coef_im;
-  std::unique_ptr<mfem::VectorFunctionCoefficient> u_real;
-  std::unique_ptr<mfem::VectorFunctionCoefficient> u_imag;
+  std::unique_ptr<mfem::ConstantCoefficient> _robin_coef_im;
+  std::unique_ptr<mfem::VectorFunctionCoefficient> _u_real;
+  std::unique_ptr<mfem::VectorFunctionCoefficient> _u_imag;
 };
 
 } // namespace hephaestus

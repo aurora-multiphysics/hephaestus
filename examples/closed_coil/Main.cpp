@@ -7,13 +7,13 @@ defineCoefficients()
 {
   hephaestus::Coefficients coefficients;
 
-  coefficients.scalars.Register(
+  coefficients._scalars.Register(
       "magnetic_permeability", new mfem::ConstantCoefficient(M_PI * 4.0e-7), true);
 
-  coefficients.scalars.Register(
+  coefficients._scalars.Register(
       "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
 
-  coefficients.scalars.Register("I", new mfem::ConstantCoefficient(2742), true);
+  coefficients._scalars.Register("I", new mfem::ConstantCoefficient(2742), true);
 
   return coefficients;
 }
@@ -87,7 +87,7 @@ main(int argc, char * argv[])
   problem_builder->AddGridFunction(std::string("magnetic_vector_potential"), std::string("HCurl"));
   problem_builder->AddGridFunction(std::string("source_grad_phi"), std::string("HCurl"));
   problem_builder->AddGridFunction(std::string("magnetic_flux_density"), std::string("HDiv"));
-  problem_builder->registerMagneticFluxDensityAux("magnetic_flux_density");
+  problem_builder->RegisterMagneticFluxDensityAux("magnetic_flux_density");
 
   hephaestus::Coefficients coefficients = defineCoefficients();
   problem_builder->SetCoefficients(coefficients);

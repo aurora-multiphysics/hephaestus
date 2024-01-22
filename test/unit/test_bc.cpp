@@ -9,7 +9,7 @@ TEST_CASE("BoundaryConditionTest", "[CheckData]")
                   new hephaestus::BoundaryCondition(std::string("boundary_1"), bdr_attrs),
                   true);
 
-  mfem::Array<int> ess_bdr = bc_map.Get("tangential_dEdt")->bdr_attributes;
+  mfem::Array<int> ess_bdr = bc_map.Get("tangential_dEdt")->_bdr_attributes;
 
   for (int i = 0; i < bdr_attrs.Size(); ++i)
     REQUIRE(bdr_attrs[i] == ess_bdr[i]);

@@ -40,25 +40,26 @@ StaticsFormulation::StaticsFormulation(std::string alpha_coef_name, std::string 
 void
 StaticsFormulation::ConstructOperator()
 {
-  hephaestus::InputParameters & solver_options = GetProblem()->solver_options;
+  hephaestus::InputParameters & solver_options = GetProblem()->_solver_options;
   solver_options.SetParam("HCurlVarName", _h_curl_var_name);
   solver_options.SetParam("StiffnessCoefName", _alpha_coef_name);
-  problem->eq_sys_operator = std::make_unique<hephaestus::StaticsOperator>(*(problem->pmesh),
-                                                                           problem->fespaces,
-                                                                           problem->gridfunctions,
-                                                                           problem->bc_map,
-                                                                           problem->coefficients,
-                                                                           problem->sources,
-                                                                           problem->solver_options);
-  problem->GetOperator()->SetGridFunctions();
+  _problem->_eq_sys_operator =
+      std::make_unique<hephaestus::StaticsOperator>(*(_problem->_pmesh),
+                                                    _problem->_fespaces,
+                                                    _problem->_gridfunctions,
+                                                    _problem->_bc_map,
+                                                    _problem->_coefficients,
+                                                    _problem->_sources,
+                                                    _problem->_solver_options);
+  _problem->GetOperator()->SetGridFunctions();
 };
 
 void
 StaticsFormulation::RegisterGridFunctions()
 {
-  int & myid = GetProblem()->myid_;
-  hephaestus::GridFunctions & gridfunctions = GetProblem()->gridfunctions;
-  hephaestus::FESpaces & fespaces = GetProblem()->fespaces;
+  int & myid = GetProblem()->_myid;
+  hephaestus::GridFunctions & gridfunctions = GetProblem()->_gridfunctions;
+  hephaestus::FESpaces & fespaces = GetProblem()->_fespaces;
 
   // Register default ParGridFunctions of state gridfunctions if not provided
   if (!gridfunctions.Has(_h_curl_var_name))
@@ -76,8 +77,8 @@ StaticsFormulation::RegisterGridFunctions()
 void
 StaticsFormulation::RegisterCoefficients()
 {
-  hephaestus::Coefficients & coefficients = GetProblem()->coefficients;
-  if (!coefficients.scalars.Has(_alpha_coef_name))
+  hephaestus::Coefficients & coefficients = GetProblem()->_coefficients;
+  if (!coefficients._scalars.Has(_alpha_coef_name))
   {
     MFEM_ABORT(_alpha_coef_name + " coefficient not found.");
   }
@@ -92,15 +93,15 @@ StaticsOperator::StaticsOperator(mfem::ParMesh & pmesh,
                                  hephaestus::InputParameters & solver_options)
   : EquationSystemOperator(
         pmesh, fespaces, gridfunctions, bc_map, coefficients, sources, solver_options),
-    h_curl_var_name(solver_options.GetParam<std::string>("HCurlVarName")),
-    stiffness_coef_name(solver_options.GetParam<std::string>("StiffnessCoefName"))
+    _h_curl_var_name(solver_options.GetParam<std::string>("HCurlVarName")),
+    _stiffness_coef_name(solver_options.GetParam<std::string>("StiffnessCoefName"))
 {
 }
 
 void
 StaticsOperator::SetGridFunctions()
 {
-  state_var_names.push_back(h_curl_var_name);
+  _state_var_names.push_back(_h_curl_var_name);
   EquationSystemOperator::SetGridFunctions();
 };
 
@@ -108,7 +109,7 @@ void
 StaticsOperator::Init(mfem::Vector & X)
 {
   EquationSystemOperator::Init(X);
-  stiffCoef_ = _coefficients.scalars.Get(stiffness_coef_name);
+  _stiff_coef = _coefficients._scalars.Get(_stiffness_coef_name);
 }
 
 /*
@@ -124,29 +125,30 @@ Fully discretised equations
 void
 StaticsOperator::Solve(mfem::Vector & X)
 {
-  mfem::ParGridFunction & a_(*local_test_vars.at(0));
-  a_ = 0.0;
-  mfem::ParLinearForm b1_(a_.ParFESpace());
-  b1_ = 0.0;
-  mfem::Array<int> ess_bdr_tdofs_;
-  _bc_map.applyEssentialBCs(h_curl_var_name, ess_bdr_tdofs_, a_, pmesh_);
-  _bc_map.applyIntegratedBCs(h_curl_var_name, b1_, pmesh_);
-  b1_.Assemble();
-  _sources.Apply(&b1_);
-  mfem::ParBilinearForm a1_(a_.ParFESpace());
-  a1_.AddDomainIntegrator(new mfem::CurlCurlIntegrator(*stiffCoef_));
-  a1_.Assemble();
-  a1_.Finalize();
-  mfem::HypreParMatrix CurlMuInvCurl;
-  mfem::HypreParVector A(a_.ParFESpace());
-  mfem::HypreParVector RHS(a_.ParFESpace());
-  a1_.FormLinearSystem(ess_bdr_tdofs_, a_, b1_, CurlMuInvCurl, A, RHS);
+  mfem::ParGridFunction & gf(*_local_test_vars.at(0));
+  gf = 0.0;
+  mfem::ParLinearForm lf(gf.ParFESpace());
+  lf = 0.0;
+  mfem::Array<int> ess_bdr_tdofs;
+  _bc_map.ApplyEssentialBCs(_h_curl_var_name, ess_bdr_tdofs, gf, _pmesh);
+  _bc_map.ApplyIntegratedBCs(_h_curl_var_name, lf, _pmesh);
+  lf.Assemble();
+  _sources.Apply(&lf);
+  mfem::ParBilinearForm blf(gf.ParFESpace());
+  blf.AddDomainIntegrator(new mfem::CurlCurlIntegrator(*_stiff_coef));
+  blf.Assemble();
+  blf.Finalize();
+  mfem::HypreParMatrix curl_mu_inv_curl;
+  mfem::HypreParVector sol_tdofs(gf.ParFESpace());
+  mfem::HypreParVector rhs_tdofs(gf.ParFESpace());
+  blf.FormLinearSystem(ess_bdr_tdofs, gf, lf, curl_mu_inv_curl, sol_tdofs, rhs_tdofs);
 
   // Define and apply a parallel FGMRES solver for AX=B with the AMS
   // preconditioner from hypre.
-  hephaestus::DefaultHCurlFGMRESSolver a1_solver(_solver_options, CurlMuInvCurl, a_.ParFESpace());
-  a1_solver.Mult(RHS, A);
-  a1_.RecoverFEMSolution(A, b1_, a_);
+  hephaestus::DefaultHCurlFGMRESSolver a1_solver(
+      _solver_options, curl_mu_inv_curl, gf.ParFESpace());
+  a1_solver.Mult(rhs_tdofs, sol_tdofs);
+  blf.RecoverFEMSolution(sol_tdofs, lf, gf);
 }
 
 } // namespace hephaestus

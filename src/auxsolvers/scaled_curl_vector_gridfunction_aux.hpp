@@ -19,6 +19,6 @@ public:
 
   ~ScaledCurlVectorGridFunctionAux() override = default;
 
-  void buildMixedBilinearForm() override;
+  void BuildMixedBilinearForm() override;
 };
 } // namespace hephaestus

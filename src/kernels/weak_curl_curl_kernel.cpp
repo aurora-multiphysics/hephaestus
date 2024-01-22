@@ -5,8 +5,8 @@ namespace hephaestus
 
 WeakCurlCurlKernel::WeakCurlCurlKernel(const hephaestus::InputParameters & params)
   : Kernel(params),
-    coupled_gf_name(params.GetParam<std::string>("CoupledVariableName")),
-    coef_name(params.GetParam<std::string>("CoefficientName"))
+    _coupled_gf_name(params.GetParam<std::string>("CoupledVariableName")),
+    _coef_name(params.GetParam<std::string>("CoefficientName"))
 {
 }
 
@@ -17,18 +17,18 @@ WeakCurlCurlKernel::Init(hephaestus::GridFunctions & gridfunctions,
                          hephaestus::Coefficients & coefficients)
 {
 
-  u_ = gridfunctions.Get(coupled_gf_name);
-  coef = coefficients.scalars.Get(coef_name);
+  _u = gridfunctions.Get(_coupled_gf_name);
+  _coef = coefficients._scalars.Get(_coef_name);
 
-  curlCurl = std::make_unique<mfem::ParBilinearForm>(u_->ParFESpace());
-  curlCurl->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*coef));
-  curlCurl->Assemble();
+  _curl_curl = std::make_unique<mfem::ParBilinearForm>(_u->ParFESpace());
+  _curl_curl->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*_coef));
+  _curl_curl->Assemble();
 }
 
 void
 WeakCurlCurlKernel::Apply(mfem::ParLinearForm * lf)
 {
-  curlCurl->AddMultTranspose(*u_, *lf, -1.0);
+  _curl_curl->AddMultTranspose(*_u, *lf, -1.0);
 }
 
 } // namespace hephaestus
