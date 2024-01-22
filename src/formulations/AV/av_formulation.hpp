@@ -47,9 +47,9 @@ public:
             hephaestus::Coefficients & coefficients) override;
   void AddKernels() override;
 
-  std::string a_name, v_name, coupled_variable_name, alpha_coef_name, beta_coef_name,
-      dtalpha_coef_name, neg_beta_coef_name;
-  mfem::ConstantCoefficient negCoef;
+  std::string _a_name, _v_name, _coupled_variable_name, _alpha_coef_name, _beta_coef_name,
+      _dtalpha_coef_name, _neg_beta_coef_name;
+  mfem::ConstantCoefficient _neg_coef;
 };
 
 class AVOperator : public TimeDomainEquationSystemOperator

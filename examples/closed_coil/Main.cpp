@@ -7,13 +7,13 @@ defineCoefficients()
 {
   hephaestus::Coefficients coefficients;
 
-  coefficients.scalars.Register(
+  coefficients._scalars.Register(
       "magnetic_permeability", new mfem::ConstantCoefficient(M_PI * 4.0e-7), true);
 
-  coefficients.scalars.Register(
+  coefficients._scalars.Register(
       "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
 
-  coefficients.scalars.Register("I", new mfem::ConstantCoefficient(2742), true);
+  coefficients._scalars.Register("I", new mfem::ConstantCoefficient(2742), true);
 
   return coefficients;
 }

@@ -26,16 +26,16 @@ protected:
     sigma_air = 1.0e-6 * sigma;
 
     hephaestus::Subdomain wire("wire", 1);
-    wire.scalar_coefficients.Register(
+    wire._scalar_coefficients.Register(
         "electrical_conductivity", new mfem::ConstantCoefficient(sigma), true);
 
     hephaestus::Subdomain air("air", 2);
-    air.scalar_coefficients.Register(
+    air._scalar_coefficients.Register(
         "electrical_conductivity", new mfem::ConstantCoefficient(sigma_air), true);
 
     hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({wire, air}));
 
-    coefficients.scalars.Register(
+    coefficients._scalars.Register(
         "magnetic_permeability", new mfem::ConstantCoefficient(1.0), true);
 
     hephaestus::BCMap bc_map;
@@ -45,7 +45,7 @@ protected:
                                                       mfem::Array<int>({1, 2, 3}),
                                                       adot_vec_coef),
                     true);
-    coefficients.vectors.Register("surface_tangential_dAdt", adot_vec_coef, true);
+    coefficients._vectors.Register("surface_tangential_dAdt", adot_vec_coef, true);
 
     mfem::Array<int> high_terminal(1);
     high_terminal[0] = 1;

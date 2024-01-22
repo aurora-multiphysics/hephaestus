@@ -4,7 +4,7 @@ namespace hephaestus
 {
 
 CurlCurlKernel::CurlCurlKernel(const hephaestus::InputParameters & params)
-  : Kernel(params), coef_name(params.GetParam<std::string>("CoefficientName"))
+  : Kernel(params), _coef_name(params.GetParam<std::string>("CoefficientName"))
 {
 }
 
@@ -15,13 +15,13 @@ CurlCurlKernel::Init(hephaestus::GridFunctions & gridfunctions,
                      hephaestus::Coefficients & coefficients)
 {
 
-  coef = coefficients.scalars.Get(coef_name);
+  _coef = coefficients._scalars.Get(_coef_name);
 }
 
 void
 CurlCurlKernel::Apply(mfem::ParBilinearForm * blf)
 {
-  blf->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*coef));
+  blf->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*_coef));
 }
 
 } // namespace hephaestus

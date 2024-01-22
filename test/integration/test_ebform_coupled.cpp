@@ -10,7 +10,7 @@ public:
     : hephaestus::CoupledCoefficient(params){};
   double Eval(mfem::ElementTransformation & T, const mfem::IntegrationPoint & ip) override
   {
-    return 2.0 * M_PI * 10 + 0.001 * (gf->GetValue(T, ip));
+    return 2.0 * M_PI * 10 + 0.001 * (_gf->GetValue(T, ip));
   }
 };
 
@@ -52,10 +52,10 @@ protected:
         new CopperConductivityCoefficient(copper_conductivity_params);
 
     hephaestus::Subdomain wire("wire", 1);
-    wire.scalar_coefficients.Register("electrical_conductivity", wire_conductivity, true);
+    wire._scalar_coefficients.Register("electrical_conductivity", wire_conductivity, true);
 
     hephaestus::Subdomain air("air", 2);
-    air.scalar_coefficients.Register(
+    air._scalar_coefficients.Register(
         "electrical_conductivity", new mfem::ConstantCoefficient(sigma_air), true);
 
     hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({wire, air}));
@@ -75,9 +75,9 @@ protected:
                     new hephaestus::VectorDirichletBC(
                         std::string("electric_field"), mfem::Array<int>({1, 2, 3}), edot_vec_coef),
                     true);
-    coefficients.scalars.Register(
+    coefficients._scalars.Register(
         "magnetic_permeability", new mfem::ConstantCoefficient(1.0), true);
-    coefficients.vectors.Register("surface_tangential_dEdt", edot_vec_coef, true);
+    coefficients._vectors.Register("surface_tangential_dEdt", edot_vec_coef, true);
 
     mfem::Array<int> high_terminal(1);
     high_terminal[0] = 1;
@@ -86,7 +86,7 @@ protected:
                     new hephaestus::ScalarDirichletBC(
                         std::string("electric_potential"), high_terminal, potential_src),
                     true);
-    coefficients.scalars.Register("source_potential", potential_src, true);
+    coefficients._scalars.Register("source_potential", potential_src, true);
 
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 2;

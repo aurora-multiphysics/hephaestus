@@ -8,12 +8,12 @@ const double eps{1e-10};
 TEST_CASE("CoefficientsTest", "[CheckData]")
 {
   hephaestus::Subdomain wire("wire", 1);
-  wire.scalar_coefficients.Register("property_one", new mfem::ConstantCoefficient(1.0), true);
-  wire.scalar_coefficients.Register("property_two", new mfem::ConstantCoefficient(150.0), true);
+  wire._scalar_coefficients.Register("property_one", new mfem::ConstantCoefficient(1.0), true);
+  wire._scalar_coefficients.Register("property_two", new mfem::ConstantCoefficient(150.0), true);
 
   hephaestus::Subdomain air("air", 2);
-  air.scalar_coefficients.Register("property_one", new mfem::ConstantCoefficient(26.0), true);
-  air.scalar_coefficients.Register("property_two", new mfem::ConstantCoefficient(152.0), true);
+  air._scalar_coefficients.Register("property_one", new mfem::ConstantCoefficient(26.0), true);
+  air._scalar_coefficients.Register("property_two", new mfem::ConstantCoefficient(152.0), true);
 
   hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({wire, air}));
 
@@ -21,13 +21,13 @@ TEST_CASE("CoefficientsTest", "[CheckData]")
   mfem::IsoparametricTransformation t;
   mfem::IntegrationPoint ip;
 
-  mfem::Coefficient * pw = coefficients.scalars.Get("property_one");
+  mfem::Coefficient * pw = coefficients._scalars.Get("property_one");
   t.Attribute = 1;
   REQUIRE_THAT(pw->Eval(t, ip), Catch::Matchers::WithinAbs(1.0, eps));
   t.Attribute = 2;
   REQUIRE_THAT(pw->Eval(t, ip), Catch::Matchers::WithinAbs(26.0, eps));
 
-  pw = coefficients.scalars.Get("property_two");
+  pw = coefficients._scalars.Get("property_two");
   t.Attribute = 1;
   REQUIRE_THAT(pw->Eval(t, ip), Catch::Matchers::WithinAbs(150.0, eps));
   t.Attribute = 2;

@@ -6,17 +6,17 @@ extern const char * DATA_DIR;
 class VectorPowerLawNLFIntegrator : public mfem::NonlinearFormIntegrator
 {
 protected:
-  mfem::Coefficient * Q;
+  mfem::Coefficient * _q;
 
 private:
-  mfem::DenseMatrix curlshape, curlshape_dFt, Jac;
-  mfem::Vector J, vec, pointflux;
-  double E0 = 0.0001;
-  int n = 20;
-  double Jc = 100000000;
+  mfem::DenseMatrix _curlshape, _curlshape_d_ft, _jac;
+  mfem::Vector _j, _vec, _pointflux;
+  double _e0 = 0.0001;
+  int _n = 20;
+  double _jc = 100000000;
 
 public:
-  VectorPowerLawNLFIntegrator(mfem::Coefficient & q) : Q(&q) {}
+  VectorPowerLawNLFIntegrator(mfem::Coefficient & q) : _q(&q) {}
 
   void AssembleElementGrad(const mfem::FiniteElement & el,
                            mfem::ElementTransformation & Ttr,
@@ -45,7 +45,7 @@ public:
       const mfem::IntegrationPoint & ip = ir->IntPoint(i);
       Ttr.SetIntPoint(&ip);
       w = ip.weight / Ttr.Weight();
-      w *= Q->Eval(Ttr, ip);           // multiply the PWconstantcoefficient
+      w *= _q->Eval(Ttr, ip);          // multiply the PWconstantcoefficient
       el.CalcCurlShape(ip, curlshape); // curl operation on the shape function
       MultABt(curlshape, Ttr.Jacobian(), curlshape_d_ft);
       // the curl operation of H(curl) space:  H(div)
@@ -53,7 +53,7 @@ public:
       curlshape.MultTranspose(elfun, j); // compute the current density J
 
       double j_norm = j.Norml2();
-      double j_de = E0 / Jc * (n - 1) * pow((j_norm / Jc), n - 2);
+      double j_de = _e0 / _jc * (_n - 1) * pow((j_norm / _jc), _n - 2);
       // derivative factor (n-1)*E0/Jc*(CurlH.Norm/Jc)^(n-2)
       // the transpose may be needed AtA rather than AAt
       AddMult_a_AAt(w * j_de, curlshape_d_ft, elmat); // (Curl u, curl v)*J_de*w
@@ -71,10 +71,10 @@ public:
     // both trial and test function in Nedelec
     // space, represented with curlshape
     double w;
-    J.SetSize(dim);
-    Jac.SetSize(dim);
-    pointflux.SetSize(dim);
-    vec.SetSize(dim);
+    _j.SetSize(dim);
+    _jac.SetSize(dim);
+    _pointflux.SetSize(dim);
+    _vec.SetSize(dim);
     elvect.SetSize(nd);
     elvect = 0.0;
     // cout << "elfun size " <<  elfun.Size() << endl;
@@ -90,23 +90,23 @@ public:
       const mfem::IntegrationPoint & ip = ir->IntPoint(i);
       Ttr.SetIntPoint(&ip);
       w = ip.weight / Ttr.Weight();
-      w *= Q->Eval(Ttr, ip);           // multiply the PWconstantcoefficient
+      w *= _q->Eval(Ttr, ip);          // multiply the PWconstantcoefficient
       el.CalcCurlShape(ip, curlshape); // curl operation on the shape function
 
-      curlshape.MultTranspose(elfun, J); // compute the current density J
-      Jac = Ttr.Jacobian();              // mapping Jacobian to the reference element
+      curlshape.MultTranspose(elfun, _j); // compute the current density J
+      _jac = Ttr.Jacobian();              // mapping Jacobian to the reference element
 
-      curlshape.MultTranspose(elfun, vec); //
-      Jac.MultTranspose(vec, pointflux);
+      curlshape.MultTranspose(elfun, _vec); //
+      _jac.MultTranspose(_vec, _pointflux);
       // double J_norm=  pow(J[0],2) + pow(J[1],2) ;
-      double j_norm = J.Norml2();
+      double j_norm = _j.Norml2();
 
-      double j_f = E0 / Jc * pow((j_norm / Jc), n - 1);
+      double j_f = _e0 / _jc * pow((j_norm / _jc), _n - 1);
       //  factor E0/Jc*(CurlH.Norm/Jc)^(n-1)
       // cout << "current level " <<  J_f << endl;
-      pointflux *= w * j_f;
-      Jac.Mult(pointflux, vec);
-      curlshape.AddMult(vec, elvect); // (Curl u, curl v)*J_f*w
+      _pointflux *= w * j_f;
+      _jac.Mult(_pointflux, _vec);
+      curlshape.AddMult(_vec, elvect); // (Curl u, curl v)*J_f*w
     }
   };
 };
@@ -118,56 +118,56 @@ public:
 class NonlinearOperator : public mfem::Operator
 {
 private:
-  mfem::ParBilinearForm * blf;
-  mfem::ParNonlinearForm * nlf;
-  mutable mfem::HypreParMatrix * Jacobian{nullptr};
-  double dt{0.0};
-  const mfem::Vector * x0{nullptr};
-  mutable mfem::Vector x1;
-  const mfem::Array<int> & ess_tdof_list;
+  mfem::ParBilinearForm * _blf;
+  mfem::ParNonlinearForm * _nlf;
+  mutable mfem::HypreParMatrix * _jacobian{nullptr};
+  double _dt{0.0};
+  const mfem::Vector * _x0{nullptr};
+  mutable mfem::Vector _x1;
+  const mfem::Array<int> & _ess_tdof_list;
 
 public:
   NonlinearOperator(mfem::ParBilinearForm * blf_,
                     mfem::ParNonlinearForm * nlf_,
                     const mfem::Array<int> & ess_tdof_list_)
     : Operator(blf_->ParFESpace()->TrueVSize()),
-      blf(blf_),
-      nlf(nlf_),
+      _blf(blf_),
+      _nlf(nlf_),
 
-      x1(height),
-      ess_tdof_list(ess_tdof_list_){};
+      _x1(height),
+      _ess_tdof_list(ess_tdof_list_){};
 
   /// Set current dt, v, x values - needed to compute action and Jacobian.
   void SetParameters(double dt_, const mfem::Vector * x0_)
   {
-    dt = dt_;
-    x0 = x0_;
+    _dt = dt_;
+    _x0 = x0_;
   };
 
   //* residual = (ρ(∇×H), ∇×v) + (μdH/dt, v) + (dBᵉ/dt, v) - <(ρ∇×H)×n, v>  = 0
   /// Compute y = H(x0 + dt* dx/dt) + M dx/dt
   void Mult(const mfem::Vector & dx_dt, mfem::Vector & residual) const override
   {
-    add(*x0, dt, dx_dt, x1);
-    nlf->Mult(x1, residual);
-    blf->TrueAddMult(dx_dt, residual);
+    add(*_x0, _dt, dx_dt, _x1);
+    _nlf->Mult(_x1, residual);
+    _blf->TrueAddMult(dx_dt, residual);
   };
 
   /// Compute J = dy/d(dx/dt)
   /// Compute J = M + dt grad_H(x0 + dt* dx/dt)
   mfem::Operator & GetGradient(const mfem::Vector & dx_dt) const override
   {
-    add(*x0, dt, dx_dt, x1);
-    delete Jacobian;
-    mfem::SparseMatrix & local_j = blf->SpMat();
-    local_j.Add(dt, nlf->GetLocalGradient(x1));
-    Jacobian = blf->ParallelAssemble(&local_j);
-    mfem::HypreParMatrix * je = Jacobian->EliminateRowsCols(ess_tdof_list);
+    add(*_x0, _dt, dx_dt, _x1);
+    delete _jacobian;
+    mfem::SparseMatrix & local_j = _blf->SpMat();
+    local_j.Add(_dt, _nlf->GetLocalGradient(_x1));
+    _jacobian = _blf->ParallelAssemble(&local_j);
+    mfem::HypreParMatrix * je = _jacobian->EliminateRowsCols(_ess_tdof_list);
     delete je;
-    return *Jacobian;
+    return *_jacobian;
   };
 
-  ~NonlinearOperator() override { delete Jacobian; };
+  ~NonlinearOperator() override { delete _jacobian; };
 };
 
 TEST_CASE("NonlinearIntegratorTest", "[CheckData]")

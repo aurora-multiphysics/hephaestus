@@ -22,34 +22,34 @@ protected:
   inline static const double epsilon0_ = 8.8541878176e-12; // F/m;
   inline static const double mu0_ = 4.0e-7 * M_PI;         // H/m;
   inline static const double freq_ = 9.3e9;                // 10/2pi
-  double port_length_vector[3] = {0.0, 22.86e-3, 0.0};
-  double port_width_vector[3] = {0.0, 0.0, 10.16e-3};
+  double _port_length_vector[3] = {0.0, 22.86e-3, 0.0};
+  double _port_width_vector[3] = {0.0, 0.0, 10.16e-3};
 
   hephaestus::InputParameters TestParams()
   {
     hephaestus::Subdomain air("air", 1);
 
-    air.scalar_coefficients.Register(
+    air._scalar_coefficients.Register(
         "real_electrical_conductivity", new mfem::ConstantCoefficient(0.0), true);
-    air.scalar_coefficients.Register(
+    air._scalar_coefficients.Register(
         "imag_electrical_conductivity", new mfem::ConstantCoefficient(0.0), true);
-    air.scalar_coefficients.Register(
+    air._scalar_coefficients.Register(
         "real_rel_permittivity", new mfem::ConstantCoefficient(1.0), true);
-    air.scalar_coefficients.Register(
+    air._scalar_coefficients.Register(
         "imag_rel_permittivity", new mfem::ConstantCoefficient(0.0), true);
-    air.scalar_coefficients.Register(
+    air._scalar_coefficients.Register(
         "real_rel_permeability", new mfem::ConstantCoefficient(1.0), true);
-    air.scalar_coefficients.Register(
+    air._scalar_coefficients.Register(
         "imag_rel_permeability", new mfem::ConstantCoefficient(0.0), true);
 
     hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({air}));
 
-    coefficients.scalars.Register("frequency", new mfem::ConstantCoefficient(freq_), true);
-    coefficients.scalars.Register(
+    coefficients._scalars.Register("frequency", new mfem::ConstantCoefficient(freq_), true);
+    coefficients._scalars.Register(
         "magnetic_permeability", new mfem::ConstantCoefficient(mu0_), true);
-    coefficients.scalars.Register(
+    coefficients._scalars.Register(
         "dielectric_permittivity", new mfem::ConstantCoefficient(epsilon0_), true);
-    coefficients.scalars.Register(
+    coefficients._scalars.Register(
         "electrical_conductivity", new mfem::ConstantCoefficient(0.0), true);
 
     hephaestus::BCMap bc_map;
@@ -68,8 +68,8 @@ protected:
                     new hephaestus::RWTE10PortRBC(std::string("electric_field"),
                                                   wgi_in_attr,
                                                   freq_,
-                                                  port_length_vector,
-                                                  port_width_vector,
+                                                  _port_length_vector,
+                                                  _port_width_vector,
                                                   true),
                     true);
 
@@ -79,8 +79,8 @@ protected:
                     new hephaestus::RWTE10PortRBC(std::string("electric_field"),
                                                   wgi_out_attr,
                                                   freq_,
-                                                  port_length_vector,
-                                                  port_width_vector,
+                                                  _port_length_vector,
+                                                  _port_width_vector,
                                                   false),
                     true);
 
@@ -187,9 +187,9 @@ TEST_CASE_METHOD(TestComplexIrisWaveguide, "TestComplexIrisWaveguide", "[CheckRu
   mfem::VectorConstantCoefficient zero_coef(zero_vec);
 
   double norm_r =
-      executioner->problem->gridfunctions.Get("electric_field_real")->ComputeMaxError(zero_coef);
+      executioner->_problem->_gridfunctions.Get("electric_field_real")->ComputeMaxError(zero_coef);
   double norm_i =
-      executioner->problem->gridfunctions.Get("electric_field_imag")->ComputeMaxError(zero_coef);
+      executioner->_problem->_gridfunctions.Get("electric_field_imag")->ComputeMaxError(zero_coef);
   REQUIRE_THAT(norm_r, Catch::Matchers::WithinAbs(4896.771, 0.001));
   REQUIRE_THAT(norm_i, Catch::Matchers::WithinAbs(5357.650, 0.001));
 }

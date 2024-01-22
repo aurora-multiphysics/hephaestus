@@ -30,11 +30,11 @@ protected:
     sigma_air = 1.0e-6 * sigma;
 
     hephaestus::Subdomain wire("wire", 1);
-    wire.scalar_coefficients.Register(
+    wire._scalar_coefficients.Register(
         "electrical_conductivity", new mfem::ConstantCoefficient(sigma), true);
 
     hephaestus::Subdomain air("air", 2);
-    air.scalar_coefficients.Register(
+    air._scalar_coefficients.Register(
         "electrical_conductivity", new mfem::ConstantCoefficient(sigma_air), true);
 
     hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({wire, air}));
@@ -51,9 +51,9 @@ protected:
                     new hephaestus::VectorDirichletBC(
                         std::string("electric_field"), mfem::Array<int>({1, 2, 3}), edot_vec_coef),
                     true);
-    coefficients.scalars.Register(
+    coefficients._scalars.Register(
         "magnetic_permeability", new mfem::ConstantCoefficient(1.0), true);
-    coefficients.vectors.Register("surface_tangential_dEdt", edot_vec_coef, true);
+    coefficients._vectors.Register("surface_tangential_dEdt", edot_vec_coef, true);
 
     mfem::Array<int> high_terminal(1);
     high_terminal[0] = 1;
@@ -62,7 +62,7 @@ protected:
                     new hephaestus::ScalarDirichletBC(
                         std::string("electric_potential"), high_terminal, potential_src),
                     true);
-    coefficients.scalars.Register("source_potential", potential_src, true);
+    coefficients._scalars.Register("source_potential", potential_src, true);
 
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 2;

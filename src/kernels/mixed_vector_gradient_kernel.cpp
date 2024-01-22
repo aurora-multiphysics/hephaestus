@@ -4,7 +4,7 @@ namespace hephaestus
 {
 
 MixedVectorGradientKernel::MixedVectorGradientKernel(const hephaestus::InputParameters & params)
-  : Kernel(params), coef_name(params.GetParam<std::string>("CoefficientName"))
+  : Kernel(params), _coef_name(params.GetParam<std::string>("CoefficientName"))
 {
 }
 
@@ -15,13 +15,13 @@ MixedVectorGradientKernel::Init(hephaestus::GridFunctions & gridfunctions,
                                 hephaestus::Coefficients & coefficients)
 {
 
-  coef = coefficients.scalars.Get(coef_name);
+  _coef = coefficients._scalars.Get(_coef_name);
 }
 
 void
 MixedVectorGradientKernel::Apply(mfem::ParMixedBilinearForm * mblf)
 {
-  mblf->AddDomainIntegrator(new mfem::MixedVectorGradientIntegrator(*coef));
+  mblf->AddDomainIntegrator(new mfem::MixedVectorGradientIntegrator(*_coef));
 }
 
 } // namespace hephaestus

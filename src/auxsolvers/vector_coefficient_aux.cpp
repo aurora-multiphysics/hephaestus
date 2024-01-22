@@ -14,13 +14,13 @@ void
 VectorCoefficientAux::Init(const hephaestus::GridFunctions & gridfunctions,
                            hephaestus::Coefficients & coefficients)
 {
-  gf = gridfunctions.Get(_gf_name);
-  if (gf == nullptr)
+  _gf = gridfunctions.Get(_gf_name);
+  if (_gf == nullptr)
   {
     MFEM_ABORT("GridFunction " << _gf_name << " not found when initializing VectorCoefficientAux");
   }
-  vec_coef = coefficients.vectors.Get(_vec_coef_name);
-  if (vec_coef == nullptr)
+  _vec_coef = coefficients._vectors.Get(_vec_coef_name);
+  if (_vec_coef == nullptr)
   {
     MFEM_ABORT("VectorCoefficient " << _vec_coef_name
                                     << " not found when initializing VectorCoefficientAux");
@@ -30,8 +30,8 @@ VectorCoefficientAux::Init(const hephaestus::GridFunctions & gridfunctions,
 void
 VectorCoefficientAux::Solve(double t)
 {
-  vec_coef->SetTime(t);
-  gf->ProjectCoefficient(*vec_coef);
+  _vec_coef->SetTime(t);
+  _gf->ProjectCoefficient(*_vec_coef);
 }
 
 } // namespace hephaestus

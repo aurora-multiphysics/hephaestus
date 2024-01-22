@@ -56,7 +56,7 @@ VectorGridFunctionDotProductAux::Init(const hephaestus::GridFunctions & gridfunc
                                       hephaestus::Coefficients & coefficients)
 {
 
-  _scaling_coef = coefficients.scalars.Get(_scaling_coef_name);
+  _scaling_coef = coefficients._scalars.Get(_scaling_coef_name);
   if (_scaling_coef == nullptr)
   {
     MFEM_ABORT("Conductivity coefficient not found for Joule heating");
@@ -105,10 +105,10 @@ VectorGridFunctionDotProductAux::Init(const hephaestus::GridFunctions & gridfunc
     }
   }
 
-  coefficients.scalars.Register(_coef_name,
-                                new VectorGridFunctionDotProductCoefficient(
-                                    *_scaling_coef, _u_gf_re, _v_gf_re, _u_gf_im, _v_gf_im),
-                                true);
+  coefficients._scalars.Register(_coef_name,
+                                 new VectorGridFunctionDotProductCoefficient(
+                                     *_scaling_coef, _u_gf_re, _v_gf_re, _u_gf_im, _v_gf_im),
+                                 true);
 
   CoefficientAux::Init(gridfunctions, coefficients);
 }

@@ -7,7 +7,7 @@ extern const char * DATA_DIR;
 class TestHFormSource
 {
 protected:
-  const int var_order{2};
+  const int _var_order{2};
   static double EstimateConvergenceRate(
       HYPRE_BigInt n_i, HYPRE_BigInt n_imo, double error_i, double error_imo, int dim)
   {
@@ -52,15 +52,15 @@ protected:
   hephaestus::InputParameters TestParams()
   {
     hephaestus::Subdomain wire("wire", 1);
-    wire.scalar_coefficients.Register(
+    wire._scalar_coefficients.Register(
         "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
     hephaestus::Subdomain air("air", 2);
-    air.scalar_coefficients.Register(
+    air._scalar_coefficients.Register(
         "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
 
     hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({wire, air}));
 
-    coefficients.scalars.Register(
+    coefficients._scalars.Register(
         "electrical_conductivity", new mfem::FunctionCoefficient(SigmaExpr), true);
 
     hephaestus::BCMap bc_map;
@@ -70,15 +70,15 @@ protected:
                                                       mfem::Array<int>({1, 2, 3}),
                                                       hdot_vec_coef),
                     true);
-    coefficients.vectors.Register("surface_tangential_dHdt", hdot_vec_coef, true);
-    coefficients.scalars.Register(
+    coefficients._vectors.Register("surface_tangential_dHdt", hdot_vec_coef, true);
+    coefficients._scalars.Register(
         "magnetic_permeability", new mfem::ConstantCoefficient(1.0), true);
 
     auto * d_bdt_src_coef = new mfem::VectorFunctionCoefficient(3, SourceField);
-    coefficients.vectors.Register("source", d_bdt_src_coef, true);
+    coefficients._vectors.Register("source", d_bdt_src_coef, true);
 
     auto * h_exact = new mfem::VectorFunctionCoefficient(3, HExactExpr);
-    coefficients.vectors.Register("h_exact_coeff", h_exact, true);
+    coefficients._vectors.Register("h_exact_coeff", h_exact, true);
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./beam-tet.mesh")).c_str(), 1, 1);
 
@@ -208,15 +208,15 @@ TEST_CASE_METHOD(TestHFormSource, "TestHFormSource", "[CheckRun]")
           params.GetParam<hephaestus::AuxSolvers>("PostProcessors").Get("L2ErrorPostprocessor")));
 
   double r;
-  for (std::size_t i = 1; i < l2errpostprocessor.ndofs.Size(); ++i)
+  for (std::size_t i = 1; i < l2errpostprocessor._ndofs.Size(); ++i)
   {
-    r = EstimateConvergenceRate(l2errpostprocessor.ndofs[i],
-                                l2errpostprocessor.ndofs[i - 1],
-                                l2errpostprocessor.l2_errs[i],
-                                l2errpostprocessor.l2_errs[i - 1],
+    r = EstimateConvergenceRate(l2errpostprocessor._ndofs[i],
+                                l2errpostprocessor._ndofs[i - 1],
+                                l2errpostprocessor._l2_errs[i],
+                                l2errpostprocessor._l2_errs[i - 1],
                                 3);
     std::cout << r << std::endl;
-    REQUIRE(r > var_order - 0.15);
-    REQUIRE(r < var_order + 1.0);
+    REQUIRE(r > _var_order - 0.15);
+    REQUIRE(r < _var_order + 1.0);
   }
 }

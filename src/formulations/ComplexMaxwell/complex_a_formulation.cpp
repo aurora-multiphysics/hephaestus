@@ -25,7 +25,7 @@ ComplexAFormulation::RegisterCurrentDensityAux(const std::string & j_field_real_
 {
   //* Current density J = Jᵉ + σE
   //* Induced current density Jind = σE = -iωσA
-  hephaestus::AuxSolvers & auxsolvers = GetProblem()->postprocessors;
+  hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(
       j_field_imag_name,
       new hephaestus::ScaledVectorGridFunctionAux(
@@ -43,7 +43,7 @@ ComplexAFormulation::RegisterMagneticFluxDensityAux(const std::string & b_field_
                                                     const std::string & b_field_imag_name)
 {
   //* Magnetic flux density B = curl A
-  hephaestus::AuxSolvers & auxsolvers = GetProblem()->postprocessors;
+  hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(
       b_field_real_name,
       new hephaestus::CurlAuxSolver(_magnetic_vector_potential_real_name, b_field_real_name),
@@ -59,7 +59,7 @@ ComplexAFormulation::RegisterElectricFieldAux(const std::string & e_field_real_n
                                               const std::string & e_field_imag_name)
 {
   //* Electric field E =-dA/dt=-iωA
-  hephaestus::AuxSolvers & auxsolvers = GetProblem()->postprocessors;
+  hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(
       e_field_imag_name,
       new hephaestus::ScaledVectorGridFunctionAux(
@@ -81,7 +81,7 @@ ComplexAFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_
                                                     const std::string & conductivity_coef_name)
 {
   //* Time averaged Joule heating density = E.J
-  hephaestus::AuxSolvers & auxsolvers = GetProblem()->postprocessors;
+  hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(
       p_field_name,
       new hephaestus::VectorGridFunctionDotProductAux(p_field_name,

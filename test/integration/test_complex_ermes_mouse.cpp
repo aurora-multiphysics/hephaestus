@@ -25,8 +25,8 @@ protected:
   inline static const double epsilon0_ = 8.8541878176e-12; // F/m;
   inline static const double mu0_ = 4.0e-7 * M_PI;         // H/m;
   inline static const double freq_ = 900e6;                // 10/2pi
-  double port_length_vector[3] = {24.76e-2, 0.0, 0.0};
-  double port_width_vector[3] = {0.0, 12.38e-2, 0.0};
+  double _port_length_vector[3] = {24.76e-2, 0.0, 0.0};
+  double _port_width_vector[3] = {0.0, 12.38e-2, 0.0};
   //   double port_length_vector[3] = {0.0, 22.86e-3, 0.0};
   //   double port_width_vector[3] = {0.0, 0.0, 10.16e-3};
 
@@ -35,23 +35,23 @@ protected:
     hephaestus::Subdomain mouse("mouse", 1);
     hephaestus::Subdomain air("air", 2);
 
-    air.scalar_coefficients.Register(
+    air._scalar_coefficients.Register(
         "electrical_conductivity", new mfem::ConstantCoefficient(0.0), true);
-    air.scalar_coefficients.Register(
+    air._scalar_coefficients.Register(
         "dielectric_permittivity", new mfem::ConstantCoefficient(epsilon0_), true);
-    air.scalar_coefficients.Register(
+    air._scalar_coefficients.Register(
         "magnetic_permeability", new mfem::ConstantCoefficient(mu0_), true);
 
-    mouse.scalar_coefficients.Register(
+    mouse._scalar_coefficients.Register(
         "electrical_conductivity", new mfem::ConstantCoefficient(0.97), true);
-    mouse.scalar_coefficients.Register(
+    mouse._scalar_coefficients.Register(
         "dielectric_permittivity", new mfem::ConstantCoefficient(43 * epsilon0_), true);
-    mouse.scalar_coefficients.Register(
+    mouse._scalar_coefficients.Register(
         "magnetic_permeability", new mfem::ConstantCoefficient(mu0_), true);
 
     hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({air, mouse}));
 
-    coefficients.scalars.Register("frequency", new mfem::ConstantCoefficient(freq_), true);
+    coefficients._scalars.Register("frequency", new mfem::ConstantCoefficient(freq_), true);
 
     hephaestus::BCMap bc_map;
     mfem::Array<int> dirichlet_attr({2, 3, 4});
@@ -68,8 +68,8 @@ protected:
                     new hephaestus::RWTE10PortRBC(std::string("electric_field"),
                                                   wgi_in_attr,
                                                   freq_,
-                                                  port_length_vector,
-                                                  port_width_vector,
+                                                  _port_length_vector,
+                                                  _port_width_vector,
                                                   true),
                     true);
 
@@ -79,8 +79,8 @@ protected:
                     new hephaestus::RWTE10PortRBC(std::string("electric_field"),
                                                   wgi_out_attr,
                                                   freq_,
-                                                  port_length_vector,
-                                                  port_width_vector,
+                                                  _port_length_vector,
+                                                  _port_width_vector,
                                                   false),
                     true);
 
@@ -177,9 +177,9 @@ TEST_CASE_METHOD(TestComplexERMESMouse, "TestComplexERMESMouse", "[CheckRun]")
   mfem::VectorConstantCoefficient zero_coef(zero_vec);
 
   double norm_r =
-      executioner->problem->gridfunctions.Get("electric_field_real")->ComputeMaxError(zero_coef);
+      executioner->_problem->_gridfunctions.Get("electric_field_real")->ComputeMaxError(zero_coef);
   double norm_i =
-      executioner->problem->gridfunctions.Get("electric_field_imag")->ComputeMaxError(zero_coef);
+      executioner->_problem->_gridfunctions.Get("electric_field_imag")->ComputeMaxError(zero_coef);
   REQUIRE_THAT(norm_r, Catch::Matchers::WithinAbs(480, 15));
   REQUIRE_THAT(norm_i, Catch::Matchers::WithinAbs(180, 5));
 }

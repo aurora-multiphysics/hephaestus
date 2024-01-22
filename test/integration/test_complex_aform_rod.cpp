@@ -33,19 +33,19 @@ protected:
     sigma_air = 1.0e-6 * sigma;
 
     hephaestus::Subdomain wire("wire", 1);
-    wire.scalar_coefficients.Register(
+    wire._scalar_coefficients.Register(
         "electrical_conductivity", new mfem::ConstantCoefficient(sigma), true);
 
     hephaestus::Subdomain air("air", 2);
-    air.scalar_coefficients.Register(
+    air._scalar_coefficients.Register(
         "electrical_conductivity", new mfem::ConstantCoefficient(sigma_air), true);
 
     hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({wire, air}));
 
-    coefficients.scalars.Register("frequency", new mfem::ConstantCoefficient(1.0 / 60.0), true);
-    coefficients.scalars.Register(
+    coefficients._scalars.Register("frequency", new mfem::ConstantCoefficient(1.0 / 60.0), true);
+    coefficients._scalars.Register(
         "dielectric_permittivity", new mfem::ConstantCoefficient(0.0), true);
-    coefficients.scalars.Register(
+    coefficients._scalars.Register(
         "magnetic_permeability", new mfem::ConstantCoefficient(1.0), true);
 
     hephaestus::BCMap bc_map;
@@ -64,7 +64,7 @@ protected:
                     new hephaestus::ScalarDirichletBC(
                         std::string("electric_potential"), high_terminal, potential_src),
                     true);
-    coefficients.scalars.Register("source_potential", potential_src, true);
+    coefficients._scalars.Register("source_potential", potential_src, true);
 
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 2;

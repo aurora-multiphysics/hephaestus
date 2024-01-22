@@ -58,23 +58,23 @@ public:
 
 private:
   // Parameters
-  int order_hcurl_;
-  int order_h1_;
-  int new_domain_attr_;
-  std::pair<int, int> elec_attrs_;
-  mfem::Array<int> coil_domains_;
-  mfem::Array<int> coil_markers_;
-  mfem::Array<int> transition_domain_;
-  mfem::Array<int> transition_markers_;
-  mfem::Coefficient * sigma_{nullptr};
-  mfem::Coefficient * Itotal_{nullptr};
-  std::vector<int> old_dom_attrs;
-  hephaestus::InputParameters solver_options_;
+  int _order_hcurl;
+  int _order_h1;
+  int _new_domain_attr;
+  std::pair<int, int> _elec_attrs;
+  mfem::Array<int> _coil_domains;
+  mfem::Array<int> _coil_markers;
+  mfem::Array<int> _transition_domain;
+  mfem::Array<int> _transition_markers;
+  mfem::Coefficient * _sigma{nullptr};
+  mfem::Coefficient * _itotal{nullptr};
+  std::vector<int> _old_dom_attrs;
+  hephaestus::InputParameters _solver_options;
 
-  bool owns_sigma{false};
-  bool owns_Itotal_{false};
-  bool owns_grad_phi_parent_{false};
-  bool owns_H1FESpace_parent_{false};
+  bool _owns_sigma{false};
+  bool _owns_itotal{false};
+  bool _owns_grad_phi_parent{false};
+  bool _owns_h1_fe_space_parent{false};
 
   // Here, we are solving for -(σ∇Va,∇ψ) = (σ∇Vt,∇ψ), where ∇Vt is grad_phi_t (within its relevant
   // mesh), ∇Va is grad_phi_aux, and their sum ∇Vt+∇Va is the full grad_phi, which is, up to an
@@ -82,38 +82,38 @@ private:
   // to true will negatively affect performance, but the final grad_phi function will be transferred
   // to a GridFunction for viewing purposes. Only set to true if you wish to visualise the final
   // grad_phi.
-  bool grad_phi_transfer_{false};
+  bool _grad_phi_transfer{false};
 
   // Names
-  std::string hcurl_fespace_name_;
-  std::string cond_coef_name_;
-  std::string h1_fespace_name_;
-  std::string grad_phi_name_;
-  std::string I_coef_name_;
+  std::string _hcurl_fespace_name;
+  std::string _cond_coef_name;
+  std::string _h1_fespace_name;
+  std::string _grad_phi_name;
+  std::string _i_coef_name;
 
   // Parent mesh, FE space, and current
-  mfem::ParMesh * mesh_parent_{nullptr};
-  mfem::ParGridFunction * grad_phi_parent_{nullptr};
-  mfem::ParFiniteElementSpace * HCurlFESpace_parent_{nullptr};
-  mfem::ParFiniteElementSpace * H1FESpace_parent_{nullptr};
+  mfem::ParMesh * _mesh_parent{nullptr};
+  mfem::ParGridFunction * _grad_phi_parent{nullptr};
+  mfem::ParFiniteElementSpace * _h_curl_fe_space_parent{nullptr};
+  mfem::ParFiniteElementSpace * _h1_fe_space_parent{nullptr};
 
-  std::unique_ptr<mfem::H1_FECollection> H1FESpace_parent_fec_{nullptr};
+  std::unique_ptr<mfem::H1_FECollection> _h1_fe_space_parent_fec{nullptr};
 
   // In case J transfer is true
-  std::unique_ptr<mfem::ParGridFunction> grad_phi_t_parent_{nullptr};
+  std::unique_ptr<mfem::ParGridFunction> _grad_phi_t_parent{nullptr};
 
   // Coil mesh, FE Space, and current
-  std::unique_ptr<mfem::ParSubMesh> mesh_coil_{nullptr};
-  std::unique_ptr<mfem::ParSubMesh> mesh_t_{nullptr};
-  std::unique_ptr<mfem::ParFiniteElementSpace> H1FESpace_coil_{nullptr};
-  std::unique_ptr<mfem::ParGridFunction> grad_phi_aux_coil_{nullptr};
-  std::unique_ptr<mfem::ParGridFunction> V_coil_{nullptr};
+  std::unique_ptr<mfem::ParSubMesh> _mesh_coil{nullptr};
+  std::unique_ptr<mfem::ParSubMesh> _mesh_t{nullptr};
+  std::unique_ptr<mfem::ParFiniteElementSpace> _h1_fe_space_coil{nullptr};
+  std::unique_ptr<mfem::ParGridFunction> _grad_phi_aux_coil{nullptr};
+  std::unique_ptr<mfem::ParGridFunction> _v_coil{nullptr};
 
-  std::unique_ptr<mfem::ND_FECollection> grad_phi_aux_coil_fec_{nullptr};
-  std::unique_ptr<mfem::ParFiniteElementSpace> grad_phi_aux_coil_fes{nullptr};
+  std::unique_ptr<mfem::ND_FECollection> _grad_phi_aux_coil_fec{nullptr};
+  std::unique_ptr<mfem::ParFiniteElementSpace> _grad_phi_aux_coil_fes{nullptr};
 
   // Final LinearForm
-  std::unique_ptr<mfem::ParLinearForm> final_lf_{nullptr};
+  std::unique_ptr<mfem::ParLinearForm> _final_lf{nullptr};
 };
 
 class Plane3D
@@ -130,8 +130,8 @@ public:
   int Side(const mfem::Vector v);
 
 private:
-  std::unique_ptr<mfem::Vector> u{nullptr};
-  double d{0};
+  std::unique_ptr<mfem::Vector> _u{nullptr};
+  double _d{0};
 };
 
 } // namespace hephaestus

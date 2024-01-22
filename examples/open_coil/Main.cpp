@@ -13,15 +13,15 @@ defineCoefficients(double Itotal)
 {
 
   hephaestus::Coefficients coefficients;
-  coefficients.scalars.Register(
+  coefficients._scalars.Register(
       "magnetic_permeability", new mfem::ConstantCoefficient(M_PI * 4.0e-7), true);
 
   // Electrical conductivity
-  coefficients.scalars.Register(
+  coefficients._scalars.Register(
       "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
 
   // Time-dependent current
-  coefficients.scalars.Register("I", new mfem::ConstantCoefficient(Itotal), true);
+  coefficients._scalars.Register("I", new mfem::ConstantCoefficient(Itotal), true);
 
   return coefficients;
 }

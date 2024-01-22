@@ -15,8 +15,8 @@ public:
 
   void ApplyBC(mfem::GridFunction & gridfunc, mfem::Mesh * mesh_) override;
 
-  mfem::Coefficient * coeff;
-  mfem::Coefficient * coeff_im;
+  mfem::Coefficient * _coeff;
+  mfem::Coefficient * _coeff_im;
 };
 
 } // namespace hephaestus

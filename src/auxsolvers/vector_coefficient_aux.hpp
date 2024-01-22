@@ -21,8 +21,8 @@ protected:
   const std::string _gf_name;       // name of the variable
   const std::string _vec_coef_name; // name of the vector coefficient
 
-  mfem::ParGridFunction * gf{nullptr};
-  mfem::VectorCoefficient * vec_coef{nullptr};
+  mfem::ParGridFunction * _gf{nullptr};
+  mfem::VectorCoefficient * _vec_coef{nullptr};
 };
 
 } // namespace hephaestus

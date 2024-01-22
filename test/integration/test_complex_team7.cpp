@@ -67,31 +67,31 @@ protected:
   hephaestus::InputParameters TestParams()
   {
     hephaestus::Subdomain air("air", 1);
-    air.scalar_coefficients.Register(
+    air._scalar_coefficients.Register(
         "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
     hephaestus::Subdomain plate("plate", 2);
-    plate.scalar_coefficients.Register(
+    plate._scalar_coefficients.Register(
         "electrical_conductivity", new mfem::ConstantCoefficient(3.526e7), true);
     hephaestus::Subdomain coil1("coil1", 3);
-    coil1.scalar_coefficients.Register(
+    coil1._scalar_coefficients.Register(
         "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
     hephaestus::Subdomain coil2("coil2", 4);
-    coil2.scalar_coefficients.Register(
+    coil2._scalar_coefficients.Register(
         "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
     hephaestus::Subdomain coil3("coil3", 5);
-    coil3.scalar_coefficients.Register(
+    coil3._scalar_coefficients.Register(
         "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
     hephaestus::Subdomain coil4("coil4", 6);
-    coil4.scalar_coefficients.Register(
+    coil4._scalar_coefficients.Register(
         "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
 
     hephaestus::Coefficients coefficients(
         std::vector<hephaestus::Subdomain>({air, plate, coil1, coil2, coil3, coil4}));
 
-    coefficients.scalars.Register("frequency", new mfem::ConstantCoefficient(200.0), true);
-    coefficients.scalars.Register(
+    coefficients._scalars.Register("frequency", new mfem::ConstantCoefficient(200.0), true);
+    coefficients._scalars.Register(
         "magnetic_permeability", new mfem::ConstantCoefficient(M_PI * 4.0e-7), true);
-    coefficients.scalars.Register(
+    coefficients._scalars.Register(
         "dielectric_permittivity", new mfem::ConstantCoefficient(0.0), true);
 
     hephaestus::BCMap bc_map;
@@ -121,7 +121,7 @@ protected:
     coilsegments[2] = 5;
     coilsegments[3] = 6;
     auto * j_src_restricted = new mfem::PWVectorCoefficient(3, coilsegments, sourcecoefs);
-    coefficients.vectors.Register("source", j_src_restricted, true);
+    coefficients._vectors.Register("source", j_src_restricted, true);
 
     hephaestus::InputParameters div_free_source_params;
     div_free_source_params.SetParam("SourceName", std::string("source"));

@@ -72,7 +72,7 @@ public:
   }
 
 private:
-  std::map<std::string, mfem::socketstream *> socks_;
+  std::map<std::string, mfem::socketstream *> _socks;
   hephaestus::GridFunctions * _gridfunctions;
   std::vector<std::string> _output_field_names{};
   int _cycle{0};
@@ -152,8 +152,8 @@ private:
 
     for (auto & gridfunction : *_gridfunctions)
     {
-      socks_[gridfunction.first] = new mfem::socketstream;
-      socks_[gridfunction.first]->precision(8);
+      _socks[gridfunction.first] = new mfem::socketstream;
+      _socks[gridfunction.first]->precision(8);
     }
 
     if (_my_rank == 0)
@@ -174,7 +174,7 @@ private:
 
     for (auto & gridfunction : *_gridfunctions)
     {
-      mfem::common::VisualizeField(*socks_[gridfunction.first],
+      mfem::common::VisualizeField(*_socks[gridfunction.first],
                                    vishost,
                                    visport,
                                    *(gridfunction.second),

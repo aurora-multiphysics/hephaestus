@@ -15,8 +15,8 @@ public:
           mfem::LinearFormIntegrator * lfi_im_ = nullptr);
 
   // NB: assume ownership of pointers.
-  std::unique_ptr<mfem::BilinearFormIntegrator> blfi_re{nullptr};
-  std::unique_ptr<mfem::BilinearFormIntegrator> blfi_im{nullptr};
+  std::unique_ptr<mfem::BilinearFormIntegrator> _blfi_re{nullptr};
+  std::unique_ptr<mfem::BilinearFormIntegrator> _blfi_im{nullptr};
 
   virtual void ApplyBC(mfem::ParBilinearForm & a);
   virtual void ApplyBC(mfem::ParSesquilinearForm & a);

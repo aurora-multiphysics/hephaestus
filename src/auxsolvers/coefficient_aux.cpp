@@ -19,7 +19,7 @@ CoefficientAux::Init(const hephaestus::GridFunctions & gridfunctions,
   {
     MFEM_ABORT("GridFunction " << _gf_name << " not found when initializing CoefficientAux");
   }
-  _coef = coefficients.scalars.Get(_coef_name);
+  _coef = coefficients._scalars.Get(_coef_name);
   if (_coef == nullptr)
   {
     MFEM_ABORT("Coefficient " << _coef_name << " not found when initializing CoefficientAux");

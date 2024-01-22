@@ -32,25 +32,25 @@ public:
   void RWTE10Real(const mfem::Vector & x, mfem::Vector & v);
   void RWTE10Imag(const mfem::Vector & x, mfem::Vector & v);
 
-  bool input_port;
-  double omega_;
-  mfem::Vector a1Vec;
-  mfem::Vector a2Vec;
-  mfem::Vector a3Vec;
-  mfem::Vector a2xa3;
-  mfem::Vector a3xa1;
+  bool _input_port;
+  double _omega;
+  mfem::Vector _a1_vec;
+  mfem::Vector _a2_vec;
+  mfem::Vector _a3_vec;
+  mfem::Vector _a2xa3;
+  mfem::Vector _a3xa1;
 
-  double V;
-  double kc;
-  double k0;
-  std::complex<double> k_;
+  double _v;
+  double _kc;
+  double _k0;
+  std::complex<double> _k;
 
-  mfem::Vector k_a;
-  mfem::Vector k_c;
+  mfem::Vector _k_a;
+  mfem::Vector _k_c;
 
-  std::unique_ptr<mfem::ConstantCoefficient> robin_coef_im;
-  std::unique_ptr<mfem::VectorFunctionCoefficient> u_real;
-  std::unique_ptr<mfem::VectorFunctionCoefficient> u_imag;
+  std::unique_ptr<mfem::ConstantCoefficient> _robin_coef_im;
+  std::unique_ptr<mfem::VectorFunctionCoefficient> _u_real;
+  std::unique_ptr<mfem::VectorFunctionCoefficient> _u_imag;
 };
 
 } // namespace hephaestus

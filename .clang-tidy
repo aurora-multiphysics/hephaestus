@@ -7,9 +7,9 @@ CheckOptions:
     value:           'CamelCase'
   - key:             readability-identifier-naming.MethodCase
     value:           'CamelCase'    
-  # - key:             readability-identifier-naming.MemberCase
-  #   value:           'lower_case'
-  # - key:             readability-identifier-naming.MemberPrefix
-  #   value:           '_'
+  - key:             readability-identifier-naming.MemberCase
+    value:           'lower_case'
+  - key:             readability-identifier-naming.MemberPrefix
+    value:           '_'
   - key:             readability-identifier-naming.LocalVariableCase
     value:           'lower_case'

@@ -16,19 +16,19 @@ class InputParameters
 {
 
 protected:
-  std::map<std::string, std::any> params;
+  std::map<std::string, std::any> _params;
 
 public:
   InputParameters() = default;
-  InputParameters(std::map<std::string, std::any> _params) : params(std::move(_params)){};
-  void SetParam(std::string param_name, std::any value) { params[param_name] = value; };
+  InputParameters(std::map<std::string, std::any> _params) : _params(std::move(_params)){};
+  void SetParam(std::string param_name, std::any value) { _params[param_name] = value; };
   template <typename T>
   [[nodiscard]] [[nodiscard]] T GetParam(std::string param_name) const
   {
     T param;
     try
     {
-      param = std::any_cast<T>(params.at(param_name));
+      param = std::any_cast<T>(_params.at(param_name));
     }
     catch (const std::exception & e)
     {
@@ -43,7 +43,7 @@ public:
     T param;
     try
     {
-      param = std::any_cast<T>(params.at(param_name));
+      param = std::any_cast<T>(_params.at(param_name));
     }
     catch (...)
     {

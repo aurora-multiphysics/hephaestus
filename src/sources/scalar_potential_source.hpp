@@ -24,49 +24,45 @@ public:
   void BuildWeakDiv();
   void BuildGrad();
 
-  std::string grad_phi_name_;
-  std::string src_coef_name;
-  std::string potential_gf_name;
-  std::string hcurl_fespace_name;
-  std::string h1_fespace_name;
-  std::string beta_coef_name;
+  std::string _grad_phi_name;
+  std::string _src_coef_name;
+  std::string _potential_gf_name;
+  std::string _hcurl_fespace_name;
+  std::string _h1_fespace_name;
+  std::string _beta_coef_name;
 
-  const hephaestus::InputParameters solver_options;
+  const hephaestus::InputParameters _solver_options;
 
-  mfem::ParFiniteElementSpace * H1FESpace_;
-  mfem::ParFiniteElementSpace * HCurlFESpace_;
-  mfem::ParGridFunction * p_; // Potential
+  mfem::ParFiniteElementSpace * _h1_fe_space;
+  mfem::ParFiniteElementSpace * _h_curl_fe_space;
+  mfem::ParGridFunction * _p; // Potential
   hephaestus::BCMap * _bc_map;
-  mfem::Coefficient * betaCoef;
+  mfem::Coefficient * _beta_coef;
 
-  std::unique_ptr<mfem::ParBilinearForm> a0{nullptr};
-  mfem::ParBilinearForm * s0_;
+  std::unique_ptr<mfem::ParBilinearForm> _a0{nullptr};
 
-  std::unique_ptr<mfem::ParBilinearForm> m1{nullptr};
+  std::unique_ptr<mfem::ParBilinearForm> _m1{nullptr};
 
-  mfem::ParBilinearForm * h_curl_mass;
-  mfem::ParMixedBilinearForm * weakDiv_;
+  mfem::ParBilinearForm * _h_curl_mass;
+  mfem::ParMixedBilinearForm * _weak_div;
 
-  std::unique_ptr<mfem::ParDiscreteLinearOperator> grad{nullptr};
-  mfem::ParDiscreteLinearOperator * grad_;
+  std::unique_ptr<mfem::ParDiscreteLinearOperator> _grad{nullptr};
 
-  std::unique_ptr<mfem::HypreParMatrix> A0{nullptr};
-  mfem::HypreParMatrix * S0_;
+  std::unique_ptr<mfem::HypreParMatrix> _diffusion_mat{nullptr};
+  std::unique_ptr<mfem::Vector> _p_tdofs{nullptr};
+  std::unique_ptr<mfem::Vector> _b0_tdofs{nullptr};
 
-  std::unique_ptr<mfem::Vector> X0{nullptr};
-  std::unique_ptr<mfem::Vector> B0{nullptr};
+  mutable mfem::HypreSolver * _amg_a0;
+  mutable std::unique_ptr<hephaestus::DefaultH1PCGSolver> _a0_solver{nullptr};
 
-  mutable mfem::HypreSolver * amg_a0;
-  mutable std::unique_ptr<hephaestus::DefaultH1PCGSolver> a0_solver{nullptr};
+  std::unique_ptr<mfem::ParLinearForm> _b0{nullptr};
+  mfem::ParGridFunction *_grad_p, *_x_div;
 
-  std::unique_ptr<mfem::ParLinearForm> b0{nullptr};
-  mfem::ParGridFunction *grad_p_, *xDiv_;
+  mfem::VectorCoefficient * _source_vec_coef;
+  mfem::ParGridFunction * _div_free_src_gf; // Source field
 
-  mfem::VectorCoefficient * sourceVecCoef;
-  mfem::ParGridFunction * div_free_src_gf; // Source field
-
-  mfem::Solver * solver;
-  int irOrder, geom;
+  mfem::Solver * _solver;
+  int _ir_order, _geom;
 };
 
 }; // namespace hephaestus

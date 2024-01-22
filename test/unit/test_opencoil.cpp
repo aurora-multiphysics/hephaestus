@@ -33,8 +33,8 @@ TEST_CASE("OpenCoilTest", "[CheckData]")
   hephaestus::BCMap bc_maps;
 
   hephaestus::Coefficients coefficients;
-  coefficients.scalars.Register(std::string("Itotal"), &itot, false);
-  coefficients.scalars.Register(std::string("Conductivity"), &conductivity, false);
+  coefficients._scalars.Register(std::string("Itotal"), &itot, false);
+  coefficients._scalars.Register(std::string("Conductivity"), &conductivity, false);
 
   hephaestus::FESpaces fespaces;
   fespaces.Register(std::string("HCurl"), &h_curl_fe_space, false);

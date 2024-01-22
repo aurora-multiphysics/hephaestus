@@ -18,7 +18,7 @@ public:
                          hephaestus::Coefficients & coefficients,
                          hephaestus::Sources & sources,
                          hephaestus::InputParameters & solver_options)
-    : pmesh_(&pmesh),
+    : _pmesh(&pmesh),
       _fespaces(fespaces),
       _gridfunctions(gridfunctions),
       _bc_map(bc_map),
@@ -33,22 +33,22 @@ public:
   virtual void Solve(mfem::Vector & X);
   void Mult(const mfem::Vector & x, mfem::Vector & y) const override{};
 
-  mfem::Array<int> true_offsets, block_trueOffsets;
+  mfem::Array<int> _true_offsets, _block_true_offsets;
   // Vector of names of state gridfunctions used in formulation, ordered by
   // appearance in block vector during solve.
-  std::vector<std::string> state_var_names;
+  std::vector<std::string> _state_var_names;
   // Vector of names of recognised auxiliary gridfunctions that can be
   // calculated from formulation,
-  std::vector<std::string> aux_var_names;
+  std::vector<std::string> _aux_var_names;
   // Vector of names of active auxiliary gridfunctions that are being calculated
   // in formulation,
-  std::vector<std::string> active_aux_var_names;
+  std::vector<std::string> _active_aux_var_names;
 
-  std::vector<mfem::ParGridFunction *> local_test_vars;
+  std::vector<mfem::ParGridFunction *> _local_test_vars;
 
-  int myid_{0};
-  int num_procs_{1};
-  mfem::ParMesh * pmesh_;
+  int _myid{0};
+  int _num_procs{1};
+  mfem::ParMesh * _pmesh;
   hephaestus::FESpaces & _fespaces;
   hephaestus::GridFunctions & _gridfunctions;
   hephaestus::BCMap & _bc_map;
@@ -56,8 +56,8 @@ public:
   hephaestus::Coefficients & _coefficients;
   hephaestus::InputParameters & _solver_options;
 
-  mfem::OperatorHandle blockA;
-  mfem::BlockVector trueX, trueRhs;
+  mfem::OperatorHandle _block_a;
+  mfem::BlockVector _true_x, _true_rhs;
 };
 
 } // namespace hephaestus

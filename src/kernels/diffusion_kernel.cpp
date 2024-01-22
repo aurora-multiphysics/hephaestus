@@ -4,7 +4,7 @@ namespace hephaestus
 {
 
 DiffusionKernel::DiffusionKernel(const hephaestus::InputParameters & params)
-  : Kernel(params), coef_name(params.GetParam<std::string>("CoefficientName"))
+  : Kernel(params), _coef_name(params.GetParam<std::string>("CoefficientName"))
 {
 }
 
@@ -15,13 +15,13 @@ DiffusionKernel::Init(hephaestus::GridFunctions & gridfunctions,
                       hephaestus::Coefficients & coefficients)
 {
 
-  coef = coefficients.scalars.Get(coef_name);
+  _coef = coefficients._scalars.Get(_coef_name);
 }
 
 void
 DiffusionKernel::Apply(mfem::ParBilinearForm * blf)
 {
-  blf->AddDomainIntegrator(new mfem::DiffusionIntegrator(*coef));
+  blf->AddDomainIntegrator(new mfem::DiffusionIntegrator(*_coef));
 }
 
 } // namespace hephaestus

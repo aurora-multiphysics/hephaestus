@@ -19,8 +19,8 @@ public:
             hephaestus::BCMap & bc_map,
             hephaestus::Coefficients & coefficients) override;
   void Apply(mfem::ParBilinearForm * blf) override;
-  std::string coef_name;
-  mfem::Coefficient * coef;
+  std::string _coef_name;
+  mfem::Coefficient * _coef;
 };
 
 }; // namespace hephaestus

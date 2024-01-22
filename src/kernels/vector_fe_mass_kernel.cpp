@@ -4,7 +4,7 @@ namespace hephaestus
 {
 
 VectorFEMassKernel::VectorFEMassKernel(const hephaestus::InputParameters & params)
-  : Kernel(params), coef_name(params.GetParam<std::string>("CoefficientName"))
+  : Kernel(params), _coef_name(params.GetParam<std::string>("CoefficientName"))
 {
 }
 
@@ -15,13 +15,13 @@ VectorFEMassKernel::Init(hephaestus::GridFunctions & gridfunctions,
                          hephaestus::Coefficients & coefficients)
 {
 
-  coef = coefficients.scalars.Get(coef_name);
+  _coef = coefficients._scalars.Get(_coef_name);
 }
 
 void
 VectorFEMassKernel::Apply(mfem::ParBilinearForm * blf)
 {
-  blf->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*coef));
+  blf->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*_coef));
 };
 
 } // namespace hephaestus

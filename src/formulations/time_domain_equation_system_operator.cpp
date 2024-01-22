@@ -23,39 +23,39 @@ GetTimeDerivativeNames(std::vector<std::string> gridfunction_names)
 void
 TimeDomainEquationSystemOperator::SetGridFunctions()
 {
-  state_var_names = _equation_system->var_names;
-  local_test_vars = _gridfunctions.Get(_equation_system->var_names);
-  local_trial_vars = _gridfunctions.Get(_equation_system->var_time_derivative_names);
+  _state_var_names = _equation_system->_var_names;
+  _local_test_vars = _gridfunctions.Get(_equation_system->_var_names);
+  _local_trial_vars = _gridfunctions.Get(_equation_system->_var_time_derivative_names);
 
   // Set operator size and block structure
-  block_trueOffsets.SetSize(local_test_vars.size() + 1);
-  block_trueOffsets[0] = 0;
-  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind)
+  _block_true_offsets.SetSize(_local_test_vars.size() + 1);
+  _block_true_offsets[0] = 0;
+  for (unsigned int ind = 0; ind < _local_test_vars.size(); ++ind)
   {
-    block_trueOffsets[ind + 1] = local_test_vars.at(ind)->ParFESpace()->TrueVSize();
+    _block_true_offsets[ind + 1] = _local_test_vars.at(ind)->ParFESpace()->TrueVSize();
   }
-  block_trueOffsets.PartialSum();
+  _block_true_offsets.PartialSum();
 
-  true_offsets.SetSize(local_test_vars.size() + 1);
-  true_offsets[0] = 0;
-  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind)
+  _true_offsets.SetSize(_local_test_vars.size() + 1);
+  _true_offsets[0] = 0;
+  for (unsigned int ind = 0; ind < _local_test_vars.size(); ++ind)
   {
-    true_offsets[ind + 1] = local_test_vars.at(ind)->ParFESpace()->GetVSize();
+    _true_offsets[ind + 1] = _local_test_vars.at(ind)->ParFESpace()->GetVSize();
   }
-  true_offsets.PartialSum();
+  _true_offsets.PartialSum();
 
-  height = true_offsets[local_test_vars.size()];
-  width = true_offsets[local_test_vars.size()];
-  trueX.Update(block_trueOffsets);
-  trueRhs.Update(block_trueOffsets);
+  height = _true_offsets[_local_test_vars.size()];
+  width = _true_offsets[_local_test_vars.size()];
+  _true_x.Update(_block_true_offsets);
+  _true_rhs.Update(_block_true_offsets);
 
   // Populate vector of active auxiliary gridfunctions
-  active_aux_var_names.resize(0);
-  for (auto & aux_var_name : aux_var_names)
+  _active_aux_var_names.resize(0);
+  for (auto & aux_var_name : _aux_var_names)
   {
     if (_gridfunctions.Has(aux_var_name))
     {
-      active_aux_var_names.push_back(aux_var_name);
+      _active_aux_var_names.push_back(aux_var_name);
     }
   }
 };
@@ -64,12 +64,12 @@ void
 TimeDomainEquationSystemOperator::Init(mfem::Vector & X)
 {
   // Define material property coefficients
-  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind)
+  for (unsigned int ind = 0; ind < _local_test_vars.size(); ++ind)
   {
-    local_test_vars.at(ind)->MakeRef(
-        local_test_vars.at(ind)->ParFESpace(), const_cast<mfem::Vector &>(X), true_offsets[ind]);
-    *(local_test_vars.at(ind)) = 0.0;
-    *(local_trial_vars.at(ind)) = 0.0;
+    _local_test_vars.at(ind)->MakeRef(
+        _local_test_vars.at(ind)->ParFESpace(), const_cast<mfem::Vector &>(X), _true_offsets[ind]);
+    *(_local_test_vars.at(ind)) = 0.0;
+    *(_local_trial_vars.at(ind)) = 0.0;
   }
 
   _equation_system->BuildEquationSystem(_bc_map, _sources);
@@ -81,24 +81,24 @@ TimeDomainEquationSystemOperator::ImplicitSolve(const double dt,
                                                 mfem::Vector & dX_dt)
 {
   dX_dt = 0.0;
-  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind)
+  for (unsigned int ind = 0; ind < _local_test_vars.size(); ++ind)
   {
-    local_test_vars.at(ind)->MakeRef(
-        local_test_vars.at(ind)->ParFESpace(), const_cast<mfem::Vector &>(X), true_offsets[ind]);
-    local_trial_vars.at(ind)->MakeRef(
-        local_trial_vars.at(ind)->ParFESpace(), dX_dt, true_offsets[ind]);
+    _local_test_vars.at(ind)->MakeRef(
+        _local_test_vars.at(ind)->ParFESpace(), const_cast<mfem::Vector &>(X), _true_offsets[ind]);
+    _local_trial_vars.at(ind)->MakeRef(
+        _local_trial_vars.at(ind)->ParFESpace(), dX_dt, _true_offsets[ind]);
   }
   _coefficients.SetTime(GetTime());
   _equation_system->SetTimeStep(dt);
   _equation_system->UpdateEquationSystem(_bc_map, _sources);
 
-  _equation_system->FormLinearSystem(blockA, trueX, trueRhs);
+  _equation_system->FormLinearSystem(_block_a, _true_x, _true_rhs);
 
-  solver = std::make_unique<hephaestus::DefaultGMRESSolver>(_solver_options,
-                                                            *blockA.As<mfem::HypreParMatrix>());
+  _solver = std::make_unique<hephaestus::DefaultGMRESSolver>(_solver_options,
+                                                             *_block_a.As<mfem::HypreParMatrix>());
 
-  solver->Mult(trueRhs, trueX);
-  _equation_system->RecoverFEMSolution(trueX, _gridfunctions);
+  _solver->Mult(_true_rhs, _true_x);
+  _equation_system->RecoverFEMSolution(_true_x, _gridfunctions);
 }
 
 void

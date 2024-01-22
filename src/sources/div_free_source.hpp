@@ -20,34 +20,34 @@ public:
   void SubtractSource(mfem::ParGridFunction * gf) override;
   void BuildHCurlMass();
 
-  std::string src_gf_name;
-  std::string src_coef_name;
-  std::string potential_gf_name;
-  std::string hcurl_fespace_name;
-  std::string h1_fespace_name;
-  const hephaestus::InputParameters solver_options;
-  bool perform_helmholtz_projection;
+  std::string _src_gf_name;
+  std::string _src_coef_name;
+  std::string _potential_gf_name;
+  std::string _hcurl_fespace_name;
+  std::string _h1_fespace_name;
+  const hephaestus::InputParameters _solver_options;
+  bool _perform_helmholtz_projection;
 
-  mfem::ParFiniteElementSpace * H1FESpace_{nullptr};
-  mfem::ParFiniteElementSpace * HCurlFESpace_{nullptr};
+  mfem::ParFiniteElementSpace * _h1_fe_space{nullptr};
+  mfem::ParFiniteElementSpace * _h_curl_fe_space{nullptr};
 
-  std::unique_ptr<mfem::ParGridFunction> q_; // Potential
+  std::unique_ptr<mfem::ParGridFunction> _q; // Potential
 
-  hephaestus::BCMap * bc_map_{nullptr};
-  hephaestus::GridFunctions * gridfunctions_{nullptr};
-  const hephaestus::FESpaces * fespaces_{nullptr};
+  hephaestus::BCMap * _bc_map{nullptr};
+  hephaestus::GridFunctions * _gridfunctions{nullptr};
+  const hephaestus::FESpaces * _fespaces{nullptr};
 
-  std::unique_ptr<mfem::ParBilinearForm> h_curl_mass;
+  std::unique_ptr<mfem::ParBilinearForm> _h_curl_mass;
 
-  mfem::VectorCoefficient * sourceVecCoef{nullptr};
+  mfem::VectorCoefficient * _source_vec_coef{nullptr};
 
   // H(Curl) projection of user specified source
-  std::unique_ptr<mfem::ParGridFunction> g;
+  std::unique_ptr<mfem::ParGridFunction> _g;
 
   // Divergence free projected source
-  std::unique_ptr<mfem::ParGridFunction> div_free_src_gf;
+  std::unique_ptr<mfem::ParGridFunction> _div_free_src_gf;
 
-  mfem::Solver * solver{nullptr};
+  mfem::Solver * _solver{nullptr};
 };
 
 }; // namespace hephaestus

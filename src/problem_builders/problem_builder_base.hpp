@@ -17,24 +17,24 @@ public:
   Problem() = default;
   virtual ~Problem();
 
-  std::shared_ptr<mfem::ParMesh> pmesh{nullptr};
-  hephaestus::BCMap bc_map;
-  hephaestus::Coefficients coefficients;
-  hephaestus::AuxSolvers preprocessors;
-  hephaestus::AuxSolvers postprocessors;
-  hephaestus::Sources sources;
-  hephaestus::Outputs outputs;
-  hephaestus::InputParameters solver_options;
+  std::shared_ptr<mfem::ParMesh> _pmesh{nullptr};
+  hephaestus::BCMap _bc_map;
+  hephaestus::Coefficients _coefficients;
+  hephaestus::AuxSolvers _preprocessors;
+  hephaestus::AuxSolvers _postprocessors;
+  hephaestus::Sources _sources;
+  hephaestus::Outputs _outputs;
+  hephaestus::InputParameters _solver_options;
 
-  std::unique_ptr<mfem::ODESolver> ode_solver{nullptr};
-  std::unique_ptr<mfem::BlockVector> F{nullptr};
+  std::unique_ptr<mfem::ODESolver> _ode_solver{nullptr};
+  std::unique_ptr<mfem::BlockVector> _f{nullptr};
 
-  hephaestus::FECollections fecs;
-  hephaestus::FESpaces fespaces;
-  hephaestus::GridFunctions gridfunctions;
+  hephaestus::FECollections _fecs;
+  hephaestus::FESpaces _fespaces;
+  hephaestus::GridFunctions _gridfunctions;
 
-  int myid_;
-  int num_procs_;
+  int _myid;
+  int _num_procs;
 
   virtual hephaestus::EquationSystem * GetEquationSystem() = 0;
   virtual mfem::Operator * GetOperator() = 0;

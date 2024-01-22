@@ -7,7 +7,7 @@ extern const char * DATA_DIR;
 class TestAVFormSource
 {
 protected:
-  const int var_order{2};
+  const int _var_order{2};
   static double EstimateConvergenceRate(
       HYPRE_BigInt n_i, HYPRE_BigInt n_imo, double error_i, double error_imo, int dim)
   {
@@ -47,15 +47,15 @@ protected:
   hephaestus::InputParameters TestParams()
   {
     hephaestus::Subdomain wire("wire", 1);
-    wire.scalar_coefficients.Register(
+    wire._scalar_coefficients.Register(
         "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
     hephaestus::Subdomain air("air", 2);
-    air.scalar_coefficients.Register(
+    air._scalar_coefficients.Register(
         "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
 
     hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({wire, air}));
 
-    coefficients.scalars.Register(
+    coefficients._scalars.Register(
         "magnetic_permeability", new mfem::FunctionCoefficient(MuExpr), true);
 
     hephaestus::BCMap bc_map;
@@ -65,8 +65,8 @@ protected:
                                                       mfem::Array<int>({1, 2, 3}),
                                                       adot_vec_coef),
                     true);
-    coefficients.vectors.Register("surface_tangential_dAdt", adot_vec_coef, true);
-    coefficients.scalars.Register(
+    coefficients._vectors.Register("surface_tangential_dAdt", adot_vec_coef, true);
+    coefficients._scalars.Register(
         "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
 
     mfem::Array<int> ground_terminal(1);
@@ -77,10 +77,10 @@ protected:
                                                       mfem::Array<int>({1, 2, 3}),
                                                       ground_coeff),
                     true);
-    coefficients.scalars.Register("ground_potential", ground_coeff, true);
+    coefficients._scalars.Register("ground_potential", ground_coeff, true);
 
     auto * a_exact = new mfem::VectorFunctionCoefficient(3, AExactExpr);
-    coefficients.vectors.Register("a_exact_coeff", a_exact, true);
+    coefficients._vectors.Register("a_exact_coeff", a_exact, true);
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./beam-tet.mesh")).c_str(), 1, 1);
 
@@ -104,7 +104,7 @@ protected:
 
     hephaestus::Sources sources;
     auto * j_src_coef = new mfem::VectorFunctionCoefficient(3, SourceField);
-    coefficients.vectors.Register("source", j_src_coef, true);
+    coefficients._vectors.Register("source", j_src_coef, true);
     hephaestus::InputParameters div_free_source_params;
     div_free_source_params.SetParam("SourceName", std::string("source"));
     div_free_source_params.SetParam("HCurlFESpaceName", std::string("_HCurlFESpace"));
@@ -200,15 +200,15 @@ TEST_CASE_METHOD(TestAVFormSource, "TestAVFormSource", "[CheckRun]")
           params.GetParam<hephaestus::AuxSolvers>("PostProcessors").Get("L2ErrorPostprocessor")));
 
   double r;
-  for (std::size_t i = 1; i < l2errpostprocessor.ndofs.Size(); ++i)
+  for (std::size_t i = 1; i < l2errpostprocessor._ndofs.Size(); ++i)
   {
-    r = EstimateConvergenceRate(l2errpostprocessor.ndofs[i],
-                                l2errpostprocessor.ndofs[i - 1],
-                                l2errpostprocessor.l2_errs[i],
-                                l2errpostprocessor.l2_errs[i - 1],
+    r = EstimateConvergenceRate(l2errpostprocessor._ndofs[i],
+                                l2errpostprocessor._ndofs[i - 1],
+                                l2errpostprocessor._l2_errs[i],
+                                l2errpostprocessor._l2_errs[i - 1],
                                 3);
     std::cout << r << std::endl;
-    REQUIRE(r > var_order - 0.15);
-    REQUIRE(r < var_order + 1.0);
+    REQUIRE(r > _var_order - 0.15);
+    REQUIRE(r < _var_order + 1.0);
   }
 }

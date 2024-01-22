@@ -27,35 +27,35 @@ public:
 
 protected:
   // Pointers to store trial and test FE spaces
-  mfem::ParFiniteElementSpace * trial_fes{nullptr};
-  mfem::ParFiniteElementSpace * test_fes{nullptr};
+  mfem::ParFiniteElementSpace * _trial_fes{nullptr};
+  mfem::ParFiniteElementSpace * _test_fes{nullptr};
 
   // Bilinear forms
-  std::unique_ptr<mfem::ParBilinearForm> a{nullptr};
-  std::unique_ptr<mfem::ParMixedBilinearForm> a_mixed{nullptr};
+  std::unique_ptr<mfem::ParBilinearForm> _a{nullptr};
+  std::unique_ptr<mfem::ParMixedBilinearForm> _a_mixed{nullptr};
 
   // Coefficient to scale input gridfunction by
-  mfem::Coefficient * coef{nullptr};
+  mfem::Coefficient * _coef{nullptr};
   // Optional constant to scale input gridfunction by
 
 private:
   const std::string _input_gf_name;
   const std::string _scaled_gf_name;
   const std::string _coef_name;
-  const double _aConst;
+  const double _a_const;
   const hephaestus::InputParameters _solver_options;
 
   // Input gridfunction to be scaled by a scalar coefficient
-  mfem::ParGridFunction * input_gf{nullptr};
+  mfem::ParGridFunction * _input_gf{nullptr};
 
   // Gridfunction in which to store result
-  mfem::ParGridFunction * scaled_gf{nullptr};
+  mfem::ParGridFunction * _scaled_gf{nullptr};
 
   // Operator matrices
-  std::unique_ptr<mfem::HypreParMatrix> a_mat{nullptr};
-  std::unique_ptr<mfem::HypreParMatrix> mixed_mat{nullptr};
+  std::unique_ptr<mfem::HypreParMatrix> _a_mat{nullptr};
+  std::unique_ptr<mfem::HypreParMatrix> _mixed_mat{nullptr};
 
   // Solver
-  std::unique_ptr<hephaestus::DefaultJacobiPCGSolver> solver{nullptr};
+  std::unique_ptr<hephaestus::DefaultJacobiPCGSolver> _solver{nullptr};
 };
 } // namespace hephaestus

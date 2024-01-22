@@ -64,15 +64,15 @@ public:
 
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
   void SetGridFunctions() override;
-  mfem::ParFiniteElementSpace * HCurlFESpace_;
-  mfem::ParFiniteElementSpace * HDivFESpace_;
+  mfem::ParFiniteElementSpace * _h_curl_fe_space;
+  mfem::ParFiniteElementSpace * _h_div_fe_space;
 
   std::string _h_curl_var_name, _h_div_var_name;
 
-  mfem::ParGridFunction * u_;  // HCurl vector field
-  mfem::ParGridFunction * dv_; // HDiv vector field
+  mfem::ParGridFunction * _u;  // HCurl vector field
+  mfem::ParGridFunction * _dv; // HDiv vector field
 
 protected:
-  std::unique_ptr<mfem::ParDiscreteLinearOperator> curl;
+  std::unique_ptr<mfem::ParDiscreteLinearOperator> _curl;
 };
 } // namespace hephaestus

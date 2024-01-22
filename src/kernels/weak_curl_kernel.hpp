@@ -20,12 +20,12 @@ public:
             hephaestus::Coefficients & coefficients) override;
   void Apply(mfem::ParLinearForm * lf) override;
 
-  std::string hcurl_gf_name, hdiv_gf_name;
-  std::string coef_name;
-  mfem::ParGridFunction *u_, *v_; //
-  mfem::Coefficient * coef;
+  std::string _hcurl_gf_name, _hdiv_gf_name;
+  std::string _coef_name;
+  mfem::ParGridFunction *_u, *_v; //
+  mfem::Coefficient * _coef;
 
-  std::unique_ptr<mfem::ParMixedBilinearForm> weakCurl;
+  std::unique_ptr<mfem::ParMixedBilinearForm> _weak_curl;
 };
 
 }; // namespace hephaestus

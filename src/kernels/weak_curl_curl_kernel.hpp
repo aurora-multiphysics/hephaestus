@@ -20,13 +20,13 @@ public:
             hephaestus::Coefficients & coefficients) override;
   void Apply(mfem::ParLinearForm * lf) override;
 
-  std::string coupled_gf_name;
-  std::string coef_name;
-  mfem::ParGridFunction * u_; //
-  mfem::ParFiniteElementSpace * H1FESpace_;
-  mfem::Coefficient * coef;
+  std::string _coupled_gf_name;
+  std::string _coef_name;
+  mfem::ParGridFunction * _u; //
+  mfem::ParFiniteElementSpace * _h1_fe_space;
+  mfem::Coefficient * _coef;
 
-  std::unique_ptr<mfem::ParBilinearForm> curlCurl;
+  std::unique_ptr<mfem::ParBilinearForm> _curl_curl;
 };
 
 }; // namespace hephaestus
