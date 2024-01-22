@@ -47,35 +47,35 @@ void
 RWTE10PortRBC::RWTE10(const mfem::Vector & x, std::vector<std::complex<double>> & E)
 {
 
-  mfem::Vector E_hat(CrossProduct(k_c, k_a));
-  E_hat *= 1.0 / E_hat.Norml2();
+  mfem::Vector e_hat(CrossProduct(k_c, k_a));
+  e_hat *= 1.0 / e_hat.Norml2();
 
-  double E0(sqrt(2 * omega_ * mu0_ / (a1Vec.Norml2() * a2Vec.Norml2() * k_.imag())));
-  std::complex<double> E_mag = E0 * sin(InnerProduct(k_a, x)) * exp(-zi * InnerProduct(k_c, x));
+  double e0(sqrt(2 * omega_ * mu0_ / (a1Vec.Norml2() * a2Vec.Norml2() * k_.imag())));
+  std::complex<double> e_mag = e0 * sin(InnerProduct(k_a, x)) * exp(-zi * InnerProduct(k_c, x));
 
-  E[0] = E_mag * E_hat(1);
-  E[1] = E_mag * E_hat(2);
-  E[2] = E_mag * E_hat(0);
+  E[0] = e_mag * e_hat(1);
+  E[1] = e_mag * e_hat(2);
+  E[2] = e_mag * e_hat(0);
 }
 
 void
 RWTE10PortRBC::RWTE10Real(const mfem::Vector & x, mfem::Vector & v)
 {
-  std::vector<std::complex<double>> Eval(x.Size());
-  RWTE10(x, Eval);
+  std::vector<std::complex<double>> eval(x.Size());
+  RWTE10(x, eval);
   for (int i = 0; i < x.Size(); ++i)
   {
-    v(i) = -2 * k_.imag() * Eval[i].imag() / mu0_;
+    v(i) = -2 * k_.imag() * eval[i].imag() / mu0_;
   }
 }
 void
 RWTE10PortRBC::RWTE10Imag(const mfem::Vector & x, mfem::Vector & v)
 {
-  std::vector<std::complex<double>> Eval(x.Size());
-  RWTE10(x, Eval);
+  std::vector<std::complex<double>> eval(x.Size());
+  RWTE10(x, eval);
   for (int i = 0; i < x.Size(); ++i)
   {
-    v(i) = 2 * k_.imag() * Eval[i].real() / mu0_;
+    v(i) = 2 * k_.imag() * eval[i].real() / mu0_;
   }
 }
 

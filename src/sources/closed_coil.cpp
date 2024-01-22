@@ -156,17 +156,17 @@ ClosedCoilSolver::Apply(mfem::ParLinearForm * lf)
 
   // The transformation and integration points themselves are not relevant, it's
   // just so we can call Eval
-  mfem::ElementTransformation * Tr = mesh_parent_->GetElementTransformation(0);
+  mfem::ElementTransformation * tr = mesh_parent_->GetElementTransformation(0);
   const mfem::IntegrationPoint & ip =
       mfem::IntRules.Get(HCurlFESpace_parent_->GetFE(0)->GetGeomType(), 1).IntPoint(0);
 
-  double I = Itotal_->Eval(*Tr, ip);
-  lf->Add(I, *final_lf_);
+  double i = Itotal_->Eval(*tr, ip);
+  lf->Add(i, *final_lf_);
 
   *grad_phi_parent_ = 0.0;
   if (grad_phi_transfer_)
   {
-    grad_phi_parent_->Add(I, *grad_phi_t_parent_);
+    grad_phi_parent_->Add(i, *grad_phi_t_parent_);
   }
 }
 
@@ -355,8 +355,8 @@ void
 ClosedCoilSolver::SolveTransition()
 {
 
-  mfem::ParGridFunction V_parent(H1FESpace_parent_);
-  V_parent = 0.0;
+  mfem::ParGridFunction v_parent(H1FESpace_parent_);
+  v_parent = 0.0;
 
   hephaestus::FESpaces fespaces;
   hephaestus::BCMap bc_maps;
@@ -366,7 +366,7 @@ ClosedCoilSolver::SolveTransition()
 
   hephaestus::GridFunctions gridfunctions;
   gridfunctions.Register("GradPhi_parent", grad_phi_parent_, false);
-  gridfunctions.Register("V_parent", &V_parent, false);
+  gridfunctions.Register("V_parent", &v_parent, false);
 
   hephaestus::InputParameters ocs_params;
   ocs_params.SetParam("GradPotentialName", std::string("GradPhi_parent"));
@@ -380,7 +380,7 @@ ClosedCoilSolver::SolveTransition()
   opencoil.Init(gridfunctions, fespaces, bc_maps, coefs);
   opencoil.Apply(final_lf_.get());
 
-  mesh_coil_->Transfer(V_parent, *V_coil_);
+  mesh_coil_->Transfer(v_parent, *V_coil_);
 }
 
 void
@@ -393,8 +393,8 @@ ClosedCoilSolver::SolveCoil()
   // The boundary terms are zero because ∇Va and ∇Vt are perpendicular
   // to the coil boundaries
 
-  mfem::ParGridFunction Vaux_coil(H1FESpace_coil_.get());
-  Vaux_coil = 0.0;
+  mfem::ParGridFunction vaux_coil(H1FESpace_coil_.get());
+  vaux_coil = 0.0;
 
   mfem::ParBilinearForm a_t(H1FESpace_coil_.get());
   mfem::ParLinearForm b_coil(H1FESpace_coil_.get());
@@ -436,19 +436,19 @@ ClosedCoilSolver::SolveCoil()
     ess_bdr_tdofs_coil[0] = 0;
   }
 
-  mfem::HypreParMatrix A0_coil;
-  mfem::Vector X0_coil;
-  mfem::Vector B0_coil;
-  a_coil.FormLinearSystem(ess_bdr_tdofs_coil, Vaux_coil, b_coil, A0_coil, X0_coil, B0_coil);
-  hephaestus::DefaultH1PCGSolver a_coil_solver(solver_options_, A0_coil);
-  a_coil_solver.Mult(B0_coil, X0_coil);
-  a_coil.RecoverFEMSolution(X0_coil, b_coil, Vaux_coil);
+  mfem::HypreParMatrix a0_coil;
+  mfem::Vector x0_coil;
+  mfem::Vector b0_coil;
+  a_coil.FormLinearSystem(ess_bdr_tdofs_coil, vaux_coil, b_coil, a0_coil, x0_coil, b0_coil);
+  hephaestus::DefaultH1PCGSolver a_coil_solver(solver_options_, a0_coil);
+  a_coil_solver.Mult(b0_coil, x0_coil);
+  a_coil.RecoverFEMSolution(x0_coil, b_coil, vaux_coil);
 
   // Now we form the final coil current
   mfem::ParDiscreteLinearOperator grad(H1FESpace_coil_.get(), grad_phi_aux_coil_->ParFESpace());
   grad.AddDomainInterpolator(new mfem::GradientInterpolator());
   grad.Assemble();
-  grad.Mult(Vaux_coil, *grad_phi_aux_coil_);
+  grad.Mult(vaux_coil, *grad_phi_aux_coil_);
 
   if (grad_phi_transfer_)
     grad_phi_t_parent_ = std::make_unique<mfem::ParGridFunction>(*grad_phi_parent_);

@@ -48,55 +48,55 @@ ComplexMaxwellOperator::Init(mfem::Vector & X)
 void
 ComplexMaxwellOperator::Solve(mfem::Vector & X)
 {
-  mfem::OperatorHandle A1;
-  mfem::Vector U, RHS;
-  mfem::OperatorHandle PCOp;
+  mfem::OperatorHandle jac;
+  mfem::Vector u, rhs;
+  mfem::OperatorHandle pc_op;
 
-  mfem::Vector zeroVec(3);
-  zeroVec = 0.0;
-  mfem::VectorConstantCoefficient zeroCoef(zeroVec);
+  mfem::Vector zero_vec(3);
+  zero_vec = 0.0;
+  mfem::VectorConstantCoefficient zero_coef(zero_vec);
 
-  mfem::ParSesquilinearForm a1_(u_->ParFESpace(), conv_);
-  a1_.AddDomainIntegrator(new mfem::CurlCurlIntegrator(*stiffCoef_), nullptr);
+  mfem::ParSesquilinearForm sqlf(u_->ParFESpace(), conv_);
+  sqlf.AddDomainIntegrator(new mfem::CurlCurlIntegrator(*stiffCoef_), nullptr);
   if (massCoef_)
   {
-    a1_.AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*massCoef_), nullptr);
+    sqlf.AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*massCoef_), nullptr);
   }
   if (lossCoef_)
   {
-    a1_.AddDomainIntegrator(nullptr, new mfem::VectorFEMassIntegrator(*lossCoef_));
+    sqlf.AddDomainIntegrator(nullptr, new mfem::VectorFEMassIntegrator(*lossCoef_));
   }
 
-  mfem::ParLinearForm b1_real_(u_->ParFESpace());
-  mfem::ParLinearForm b1_imag_(u_->ParFESpace());
-  b1_real_ = 0.0;
-  b1_imag_ = 0.0;
+  mfem::ParLinearForm lf_real(u_->ParFESpace());
+  mfem::ParLinearForm lf_imag(u_->ParFESpace());
+  lf_real = 0.0;
+  lf_imag = 0.0;
 
-  _sources.Apply(&b1_real_);
+  _sources.Apply(&lf_real);
 
-  mfem::ParComplexLinearForm b1_(u_->ParFESpace(), conv_);
+  mfem::ParComplexLinearForm lf(u_->ParFESpace(), conv_);
   _bc_map.ApplyEssentialBCs(h_curl_var_complex_name, ess_bdr_tdofs_, *u_, pmesh_);
-  _bc_map.ApplyIntegratedBCs(h_curl_var_complex_name, b1_, pmesh_);
-  _bc_map.ApplyIntegratedBCs(h_curl_var_complex_name, a1_, pmesh_);
+  _bc_map.ApplyIntegratedBCs(h_curl_var_complex_name, lf, pmesh_);
+  _bc_map.ApplyIntegratedBCs(h_curl_var_complex_name, sqlf, pmesh_);
 
-  a1_.Assemble();
-  a1_.Finalize();
+  sqlf.Assemble();
+  sqlf.Finalize();
 
-  b1_.Assemble();
-  b1_.real() += b1_real_;
-  b1_.imag() += b1_imag_;
+  lf.Assemble();
+  lf.real() += lf_real;
+  lf.imag() += lf_imag;
 
-  a1_.FormLinearSystem(ess_bdr_tdofs_, *u_, b1_, A1, U, RHS);
+  sqlf.FormLinearSystem(ess_bdr_tdofs_, *u_, lf, jac, u, rhs);
 
-  auto * A1Z = A1.As<mfem::ComplexHypreParMatrix>();
-  auto A1C = std::unique_ptr<mfem::HypreParMatrix>(A1Z->GetSystemMatrix());
+  auto * jac_z = jac.As<mfem::ComplexHypreParMatrix>();
+  auto jac_c = std::unique_ptr<mfem::HypreParMatrix>(jac_z->GetSystemMatrix());
 
-  mfem::SuperLURowLocMatrix A_SuperLU(*A1C);
+  mfem::SuperLURowLocMatrix a_super_lu(*jac_c);
   mfem::SuperLUSolver solver(MPI_COMM_WORLD);
-  solver.SetOperator(A_SuperLU);
-  solver.Mult(RHS, U);
+  solver.SetOperator(a_super_lu);
+  solver.Mult(rhs, u);
 
-  a1_.RecoverFEMSolution(U, b1_, *u_);
+  sqlf.RecoverFEMSolution(u, lf, *u_);
 
   *_gridfunctions.Get(state_var_names.at(0)) = u_->real();
   *_gridfunctions.Get(state_var_names.at(1)) = u_->imag();

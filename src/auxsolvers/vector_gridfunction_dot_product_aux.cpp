@@ -9,8 +9,8 @@ double
 VectorGridFunctionDotProductCoefficient::Eval(mfem::ElementTransformation & T,
                                               const mfem::IntegrationPoint & ip)
 {
-  double coefValue;
-  coefValue = _coef.Eval(T, ip);
+  double coef_value;
+  coef_value = _coef.Eval(T, ip);
 
   mfem::Vector u_re;
   mfem::Vector u_im;
@@ -21,13 +21,13 @@ VectorGridFunctionDotProductCoefficient::Eval(mfem::ElementTransformation & T,
   _v_gf_re->GetVectorValue(T, ip, v_re);
   if (_u_gf_im == nullptr || _v_gf_im == nullptr)
   {
-    return coefValue * (u_re * v_re);
+    return coef_value * (u_re * v_re);
   }
   else
   {
     _u_gf_im->GetVectorValue(T, ip, u_im);
     _v_gf_im->GetVectorValue(T, ip, v_im);
-    return 0.5 * coefValue * (u_re * v_re + u_im * v_im);
+    return 0.5 * coef_value * (u_re * v_re + u_im * v_im);
   }
 }
 

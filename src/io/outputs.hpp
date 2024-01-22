@@ -97,22 +97,22 @@ private:
   {
     for (auto & output : *this)
     {
-      auto const & dc_(output.second);
-      mfem::ParMesh * pmesh_(_gridfunctions->begin()->second->ParFESpace()->GetParMesh());
-      dc_->SetMesh(pmesh_);
+      auto const & dc(output.second);
+      mfem::ParMesh * pmesh(_gridfunctions->begin()->second->ParFESpace()->GetParMesh());
+      dc->SetMesh(pmesh);
 
       if (_output_field_names.empty())
       {
-        for (auto & _gridfunction : *_gridfunctions)
+        for (auto & gridfunction : *_gridfunctions)
         {
-          dc_->RegisterField(_gridfunction.first, _gridfunction.second);
+          dc->RegisterField(gridfunction.first, gridfunction.second);
         }
       }
       else
       {
         for (auto field_name : _output_field_names)
         {
-          dc_->RegisterField(field_name, _gridfunctions->Get(field_name));
+          dc->RegisterField(field_name, _gridfunctions->Get(field_name));
         }
       }
     }
@@ -124,10 +124,10 @@ private:
     // Write fields to disk
     for (auto & output : *this)
     {
-      auto const & dc_(output.second);
-      dc_->SetCycle(_cycle);
-      dc_->SetTime(t);
-      dc_->Save();
+      auto const & dc(output.second);
+      dc->SetCycle(_cycle);
+      dc->SetTime(t);
+      dc->Save();
     }
   }
 
@@ -150,10 +150,10 @@ private:
       std::cout << "Opening GLVis sockets." << std::endl;
     }
 
-    for (auto & _gridfunction : *_gridfunctions)
+    for (auto & gridfunction : *_gridfunctions)
     {
-      socks_[_gridfunction.first] = new mfem::socketstream;
-      socks_[_gridfunction.first]->precision(8);
+      socks_[gridfunction.first] = new mfem::socketstream;
+      socks_[gridfunction.first]->precision(8);
     }
 
     if (_my_rank == 0)
@@ -168,22 +168,22 @@ private:
     char vishost[] = "localhost";
     int visport = 19916;
 
-    int Wx = 0, Wy = 0;                 // window position
-    int Ww = 350, Wh = 350;             // window size
-    int offx = Ww + 10, offy = Wh + 45; // window offsets
+    int wx = 0, wy = 0;                 // window position
+    int ww = 350, wh = 350;             // window size
+    int offx = ww + 10, offy = wh + 45; // window offsets
 
-    for (auto & _gridfunction : *_gridfunctions)
+    for (auto & gridfunction : *_gridfunctions)
     {
-      mfem::common::VisualizeField(*socks_[_gridfunction.first],
+      mfem::common::VisualizeField(*socks_[gridfunction.first],
                                    vishost,
                                    visport,
-                                   *(_gridfunction.second),
-                                   (_gridfunction.first).c_str(),
-                                   Wx,
-                                   Wy,
-                                   Ww,
-                                   Wh);
-      Wx += offx;
+                                   *(gridfunction.second),
+                                   (gridfunction.first).c_str(),
+                                   wx,
+                                   wy,
+                                   ww,
+                                   wh);
+      wx += offx;
     }
   }
 };

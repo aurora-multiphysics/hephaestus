@@ -27,10 +27,10 @@ public:
     int nd = el.GetDof();
     int dim = el.GetDim();
 
-    mfem::Vector J(dim);
+    mfem::Vector j(dim);
     mfem::DenseMatrix curlshape(nd, dim),
-        curlshape_dFt(nd, dim); // both trial and test function in Nedelec
-                                // space, represented with curlshape
+        curlshape_d_ft(nd, dim); // both trial and test function in Nedelec
+                                 // space, represented with curlshape
     elmat.SetSize(nd * dim);
     elmat = 0.0;
     double w;
@@ -47,16 +47,16 @@ public:
       w = ip.weight / Ttr.Weight();
       w *= Q->Eval(Ttr, ip);           // multiply the PWconstantcoefficient
       el.CalcCurlShape(ip, curlshape); // curl operation on the shape function
-      MultABt(curlshape, Ttr.Jacobian(), curlshape_dFt);
+      MultABt(curlshape, Ttr.Jacobian(), curlshape_d_ft);
       // the curl operation of H(curl) space:  H(div)
       // u(x) = (J/w) * uh(xh)
-      curlshape.MultTranspose(elfun, J); // compute the current density J
+      curlshape.MultTranspose(elfun, j); // compute the current density J
 
-      double J_norm = J.Norml2();
-      double J_de = E0 / Jc * (n - 1) * pow((J_norm / Jc), n - 2);
+      double j_norm = j.Norml2();
+      double j_de = E0 / Jc * (n - 1) * pow((j_norm / Jc), n - 2);
       // derivative factor (n-1)*E0/Jc*(CurlH.Norm/Jc)^(n-2)
       // the transpose may be needed AtA rather than AAt
-      AddMult_a_AAt(w * J_de, curlshape_dFt, elmat); // (Curl u, curl v)*J_de*w
+      AddMult_a_AAt(w * j_de, curlshape_d_ft, elmat); // (Curl u, curl v)*J_de*w
     }
   };
 
@@ -99,12 +99,12 @@ public:
       curlshape.MultTranspose(elfun, vec); //
       Jac.MultTranspose(vec, pointflux);
       // double J_norm=  pow(J[0],2) + pow(J[1],2) ;
-      double J_norm = J.Norml2();
+      double j_norm = J.Norml2();
 
-      double J_f = E0 / Jc * pow((J_norm / Jc), n - 1);
+      double j_f = E0 / Jc * pow((j_norm / Jc), n - 1);
       //  factor E0/Jc*(CurlH.Norm/Jc)^(n-1)
       // cout << "current level " <<  J_f << endl;
-      pointflux *= w * J_f;
+      pointflux *= w * j_f;
       Jac.Mult(pointflux, vec);
       curlshape.AddMult(vec, elvect); // (Curl u, curl v)*J_f*w
     }
@@ -159,11 +159,11 @@ public:
   {
     add(*x0, dt, dx_dt, x1);
     delete Jacobian;
-    mfem::SparseMatrix & localJ = blf->SpMat();
-    localJ.Add(dt, nlf->GetLocalGradient(x1));
-    Jacobian = blf->ParallelAssemble(&localJ);
-    mfem::HypreParMatrix * Je = Jacobian->EliminateRowsCols(ess_tdof_list);
-    delete Je;
+    mfem::SparseMatrix & local_j = blf->SpMat();
+    local_j.Add(dt, nlf->GetLocalGradient(x1));
+    Jacobian = blf->ParallelAssemble(&local_j);
+    mfem::HypreParMatrix * je = Jacobian->EliminateRowsCols(ess_tdof_list);
+    delete je;
     return *Jacobian;
   };
 
@@ -178,18 +178,18 @@ TEST_CASE("NonlinearIntegratorTest", "[CheckData]")
   mesh.EnsureNodes();
   int dim = mesh.Dimension();
 
-  auto fec_ND = std::make_unique<mfem::ND_FECollection>(1, pmesh->Dimension());
-  auto fec_RT = std::make_unique<mfem::RT_FECollection>(1, pmesh->Dimension());
+  auto fec_nd = std::make_unique<mfem::ND_FECollection>(1, pmesh->Dimension());
+  auto fec_rt = std::make_unique<mfem::RT_FECollection>(1, pmesh->Dimension());
 
-  mfem::ParFiniteElementSpace HCurlFESpace(pmesh.get(), fec_ND.get());
+  mfem::ParFiniteElementSpace h_curl_fe_space(pmesh.get(), fec_nd.get());
   mfem::ConstantCoefficient coeff(1.0);
   mfem::ConstantCoefficient mu(1.0);
 
   //* in weak form
   //* (ρ∇×H, ∇×v) + (μdH/dt, v) + (dBᵉ/dt, v) - <(ρ∇×H)×n, v>  = 0
-  mfem::ParNonlinearForm nlf_test(&HCurlFESpace);
-  mfem::ParBilinearForm blf_test(&HCurlFESpace);
-  mfem::ParBilinearForm lf_test(&HCurlFESpace);
+  mfem::ParNonlinearForm nlf_test(&h_curl_fe_space);
+  mfem::ParBilinearForm blf_test(&h_curl_fe_space);
+  mfem::ParBilinearForm lf_test(&h_curl_fe_space);
   nlf_test.AddDomainIntegrator(new VectorPowerLawNLFIntegrator(coeff));
   blf_test.AddDomainIntegrator(new mfem::VectorFEMassIntegrator(mu));
 
@@ -198,23 +198,23 @@ TEST_CASE("NonlinearIntegratorTest", "[CheckData]")
   blf_test.Assemble();
   blf_test.Finalize();
 
-  mfem::ParGridFunction x(&HCurlFESpace);
-  mfem::ParLinearForm b(&HCurlFESpace);
-  b = 1.0;
-  x = 0.0;
-  mfem::Vector X(HCurlFESpace.GetTrueVSize()), B(HCurlFESpace.GetTrueVSize());
-  b.ParallelAssemble(B);
-  x.ParallelProject(X);
+  mfem::ParGridFunction gf(&h_curl_fe_space);
+  mfem::ParLinearForm lf(&h_curl_fe_space);
+  lf = 1.0;
+  gf = 0.0;
+  mfem::Vector gf_tdofs(h_curl_fe_space.GetTrueVSize()), lf_tdofs(h_curl_fe_space.GetTrueVSize());
+  lf.ParallelAssemble(lf_tdofs);
+  gf.ParallelProject(gf_tdofs);
 
   mfem::Array<int> ess_tdof_list;
   NonlinearOperator nl_oper(&blf_test, &nlf_test, ess_tdof_list);
-  nl_oper.SetParameters(0.1, &X);
+  nl_oper.SetParameters(0.1, &gf_tdofs);
 
   // Solver for the Jacobian solve in the Newton method
   mfem::Solver * jacobian_solver;
   // Set up the Jacobian solver
-  mfem::HyprePCG j_pcg(HCurlFESpace.GetComm());
-  mfem::HypreAMS ams(&HCurlFESpace);
+  mfem::HyprePCG j_pcg(h_curl_fe_space.GetComm());
+  mfem::HypreAMS ams(&h_curl_fe_space);
   ams.SetPrintLevel(1);
   j_pcg.SetTol(1e-7);
   j_pcg.SetMaxIter(300);
@@ -233,13 +233,13 @@ TEST_CASE("NonlinearIntegratorTest", "[CheckData]")
   // newton_solver.SetAdaptiveLinRtol(2, 0.5, 0.9);
   newton_solver.SetMaxIter(10);
 
-  int _my_rank;
-  MPI_Comm_rank(HCurlFESpace.GetComm(), &_my_rank);
-  std::cout << "Starting on rank:" << _my_rank << std::endl;
+  int my_rank;
+  MPI_Comm_rank(h_curl_fe_space.GetComm(), &my_rank);
+  std::cout << "Starting on rank:" << my_rank << std::endl;
 
-  // nlf_test.Mult(B, X);
-  newton_solver.Mult(B, X);
+  // nlf_test.Mult(lf_tdofs, gf_tdofs);
+  newton_solver.Mult(lf_tdofs, gf_tdofs);
   MFEM_VERIFY(newton_solver.GetConverged(), "Newton Solver did not converge.");
-  std::cout << "Finished on rank:" << _my_rank << std::endl;
-  x.Distribute(X);
+  std::cout << "Finished on rank:" << my_rank << std::endl;
+  gf.Distribute(gf_tdofs);
 }

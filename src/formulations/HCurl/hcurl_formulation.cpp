@@ -128,20 +128,22 @@ CurlCurlEquationSystem::AddKernels()
   std::string dh_curl_var_dt = GetTimeDerivativeName(h_curl_var_name);
 
   // (α∇×u_{n}, ∇×u')
-  hephaestus::InputParameters weakCurlCurlParams;
-  weakCurlCurlParams.SetParam("CoupledVariableName", h_curl_var_name);
-  weakCurlCurlParams.SetParam("CoefficientName", alpha_coef_name);
-  AddKernel(dh_curl_var_dt, std::make_unique<hephaestus::WeakCurlCurlKernel>(weakCurlCurlParams));
+  hephaestus::InputParameters weak_curl_curl_params;
+  weak_curl_curl_params.SetParam("CoupledVariableName", h_curl_var_name);
+  weak_curl_curl_params.SetParam("CoefficientName", alpha_coef_name);
+  AddKernel(dh_curl_var_dt,
+            std::make_unique<hephaestus::WeakCurlCurlKernel>(weak_curl_curl_params));
 
   // (αdt∇×du/dt_{n+1}, ∇×u')
-  hephaestus::InputParameters curlCurlParams;
-  curlCurlParams.SetParam("CoefficientName", dtalpha_coef_name);
-  AddKernel(dh_curl_var_dt, std::make_unique<hephaestus::CurlCurlKernel>(curlCurlParams));
+  hephaestus::InputParameters curl_curl_params;
+  curl_curl_params.SetParam("CoefficientName", dtalpha_coef_name);
+  AddKernel(dh_curl_var_dt, std::make_unique<hephaestus::CurlCurlKernel>(curl_curl_params));
 
   // (βdu/dt_{n+1}, u')
-  hephaestus::InputParameters vectorFEMassParams;
-  vectorFEMassParams.SetParam("CoefficientName", beta_coef_name);
-  AddKernel(dh_curl_var_dt, std::make_unique<hephaestus::VectorFEMassKernel>(vectorFEMassParams));
+  hephaestus::InputParameters vector_fe_mass_params;
+  vector_fe_mass_params.SetParam("CoefficientName", beta_coef_name);
+  AddKernel(dh_curl_var_dt,
+            std::make_unique<hephaestus::VectorFEMassKernel>(vector_fe_mass_params));
 }
 
 void
@@ -202,10 +204,10 @@ HCurlOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vect
 
   _equation_system->FormLinearSystem(blockA, trueX, trueRhs);
 
-  a1_solver = std::make_unique<hephaestus::DefaultHCurlPCGSolver>(
+  jacobian_solver = std::make_unique<hephaestus::DefaultHCurlPCGSolver>(
       _solver_options, *blockA.As<mfem::HypreParMatrix>(), _equation_system->test_pfespaces.at(0));
 
-  a1_solver->Mult(trueRhs, trueX);
+  jacobian_solver->Mult(trueRhs, trueX);
   _equation_system->RecoverFEMSolution(trueX, _gridfunctions);
 }
 

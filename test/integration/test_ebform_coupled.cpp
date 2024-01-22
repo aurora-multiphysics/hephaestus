@@ -19,26 +19,26 @@ class TestEBFormCoupled
 protected:
   static double PotentialHigh(const mfem::Vector & x, double t)
   {
-    double wj_(2.0 * M_PI / 60.0);
-    return 2 * cos(wj_ * t);
+    double wj(2.0 * M_PI / 60.0);
+    return 2 * cos(wj * t);
   }
   static double PotentialGround(const mfem::Vector & x, double t) { return 0.0; }
   static void EdotBc(const mfem::Vector & x, mfem::Vector & E) { E = 0.0; }
   static void JSrc(const mfem::Vector & x, double t, mfem::Vector & j)
   {
-    double wj_(2.0 * M_PI / 60.0);
+    double wj(2.0 * M_PI / 60.0);
     j[0] = 0.0;
     j[1] = 0.0;
-    j[2] = 2 * sin(wj_ * t);
+    j[2] = 2 * sin(wj * t);
   }
 
   hephaestus::InputParameters TestParams()
   {
     double sigma = 2.0 * M_PI * 10;
 
-    double sigmaAir;
+    double sigma_air;
 
-    sigmaAir = 1.0e-6 * sigma;
+    sigma_air = 1.0e-6 * sigma;
 
     hephaestus::FESpaces fespaces;
     hephaestus::GridFunctions gridfunctions;
@@ -48,15 +48,15 @@ protected:
     // CoupledCoefficients must also be added to AuxSolvers
     hephaestus::InputParameters copper_conductivity_params;
     copper_conductivity_params.SetParam("CoupledVariableName", std::string("temperature"));
-    hephaestus::CoupledCoefficient * wireConductivity =
+    hephaestus::CoupledCoefficient * wire_conductivity =
         new CopperConductivityCoefficient(copper_conductivity_params);
 
     hephaestus::Subdomain wire("wire", 1);
-    wire.scalar_coefficients.Register("electrical_conductivity", wireConductivity, true);
+    wire.scalar_coefficients.Register("electrical_conductivity", wire_conductivity, true);
 
     hephaestus::Subdomain air("air", 2);
     air.scalar_coefficients.Register(
-        "electrical_conductivity", new mfem::ConstantCoefficient(sigmaAir), true);
+        "electrical_conductivity", new mfem::ConstantCoefficient(sigma_air), true);
 
     hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({wire, air}));
 
@@ -67,17 +67,17 @@ protected:
     //     true);
 
     hephaestus::AuxSolvers preprocessors;
-    preprocessors.Register("CoupledCoefficient", wireConductivity, false);
+    preprocessors.Register("CoupledCoefficient", wire_conductivity, false);
 
     hephaestus::BCMap bc_map;
-    auto * edotVecCoef = new mfem::VectorFunctionCoefficient(3, EdotBc);
+    auto * edot_vec_coef = new mfem::VectorFunctionCoefficient(3, EdotBc);
     bc_map.Register("tangential_dEdt",
                     new hephaestus::VectorDirichletBC(
-                        std::string("electric_field"), mfem::Array<int>({1, 2, 3}), edotVecCoef),
+                        std::string("electric_field"), mfem::Array<int>({1, 2, 3}), edot_vec_coef),
                     true);
     coefficients.scalars.Register(
         "magnetic_permeability", new mfem::ConstantCoefficient(1.0), true);
-    coefficients.vectors.Register("surface_tangential_dEdt", edotVecCoef, true);
+    coefficients.vectors.Register("surface_tangential_dEdt", edot_vec_coef, true);
 
     mfem::Array<int> high_terminal(1);
     high_terminal[0] = 1;

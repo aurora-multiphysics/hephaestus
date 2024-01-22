@@ -8,8 +8,8 @@ class TestAVFormRod
 protected:
   static double PotentialHigh(const mfem::Vector & x, double t)
   {
-    double wj_(2.0 * M_PI / 60.0);
-    return 2 * cos(wj_ * t);
+    double wj(2.0 * M_PI / 60.0);
+    return 2 * cos(wj * t);
   }
   static double PotentialGround(const mfem::Vector & x, double t) { return 0.0; }
 
@@ -21,9 +21,9 @@ protected:
   {
     double sigma = 2.0 * M_PI * 10;
 
-    double sigmaAir;
+    double sigma_air;
 
-    sigmaAir = 1.0e-6 * sigma;
+    sigma_air = 1.0e-6 * sigma;
 
     hephaestus::Subdomain wire("wire", 1);
     wire.scalar_coefficients.Register(
@@ -31,7 +31,7 @@ protected:
 
     hephaestus::Subdomain air("air", 2);
     air.scalar_coefficients.Register(
-        "electrical_conductivity", new mfem::ConstantCoefficient(sigmaAir), true);
+        "electrical_conductivity", new mfem::ConstantCoefficient(sigma_air), true);
 
     hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({wire, air}));
 
@@ -39,13 +39,13 @@ protected:
         "magnetic_permeability", new mfem::ConstantCoefficient(1.0), true);
 
     hephaestus::BCMap bc_map;
-    auto * adotVecCoef = new mfem::VectorFunctionCoefficient(3, AdotBc);
+    auto * adot_vec_coef = new mfem::VectorFunctionCoefficient(3, AdotBc);
     bc_map.Register("tangential_dAdt",
                     new hephaestus::VectorDirichletBC(std::string("dmagnetic_vector_potential_dt"),
                                                       mfem::Array<int>({1, 2, 3}),
-                                                      adotVecCoef),
+                                                      adot_vec_coef),
                     true);
-    coefficients.vectors.Register("surface_tangential_dAdt", adotVecCoef, true);
+    coefficients.vectors.Register("surface_tangential_dAdt", adot_vec_coef, true);
 
     mfem::Array<int> high_terminal(1);
     high_terminal[0] = 1;
@@ -64,7 +64,7 @@ protected:
                                           new mfem::FunctionCoefficient(PotentialGround)),
         true);
 
-    auto * JSrcCoef = new mfem::VectorFunctionCoefficient(3, SourceCurrent);
+    auto * j_src_coef = new mfem::VectorFunctionCoefficient(3, SourceCurrent);
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./cylinder-hex-q2.gen")).c_str(), 1, 1);
 

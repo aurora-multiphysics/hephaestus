@@ -21,12 +21,12 @@ public:
 
   static mfem::Vector CrossProduct(mfem::Vector & va, mfem::Vector & vb)
   {
-    mfem::Vector Vec;
-    Vec.SetSize(3);
-    Vec[0] = va[1] * vb[2] - va[2] * vb[1];
-    Vec[1] = va[2] * vb[0] - va[0] * vb[2];
-    Vec[2] = va[0] * vb[1] - va[1] * vb[0];
-    return Vec;
+    mfem::Vector vec;
+    vec.SetSize(3);
+    vec[0] = va[1] * vb[2] - va[2] * vb[1];
+    vec[1] = va[2] * vb[0] - va[0] * vb[2];
+    vec[2] = va[0] * vb[1] - va[1] * vb[0];
+    return vec;
   }
   void RWTE10(const mfem::Vector & x, std::vector<std::complex<double>> & E);
   void RWTE10Real(const mfem::Vector & x, mfem::Vector & v);

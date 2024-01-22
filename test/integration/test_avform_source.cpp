@@ -59,13 +59,13 @@ protected:
         "magnetic_permeability", new mfem::FunctionCoefficient(MuExpr), true);
 
     hephaestus::BCMap bc_map;
-    auto * adotVecCoef = new mfem::VectorFunctionCoefficient(3, AdotBC);
+    auto * adot_vec_coef = new mfem::VectorFunctionCoefficient(3, AdotBC);
     bc_map.Register("tangential_dAdt",
                     new hephaestus::VectorDirichletBC(std::string("dmagnetic_vector_potential_dt"),
                                                       mfem::Array<int>({1, 2, 3}),
-                                                      adotVecCoef),
+                                                      adot_vec_coef),
                     true);
-    coefficients.vectors.Register("surface_tangential_dAdt", adotVecCoef, true);
+    coefficients.vectors.Register("surface_tangential_dAdt", adot_vec_coef, true);
     coefficients.scalars.Register(
         "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
 
@@ -79,8 +79,8 @@ protected:
                     true);
     coefficients.scalars.Register("ground_potential", ground_coeff, true);
 
-    auto * A_exact = new mfem::VectorFunctionCoefficient(3, AExactExpr);
-    coefficients.vectors.Register("a_exact_coeff", A_exact, true);
+    auto * a_exact = new mfem::VectorFunctionCoefficient(3, AExactExpr);
+    coefficients.vectors.Register("a_exact_coeff", a_exact, true);
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./beam-tet.mesh")).c_str(), 1, 1);
 
@@ -103,8 +103,8 @@ protected:
     hephaestus::AuxSolvers preprocessors;
 
     hephaestus::Sources sources;
-    auto * JSrcCoef = new mfem::VectorFunctionCoefficient(3, SourceField);
-    coefficients.vectors.Register("source", JSrcCoef, true);
+    auto * j_src_coef = new mfem::VectorFunctionCoefficient(3, SourceField);
+    coefficients.vectors.Register("source", j_src_coef, true);
     hephaestus::InputParameters div_free_source_params;
     div_free_source_params.SetParam("SourceName", std::string("source"));
     div_free_source_params.SetParam("HCurlFESpaceName", std::string("_HCurlFESpace"));

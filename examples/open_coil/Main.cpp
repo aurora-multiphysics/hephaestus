@@ -60,7 +60,7 @@ main(int argc, char * argv[])
 
   // Total electrical current going around the coil. Must be nonzero, can be
   // changed later.
-  double Itotal = 10;
+  double itotal = 10;
 
   // Attribute that defines the internal faces over which we apply the potential
   // difference
@@ -79,7 +79,7 @@ main(int argc, char * argv[])
       &DATA_DIR, "-dataDir", "--data_directory", "Directory storing input data for tests.");
   args.AddOption(&par_ref_lvl, "-ref", "--parallel-refinement", "Parallel refinement level.");
   args.AddOption(&order, "-o", "--order", "Base functions order");
-  args.AddOption(&Itotal, "-I", "--Itotal", "Total electrical current.");
+  args.AddOption(&itotal, "-I", "--Itotal", "Total electrical current.");
   args.AddOption(&mesh_filename, "-f", "--mesh-filename", "Mesh file name");
   args.AddOption(&coil_attr,
                  "-cd",
@@ -138,17 +138,17 @@ main(int argc, char * argv[])
   problem_builder->AddGridFunction(std::string("magnetic_vector_potential"), std::string("HCurl"));
   problem_builder->AddGridFunction(std::string("grad_phi"), std::string("HCurl"));
   problem_builder->AddGridFunction(std::string("magnetic_flux_density"), std::string("HDiv"));
-  problem_builder->registerMagneticFluxDensityAux("magnetic_flux_density");
-  hephaestus::Coefficients coefficients = defineCoefficients(Itotal);
+  problem_builder->RegisterMagneticFluxDensityAux("magnetic_flux_density");
+  hephaestus::Coefficients coefficients = defineCoefficients(itotal);
 
-  mfem::Array<int> A_DBC_bdr(3);
-  A_DBC_bdr[0] = 1;
-  A_DBC_bdr[1] = 2;
-  A_DBC_bdr[2] = 4;
-  hephaestus::VectorDirichletBC A_DBC(
-      "magnetic_vector_potential", A_DBC_bdr, new mfem::VectorFunctionCoefficient(3, constVec));
+  mfem::Array<int> a_dbc_bdr(3);
+  a_dbc_bdr[0] = 1;
+  a_dbc_bdr[1] = 2;
+  a_dbc_bdr[2] = 4;
+  hephaestus::VectorDirichletBC a_dbc(
+      "magnetic_vector_potential", a_dbc_bdr, new mfem::VectorFunctionCoefficient(3, constVec));
 
-  problem_builder->AddBoundaryCondition("A_DBC", &A_DBC, false);
+  problem_builder->AddBoundaryCondition("A_DBC", &a_dbc, false);
 
   problem_builder->SetCoefficients(coefficients);
 

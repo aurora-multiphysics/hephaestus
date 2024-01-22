@@ -173,15 +173,15 @@ HelmholtzProjector::SolveLinearSystem()
   // Form linear system
   // (g, ∇q) - (∇Q, ∇q) - <P(g).n, q> = 0
   // (∇Q, ∇q) = (g, ∇q) - <P(g).n, q>
-  mfem::HypreParMatrix A0;
-  mfem::Vector X0;
-  mfem::Vector B0;
-  a0_->FormLinearSystem(ess_bdr_tdofs_, *q_, *gDiv_, A0, X0, B0);
+  mfem::HypreParMatrix a0;
+  mfem::Vector x0;
+  mfem::Vector b0;
+  a0_->FormLinearSystem(ess_bdr_tdofs_, *q_, *gDiv_, a0, x0, b0);
 
-  hephaestus::DefaultGMRESSolver a0_solver(solver_options_, A0);
+  hephaestus::DefaultGMRESSolver a0_solver(solver_options_, a0);
 
-  a0_solver.Mult(B0, X0);
-  a0_->RecoverFEMSolution(X0, *gDiv_, *q_);
+  a0_solver.Mult(b0, x0);
+  a0_->RecoverFEMSolution(x0, *gDiv_, *q_);
 }
 
 } // namespace hephaestus

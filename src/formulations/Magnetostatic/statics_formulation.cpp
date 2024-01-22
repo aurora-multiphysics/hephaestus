@@ -124,29 +124,30 @@ Fully discretised equations
 void
 StaticsOperator::Solve(mfem::Vector & X)
 {
-  mfem::ParGridFunction & a_(*local_test_vars.at(0));
-  a_ = 0.0;
-  mfem::ParLinearForm b1_(a_.ParFESpace());
-  b1_ = 0.0;
-  mfem::Array<int> ess_bdr_tdofs_;
-  _bc_map.ApplyEssentialBCs(h_curl_var_name, ess_bdr_tdofs_, a_, pmesh_);
-  _bc_map.ApplyIntegratedBCs(h_curl_var_name, b1_, pmesh_);
-  b1_.Assemble();
-  _sources.Apply(&b1_);
-  mfem::ParBilinearForm a1_(a_.ParFESpace());
-  a1_.AddDomainIntegrator(new mfem::CurlCurlIntegrator(*stiffCoef_));
-  a1_.Assemble();
-  a1_.Finalize();
-  mfem::HypreParMatrix CurlMuInvCurl;
-  mfem::HypreParVector A(a_.ParFESpace());
-  mfem::HypreParVector RHS(a_.ParFESpace());
-  a1_.FormLinearSystem(ess_bdr_tdofs_, a_, b1_, CurlMuInvCurl, A, RHS);
+  mfem::ParGridFunction & gf(*local_test_vars.at(0));
+  gf = 0.0;
+  mfem::ParLinearForm lf(gf.ParFESpace());
+  lf = 0.0;
+  mfem::Array<int> ess_bdr_tdofs;
+  _bc_map.ApplyEssentialBCs(h_curl_var_name, ess_bdr_tdofs, gf, pmesh_);
+  _bc_map.ApplyIntegratedBCs(h_curl_var_name, lf, pmesh_);
+  lf.Assemble();
+  _sources.Apply(&lf);
+  mfem::ParBilinearForm blf(gf.ParFESpace());
+  blf.AddDomainIntegrator(new mfem::CurlCurlIntegrator(*stiffCoef_));
+  blf.Assemble();
+  blf.Finalize();
+  mfem::HypreParMatrix curl_mu_inv_curl;
+  mfem::HypreParVector sol_tdofs(gf.ParFESpace());
+  mfem::HypreParVector rhs_tdofs(gf.ParFESpace());
+  blf.FormLinearSystem(ess_bdr_tdofs, gf, lf, curl_mu_inv_curl, sol_tdofs, rhs_tdofs);
 
   // Define and apply a parallel FGMRES solver for AX=B with the AMS
   // preconditioner from hypre.
-  hephaestus::DefaultHCurlFGMRESSolver a1_solver(_solver_options, CurlMuInvCurl, a_.ParFESpace());
-  a1_solver.Mult(RHS, A);
-  a1_.RecoverFEMSolution(A, b1_, a_);
+  hephaestus::DefaultHCurlFGMRESSolver a1_solver(
+      _solver_options, curl_mu_inv_curl, gf.ParFESpace());
+  a1_solver.Mult(rhs_tdofs, sol_tdofs);
+  blf.RecoverFEMSolution(sol_tdofs, lf, gf);
 }
 
 } // namespace hephaestus

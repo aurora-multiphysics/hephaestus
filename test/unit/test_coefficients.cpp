@@ -18,18 +18,18 @@ TEST_CASE("CoefficientsTest", "[CheckData]")
   hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({wire, air}));
 
   // Verify predefined values
-  mfem::IsoparametricTransformation T;
+  mfem::IsoparametricTransformation t;
   mfem::IntegrationPoint ip;
 
   mfem::Coefficient * pw = coefficients.scalars.Get("property_one");
-  T.Attribute = 1;
-  REQUIRE_THAT(pw->Eval(T, ip), Catch::Matchers::WithinAbs(1.0, eps));
-  T.Attribute = 2;
-  REQUIRE_THAT(pw->Eval(T, ip), Catch::Matchers::WithinAbs(26.0, eps));
+  t.Attribute = 1;
+  REQUIRE_THAT(pw->Eval(t, ip), Catch::Matchers::WithinAbs(1.0, eps));
+  t.Attribute = 2;
+  REQUIRE_THAT(pw->Eval(t, ip), Catch::Matchers::WithinAbs(26.0, eps));
 
   pw = coefficients.scalars.Get("property_two");
-  T.Attribute = 1;
-  REQUIRE_THAT(pw->Eval(T, ip), Catch::Matchers::WithinAbs(150.0, eps));
-  T.Attribute = 2;
-  REQUIRE_THAT(pw->Eval(T, ip), Catch::Matchers::WithinAbs(152.0, eps));
+  t.Attribute = 1;
+  REQUIRE_THAT(pw->Eval(t, ip), Catch::Matchers::WithinAbs(150.0, eps));
+  t.Attribute = 2;
+  REQUIRE_THAT(pw->Eval(t, ip), Catch::Matchers::WithinAbs(152.0, eps));
 }

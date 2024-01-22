@@ -15,15 +15,15 @@ protected:
     double x0(194e-3);  // Coil centre x coordinate
     double y0(100e-3);  // Coil centre y coordinate
     double a(50e-3);    // Coil thickness
-    double I0(2742);    // Coil current in Ampere-turns
-    double S(2.5e-3);   // Coil cross sectional area
+    double i0(2742);    // Coil current in Ampere-turns
+    double s(2.5e-3);   // Coil cross sectional area
     double freq(200.0); // Frequency in Hz
 
     double x = xv(0);
     double y = xv(1);
 
     // Current density magnitude
-    double Jmag = (I0 / S);
+    double jmag = (i0 / s);
 
     // Calculate x component of current density unit vector
     if (abs(x - x0) < a)
@@ -61,7 +61,7 @@ protected:
     J(2) = 0.0;
 
     // Scale by current density magnitude
-    J *= Jmag;
+    J *= jmag;
   }
 
   hephaestus::InputParameters TestParams()
@@ -109,19 +109,19 @@ protected:
     hephaestus::AuxSolvers preprocessors;
 
     hephaestus::Sources sources;
-    auto * JSrcCoef = new mfem::VectorFunctionCoefficient(3, SourceCurrent);
+    auto * j_src_coef = new mfem::VectorFunctionCoefficient(3, SourceCurrent);
     mfem::Array<mfem::VectorCoefficient *> sourcecoefs(4);
-    sourcecoefs[0] = JSrcCoef;
-    sourcecoefs[1] = JSrcCoef;
-    sourcecoefs[2] = JSrcCoef;
-    sourcecoefs[3] = JSrcCoef;
+    sourcecoefs[0] = j_src_coef;
+    sourcecoefs[1] = j_src_coef;
+    sourcecoefs[2] = j_src_coef;
+    sourcecoefs[3] = j_src_coef;
     mfem::Array<int> coilsegments(4);
     coilsegments[0] = 3;
     coilsegments[1] = 4;
     coilsegments[2] = 5;
     coilsegments[3] = 6;
-    auto * JSrcRestricted = new mfem::PWVectorCoefficient(3, coilsegments, sourcecoefs);
-    coefficients.vectors.Register("source", JSrcRestricted, true);
+    auto * j_src_restricted = new mfem::PWVectorCoefficient(3, coilsegments, sourcecoefs);
+    coefficients.vectors.Register("source", j_src_restricted, true);
 
     hephaestus::InputParameters div_free_source_params;
     div_free_source_params.SetParam("SourceName", std::string("source"));

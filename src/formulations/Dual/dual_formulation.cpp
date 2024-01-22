@@ -164,21 +164,22 @@ WeakCurlEquationSystem::AddKernels()
   std::string dh_curl_var_dt = GetTimeDerivativeName(_h_curl_var_name);
 
   // (αv_{n}, ∇×u')
-  hephaestus::InputParameters weakCurlParams;
-  weakCurlParams.SetParam("HCurlVarName", _h_curl_var_name);
-  weakCurlParams.SetParam("HDivVarName", _h_div_var_name);
-  weakCurlParams.SetParam("CoefficientName", _alpha_coef_name);
-  AddKernel(_h_curl_var_name, std::make_unique<hephaestus::WeakCurlKernel>(weakCurlParams));
+  hephaestus::InputParameters weak_curl_params;
+  weak_curl_params.SetParam("HCurlVarName", _h_curl_var_name);
+  weak_curl_params.SetParam("HDivVarName", _h_div_var_name);
+  weak_curl_params.SetParam("CoefficientName", _alpha_coef_name);
+  AddKernel(_h_curl_var_name, std::make_unique<hephaestus::WeakCurlKernel>(weak_curl_params));
 
   // (αdt∇×u_{n+1}, ∇×u')
-  hephaestus::InputParameters curlCurlParams;
-  curlCurlParams.SetParam("CoefficientName", _dtalpha_coef_name);
-  AddKernel(_h_curl_var_name, std::make_unique<hephaestus::CurlCurlKernel>(curlCurlParams));
+  hephaestus::InputParameters curl_curl_params;
+  curl_curl_params.SetParam("CoefficientName", _dtalpha_coef_name);
+  AddKernel(_h_curl_var_name, std::make_unique<hephaestus::CurlCurlKernel>(curl_curl_params));
 
   // (βu_{n+1}, u')
-  hephaestus::InputParameters vectorFEMassParams;
-  vectorFEMassParams.SetParam("CoefficientName", _beta_coef_name);
-  AddKernel(_h_curl_var_name, std::make_unique<hephaestus::VectorFEMassKernel>(vectorFEMassParams));
+  hephaestus::InputParameters vector_fe_mass_params;
+  vector_fe_mass_params.SetParam("CoefficientName", _beta_coef_name);
+  AddKernel(_h_curl_var_name,
+            std::make_unique<hephaestus::VectorFEMassKernel>(vector_fe_mass_params));
 }
 
 DualOperator::DualOperator(mfem::ParMesh & pmesh,
@@ -226,10 +227,10 @@ DualOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vecto
 
   _equation_system->FormLinearSystem(blockA, trueX, trueRhs);
 
-  a1_solver = std::make_unique<hephaestus::DefaultHCurlPCGSolver>(
+  jacobian_solver = std::make_unique<hephaestus::DefaultHCurlPCGSolver>(
       _solver_options, *blockA.As<mfem::HypreParMatrix>(), _equation_system->test_pfespaces.at(0));
 
-  a1_solver->Mult(trueRhs, trueX);
+  jacobian_solver->Mult(trueRhs, trueX);
   _equation_system->RecoverFEMSolution(trueX, _gridfunctions);
 
   // Subtract off contribution from source

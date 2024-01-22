@@ -106,18 +106,18 @@ ScalarPotentialSource::Apply(mfem::ParLinearForm * lf)
   // a0(p_{n+1}, p') = b0(p')
   // a0(p, p') = (β ∇ p, ∇ p')
   // b0(p') = <n.s0, p'>
-  mfem::ParGridFunction Phi_gf(H1FESpace_);
+  mfem::ParGridFunction phi_gf(H1FESpace_);
   mfem::Array<int> poisson_ess_tdof_list;
-  Phi_gf = 0.0;
+  phi_gf = 0.0;
   *b0 = 0.0;
   _bc_map->ApplyEssentialBCs(
-      potential_gf_name, poisson_ess_tdof_list, Phi_gf, (H1FESpace_->GetParMesh()));
+      potential_gf_name, poisson_ess_tdof_list, phi_gf, (H1FESpace_->GetParMesh()));
   _bc_map->ApplyIntegratedBCs(potential_gf_name, *b0, (H1FESpace_->GetParMesh()));
   b0->Assemble();
 
   a0->Update();
   a0->Assemble();
-  a0->FormLinearSystem(poisson_ess_tdof_list, Phi_gf, *b0, *A0, *X0, *B0);
+  a0->FormLinearSystem(poisson_ess_tdof_list, phi_gf, *b0, *A0, *X0, *B0);
 
   if (a0_solver == nullptr)
   {

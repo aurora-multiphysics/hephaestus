@@ -144,11 +144,11 @@ EquationSystem::FormLinearSystem(mfem::OperatorHandle & op,
     auto & test_var_name = test_var_names.at(i);
     auto blf = blfs.Get(test_var_name);
     auto lf = lfs.Get(test_var_name);
-    mfem::Vector auxX, auxRHS;
+    mfem::Vector aux_x, aux_rhs;
     hBlocks(i, i) = new mfem::HypreParMatrix;
-    blf->FormLinearSystem(ess_tdof_lists.at(i), *(xs.at(i)), *lf, *hBlocks(i, i), auxX, auxRHS);
-    trueX.GetBlock(i) = auxX;
-    trueRHS.GetBlock(i) = auxRHS;
+    blf->FormLinearSystem(ess_tdof_lists.at(i), *(xs.at(i)), *lf, *hBlocks(i, i), aux_x, aux_rhs);
+    trueX.GetBlock(i) = aux_x;
+    trueRHS.GetBlock(i) = aux_rhs;
   }
 
   // Form off-diagonal blocks
@@ -159,9 +159,9 @@ EquationSystem::FormLinearSystem(mfem::OperatorHandle & op,
     {
       auto trial_var_name = test_var_names.at(j);
 
-      mfem::Vector auxX, auxRHS;
-      mfem::ParLinearForm auxLF(test_pfespaces.at(i));
-      auxLF = 0.0;
+      mfem::Vector aux_x, aux_rhs;
+      mfem::ParLinearForm aux_lf(test_pfespaces.at(i));
+      aux_lf = 0.0;
       if (mblfs.Has(test_var_name) && mblfs.Get(test_var_name)->Has(trial_var_name))
       {
         auto mblf = mblfs.Get(test_var_name)->Get(trial_var_name);
@@ -169,11 +169,11 @@ EquationSystem::FormLinearSystem(mfem::OperatorHandle & op,
         mblf->FormRectangularLinearSystem(ess_tdof_lists.at(j),
                                           ess_tdof_lists.at(i),
                                           *(xs.at(j)),
-                                          auxLF,
+                                          aux_lf,
                                           *hBlocks(i, j),
-                                          auxX,
-                                          auxRHS);
-        trueRHS.GetBlock(i) += auxRHS;
+                                          aux_x,
+                                          aux_rhs);
+        trueRHS.GetBlock(i) += aux_rhs;
       }
     }
   }

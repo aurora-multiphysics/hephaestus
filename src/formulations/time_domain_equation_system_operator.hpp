@@ -65,7 +65,7 @@ public:
   hephaestus::InputParameters & _solver_options;
 
   mutable std::unique_ptr<hephaestus::DefaultGMRESSolver> solver{nullptr};
-  mutable std::unique_ptr<hephaestus::DefaultHCurlPCGSolver> a1_solver{nullptr};
+  mutable std::unique_ptr<hephaestus::DefaultHCurlPCGSolver> jacobian_solver{nullptr};
 
   mfem::OperatorHandle blockA;
   mfem::BlockVector trueX, trueRhs;

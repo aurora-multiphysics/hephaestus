@@ -64,21 +64,21 @@ protected:
         "electrical_conductivity", new mfem::FunctionCoefficient(SigmaExpr), true);
 
     hephaestus::BCMap bc_map;
-    auto * hdotVecCoef = new mfem::VectorFunctionCoefficient(3, HdotBc);
+    auto * hdot_vec_coef = new mfem::VectorFunctionCoefficient(3, HdotBc);
     bc_map.Register("tangential_dHdt",
                     new hephaestus::VectorDirichletBC(std::string("dmagnetic_field_dt"),
                                                       mfem::Array<int>({1, 2, 3}),
-                                                      hdotVecCoef),
+                                                      hdot_vec_coef),
                     true);
-    coefficients.vectors.Register("surface_tangential_dHdt", hdotVecCoef, true);
+    coefficients.vectors.Register("surface_tangential_dHdt", hdot_vec_coef, true);
     coefficients.scalars.Register(
         "magnetic_permeability", new mfem::ConstantCoefficient(1.0), true);
 
-    auto * dBdtSrcCoef = new mfem::VectorFunctionCoefficient(3, SourceField);
-    coefficients.vectors.Register("source", dBdtSrcCoef, true);
+    auto * d_bdt_src_coef = new mfem::VectorFunctionCoefficient(3, SourceField);
+    coefficients.vectors.Register("source", d_bdt_src_coef, true);
 
-    auto * H_exact = new mfem::VectorFunctionCoefficient(3, HExactExpr);
-    coefficients.vectors.Register("h_exact_coeff", H_exact, true);
+    auto * h_exact = new mfem::VectorFunctionCoefficient(3, HExactExpr);
+    coefficients.vectors.Register("h_exact_coeff", h_exact, true);
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./beam-tet.mesh")).c_str(), 1, 1);
 

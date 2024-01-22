@@ -89,19 +89,19 @@ DivFreeSource::Apply(mfem::ParLinearForm * lf)
 {
   // Find an averaged representation of current density in H(curl)*
   g->ProjectCoefficient(*sourceVecCoef);
-  mfem::ParLinearForm J(HCurlFESpace_);
-  J.AddDomainIntegrator(new mfem::VectorFEDomainLFIntegrator(*sourceVecCoef));
-  J.Assemble();
+  mfem::ParLinearForm j(HCurlFESpace_);
+  j.AddDomainIntegrator(new mfem::VectorFEDomainLFIntegrator(*sourceVecCoef));
+  j.Assemble();
   {
-    mfem::HypreParMatrix M;
-    mfem::Vector X, RHS;
+    mfem::HypreParMatrix m;
+    mfem::Vector x, rhs;
     mfem::Array<int> ess_tdof_list;
-    h_curl_mass->FormLinearSystem(ess_tdof_list, *g, J, M, X, RHS);
+    h_curl_mass->FormLinearSystem(ess_tdof_list, *g, j, m, x, rhs);
 
-    DefaultGMRESSolver solver(solver_options, M);
-    solver.Mult(RHS, X);
+    DefaultGMRESSolver solver(solver_options, m);
+    solver.Mult(rhs, x);
 
-    h_curl_mass->RecoverFEMSolution(X, J, *g);
+    h_curl_mass->RecoverFEMSolution(x, j, *g);
   }
 
   *div_free_src_gf = *g;

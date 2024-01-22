@@ -20,12 +20,12 @@ TEST_CASE("Flux calculation", "[CalcFlux]")
   for (int l = 0; l < par_ref_lvl; ++l)
     pmesh->UniformRefinement();
 
-  mfem::ND_FECollection HCurl_Collection(order, pmesh.get()->Dimension());
-  mfem::ParFiniteElementSpace HCurlFESpace(pmesh.get(), &HCurl_Collection);
-  mfem::ParGridFunction j(&HCurlFESpace);
+  mfem::ND_FECollection h_curl_collection(order, pmesh.get()->Dimension());
+  mfem::ParFiniteElementSpace h_curl_fe_space(pmesh.get(), &h_curl_collection);
+  mfem::ParGridFunction j(&h_curl_fe_space);
 
-  mfem::VectorFunctionCoefficient vecField(3, JExact);
-  j.ProjectCoefficient(vecField);
+  mfem::VectorFunctionCoefficient vec_field(3, JExact);
+  j.ProjectCoefficient(vec_field);
 
   double area = 0.0025;
   double theta = M_PI / 4.;

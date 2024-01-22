@@ -25,8 +25,8 @@ calcFlux(mfem::GridFunction * v_field, int face_attr, mfem::Coefficient & q)
   double flux = 0.0;
   double area = 0.0;
 
-  mfem::FiniteElementSpace * FES = v_field->FESpace();
-  mfem::Mesh * mesh = FES->GetMesh();
+  mfem::FiniteElementSpace * fes = v_field->FESpace();
+  mfem::Mesh * mesh = fes->GetMesh();
 
   mfem::Vector local_dofs, normal_vec;
   mfem::DenseMatrix dshape;
@@ -38,18 +38,18 @@ calcFlux(mfem::GridFunction * v_field, int face_attr, mfem::Coefficient & q)
     if (mesh->GetBdrAttribute(i) != face_attr)
       continue;
 
-    mfem::FaceElementTransformations * FTr =
+    mfem::FaceElementTransformations * f_tr =
         mesh->GetFaceElementTransformations(mesh->GetBdrElementFaceIndex(i));
-    if (FTr == nullptr)
+    if (f_tr == nullptr)
       continue;
 
-    const mfem::FiniteElement & elem = *FES->GetFE(FTr->Elem1No);
+    const mfem::FiniteElement & elem = *fes->GetFE(f_tr->Elem1No);
     const int int_order = 2 * elem.GetOrder() + 3;
-    const mfem::IntegrationRule & ir = mfem::IntRules.Get(FTr->FaceGeom, int_order);
+    const mfem::IntegrationRule & ir = mfem::IntRules.Get(f_tr->FaceGeom, int_order);
 
-    FES->GetElementDofs(FTr->Elem1No, dof_ids);
+    fes->GetElementDofs(f_tr->Elem1No, dof_ids);
     v_field->GetSubVector(dof_ids, local_dofs);
-    const int space_dim = FTr->Face->GetSpaceDim();
+    const int space_dim = f_tr->Face->GetSpaceDim();
     normal_vec.SetSize(space_dim);
     dshape.SetSize(elem.GetDof(), space_dim);
 
@@ -58,20 +58,20 @@ calcFlux(mfem::GridFunction * v_field, int face_attr, mfem::Coefficient & q)
 
       const mfem::IntegrationPoint & ip = ir.IntPoint(j);
       mfem::IntegrationPoint eip;
-      FTr->Loc1.Transform(ip, eip);
-      FTr->Face->SetIntPoint(&ip);
-      double face_weight = FTr->Face->Weight();
+      f_tr->Loc1.Transform(ip, eip);
+      f_tr->Face->SetIntPoint(&ip);
+      double face_weight = f_tr->Face->Weight();
       double val = 0.0;
-      FTr->Elem1->SetIntPoint(&eip);
-      elem.CalcVShape(*FTr->Elem1, dshape);
-      mfem::CalcOrtho(FTr->Face->Jacobian(), normal_vec);
+      f_tr->Elem1->SetIntPoint(&eip);
+      elem.CalcVShape(*f_tr->Elem1, dshape);
+      mfem::CalcOrtho(f_tr->Face->Jacobian(), normal_vec);
       val += dshape.InnerProduct(normal_vec, local_dofs) / face_weight;
 
       // Measure the area of the boundary
       area += ip.weight * face_weight;
 
       // Integrate alpha * n.Grad(x) + beta * x
-      flux += q.Eval(*FTr, ip) * val * ip.weight * face_weight;
+      flux += q.Eval(*f_tr, ip) * val * ip.weight * face_weight;
     }
   }
 
@@ -291,23 +291,23 @@ OpenCoilSolver::Apply(mfem::ParLinearForm * lf)
 
   // The transformation and integration points themselves are not relevant, it's
   // just so we can call Eval
-  mfem::ElementTransformation * Tr = mesh_parent_->GetElementTransformation(0);
+  mfem::ElementTransformation * tr = mesh_parent_->GetElementTransformation(0);
   const mfem::IntegrationPoint & ip =
       mfem::IntRules.Get(grad_phi_parent_->ParFESpace()->GetFE(0)->GetGeomType(), 1).IntPoint(0);
 
-  double I = Itotal_->Eval(*Tr, ip);
+  double i = Itotal_->Eval(*tr, ip);
 
   *grad_phi_parent_ = 0.0;
   if (grad_phi_transfer_)
-    grad_phi_parent_->Add(I, *grad_phi_t_parent_);
+    grad_phi_parent_->Add(i, *grad_phi_t_parent_);
 
   if (V_parent_ != nullptr)
   {
     *V_parent_ = 0.0;
-    V_parent_->Add(I, *Vt_parent_);
+    V_parent_->Add(i, *Vt_parent_);
   }
 
-  lf->Add(I, *final_lf_);
+  lf->Add(i, *final_lf_);
 }
 
 void

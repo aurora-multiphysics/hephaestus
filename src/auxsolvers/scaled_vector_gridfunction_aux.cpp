@@ -77,11 +77,11 @@ ScaledVectorGridFunctionAux::BuildMixedBilinearForm()
 void
 ScaledVectorGridFunctionAux::Solve(double t)
 {
-  mfem::Vector B(test_fes->GetTrueVSize());  // Linear form true DOFs
-  mfem::Vector X(test_fes->GetTrueVSize());  // H(Div) gridfunction true DOFs
-  mfem::Vector P(trial_fes->GetTrueVSize()); // H(Curl) gridfunction true DOFs
-  B = 0.0;
-  input_gf->GetTrueDofs(P);
+  mfem::Vector b(test_fes->GetTrueVSize());  // Linear form true DOFs
+  mfem::Vector x(test_fes->GetTrueVSize());  // H(Div) gridfunction true DOFs
+  mfem::Vector p(trial_fes->GetTrueVSize()); // H(Curl) gridfunction true DOFs
+  b = 0.0;
+  input_gf->GetTrueDofs(p);
 
   // Reassemble in case coef has changed
   a_mixed->Update();
@@ -89,11 +89,11 @@ ScaledVectorGridFunctionAux::Solve(double t)
   a_mixed->Finalize();
 
   mixed_mat = std::unique_ptr<mfem::HypreParMatrix>(a_mixed->ParallelAssemble());
-  mixed_mat->AddMult(P, B, _aConst);
+  mixed_mat->AddMult(p, b, _aConst);
 
-  X = 0.0;
-  solver->Mult(B, X);
-  scaled_gf->SetFromTrueDofs(X);
+  x = 0.0;
+  solver->Mult(b, x);
+  scaled_gf->SetFromTrueDofs(x);
 }
 
 } // namespace hephaestus

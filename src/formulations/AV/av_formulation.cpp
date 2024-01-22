@@ -168,40 +168,40 @@ AVEquationSystem::AddKernels()
   std::string dv_dt_name = GetTimeDerivativeName(v_name);
 
   // (α∇×A_{n}, ∇×A')
-  hephaestus::InputParameters weakCurlCurlParams;
-  weakCurlCurlParams.SetParam("CoupledVariableName", a_name);
-  weakCurlCurlParams.SetParam("CoefficientName", alpha_coef_name);
-  AddKernel(da_dt_name, std::make_unique<hephaestus::WeakCurlCurlKernel>(weakCurlCurlParams));
+  hephaestus::InputParameters weak_curl_curl_params;
+  weak_curl_curl_params.SetParam("CoupledVariableName", a_name);
+  weak_curl_curl_params.SetParam("CoefficientName", alpha_coef_name);
+  AddKernel(da_dt_name, std::make_unique<hephaestus::WeakCurlCurlKernel>(weak_curl_curl_params));
 
   // (αdt∇×dA/dt_{n+1}, ∇×A')
-  hephaestus::InputParameters curlCurlParams;
-  curlCurlParams.SetParam("CoefficientName", dtalpha_coef_name);
-  AddKernel(da_dt_name, std::make_unique<hephaestus::CurlCurlKernel>(curlCurlParams));
+  hephaestus::InputParameters curl_curl_params;
+  curl_curl_params.SetParam("CoefficientName", dtalpha_coef_name);
+  AddKernel(da_dt_name, std::make_unique<hephaestus::CurlCurlKernel>(curl_curl_params));
 
   // (βdA/dt_{n+1}, A')
-  hephaestus::InputParameters vectorFEMassParams;
-  vectorFEMassParams.SetParam("CoefficientName", beta_coef_name);
-  AddKernel(da_dt_name, std::make_unique<hephaestus::VectorFEMassKernel>(vectorFEMassParams));
+  hephaestus::InputParameters vector_fe_mass_params;
+  vector_fe_mass_params.SetParam("CoefficientName", beta_coef_name);
+  AddKernel(da_dt_name, std::make_unique<hephaestus::VectorFEMassKernel>(vector_fe_mass_params));
 
   // (σ ∇ V, dA'/dt)
-  hephaestus::InputParameters mixedVectorGradientParams;
-  mixedVectorGradientParams.SetParam("CoefficientName", beta_coef_name);
+  hephaestus::InputParameters mixed_vector_gradient_params;
+  mixed_vector_gradient_params.SetParam("CoefficientName", beta_coef_name);
   AddKernel(v_name,
             da_dt_name,
-            std::make_unique<hephaestus::MixedVectorGradientKernel>(mixedVectorGradientParams));
+            std::make_unique<hephaestus::MixedVectorGradientKernel>(mixed_vector_gradient_params));
 
   // (σ ∇ V, ∇ V')
-  hephaestus::InputParameters diffusionParams;
-  diffusionParams.SetParam("CoefficientName", beta_coef_name);
-  AddKernel(v_name, std::make_unique<hephaestus::DiffusionKernel>(diffusionParams));
+  hephaestus::InputParameters diffusion_params;
+  diffusion_params.SetParam("CoefficientName", beta_coef_name);
+  AddKernel(v_name, std::make_unique<hephaestus::DiffusionKernel>(diffusion_params));
 
   // (σdA/dt, ∇ V')
-  hephaestus::InputParameters vectorFEWeakDivergenceParams;
-  vectorFEWeakDivergenceParams.SetParam("CoefficientName", beta_coef_name);
+  hephaestus::InputParameters vector_fe_weak_divergence_params;
+  vector_fe_weak_divergence_params.SetParam("CoefficientName", beta_coef_name);
   AddKernel(
       da_dt_name,
       v_name,
-      std::make_unique<hephaestus::VectorFEWeakDivergenceKernel>(vectorFEWeakDivergenceParams));
+      std::make_unique<hephaestus::VectorFEWeakDivergenceKernel>(vector_fe_weak_divergence_params));
 }
 
 AVOperator::AVOperator(mfem::ParMesh & pmesh,

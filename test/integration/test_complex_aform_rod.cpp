@@ -28,9 +28,9 @@ protected:
   {
     double sigma = 2.0 * M_PI * 10;
 
-    double sigmaAir;
+    double sigma_air;
 
-    sigmaAir = 1.0e-6 * sigma;
+    sigma_air = 1.0e-6 * sigma;
 
     hephaestus::Subdomain wire("wire", 1);
     wire.scalar_coefficients.Register(
@@ -38,7 +38,7 @@ protected:
 
     hephaestus::Subdomain air("air", 2);
     air.scalar_coefficients.Register(
-        "electrical_conductivity", new mfem::ConstantCoefficient(sigmaAir), true);
+        "electrical_conductivity", new mfem::ConstantCoefficient(sigma_air), true);
 
     hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({wire, air}));
 

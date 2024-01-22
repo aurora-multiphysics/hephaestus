@@ -87,7 +87,7 @@ main(int argc, char * argv[])
   problem_builder->AddGridFunction(std::string("magnetic_vector_potential"), std::string("HCurl"));
   problem_builder->AddGridFunction(std::string("source_grad_phi"), std::string("HCurl"));
   problem_builder->AddGridFunction(std::string("magnetic_flux_density"), std::string("HDiv"));
-  problem_builder->registerMagneticFluxDensityAux("magnetic_flux_density");
+  problem_builder->RegisterMagneticFluxDensityAux("magnetic_flux_density");
 
   hephaestus::Coefficients coefficients = defineCoefficients();
   problem_builder->SetCoefficients(coefficients);

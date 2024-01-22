@@ -8,26 +8,26 @@ class TestHFormRod
 protected:
   static double PotentialHigh(const mfem::Vector & x, double t)
   {
-    double wj_(2.0 * M_PI / 60.0);
-    return cos(wj_ * t);
+    double wj(2.0 * M_PI / 60.0);
+    return cos(wj * t);
   }
   static double PotentialGround(const mfem::Vector & x, double t) { return 0.0; }
   static void HdotBc(const mfem::Vector & x, mfem::Vector & H) { H = 0.0; }
   static void BSrc(const mfem::Vector & x, double t, mfem::Vector & b)
   {
-    double wj_(2.0 * M_PI / 60.0);
+    double wj(2.0 * M_PI / 60.0);
     b[0] = 0.0;
     b[1] = 0.0;
-    b[2] = 2 * sin(wj_ * t);
+    b[2] = 2 * sin(wj * t);
   }
 
   hephaestus::InputParameters TestParams()
   {
     double sigma = 2.0 * M_PI * 10;
 
-    double sigmaAir;
+    double sigma_air;
 
-    sigmaAir = 1.0e-6 * sigma;
+    sigma_air = 1.0e-6 * sigma;
 
     hephaestus::Subdomain wire("wire", 1);
     wire.scalar_coefficients.Register(
@@ -35,7 +35,7 @@ protected:
 
     hephaestus::Subdomain air("air", 2);
     air.scalar_coefficients.Register(
-        "electrical_conductivity", new mfem::ConstantCoefficient(sigmaAir), true);
+        "electrical_conductivity", new mfem::ConstantCoefficient(sigma_air), true);
 
     hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({wire, air}));
 
@@ -46,13 +46,13 @@ protected:
     //     true);
 
     hephaestus::BCMap bc_map;
-    auto * hdotVecCoef = new mfem::VectorFunctionCoefficient(3, HdotBc);
+    auto * hdot_vec_coef = new mfem::VectorFunctionCoefficient(3, HdotBc);
     bc_map.Register("tangential_dHdt",
                     new hephaestus::VectorDirichletBC(std::string("dmagnetic_field_dt"),
                                                       mfem::Array<int>({1, 2, 3}),
-                                                      hdotVecCoef),
+                                                      hdot_vec_coef),
                     true);
-    coefficients.vectors.Register("surface_tangential_dHdt", hdotVecCoef, true);
+    coefficients.vectors.Register("surface_tangential_dHdt", hdot_vec_coef, true);
     coefficients.scalars.Register(
         "magnetic_permeability", new mfem::ConstantCoefficient(1.0), true);
 
