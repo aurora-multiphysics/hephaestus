@@ -13,10 +13,10 @@ public:
                const hephaestus::FESpaces & fespaces,
                hephaestus::BCMap & bc_map);
 
-  void setForms();
-  void setGrad();
-  void setBCs();
-  void solveLinearSystem();
+  void SetForms();
+  void SetGrad();
+  void SetBCs();
+  void SolveLinearSystem();
 
 private:
   std::string hcurl_fespace_name_;

@@ -11,7 +11,7 @@ BoundaryCondition::BoundaryCondition(std::string name_, mfem::Array<int> bdr_att
 }
 
 mfem::Array<int>
-BoundaryCondition::getMarkers(mfem::Mesh & mesh)
+BoundaryCondition::GetMarkers(mfem::Mesh & mesh)
 {
   mfem::common::AttrToMarker(mesh.bdr_attributes.Max(), bdr_attributes, markers);
   return markers;

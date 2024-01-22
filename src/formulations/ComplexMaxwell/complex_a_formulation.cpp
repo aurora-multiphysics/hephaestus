@@ -20,7 +20,7 @@ ComplexAFormulation::ComplexAFormulation(const std::string & magnetic_reluctivit
 
 // Enable auxiliary calculation of J ∈ H(div)
 void
-ComplexAFormulation::registerCurrentDensityAux(const std::string & j_field_real_name,
+ComplexAFormulation::RegisterCurrentDensityAux(const std::string & j_field_real_name,
                                                const std::string & j_field_imag_name)
 {
   //* Current density J = Jᵉ + σE
@@ -39,7 +39,7 @@ ComplexAFormulation::registerCurrentDensityAux(const std::string & j_field_real_
 };
 
 void
-ComplexAFormulation::registerMagneticFluxDensityAux(const std::string & b_field_real_name,
+ComplexAFormulation::RegisterMagneticFluxDensityAux(const std::string & b_field_real_name,
                                                     const std::string & b_field_imag_name)
 {
   //* Magnetic flux density B = curl A
@@ -55,7 +55,7 @@ ComplexAFormulation::registerMagneticFluxDensityAux(const std::string & b_field_
 }
 
 void
-ComplexAFormulation::registerElectricFieldAux(const std::string & e_field_real_name,
+ComplexAFormulation::RegisterElectricFieldAux(const std::string & e_field_real_name,
                                               const std::string & e_field_imag_name)
 {
   //* Electric field E =-dA/dt=-iωA
@@ -75,7 +75,7 @@ ComplexAFormulation::registerElectricFieldAux(const std::string & e_field_real_n
 // Enable auxiliary calculation of P ∈ L2
 // Time averaged Joule heating density E.J
 void
-ComplexAFormulation::registerJouleHeatingDensityAux(const std::string & p_field_name,
+ComplexAFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_name,
                                                     const std::string & e_field_real_name,
                                                     const std::string & e_field_imag_name,
                                                     const std::string & conductivity_coef_name)

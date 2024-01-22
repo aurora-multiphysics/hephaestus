@@ -6,14 +6,14 @@ extern const char * DATA_DIR;
 class TestHFormRod
 {
 protected:
-  static double potential_high(const mfem::Vector & x, double t)
+  static double PotentialHigh(const mfem::Vector & x, double t)
   {
     double wj_(2.0 * M_PI / 60.0);
     return cos(wj_ * t);
   }
-  static double potential_ground(const mfem::Vector & x, double t) { return 0.0; }
-  static void hdot_bc(const mfem::Vector & x, mfem::Vector & H) { H = 0.0; }
-  static void b_src(const mfem::Vector & x, double t, mfem::Vector & b)
+  static double PotentialGround(const mfem::Vector & x, double t) { return 0.0; }
+  static void HdotBc(const mfem::Vector & x, mfem::Vector & H) { H = 0.0; }
+  static void BSrc(const mfem::Vector & x, double t, mfem::Vector & b)
   {
     double wj_(2.0 * M_PI / 60.0);
     b[0] = 0.0;
@@ -21,7 +21,7 @@ protected:
     b[2] = 2 * sin(wj_ * t);
   }
 
-  hephaestus::InputParameters test_params()
+  hephaestus::InputParameters TestParams()
   {
     double sigma = 2.0 * M_PI * 10;
 
@@ -46,7 +46,7 @@ protected:
     //     true);
 
     hephaestus::BCMap bc_map;
-    auto * hdotVecCoef = new mfem::VectorFunctionCoefficient(3, hdot_bc);
+    auto * hdotVecCoef = new mfem::VectorFunctionCoefficient(3, HdotBc);
     bc_map.Register("tangential_dHdt",
                     new hephaestus::VectorDirichletBC(std::string("dmagnetic_field_dt"),
                                                       mfem::Array<int>({1, 2, 3}),
@@ -58,12 +58,11 @@ protected:
 
     mfem::Array<int> high_terminal(1);
     high_terminal[0] = 1;
-    bc_map.Register(
-        "high_potential",
-        new hephaestus::ScalarDirichletBC(std::string("magnetic_potential"),
-                                          high_terminal,
-                                          new mfem::FunctionCoefficient(potential_high)),
-        true);
+    bc_map.Register("high_potential",
+                    new hephaestus::ScalarDirichletBC(std::string("magnetic_potential"),
+                                                      high_terminal,
+                                                      new mfem::FunctionCoefficient(PotentialHigh)),
+                    true);
 
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 2;
@@ -71,7 +70,7 @@ protected:
         "ground_potential",
         new hephaestus::ScalarDirichletBC(std::string("magnetic_potential"),
                                           ground_terminal,
-                                          new mfem::FunctionCoefficient(potential_ground)),
+                                          new mfem::FunctionCoefficient(PotentialGround)),
         true);
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./cylinder-hex-q2.gen")).c_str(), 1, 1);
@@ -122,7 +121,7 @@ protected:
 
 TEST_CASE_METHOD(TestHFormRod, "TestHFormRod", "[CheckRun]")
 {
-  hephaestus::InputParameters params(test_params());
+  hephaestus::InputParameters params(TestParams());
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
 

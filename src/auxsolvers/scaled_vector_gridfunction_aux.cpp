@@ -49,15 +49,15 @@ ScaledVectorGridFunctionAux::Init(const hephaestus::GridFunctions & gridfunction
 
   test_fes = scaled_gf->ParFESpace();
   trial_fes = input_gf->ParFESpace();
-  buildBilinearForm();
-  buildMixedBilinearForm();
+  BuildBilinearForm();
+  BuildMixedBilinearForm();
   a_mat = std::unique_ptr<mfem::HypreParMatrix>(a->ParallelAssemble());
 
   solver = std::make_unique<hephaestus::DefaultJacobiPCGSolver>(_solver_options, *a_mat);
 }
 
 void
-ScaledVectorGridFunctionAux::buildBilinearForm()
+ScaledVectorGridFunctionAux::BuildBilinearForm()
 {
   a = std::make_unique<mfem::ParBilinearForm>(test_fes);
   a->AddDomainIntegrator(new mfem::VectorFEMassIntegrator());
@@ -66,7 +66,7 @@ ScaledVectorGridFunctionAux::buildBilinearForm()
 }
 
 void
-ScaledVectorGridFunctionAux::buildMixedBilinearForm()
+ScaledVectorGridFunctionAux::BuildMixedBilinearForm()
 {
   a_mixed = std::make_unique<mfem::ParMixedBilinearForm>(trial_fes, test_fes);
   a_mixed->AddDomainIntegrator(new mfem::MixedVectorMassIntegrator(*coef));

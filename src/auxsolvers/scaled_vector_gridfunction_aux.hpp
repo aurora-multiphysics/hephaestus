@@ -21,8 +21,8 @@ public:
 
   void Init(const hephaestus::GridFunctions & gridfunctions,
             hephaestus::Coefficients & coefficients) override;
-  virtual void buildBilinearForm();
-  virtual void buildMixedBilinearForm();
+  virtual void BuildBilinearForm();
+  virtual void BuildMixedBilinearForm();
   void Solve(double t = 0.0) override;
 
 protected:

@@ -4,7 +4,7 @@ namespace hephaestus
 {
 
 hephaestus::ProblemBuilder *
-Factory::createProblemBuilder(std::string & formulation_name)
+Factory::CreateProblemBuilder(std::string & formulation_name)
 {
   if (formulation_name == "EBForm")
   {
@@ -75,7 +75,7 @@ Factory::createProblemBuilder(std::string & formulation_name)
 };
 
 hephaestus::FrequencyDomainEMFormulation *
-Factory::createFrequencyDomainEMFormulation(std::string & formulation)
+Factory::CreateFrequencyDomainEmFormulation(std::string & formulation)
 {
   if (formulation == "ComplexEForm")
   {
@@ -105,7 +105,7 @@ Factory::createFrequencyDomainEMFormulation(std::string & formulation)
 }
 
 hephaestus::TimeDomainEMFormulation *
-Factory::createTimeDomainEMFormulation(std::string & formulation)
+Factory::CreateTimeDomainEmFormulation(std::string & formulation)
 {
   if (formulation == "EBForm")
   {
@@ -156,7 +156,7 @@ Factory::createTimeDomainEMFormulation(std::string & formulation)
 }
 
 mfem::ParFiniteElementSpace *
-Factory::createParFESpace(hephaestus::InputParameters params, mfem::ParMesh & pmesh)
+Factory::CreateParFESpace(hephaestus::InputParameters params, mfem::ParMesh & pmesh)
 {
   auto FEType(params.GetParam<std::string>("FESpaceType"));
   int order(params.GetParam<int>("order"));

@@ -143,11 +143,11 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     *final_lf_ = 0.0;
   }
 
-  makeWedge();
-  prepareCoilSubmesh();
-  solveTransition();
-  solveCoil();
-  restoreAttributes();
+  MakeWedge();
+  PrepareCoilSubmesh();
+  SolveTransition();
+  SolveCoil();
+  RestoreAttributes();
 }
 
 void
@@ -178,7 +178,7 @@ ClosedCoilSolver::SubtractSource(mfem::ParGridFunction * gf)
 // ClosedCoilSolver main methods
 
 void
-ClosedCoilSolver::makeWedge()
+ClosedCoilSolver::MakeWedge()
 {
   std::vector<int> bdr_els;
 
@@ -203,7 +203,7 @@ ClosedCoilSolver::makeWedge()
 
   if (bdr_els.size() > 0)
   {
-    plane.make3DPlane(mesh_parent_, mesh_parent_->GetBdrElementFaceIndex(bdr_els[0]));
+    plane.Make3DPlane(mesh_parent_, mesh_parent_->GetBdrElementFaceIndex(bdr_els[0]));
   }
 
   std::vector<int> elec_vtx;
@@ -227,8 +227,8 @@ ClosedCoilSolver::makeWedge()
   for (int e = 0; e < mesh_parent_->GetNE(); ++e)
   {
 
-    if (!isInDomain(e, coil_domains_, mesh_parent_) ||
-        plane.side(elementCentre(e, mesh_parent_)) == 1)
+    if (!IsInDomain(e, coil_domains_, mesh_parent_) ||
+        plane.Side(ElementCentre(e, mesh_parent_)) == 1)
       continue;
 
     mfem::Array<int> elem_vtx;
@@ -268,8 +268,8 @@ ClosedCoilSolver::makeWedge()
     mesh_parent_->GetFaceElements(wf, &e1, &e2);
 
     // If the face is a coil boundary
-    if (!(isInDomain(e1, coil_domains_, mesh_parent_) &&
-          isInDomain(e2, coil_domains_, mesh_parent_)))
+    if (!(IsInDomain(e1, coil_domains_, mesh_parent_) &&
+          IsInDomain(e2, coil_domains_, mesh_parent_)))
     {
       continue;
     }
@@ -330,7 +330,7 @@ ClosedCoilSolver::makeWedge()
 }
 
 void
-ClosedCoilSolver::prepareCoilSubmesh()
+ClosedCoilSolver::PrepareCoilSubmesh()
 {
   mesh_coil_ = std::make_unique<mfem::ParSubMesh>(
       mfem::ParSubMesh::CreateFromDomain(*mesh_parent_, coil_domains_));
@@ -352,7 +352,7 @@ ClosedCoilSolver::prepareCoilSubmesh()
 }
 
 void
-ClosedCoilSolver::solveTransition()
+ClosedCoilSolver::SolveTransition()
 {
 
   mfem::ParGridFunction V_parent(H1FESpace_parent_);
@@ -384,7 +384,7 @@ ClosedCoilSolver::solveTransition()
 }
 
 void
-ClosedCoilSolver::solveCoil()
+ClosedCoilSolver::SolveCoil()
 {
   // -(σ∇Va,∇ψ) = (σ∇Vt,∇ψ)
   // where Va is Vaux_coil_, the auxiliary continuous "potential"
@@ -492,7 +492,7 @@ ClosedCoilSolver::solveCoil()
 }
 
 void
-ClosedCoilSolver::restoreAttributes()
+ClosedCoilSolver::RestoreAttributes()
 {
   // Domain attributes
   for (int e = 0; e < mesh_parent_->GetNE(); ++e)
@@ -508,7 +508,7 @@ ClosedCoilSolver::restoreAttributes()
 // Auxiliary methods
 
 bool
-ClosedCoilSolver::isInDomain(const int el, const mfem::Array<int> & dom, const mfem::ParMesh * mesh)
+ClosedCoilSolver::IsInDomain(const int el, const mfem::Array<int> & dom, const mfem::ParMesh * mesh)
 {
 
   // This is for ghost elements
@@ -527,7 +527,7 @@ ClosedCoilSolver::isInDomain(const int el, const mfem::Array<int> & dom, const m
 }
 
 bool
-ClosedCoilSolver::isInDomain(const int el, const int & sd, const mfem::ParMesh * mesh)
+ClosedCoilSolver::IsInDomain(const int el, const int & sd, const mfem::ParMesh * mesh)
 {
 
   // This is for ghost elements
@@ -538,7 +538,7 @@ ClosedCoilSolver::isInDomain(const int el, const int & sd, const mfem::ParMesh *
 }
 
 mfem::Vector
-ClosedCoilSolver::elementCentre(int el, mfem::ParMesh * pm)
+ClosedCoilSolver::ElementCentre(int el, mfem::ParMesh * pm)
 {
 
   mfem::Array<int> elem_vtx;
@@ -565,7 +565,7 @@ Plane3D::Plane3D()
 }
 
 void
-Plane3D::make3DPlane(const mfem::ParMesh * pm, const int face)
+Plane3D::Make3DPlane(const mfem::ParMesh * pm, const int face)
 {
 
   MFEM_ASSERT(pm->Dimension() == 3, "Plane3D only works in 3-dimensional meshes!");
@@ -594,7 +594,7 @@ Plane3D::make3DPlane(const mfem::ParMesh * pm, const int face)
 }
 
 int
-Plane3D::side(const mfem::Vector v)
+Plane3D::Side(const mfem::Vector v)
 {
   double val = *u * v - d;
 

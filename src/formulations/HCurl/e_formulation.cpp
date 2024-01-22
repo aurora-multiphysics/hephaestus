@@ -48,7 +48,7 @@ EFormulation::RegisterCoefficients()
 }
 
 void
-EFormulation::registerCurrentDensityAux(const std::string & j_field_name)
+EFormulation::RegisterCurrentDensityAux(const std::string & j_field_name)
 {
   //* Current density J = Jᵉ + σE
   //* Induced electric field, Jind = σE
@@ -60,7 +60,7 @@ EFormulation::registerCurrentDensityAux(const std::string & j_field_name)
 }
 
 void
-EFormulation::registerJouleHeatingDensityAux(const std::string & p_field_name,
+EFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_name,
                                              const std::string & e_field_name,
                                              const std::string & conductivity_coef_name)
 {

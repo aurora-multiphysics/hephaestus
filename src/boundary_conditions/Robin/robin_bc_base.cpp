@@ -16,7 +16,7 @@ RobinBC::RobinBC(const std::string & name_,
 }
 
 void
-RobinBC::applyBC(mfem::ParBilinearForm & a)
+RobinBC::ApplyBC(mfem::ParBilinearForm & a)
 {
   // NB: ParBilinearForm assumes ownership of pointers. Release to
   // prevent double-free!
@@ -24,7 +24,7 @@ RobinBC::applyBC(mfem::ParBilinearForm & a)
 }
 
 void
-RobinBC::applyBC(mfem::ParSesquilinearForm & a)
+RobinBC::ApplyBC(mfem::ParSesquilinearForm & a)
 {
   a.AddBoundaryIntegrator(blfi_re.release(), blfi_im.release(), markers);
 }

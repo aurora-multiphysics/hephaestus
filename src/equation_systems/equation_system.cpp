@@ -8,7 +8,7 @@ EquationSystem::EquationSystem(const hephaestus::InputParameters & params) {}
 EquationSystem::~EquationSystem() { hBlocks.DeleteAll(); }
 
 bool
-EquationSystem::vectorContainsName(const std::vector<std::string> & the_vector,
+EquationSystem::VectorContainsName(const std::vector<std::string> & the_vector,
                                    const std::string & name) const
 {
 
@@ -18,28 +18,28 @@ EquationSystem::vectorContainsName(const std::vector<std::string> & the_vector,
 }
 
 void
-EquationSystem::addVariableNameIfMissing(const std::string & var_name)
+EquationSystem::AddVariableNameIfMissing(const std::string & var_name)
 {
-  if (!vectorContainsName(var_names, var_name))
+  if (!VectorContainsName(var_names, var_name))
   {
     var_names.push_back(var_name);
   }
 }
 
 void
-EquationSystem::addTestVariableNameIfMissing(const std::string & test_var_name)
+EquationSystem::AddTestVariableNameIfMissing(const std::string & test_var_name)
 {
-  if (!vectorContainsName(test_var_names, test_var_name))
+  if (!VectorContainsName(test_var_names, test_var_name))
   {
     test_var_names.push_back(test_var_name);
   }
 }
 
 void
-EquationSystem::addKernel(const std::string & test_var_name,
+EquationSystem::AddKernel(const std::string & test_var_name,
                           std::unique_ptr<ParBilinearFormKernel> && blf_kernel)
 {
-  addTestVariableNameIfMissing(test_var_name);
+  AddTestVariableNameIfMissing(test_var_name);
 
   if (!blf_kernels_map.Has(test_var_name))
   {
@@ -54,10 +54,10 @@ EquationSystem::addKernel(const std::string & test_var_name,
 }
 
 void
-EquationSystem::addKernel(const std::string & test_var_name,
+EquationSystem::AddKernel(const std::string & test_var_name,
                           std::unique_ptr<ParLinearFormKernel> && lf_kernel)
 {
-  addTestVariableNameIfMissing(test_var_name);
+  AddTestVariableNameIfMissing(test_var_name);
 
   if (!lf_kernels_map.Has(test_var_name))
   {
@@ -70,10 +70,10 @@ EquationSystem::addKernel(const std::string & test_var_name,
 }
 
 void
-EquationSystem::addKernel(const std::string & test_var_name,
+EquationSystem::AddKernel(const std::string & test_var_name,
                           std::unique_ptr<ParNonlinearFormKernel> && nlf_kernel)
 {
-  addTestVariableNameIfMissing(test_var_name);
+  AddTestVariableNameIfMissing(test_var_name);
 
   if (!nlf_kernels_map.Has(test_var_name))
   {
@@ -86,11 +86,11 @@ EquationSystem::addKernel(const std::string & test_var_name,
 }
 
 void
-EquationSystem::addKernel(const std::string & trial_var_name,
+EquationSystem::AddKernel(const std::string & trial_var_name,
                           const std::string & test_var_name,
                           std::unique_ptr<ParMixedBilinearFormKernel> && mblf_kernel)
 {
-  addTestVariableNameIfMissing(test_var_name);
+  AddTestVariableNameIfMissing(test_var_name);
 
   // Register new mblf kernels map if not present for this test variable
   if (!mblf_kernels_map_map.Has(test_var_name))
@@ -114,7 +114,7 @@ EquationSystem::addKernel(const std::string & trial_var_name,
 }
 
 void
-EquationSystem::applyBoundaryConditions(hephaestus::BCMap & bc_map)
+EquationSystem::ApplyBoundaryConditions(hephaestus::BCMap & bc_map)
 {
   ess_tdof_lists.resize(test_var_names.size());
   for (int i = 0; i < test_var_names.size(); i++)
@@ -123,9 +123,9 @@ EquationSystem::applyBoundaryConditions(hephaestus::BCMap & bc_map)
     // Set default value of gridfunction used in essential BC. Values
     // overwritten in applyEssentialBCs
     *(xs.at(i)) = 0.0;
-    bc_map.applyEssentialBCs(
+    bc_map.ApplyEssentialBCs(
         test_var_name, ess_tdof_lists.at(i), *(xs.at(i)), test_pfespaces.at(i)->GetParMesh());
-    bc_map.applyIntegratedBCs(
+    bc_map.ApplyIntegratedBCs(
         test_var_name, *(lfs.Get(test_var_name)), test_pfespaces.at(i)->GetParMesh());
   }
 }
@@ -208,7 +208,7 @@ EquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
 {
 
   // Add optional kernels to the EquationSystem
-  addKernels();
+  AddKernels();
 
   for (auto & test_var_name : test_var_names)
   {
@@ -264,7 +264,7 @@ EquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
 }
 
 void
-EquationSystem::buildLinearForms(hephaestus::BCMap & bc_map, hephaestus::Sources & sources)
+EquationSystem::BuildLinearForms(hephaestus::BCMap & bc_map, hephaestus::Sources & sources)
 {
   // Register linear forms
   for (int i = 0; i < test_var_names.size(); i++)
@@ -274,7 +274,7 @@ EquationSystem::buildLinearForms(hephaestus::BCMap & bc_map, hephaestus::Sources
     *(lfs.Get(test_var_name)) = 0.0;
   }
   // Apply boundary conditions
-  applyBoundaryConditions(bc_map);
+  ApplyBoundaryConditions(bc_map);
 
   for (auto & test_var_name : test_var_names)
   {
@@ -299,7 +299,7 @@ EquationSystem::buildLinearForms(hephaestus::BCMap & bc_map, hephaestus::Sources
 }
 
 void
-EquationSystem::buildBilinearForms()
+EquationSystem::BuildBilinearForms()
 {
   // Register bilinear forms
   for (int i = 0; i < test_var_names.size(); i++)
@@ -323,7 +323,7 @@ EquationSystem::buildBilinearForms()
 }
 
 void
-EquationSystem::buildMixedBilinearForms()
+EquationSystem::BuildMixedBilinearForms()
 {
   // Register mixed linear forms. Note that not all combinations may
   // have a kernel
@@ -363,11 +363,11 @@ EquationSystem::buildMixedBilinearForms()
 }
 
 void
-EquationSystem::buildEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sources & sources)
+EquationSystem::BuildEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sources & sources)
 {
-  buildLinearForms(bc_map, sources);
-  buildBilinearForms();
-  buildMixedBilinearForms();
+  BuildLinearForms(bc_map, sources);
+  BuildBilinearForms();
+  BuildMixedBilinearForms();
 }
 
 TimeDependentEquationSystem::TimeDependentEquationSystem(const hephaestus::InputParameters & params)
@@ -376,9 +376,9 @@ TimeDependentEquationSystem::TimeDependentEquationSystem(const hephaestus::Input
 }
 
 void
-TimeDependentEquationSystem::addVariableNameIfMissing(const std::string & var_name)
+TimeDependentEquationSystem::AddVariableNameIfMissing(const std::string & var_name)
 {
-  EquationSystem::addVariableNameIfMissing(var_name);
+  EquationSystem::AddVariableNameIfMissing(var_name);
   std::string var_time_derivative_name = GetTimeDerivativeName(var_name);
   if (std::find(var_time_derivative_names.begin(),
                 var_time_derivative_names.end(),
@@ -389,7 +389,7 @@ TimeDependentEquationSystem::addVariableNameIfMissing(const std::string & var_na
 }
 
 void
-TimeDependentEquationSystem::setTimeStep(double dt)
+TimeDependentEquationSystem::SetTimeStep(double dt)
 {
   if (fabs(dt - dtCoef.constant) > 1.0e-12 * dt)
   {
@@ -404,12 +404,12 @@ TimeDependentEquationSystem::setTimeStep(double dt)
 }
 
 void
-TimeDependentEquationSystem::updateEquationSystem(hephaestus::BCMap & bc_map,
+TimeDependentEquationSystem::UpdateEquationSystem(hephaestus::BCMap & bc_map,
                                                   hephaestus::Sources & sources)
 {
-  buildLinearForms(bc_map, sources);
-  buildBilinearForms();
-  buildMixedBilinearForms();
+  BuildLinearForms(bc_map, sources);
+  BuildBilinearForms();
+  BuildMixedBilinearForms();
 };
 
 } // namespace hephaestus

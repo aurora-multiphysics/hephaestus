@@ -10,13 +10,13 @@ extern const char * DATA_DIR;
 class TestComplexERMESMouse
 {
 protected:
-  static void e_bc_r(const mfem::Vector & x, mfem::Vector & E)
+  static void EBcR(const mfem::Vector & x, mfem::Vector & E)
   {
     E.SetSize(3);
     E = 0.0;
   }
 
-  static void e_bc_i(const mfem::Vector & x, mfem::Vector & E)
+  static void EBcI(const mfem::Vector & x, mfem::Vector & E)
   {
     E.SetSize(3);
     E = 0.0;
@@ -30,7 +30,7 @@ protected:
   //   double port_length_vector[3] = {0.0, 22.86e-3, 0.0};
   //   double port_width_vector[3] = {0.0, 0.0, 10.16e-3};
 
-  hephaestus::InputParameters test_params()
+  hephaestus::InputParameters TestParams()
   {
     hephaestus::Subdomain mouse("mouse", 1);
     hephaestus::Subdomain air("air", 2);
@@ -55,13 +55,12 @@ protected:
 
     hephaestus::BCMap bc_map;
     mfem::Array<int> dirichlet_attr({2, 3, 4});
-    bc_map.Register(
-        "tangential_E",
-        new hephaestus::VectorDirichletBC(std::string("electric_field"),
-                                          dirichlet_attr,
-                                          new mfem::VectorFunctionCoefficient(3, e_bc_r),
-                                          new mfem::VectorFunctionCoefficient(3, e_bc_i)),
-        true);
+    bc_map.Register("tangential_E",
+                    new hephaestus::VectorDirichletBC(std::string("electric_field"),
+                                                      dirichlet_attr,
+                                                      new mfem::VectorFunctionCoefficient(3, EBcR),
+                                                      new mfem::VectorFunctionCoefficient(3, EBcI)),
+                    true);
 
     mfem::Array<int> wgi_in_attr(1);
     wgi_in_attr[0] = 5;
@@ -131,7 +130,7 @@ protected:
 
 TEST_CASE_METHOD(TestComplexERMESMouse, "TestComplexERMESMouse", "[CheckRun]")
 {
-  hephaestus::InputParameters params(test_params());
+  hephaestus::InputParameters params(TestParams());
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
 

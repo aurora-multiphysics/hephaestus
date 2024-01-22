@@ -18,16 +18,16 @@ fracFunc(double a, double b)
 
 Subdomain::Subdomain(std::string name_, int id_) : name(std::move(name_)), id(id_) {}
 
-Coefficients::Coefficients() { registerDefaultCoefficients(); }
+Coefficients::Coefficients() { RegisterDefaultCoefficients(); }
 
 Coefficients::Coefficients(std::vector<Subdomain> subdomains_) : subdomains(std::move(subdomains_))
 {
   AddGlobalCoefficientsFromSubdomains();
-  registerDefaultCoefficients();
+  RegisterDefaultCoefficients();
 }
 
 void
-Coefficients::registerDefaultCoefficients()
+Coefficients::RegisterDefaultCoefficients()
 {
   scalars.Register("_one", new mfem::ConstantCoefficient(1.0), true);
 }

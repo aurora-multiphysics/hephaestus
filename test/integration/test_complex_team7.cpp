@@ -10,7 +10,7 @@ extern const char * DATA_DIR;
 class TestComplexTeam7
 {
 protected:
-  static void source_current(const mfem::Vector & xv, mfem::Vector & J)
+  static void SourceCurrent(const mfem::Vector & xv, mfem::Vector & J)
   {
     double x0(194e-3);  // Coil centre x coordinate
     double y0(100e-3);  // Coil centre y coordinate
@@ -64,7 +64,7 @@ protected:
     J *= Jmag;
   }
 
-  hephaestus::InputParameters test_params()
+  hephaestus::InputParameters TestParams()
   {
     hephaestus::Subdomain air("air", 1);
     air.scalar_coefficients.Register(
@@ -109,7 +109,7 @@ protected:
     hephaestus::AuxSolvers preprocessors;
 
     hephaestus::Sources sources;
-    auto * JSrcCoef = new mfem::VectorFunctionCoefficient(3, source_current);
+    auto * JSrcCoef = new mfem::VectorFunctionCoefficient(3, SourceCurrent);
     mfem::Array<mfem::VectorCoefficient *> sourcecoefs(4);
     sourcecoefs[0] = JSrcCoef;
     sourcecoefs[1] = JSrcCoef;
@@ -159,7 +159,7 @@ protected:
 
 TEST_CASE_METHOD(TestComplexTeam7, "TestComplexTeam7", "[CheckRun]")
 {
-  hephaestus::InputParameters params(test_params());
+  hephaestus::InputParameters params(TestParams());
   auto pmesh = std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
 
   auto bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));

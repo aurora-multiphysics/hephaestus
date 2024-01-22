@@ -72,7 +72,7 @@ TimeDomainEquationSystemOperator::Init(mfem::Vector & X)
     *(local_trial_vars.at(ind)) = 0.0;
   }
 
-  _equation_system->buildEquationSystem(_bc_map, _sources);
+  _equation_system->BuildEquationSystem(_bc_map, _sources);
 };
 
 void
@@ -89,8 +89,8 @@ TimeDomainEquationSystemOperator::ImplicitSolve(const double dt,
         local_trial_vars.at(ind)->ParFESpace(), dX_dt, true_offsets[ind]);
   }
   _coefficients.SetTime(GetTime());
-  _equation_system->setTimeStep(dt);
-  _equation_system->updateEquationSystem(_bc_map, _sources);
+  _equation_system->SetTimeStep(dt);
+  _equation_system->UpdateEquationSystem(_bc_map, _sources);
 
   _equation_system->FormLinearSystem(blockA, trueX, trueRhs);
 

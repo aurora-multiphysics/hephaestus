@@ -18,7 +18,7 @@ public:
             hephaestus::Coefficients & coefficients) override;
   void Apply(mfem::ParLinearForm * lf) override;
   void SubtractSource(mfem::ParGridFunction * gf) override;
-  void buildHCurlMass();
+  void BuildHCurlMass();
 
   std::string src_gf_name;
   std::string src_coef_name;

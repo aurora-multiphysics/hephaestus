@@ -72,11 +72,11 @@ DivFreeSource::Init(hephaestus::GridFunctions & gridfunctions,
   gridfunctions_ = &gridfunctions;
   fespaces_ = &fespaces;
 
-  buildHCurlMass();
+  BuildHCurlMass();
 }
 
 void
-DivFreeSource::buildHCurlMass()
+DivFreeSource::BuildHCurlMass()
 {
   h_curl_mass = std::make_unique<mfem::ParBilinearForm>(HCurlFESpace_);
   h_curl_mass->AddDomainIntegrator(new mfem::VectorFEMassIntegrator);

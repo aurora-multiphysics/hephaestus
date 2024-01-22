@@ -278,10 +278,10 @@ OpenCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
 
   mesh_parent_ = grad_phi_parent_->ParFESpace()->GetParMesh();
 
-  initChildMesh();
-  makeFESpaces();
-  makeGridFunctions();
-  setBCs();
+  InitChildMesh();
+  MakeFESpaces();
+  MakeGridFunctions();
+  SetBCs();
   SPSCurrent();
 }
 
@@ -316,7 +316,7 @@ OpenCoilSolver::SubtractSource(mfem::ParGridFunction * gf)
 }
 
 void
-OpenCoilSolver::initChildMesh()
+OpenCoilSolver::InitChildMesh()
 {
   if (mesh_ == nullptr)
     mesh_ = std::make_unique<mfem::ParSubMesh>(
@@ -324,7 +324,7 @@ OpenCoilSolver::initChildMesh()
 }
 
 void
-OpenCoilSolver::makeFESpaces()
+OpenCoilSolver::MakeFESpaces()
 {
   if (H1FESpace_ == nullptr)
   {
@@ -341,7 +341,7 @@ OpenCoilSolver::makeFESpaces()
 }
 
 void
-OpenCoilSolver::makeGridFunctions()
+OpenCoilSolver::MakeGridFunctions()
 {
 
   if (V_ == nullptr)
@@ -359,7 +359,7 @@ OpenCoilSolver::makeGridFunctions()
 }
 
 void
-OpenCoilSolver::setBCs()
+OpenCoilSolver::SetBCs()
 {
 
   high_terminal_[0] = elec_attrs_.first;
@@ -414,7 +414,7 @@ OpenCoilSolver::SPSCurrent()
   if (V_parent_)
     mesh_->Transfer(*V_, *Vt_parent_);
 
-  buildM1();
+  BuildM1();
 
   final_lf_ = std::make_unique<mfem::ParLinearForm>(grad_phi_t_parent_->ParFESpace());
   *final_lf_ = 0.0;
@@ -422,7 +422,7 @@ OpenCoilSolver::SPSCurrent()
 }
 
 void
-OpenCoilSolver::buildM1()
+OpenCoilSolver::BuildM1()
 {
   if (m1_ == nullptr)
   {
@@ -435,7 +435,7 @@ OpenCoilSolver::buildM1()
 }
 
 void
-OpenCoilSolver::setRefFace(const int face)
+OpenCoilSolver::SetRefFace(const int face)
 {
   ref_face_ = face;
 }

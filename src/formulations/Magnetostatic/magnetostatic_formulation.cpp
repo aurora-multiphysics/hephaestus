@@ -29,7 +29,7 @@ MagnetostaticFormulation::MagnetostaticFormulation(
 }
 
 void
-MagnetostaticFormulation::registerMagneticFluxDensityAux(const std::string & b_field_name)
+MagnetostaticFormulation::RegisterMagneticFluxDensityAux(const std::string & b_field_name)
 {
   //* Magnetic flux density, B = ∇×A
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->postprocessors;
@@ -38,7 +38,7 @@ MagnetostaticFormulation::registerMagneticFluxDensityAux(const std::string & b_f
 }
 
 void
-MagnetostaticFormulation::registerMagneticFieldAux(const std::string & h_field_name)
+MagnetostaticFormulation::RegisterMagneticFieldAux(const std::string & h_field_name)
 {
   //* Magnetic field H = ν∇×A
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->postprocessors;
@@ -49,7 +49,7 @@ MagnetostaticFormulation::registerMagneticFieldAux(const std::string & h_field_n
 }
 
 void
-MagnetostaticFormulation::registerLorentzForceDensityAux(const std::string & f_field_name,
+MagnetostaticFormulation::RegisterLorentzForceDensityAux(const std::string & f_field_name,
                                                          const std::string & b_field_name,
                                                          const std::string & j_field_name)
 {

@@ -157,10 +157,10 @@ WeakCurlEquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
 }
 
 void
-WeakCurlEquationSystem::addKernels()
+WeakCurlEquationSystem::AddKernels()
 {
-  addVariableNameIfMissing(_h_curl_var_name);
-  addVariableNameIfMissing(_h_div_var_name);
+  AddVariableNameIfMissing(_h_curl_var_name);
+  AddVariableNameIfMissing(_h_div_var_name);
   std::string dh_curl_var_dt = GetTimeDerivativeName(_h_curl_var_name);
 
   // (αv_{n}, ∇×u')
@@ -168,17 +168,17 @@ WeakCurlEquationSystem::addKernels()
   weakCurlParams.SetParam("HCurlVarName", _h_curl_var_name);
   weakCurlParams.SetParam("HDivVarName", _h_div_var_name);
   weakCurlParams.SetParam("CoefficientName", _alpha_coef_name);
-  addKernel(_h_curl_var_name, std::make_unique<hephaestus::WeakCurlKernel>(weakCurlParams));
+  AddKernel(_h_curl_var_name, std::make_unique<hephaestus::WeakCurlKernel>(weakCurlParams));
 
   // (αdt∇×u_{n+1}, ∇×u')
   hephaestus::InputParameters curlCurlParams;
   curlCurlParams.SetParam("CoefficientName", _dtalpha_coef_name);
-  addKernel(_h_curl_var_name, std::make_unique<hephaestus::CurlCurlKernel>(curlCurlParams));
+  AddKernel(_h_curl_var_name, std::make_unique<hephaestus::CurlCurlKernel>(curlCurlParams));
 
   // (βu_{n+1}, u')
   hephaestus::InputParameters vectorFEMassParams;
   vectorFEMassParams.SetParam("CoefficientName", _beta_coef_name);
-  addKernel(_h_curl_var_name, std::make_unique<hephaestus::VectorFEMassKernel>(vectorFEMassParams));
+  AddKernel(_h_curl_var_name, std::make_unique<hephaestus::VectorFEMassKernel>(vectorFEMassParams));
 }
 
 DualOperator::DualOperator(mfem::ParMesh & pmesh,
@@ -221,8 +221,8 @@ DualOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vecto
         local_trial_vars.at(ind)->ParFESpace(), dX_dt, true_offsets[ind]);
   }
   _coefficients.SetTime(GetTime());
-  _equation_system->setTimeStep(dt);
-  _equation_system->updateEquationSystem(_bc_map, _sources);
+  _equation_system->SetTimeStep(dt);
+  _equation_system->UpdateEquationSystem(_bc_map, _sources);
 
   _equation_system->FormLinearSystem(blockA, trueX, trueRhs);
 

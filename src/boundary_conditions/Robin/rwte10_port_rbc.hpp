@@ -19,7 +19,7 @@ public:
                 double port_width_vector[3],
                 bool input_port);
 
-  static mfem::Vector cross_product(mfem::Vector & va, mfem::Vector & vb)
+  static mfem::Vector CrossProduct(mfem::Vector & va, mfem::Vector & vb)
   {
     mfem::Vector Vec;
     Vec.SetSize(3);
@@ -29,8 +29,8 @@ public:
     return Vec;
   }
   void RWTE10(const mfem::Vector & x, std::vector<std::complex<double>> & E);
-  void RWTE10_real(const mfem::Vector & x, mfem::Vector & v);
-  void RWTE10_imag(const mfem::Vector & x, mfem::Vector & v);
+  void RWTE10Real(const mfem::Vector & x, mfem::Vector & v);
+  void RWTE10Imag(const mfem::Vector & x, mfem::Vector & v);
 
   bool input_port;
   double omega_;

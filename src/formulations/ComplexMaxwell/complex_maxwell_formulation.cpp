@@ -75,9 +75,9 @@ ComplexMaxwellOperator::Solve(mfem::Vector & X)
   _sources.Apply(&b1_real_);
 
   mfem::ParComplexLinearForm b1_(u_->ParFESpace(), conv_);
-  _bc_map.applyEssentialBCs(h_curl_var_complex_name, ess_bdr_tdofs_, *u_, pmesh_);
-  _bc_map.applyIntegratedBCs(h_curl_var_complex_name, b1_, pmesh_);
-  _bc_map.applyIntegratedBCs(h_curl_var_complex_name, a1_, pmesh_);
+  _bc_map.ApplyEssentialBCs(h_curl_var_complex_name, ess_bdr_tdofs_, *u_, pmesh_);
+  _bc_map.ApplyIntegratedBCs(h_curl_var_complex_name, b1_, pmesh_);
+  _bc_map.ApplyIntegratedBCs(h_curl_var_complex_name, a1_, pmesh_);
 
   a1_.Assemble();
   a1_.Finalize();

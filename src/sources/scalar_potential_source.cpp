@@ -67,8 +67,8 @@ ScalarPotentialSource::Init(hephaestus::GridFunctions & gridfunctions,
   a0->AddDomainIntegrator(new mfem::DiffusionIntegrator(*betaCoef));
   a0->Assemble();
 
-  buildGrad();
-  buildM1(betaCoef);
+  BuildGrad();
+  BuildM1(betaCoef);
   // a0(p, p') = (β ∇ p, ∇ p')
 
   b0 = std::make_unique<mfem::ParLinearForm>(H1FESpace_);
@@ -80,7 +80,7 @@ ScalarPotentialSource::Init(hephaestus::GridFunctions & gridfunctions,
 ScalarPotentialSource::~ScalarPotentialSource() = default;
 
 void
-ScalarPotentialSource::buildM1(mfem::Coefficient * Sigma)
+ScalarPotentialSource::BuildM1(mfem::Coefficient * Sigma)
 {
   m1 = std::make_unique<mfem::ParBilinearForm>(HCurlFESpace_);
   m1->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*Sigma));
@@ -90,7 +90,7 @@ ScalarPotentialSource::buildM1(mfem::Coefficient * Sigma)
 }
 
 void
-ScalarPotentialSource::buildGrad()
+ScalarPotentialSource::BuildGrad()
 {
   grad = std::make_unique<mfem::ParDiscreteLinearOperator>(H1FESpace_, HCurlFESpace_);
   grad->AddDomainInterpolator(new mfem::GradientInterpolator());
@@ -110,9 +110,9 @@ ScalarPotentialSource::Apply(mfem::ParLinearForm * lf)
   mfem::Array<int> poisson_ess_tdof_list;
   Phi_gf = 0.0;
   *b0 = 0.0;
-  _bc_map->applyEssentialBCs(
+  _bc_map->ApplyEssentialBCs(
       potential_gf_name, poisson_ess_tdof_list, Phi_gf, (H1FESpace_->GetParMesh()));
-  _bc_map->applyIntegratedBCs(potential_gf_name, *b0, (H1FESpace_->GetParMesh()));
+  _bc_map->ApplyIntegratedBCs(potential_gf_name, *b0, (H1FESpace_->GetParMesh()));
   b0->Assemble();
 
   a0->Update();

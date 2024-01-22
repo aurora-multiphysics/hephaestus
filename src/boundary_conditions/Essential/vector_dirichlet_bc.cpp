@@ -21,10 +21,10 @@ VectorDirichletBC::VectorDirichletBC(const std::string & name_,
 }
 
 void
-VectorDirichletBC::applyBC(mfem::GridFunction & gridfunc, mfem::Mesh * mesh_)
+VectorDirichletBC::ApplyBC(mfem::GridFunction & gridfunc, mfem::Mesh * mesh_)
 {
   mfem::Array<int> ess_bdrs(mesh_->bdr_attributes.Max());
-  ess_bdrs = getMarkers(*mesh_);
+  ess_bdrs = GetMarkers(*mesh_);
   if (vec_coeff == nullptr)
   {
     MFEM_ABORT("Boundary condition does not store valid coefficients to specify the "
@@ -45,10 +45,10 @@ VectorDirichletBC::applyBC(mfem::GridFunction & gridfunc, mfem::Mesh * mesh_)
 }
 
 void
-VectorDirichletBC::applyBC(mfem::ParComplexGridFunction & gridfunc, mfem::Mesh * mesh_)
+VectorDirichletBC::ApplyBC(mfem::ParComplexGridFunction & gridfunc, mfem::Mesh * mesh_)
 {
   mfem::Array<int> ess_bdrs(mesh_->bdr_attributes.Max());
-  ess_bdrs = getMarkers(*mesh_);
+  ess_bdrs = GetMarkers(*mesh_);
   if (vec_coeff == nullptr || vec_coeff_im == nullptr)
   {
     MFEM_ABORT("Boundary condition does not store valid coefficients to specify both "

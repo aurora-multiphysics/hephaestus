@@ -38,7 +38,7 @@ public:
   Coefficients(std::vector<Subdomain> subdomains_);
   void SetTime(double t);
   void AddGlobalCoefficientsFromSubdomains();
-  void registerDefaultCoefficients();
+  void RegisterDefaultCoefficients();
 
   hephaestus::NamedFieldsMap<mfem::Coefficient> scalars;
   hephaestus::NamedFieldsMap<mfem::VectorCoefficient> vectors;

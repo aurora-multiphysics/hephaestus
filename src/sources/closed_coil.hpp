@@ -32,29 +32,29 @@ public:
   // 1-element layer adjacent to it. Applies a different domain attribute to
   // other elements in the coil. Also applies different boundary attributes on
   // the two opposing faces of the layer, to act as Dirichlet BCs.
-  void makeWedge();
+  void MakeWedge();
 
   // Extracts the coil submesh and prepares the gridfunctions and FE spaces
   // for being passed to the OpenCoilSolver in the transition region
-  void prepareCoilSubmesh();
+  void PrepareCoilSubmesh();
 
   // Applies the OpenCoilSolver to the transition region
-  void solveTransition();
+  void SolveTransition();
 
   // Solves for the current in the coil region
-  void solveCoil();
+  void SolveCoil();
 
   // Resets the domain attributes on the parent mesh to what they were initially
-  void restoreAttributes();
+  void RestoreAttributes();
 
   // Finds the coordinates for the "centre of mass" of the vertices of an
   // element.
-  mfem::Vector elementCentre(int el, mfem::ParMesh * pm);
+  mfem::Vector ElementCentre(int el, mfem::ParMesh * pm);
 
   // Checks whether a given element is within a certain domain or vector of
   // domains.
-  bool isInDomain(const int el, const mfem::Array<int> & dom, const mfem::ParMesh * mesh);
-  bool isInDomain(const int el, const int & sd, const mfem::ParMesh * mesh);
+  bool IsInDomain(const int el, const mfem::Array<int> & dom, const mfem::ParMesh * mesh);
+  bool IsInDomain(const int el, const int & sd, const mfem::ParMesh * mesh);
 
 private:
   // Parameters
@@ -123,11 +123,11 @@ public:
   Plane3D();
 
   // Constructs a mathematical 3D plane from a mesh face
-  void make3DPlane(const mfem::ParMesh * pm, const int face);
+  void Make3DPlane(const mfem::ParMesh * pm, const int face);
 
   // Calculates on which side of the infinite 3D plane a point is.
   // Returns 1, -1, or 0, the latter meaning the point is on the plane
-  int side(const mfem::Vector v);
+  int Side(const mfem::Vector v);
 
 private:
   std::unique_ptr<mfem::Vector> u{nullptr};

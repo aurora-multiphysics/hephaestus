@@ -40,37 +40,37 @@ public:
       mblfs; // named according to trial variable
 
   // add test variable to EquationSystem;
-  virtual void addTestVariableNameIfMissing(const std::string & test_var_name);
-  virtual void addVariableNameIfMissing(const std::string & var_name);
+  virtual void AddTestVariableNameIfMissing(const std::string & test_var_name);
+  virtual void AddVariableNameIfMissing(const std::string & var_name);
 
   // Add kernels.
-  void addKernel(const std::string & test_var_name,
+  void AddKernel(const std::string & test_var_name,
                  std::unique_ptr<ParBilinearFormKernel> && blf_kernel);
 
-  void addKernel(const std::string & test_var_name,
+  void AddKernel(const std::string & test_var_name,
                  std::unique_ptr<ParLinearFormKernel> && lf_kernel);
 
-  void addKernel(const std::string & test_var_name,
+  void AddKernel(const std::string & test_var_name,
                  std::unique_ptr<ParNonlinearFormKernel> && nlf_kernel);
 
-  void addKernel(const std::string & trial_var_name,
+  void AddKernel(const std::string & trial_var_name,
                  const std::string & test_var_name,
                  std::unique_ptr<ParMixedBilinearFormKernel> && mblf_kernel);
 
-  virtual void applyBoundaryConditions(hephaestus::BCMap & bc_map);
+  virtual void ApplyBoundaryConditions(hephaestus::BCMap & bc_map);
 
   // override to add kernels
-  virtual void addKernels(){};
+  virtual void AddKernels(){};
 
   // Build forms
   virtual void Init(hephaestus::GridFunctions & gridfunctions,
                     const hephaestus::FESpaces & fespaces,
                     hephaestus::BCMap & bc_map,
                     hephaestus::Coefficients & coefficients);
-  virtual void buildLinearForms(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);
-  virtual void buildBilinearForms();
-  virtual void buildMixedBilinearForms();
-  virtual void buildEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);
+  virtual void BuildLinearForms(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);
+  virtual void BuildBilinearForms();
+  virtual void BuildMixedBilinearForms();
+  virtual void BuildEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);
 
   // Form linear system, with essential boundary conditions accounted for
   virtual void FormLinearSystem(mfem::OperatorHandle & op,
@@ -82,7 +82,7 @@ public:
                                   hephaestus::GridFunctions & gridfunctions);
 
 protected:
-  bool vectorContainsName(const std::vector<std::string> & the_vector,
+  bool VectorContainsName(const std::vector<std::string> & the_vector,
                           const std::string & name) const;
 
   // gridfunctions for setting Dirichlet BCs
@@ -117,10 +117,10 @@ public:
   {
     return std::string("d") + name + std::string("_dt");
   }
-  void addVariableNameIfMissing(const std::string & var_name) override;
+  void AddVariableNameIfMissing(const std::string & var_name) override;
 
-  virtual void setTimeStep(double dt);
-  virtual void updateEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);
+  virtual void SetTimeStep(double dt);
+  virtual void UpdateEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);
   mfem::ConstantCoefficient dtCoef; // Coefficient for timestep scaling
   std::vector<std::string> var_time_derivative_names;
 };

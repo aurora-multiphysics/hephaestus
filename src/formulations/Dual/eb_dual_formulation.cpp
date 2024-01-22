@@ -17,7 +17,7 @@ EBDualFormulation::EBDualFormulation(const std::string & magnetic_reluctivity_na
 }
 
 void
-EBDualFormulation::registerCurrentDensityAux(const std::string & j_field_name)
+EBDualFormulation::RegisterCurrentDensityAux(const std::string & j_field_name)
 {
   //* Current density J = Jᵉ + σE
   //* Induced electric field, Jind = σE
@@ -29,7 +29,7 @@ EBDualFormulation::registerCurrentDensityAux(const std::string & j_field_name)
 }
 
 void
-EBDualFormulation::registerLorentzForceDensityAux(const std::string & f_field_name,
+EBDualFormulation::RegisterLorentzForceDensityAux(const std::string & f_field_name,
                                                   const std::string & b_field_name,
                                                   const std::string & j_field_name)
 {
@@ -43,7 +43,7 @@ EBDualFormulation::registerLorentzForceDensityAux(const std::string & f_field_na
 }
 
 void
-EBDualFormulation::registerJouleHeatingDensityAux(const std::string & p_field_name,
+EBDualFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_name,
                                                   const std::string & e_field_name,
                                                   const std::string & conductivity_coef_name)
 {

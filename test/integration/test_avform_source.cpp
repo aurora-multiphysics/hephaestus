@@ -8,43 +8,43 @@ class TestAVFormSource
 {
 protected:
   const int var_order{2};
-  static double estimate_convergence_rate(
+  static double EstimateConvergenceRate(
       HYPRE_BigInt n_i, HYPRE_BigInt n_imo, double error_i, double error_imo, int dim)
   {
     return std::log(error_i / error_imo) /
            std::log(std::pow(n_imo / static_cast<double>(n_i), 1.0 / dim));
   }
 
-  static double potential_ground(const mfem::Vector & x, double t) { return -x(0); }
+  static double PotentialGround(const mfem::Vector & x, double t) { return -x(0); }
 
-  static void adot_bc(const mfem::Vector & x, double t, mfem::Vector & H)
+  static void AdotBC(const mfem::Vector & x, double t, mfem::Vector & H)
   {
     H(0) = 1 + sin(x(1) * M_PI) * sin(x(2) * M_PI);
     H(1) = 0;
     H(2) = 0;
   }
 
-  static void A_exact_expr(const mfem::Vector & x, double t, mfem::Vector & A_exact)
+  static void AExactExpr(const mfem::Vector & x, double t, mfem::Vector & A_exact)
   {
     A_exact(0) = (1 + sin(x(1) * M_PI) * sin(x(2) * M_PI)) * t;
     A_exact(1) = 0;
     A_exact(2) = 0;
   }
-  static double mu_expr(const mfem::Vector & x)
+  static double MuExpr(const mfem::Vector & x)
   {
     double variation_scale = 0.0;
     double mu = 1.0 / (1.0 + variation_scale * cos(M_PI * x(0)) * cos(M_PI * x(1)));
     return mu;
   }
 
-  static void source_field(const mfem::Vector & x, double t, mfem::Vector & f)
+  static void SourceField(const mfem::Vector & x, double t, mfem::Vector & f)
   {
     f(0) = sin(M_PI * x(1)) * sin(M_PI * x(2)) * (t * 2 * M_PI * M_PI + 1);
     f(1) = 0.0;
     f(2) = 0.0;
   }
 
-  hephaestus::InputParameters test_params()
+  hephaestus::InputParameters TestParams()
   {
     hephaestus::Subdomain wire("wire", 1);
     wire.scalar_coefficients.Register(
@@ -56,10 +56,10 @@ protected:
     hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({wire, air}));
 
     coefficients.scalars.Register(
-        "magnetic_permeability", new mfem::FunctionCoefficient(mu_expr), true);
+        "magnetic_permeability", new mfem::FunctionCoefficient(MuExpr), true);
 
     hephaestus::BCMap bc_map;
-    auto * adotVecCoef = new mfem::VectorFunctionCoefficient(3, adot_bc);
+    auto * adotVecCoef = new mfem::VectorFunctionCoefficient(3, AdotBC);
     bc_map.Register("tangential_dAdt",
                     new hephaestus::VectorDirichletBC(std::string("dmagnetic_vector_potential_dt"),
                                                       mfem::Array<int>({1, 2, 3}),
@@ -71,7 +71,7 @@ protected:
 
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 1;
-    auto * ground_coeff = new mfem::FunctionCoefficient(potential_ground);
+    auto * ground_coeff = new mfem::FunctionCoefficient(PotentialGround);
     bc_map.Register("ground_potential",
                     new hephaestus::ScalarDirichletBC(std::string("electric_potential"),
                                                       mfem::Array<int>({1, 2, 3}),
@@ -79,7 +79,7 @@ protected:
                     true);
     coefficients.scalars.Register("ground_potential", ground_coeff, true);
 
-    auto * A_exact = new mfem::VectorFunctionCoefficient(3, A_exact_expr);
+    auto * A_exact = new mfem::VectorFunctionCoefficient(3, AExactExpr);
     coefficients.vectors.Register("a_exact_coeff", A_exact, true);
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./beam-tet.mesh")).c_str(), 1, 1);
@@ -103,7 +103,7 @@ protected:
     hephaestus::AuxSolvers preprocessors;
 
     hephaestus::Sources sources;
-    auto * JSrcCoef = new mfem::VectorFunctionCoefficient(3, source_field);
+    auto * JSrcCoef = new mfem::VectorFunctionCoefficient(3, SourceField);
     coefficients.vectors.Register("source", JSrcCoef, true);
     hephaestus::InputParameters div_free_source_params;
     div_free_source_params.SetParam("SourceName", std::string("source"));
@@ -133,7 +133,7 @@ protected:
 
 TEST_CASE_METHOD(TestAVFormSource, "TestAVFormSource", "[CheckRun]")
 {
-  hephaestus::InputParameters params(test_params());
+  hephaestus::InputParameters params(TestParams());
   auto unrefined_pmesh(params.GetParam<mfem::ParMesh>("Mesh"));
 
   int num_conv_refinements = 3;
@@ -202,11 +202,11 @@ TEST_CASE_METHOD(TestAVFormSource, "TestAVFormSource", "[CheckRun]")
   double r;
   for (std::size_t i = 1; i < l2errpostprocessor.ndofs.Size(); ++i)
   {
-    r = estimate_convergence_rate(l2errpostprocessor.ndofs[i],
-                                  l2errpostprocessor.ndofs[i - 1],
-                                  l2errpostprocessor.l2_errs[i],
-                                  l2errpostprocessor.l2_errs[i - 1],
-                                  3);
+    r = EstimateConvergenceRate(l2errpostprocessor.ndofs[i],
+                                l2errpostprocessor.ndofs[i - 1],
+                                l2errpostprocessor.l2_errs[i],
+                                l2errpostprocessor.l2_errs[i - 1],
+                                3);
     std::cout << r << std::endl;
     REQUIRE(r > var_order - 0.15);
     REQUIRE(r < var_order + 1.0);

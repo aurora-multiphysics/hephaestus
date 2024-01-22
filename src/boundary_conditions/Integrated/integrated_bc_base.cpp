@@ -19,20 +19,20 @@ IntegratedBC::IntegratedBC(const std::string & name_,
 }
 
 void
-IntegratedBC::applyBC(mfem::LinearForm & b)
+IntegratedBC::ApplyBC(mfem::LinearForm & b)
 {
   // NB: release ownership to prevent double-free. LinearForm assumes ownership.
   b.AddBoundaryIntegrator(lfi_re.release(), markers);
 }
 
 void
-IntegratedBC::applyBC(mfem::ComplexLinearForm & b)
+IntegratedBC::ApplyBC(mfem::ComplexLinearForm & b)
 {
   b.AddBoundaryIntegrator(lfi_re.release(), lfi_im.release(), markers);
 }
 
 void
-IntegratedBC::applyBC(mfem::ParComplexLinearForm & b)
+IntegratedBC::ApplyBC(mfem::ParComplexLinearForm & b)
 {
   b.AddBoundaryIntegrator(lfi_re.release(), lfi_im.release(), markers);
 }

@@ -14,9 +14,9 @@ RWTE10PortRBC::RWTE10PortRBC(const std::string & name_,
     omega_(2 * M_PI * frequency_),
     a1Vec(port_length_vector_, 3),
     a2Vec(port_width_vector_, 3),
-    a3Vec(cross_product(a1Vec, a2Vec)),
-    a2xa3(cross_product(a2Vec, a3Vec)),
-    a3xa1(cross_product(a3Vec, a1Vec)),
+    a3Vec(CrossProduct(a1Vec, a2Vec)),
+    a2xa3(CrossProduct(a2Vec, a3Vec)),
+    a3xa1(CrossProduct(a3Vec, a1Vec)),
     V(mfem::InnerProduct(a1Vec, a2xa3)),
     kc(M_PI / a1Vec.Norml2()),
     k0(omega_ * sqrt(epsilon0_ * mu0_)),
@@ -33,10 +33,10 @@ RWTE10PortRBC::RWTE10PortRBC(const std::string & name_,
   if (input_port)
   {
     u_real = std::make_unique<mfem::VectorFunctionCoefficient>(
-        3, [this](const mfem::Vector & x, mfem::Vector & v) { return RWTE10_real(x, v); });
+        3, [this](const mfem::Vector & x, mfem::Vector & v) { return RWTE10Real(x, v); });
 
     u_imag = std::make_unique<mfem::VectorFunctionCoefficient>(
-        3, [this](const mfem::Vector & x, mfem::Vector & v) { return RWTE10_imag(x, v); });
+        3, [this](const mfem::Vector & x, mfem::Vector & v) { return RWTE10Imag(x, v); });
 
     lfi_re = std::make_unique<mfem::VectorFEBoundaryTangentLFIntegrator>(*u_real);
     lfi_im = std::make_unique<mfem::VectorFEBoundaryTangentLFIntegrator>(*u_imag);
@@ -47,7 +47,7 @@ void
 RWTE10PortRBC::RWTE10(const mfem::Vector & x, std::vector<std::complex<double>> & E)
 {
 
-  mfem::Vector E_hat(cross_product(k_c, k_a));
+  mfem::Vector E_hat(CrossProduct(k_c, k_a));
   E_hat *= 1.0 / E_hat.Norml2();
 
   double E0(sqrt(2 * omega_ * mu0_ / (a1Vec.Norml2() * a2Vec.Norml2() * k_.imag())));
@@ -59,7 +59,7 @@ RWTE10PortRBC::RWTE10(const mfem::Vector & x, std::vector<std::complex<double>> 
 }
 
 void
-RWTE10PortRBC::RWTE10_real(const mfem::Vector & x, mfem::Vector & v)
+RWTE10PortRBC::RWTE10Real(const mfem::Vector & x, mfem::Vector & v)
 {
   std::vector<std::complex<double>> Eval(x.Size());
   RWTE10(x, Eval);
@@ -69,7 +69,7 @@ RWTE10PortRBC::RWTE10_real(const mfem::Vector & x, mfem::Vector & v)
   }
 }
 void
-RWTE10PortRBC::RWTE10_imag(const mfem::Vector & x, mfem::Vector & v)
+RWTE10PortRBC::RWTE10Imag(const mfem::Vector & x, mfem::Vector & v)
 {
   std::vector<std::complex<double>> Eval(x.Size());
   RWTE10(x, Eval);

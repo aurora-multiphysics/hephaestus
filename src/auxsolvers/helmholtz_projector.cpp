@@ -81,10 +81,10 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
 
   bc_map_ = &bc_map;
 
-  setForms();
-  setGrad();
-  setBCs();
-  solveLinearSystem();
+  SetForms();
+  SetGrad();
+  SetBCs();
+  SolveLinearSystem();
 
   // Compute the irrotational component of g
   // P(g) = g - ∇Q
@@ -99,7 +99,7 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
 }
 
 void
-HelmholtzProjector::setForms()
+HelmholtzProjector::SetForms()
 {
 
   if (gDiv_ == nullptr)
@@ -123,7 +123,7 @@ HelmholtzProjector::setForms()
 }
 
 void
-HelmholtzProjector::setGrad()
+HelmholtzProjector::SetGrad()
 {
 
   if (grad_ == nullptr)
@@ -136,7 +136,7 @@ HelmholtzProjector::setGrad()
 }
 
 void
-HelmholtzProjector::setBCs()
+HelmholtzProjector::SetBCs()
 {
 
   // Begin Divergence-free projection
@@ -144,8 +144,8 @@ HelmholtzProjector::setBCs()
   int myid = H1FESpace_->GetMyRank();
 
   // <P(g).n, q>
-  bc_map_->applyEssentialBCs(gf_name_, ess_bdr_tdofs_, *q_, (H1FESpace_->GetParMesh()));
-  bc_map_->applyIntegratedBCs(gf_name_, *gDiv_, (H1FESpace_->GetParMesh()));
+  bc_map_->ApplyEssentialBCs(gf_name_, ess_bdr_tdofs_, *q_, (H1FESpace_->GetParMesh()));
+  bc_map_->ApplyIntegratedBCs(gf_name_, *gDiv_, (H1FESpace_->GetParMesh()));
 
   // Apply essential BC. Necessary to ensure potential at least one point is
   // fixed.
@@ -161,7 +161,7 @@ HelmholtzProjector::setBCs()
 }
 
 void
-HelmholtzProjector::solveLinearSystem()
+HelmholtzProjector::SolveLinearSystem()
 {
 
   gDiv_->Assemble();

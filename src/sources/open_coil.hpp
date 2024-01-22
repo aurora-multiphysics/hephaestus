@@ -46,17 +46,17 @@ public:
   void SubtractSource(mfem::ParGridFunction * gf) override;
 
   // Initialises the child submesh.
-  void initChildMesh();
+  void InitChildMesh();
 
   // Creates the relevant FE Collections and Spaces for the child submesh.
-  void makeFESpaces();
+  void MakeFESpaces();
 
   // Creates the relevant GridFunctions for the child submesh.
-  void makeGridFunctions();
+  void MakeGridFunctions();
 
   // Sets up the boundary conditions to be used in the ScalarPotentialSource.
   // calculation.
-  void setBCs();
+  void SetBCs();
 
   // Solves for the divergence-free Hodge dual of the electric current based on
   // Dirichlet BCs.
@@ -64,11 +64,11 @@ public:
 
   // Creates a mass matrix with basis functions that will be used in the Apply()
   // method
-  void buildM1();
+  void BuildM1();
 
   // Sets the boundary attribute for the face to be used as reference in flux
   // calculation
-  void setRefFace(const int face);
+  void SetRefFace(const int face);
 
 private:
   // Parameters

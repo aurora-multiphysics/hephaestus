@@ -31,7 +31,7 @@ AFormulation::AFormulation(const std::string & magnetic_reluctivity_name,
 }
 
 void
-AFormulation::registerCurrentDensityAux(const std::string & j_field_name)
+AFormulation::RegisterCurrentDensityAux(const std::string & j_field_name)
 {
   //* Current density J = Jᵉ -σdA/dt
   //* Induced electric field, Jind = -σdA/dt
@@ -44,7 +44,7 @@ AFormulation::registerCurrentDensityAux(const std::string & j_field_name)
 }
 
 void
-AFormulation::registerMagneticFluxDensityAux(const std::string & b_field_name)
+AFormulation::RegisterMagneticFluxDensityAux(const std::string & b_field_name)
 {
   //* Magnetic flux density, B = ∇×A
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->postprocessors;
@@ -53,7 +53,7 @@ AFormulation::registerMagneticFluxDensityAux(const std::string & b_field_name)
 }
 
 void
-AFormulation::registerElectricFieldAux(const std::string & e_field_name)
+AFormulation::RegisterElectricFieldAux(const std::string & e_field_name)
 {
   //* Total electric field, E = ρJᵉ -dA/dt
   //* Induced electric field, Eind = -dA/dt
@@ -65,7 +65,7 @@ AFormulation::registerElectricFieldAux(const std::string & e_field_name)
 }
 
 void
-AFormulation::registerMagneticFieldAux(const std::string & h_field_name)
+AFormulation::RegisterMagneticFieldAux(const std::string & h_field_name)
 {
   //* Magnetic field H = ν∇×A
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->postprocessors;
@@ -76,7 +76,7 @@ AFormulation::registerMagneticFieldAux(const std::string & h_field_name)
 }
 
 void
-AFormulation::registerLorentzForceDensityAux(const std::string & f_field_name,
+AFormulation::RegisterLorentzForceDensityAux(const std::string & f_field_name,
                                              const std::string & b_field_name,
                                              const std::string & j_field_name)
 {
@@ -90,7 +90,7 @@ AFormulation::registerLorentzForceDensityAux(const std::string & f_field_name,
 }
 
 void
-AFormulation::registerJouleHeatingDensityAux(const std::string & p_field_name,
+AFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_name,
                                              const std::string & e_field_name,
                                              const std::string & conductivity_coef_name)
 {

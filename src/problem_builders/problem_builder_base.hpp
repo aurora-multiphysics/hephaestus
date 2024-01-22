@@ -71,15 +71,15 @@ public:
   template <class T>
   void AddKernel(std::string var_name, std::unique_ptr<hephaestus::Kernel<T>> && kernel)
   {
-    GetProblem()->GetEquationSystem()->addVariableNameIfMissing(var_name);
-    GetProblem()->GetEquationSystem()->addKernel(var_name, kernel);
+    GetProblem()->GetEquationSystem()->AddVariableNameIfMissing(var_name);
+    GetProblem()->GetEquationSystem()->AddKernel(var_name, kernel);
   }
 
   template <class T>
   void AddKernel(std::string var_name, hephaestus::Kernel<T> * kernel)
   {
-    GetProblem()->GetEquationSystem()->addVariableNameIfMissing(var_name);
-    GetProblem()->GetEquationSystem()->addKernel(var_name, std::unique_ptr<Kernel<T>>(kernel));
+    GetProblem()->GetEquationSystem()->AddVariableNameIfMissing(var_name);
+    GetProblem()->GetEquationSystem()->AddKernel(var_name, std::unique_ptr<Kernel<T>>(kernel));
   }
 
   void AddBoundaryCondition(std::string bc_name, hephaestus::BoundaryCondition * bc, bool own_data);

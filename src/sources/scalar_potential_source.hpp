@@ -18,11 +18,11 @@ public:
             hephaestus::Coefficients & coefficients) override;
   void Apply(mfem::ParLinearForm * lf) override;
   void SubtractSource(mfem::ParGridFunction * gf) override;
-  void buildH1Diffusion(mfem::Coefficient * Sigma);
-  void buildM1(mfem::Coefficient * Sigma);
-  void buildHCurlMass();
-  void buildWeakDiv();
-  void buildGrad();
+  void BuildH1Diffusion(mfem::Coefficient * Sigma);
+  void BuildM1(mfem::Coefficient * Sigma);
+  void BuildHCurlMass();
+  void BuildWeakDiv();
+  void BuildGrad();
 
   std::string grad_phi_name_;
   std::string src_coef_name;

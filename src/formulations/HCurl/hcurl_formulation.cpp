@@ -122,26 +122,26 @@ CurlCurlEquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
 }
 
 void
-CurlCurlEquationSystem::addKernels()
+CurlCurlEquationSystem::AddKernels()
 {
-  addVariableNameIfMissing(h_curl_var_name);
+  AddVariableNameIfMissing(h_curl_var_name);
   std::string dh_curl_var_dt = GetTimeDerivativeName(h_curl_var_name);
 
   // (α∇×u_{n}, ∇×u')
   hephaestus::InputParameters weakCurlCurlParams;
   weakCurlCurlParams.SetParam("CoupledVariableName", h_curl_var_name);
   weakCurlCurlParams.SetParam("CoefficientName", alpha_coef_name);
-  addKernel(dh_curl_var_dt, std::make_unique<hephaestus::WeakCurlCurlKernel>(weakCurlCurlParams));
+  AddKernel(dh_curl_var_dt, std::make_unique<hephaestus::WeakCurlCurlKernel>(weakCurlCurlParams));
 
   // (αdt∇×du/dt_{n+1}, ∇×u')
   hephaestus::InputParameters curlCurlParams;
   curlCurlParams.SetParam("CoefficientName", dtalpha_coef_name);
-  addKernel(dh_curl_var_dt, std::make_unique<hephaestus::CurlCurlKernel>(curlCurlParams));
+  AddKernel(dh_curl_var_dt, std::make_unique<hephaestus::CurlCurlKernel>(curlCurlParams));
 
   // (βdu/dt_{n+1}, u')
   hephaestus::InputParameters vectorFEMassParams;
   vectorFEMassParams.SetParam("CoefficientName", beta_coef_name);
-  addKernel(dh_curl_var_dt, std::make_unique<hephaestus::VectorFEMassKernel>(vectorFEMassParams));
+  AddKernel(dh_curl_var_dt, std::make_unique<hephaestus::VectorFEMassKernel>(vectorFEMassParams));
 }
 
 void
@@ -197,8 +197,8 @@ HCurlOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vect
         local_trial_vars.at(ind)->ParFESpace(), dX_dt, true_offsets[ind]);
   }
   _coefficients.SetTime(GetTime());
-  _equation_system->setTimeStep(dt);
-  _equation_system->updateEquationSystem(_bc_map, _sources);
+  _equation_system->SetTimeStep(dt);
+  _equation_system->UpdateEquationSystem(_bc_map, _sources);
 
   _equation_system->FormLinearSystem(blockA, trueX, trueRhs);
 

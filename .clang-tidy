@@ -5,8 +5,8 @@ CheckOptions:
     value:           true
   - key:             readability-identifier-naming.ClassCase
     value:           'CamelCase'
-  # - key:             readability-identifier-naming.MethodCase
-  #   value:           'CamelCase'    
+  - key:             readability-identifier-naming.MethodCase
+    value:           'CamelCase'    
   # - key:             readability-identifier-naming.MemberCase
   #   value:           'lower_case'
   # - key:             readability-identifier-naming.MemberPrefix

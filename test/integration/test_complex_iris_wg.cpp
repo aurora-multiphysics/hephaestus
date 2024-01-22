@@ -7,13 +7,13 @@ extern const char * DATA_DIR;
 class TestComplexIrisWaveguide
 {
 protected:
-  static void e_bc_r(const mfem::Vector & x, mfem::Vector & E)
+  static void EBCR(const mfem::Vector & x, mfem::Vector & E)
   {
     E.SetSize(3);
     E = 0.0;
   }
 
-  static void e_bc_i(const mfem::Vector & x, mfem::Vector & E)
+  static void EBCI(const mfem::Vector & x, mfem::Vector & E)
   {
     E.SetSize(3);
     E = 0.0;
@@ -25,7 +25,7 @@ protected:
   double port_length_vector[3] = {0.0, 22.86e-3, 0.0};
   double port_width_vector[3] = {0.0, 0.0, 10.16e-3};
 
-  hephaestus::InputParameters test_params()
+  hephaestus::InputParameters TestParams()
   {
     hephaestus::Subdomain air("air", 1);
 
@@ -55,13 +55,12 @@ protected:
     hephaestus::BCMap bc_map;
     mfem::Array<int> dirichlet_attr(1);
     dirichlet_attr[0] = 1;
-    bc_map.Register(
-        "tangential_E",
-        new hephaestus::VectorDirichletBC(std::string("electric_field"),
-                                          dirichlet_attr,
-                                          new mfem::VectorFunctionCoefficient(3, e_bc_r),
-                                          new mfem::VectorFunctionCoefficient(3, e_bc_i)),
-        true);
+    bc_map.Register("tangential_E",
+                    new hephaestus::VectorDirichletBC(std::string("electric_field"),
+                                                      dirichlet_attr,
+                                                      new mfem::VectorFunctionCoefficient(3, EBCR),
+                                                      new mfem::VectorFunctionCoefficient(3, EBCI)),
+                    true);
 
     mfem::Array<int> wgi_in_attr(1);
     wgi_in_attr[0] = 2;
@@ -122,7 +121,7 @@ protected:
 
 TEST_CASE_METHOD(TestComplexIrisWaveguide, "TestComplexIrisWaveguide", "[CheckRun]")
 {
-  hephaestus::InputParameters params(test_params());
+  hephaestus::InputParameters params(TestParams());
   std::shared_ptr<mfem::ParMesh> pmesh =
       std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
 
@@ -153,15 +152,15 @@ TEST_CASE_METHOD(TestComplexIrisWaveguide, "TestComplexIrisWaveguide", "[CheckRu
 
   problem_builder->AddGridFunction("magnetic_flux_density_real", "HDiv");
   problem_builder->AddGridFunction("magnetic_flux_density_imag", "HDiv");
-  problem_builder->registerMagneticFluxDensityAux("magnetic_flux_density_real",
+  problem_builder->RegisterMagneticFluxDensityAux("magnetic_flux_density_real",
                                                   "magnetic_flux_density_imag");
 
   problem_builder->AddGridFunction("current_density_real", "HDiv");
   problem_builder->AddGridFunction("current_density_imag", "HDiv");
-  problem_builder->registerCurrentDensityAux("current_density_real", "current_density_imag");
+  problem_builder->RegisterCurrentDensityAux("current_density_real", "current_density_imag");
 
   problem_builder->AddGridFunction("joule_heating_density", "Scalar_L2");
-  problem_builder->registerJouleHeatingDensityAux("joule_heating_density",
+  problem_builder->RegisterJouleHeatingDensityAux("joule_heating_density",
                                                   "electric_field_real",
                                                   "electric_field_imag",
                                                   "electrical_conductivity");

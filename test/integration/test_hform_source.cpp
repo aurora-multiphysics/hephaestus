@@ -8,36 +8,36 @@ class TestHFormSource
 {
 protected:
   const int var_order{2};
-  static double estimate_convergence_rate(
+  static double EstimateConvergenceRate(
       HYPRE_BigInt n_i, HYPRE_BigInt n_imo, double error_i, double error_imo, int dim)
   {
     return std::log(error_i / error_imo) /
            std::log(std::pow(n_imo / static_cast<double>(n_i), 1.0 / dim));
   }
 
-  static double potential_ground(const mfem::Vector & x, double t) { return 0.0; }
+  static double PotentialGround(const mfem::Vector & x, double t) { return 0.0; }
 
-  static void hdot_bc(const mfem::Vector & x, double t, mfem::Vector & H)
+  static void HdotBc(const mfem::Vector & x, double t, mfem::Vector & H)
   {
     H(0) = sin(x(1) * M_PI) * sin(x(2) * M_PI);
     H(1) = 0;
     H(2) = 0;
   }
 
-  static void H_exact_expr(const mfem::Vector & x, double t, mfem::Vector & H_exact)
+  static void HExactExpr(const mfem::Vector & x, double t, mfem::Vector & H_exact)
   {
     H_exact(0) = sin(x(1) * M_PI) * sin(x(2) * M_PI) * t;
     H_exact(1) = 0;
     H_exact(2) = 0;
   }
-  static double sigma_expr(const mfem::Vector & x)
+  static double SigmaExpr(const mfem::Vector & x)
   {
     double variation_scale = 0.5;
     double sigma = 1.0 / (1.0 + variation_scale * cos(M_PI * x(0)) * cos(M_PI * x(1)));
     return sigma;
   }
   // Source field
-  static void source_field(const mfem::Vector & x, double t, mfem::Vector & f)
+  static void SourceField(const mfem::Vector & x, double t, mfem::Vector & f)
   {
     double variation_scale = 0.5;
     f(0) = t * M_PI * M_PI * sin(M_PI * x(1)) * sin(M_PI * x(2)) *
@@ -49,7 +49,7 @@ protected:
            cos(M_PI * x(2));
   }
 
-  hephaestus::InputParameters test_params()
+  hephaestus::InputParameters TestParams()
   {
     hephaestus::Subdomain wire("wire", 1);
     wire.scalar_coefficients.Register(
@@ -61,10 +61,10 @@ protected:
     hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({wire, air}));
 
     coefficients.scalars.Register(
-        "electrical_conductivity", new mfem::FunctionCoefficient(sigma_expr), true);
+        "electrical_conductivity", new mfem::FunctionCoefficient(SigmaExpr), true);
 
     hephaestus::BCMap bc_map;
-    auto * hdotVecCoef = new mfem::VectorFunctionCoefficient(3, hdot_bc);
+    auto * hdotVecCoef = new mfem::VectorFunctionCoefficient(3, HdotBc);
     bc_map.Register("tangential_dHdt",
                     new hephaestus::VectorDirichletBC(std::string("dmagnetic_field_dt"),
                                                       mfem::Array<int>({1, 2, 3}),
@@ -74,10 +74,10 @@ protected:
     coefficients.scalars.Register(
         "magnetic_permeability", new mfem::ConstantCoefficient(1.0), true);
 
-    auto * dBdtSrcCoef = new mfem::VectorFunctionCoefficient(3, source_field);
+    auto * dBdtSrcCoef = new mfem::VectorFunctionCoefficient(3, SourceField);
     coefficients.vectors.Register("source", dBdtSrcCoef, true);
 
-    auto * H_exact = new mfem::VectorFunctionCoefficient(3, H_exact_expr);
+    auto * H_exact = new mfem::VectorFunctionCoefficient(3, HExactExpr);
     coefficients.vectors.Register("h_exact_coeff", H_exact, true);
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./beam-tet.mesh")).c_str(), 1, 1);
@@ -143,7 +143,7 @@ protected:
 
 TEST_CASE_METHOD(TestHFormSource, "TestHFormSource", "[CheckRun]")
 {
-  hephaestus::InputParameters params(test_params());
+  hephaestus::InputParameters params(TestParams());
   auto unrefined_pmesh(params.GetParam<mfem::ParMesh>("Mesh"));
 
   int num_conv_refinements = 3;
@@ -210,11 +210,11 @@ TEST_CASE_METHOD(TestHFormSource, "TestHFormSource", "[CheckRun]")
   double r;
   for (std::size_t i = 1; i < l2errpostprocessor.ndofs.Size(); ++i)
   {
-    r = estimate_convergence_rate(l2errpostprocessor.ndofs[i],
-                                  l2errpostprocessor.ndofs[i - 1],
-                                  l2errpostprocessor.l2_errs[i],
-                                  l2errpostprocessor.l2_errs[i - 1],
-                                  3);
+    r = EstimateConvergenceRate(l2errpostprocessor.ndofs[i],
+                                l2errpostprocessor.ndofs[i - 1],
+                                l2errpostprocessor.l2_errs[i],
+                                l2errpostprocessor.l2_errs[i - 1],
+                                3);
     std::cout << r << std::endl;
     REQUIRE(r > var_order - 0.15);
     REQUIRE(r < var_order + 1.0);

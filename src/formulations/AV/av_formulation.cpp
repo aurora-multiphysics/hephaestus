@@ -160,45 +160,45 @@ AVEquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
 }
 
 void
-AVEquationSystem::addKernels()
+AVEquationSystem::AddKernels()
 {
-  addVariableNameIfMissing(a_name);
+  AddVariableNameIfMissing(a_name);
   std::string da_dt_name = GetTimeDerivativeName(a_name);
-  addVariableNameIfMissing(v_name);
+  AddVariableNameIfMissing(v_name);
   std::string dv_dt_name = GetTimeDerivativeName(v_name);
 
   // (α∇×A_{n}, ∇×A')
   hephaestus::InputParameters weakCurlCurlParams;
   weakCurlCurlParams.SetParam("CoupledVariableName", a_name);
   weakCurlCurlParams.SetParam("CoefficientName", alpha_coef_name);
-  addKernel(da_dt_name, std::make_unique<hephaestus::WeakCurlCurlKernel>(weakCurlCurlParams));
+  AddKernel(da_dt_name, std::make_unique<hephaestus::WeakCurlCurlKernel>(weakCurlCurlParams));
 
   // (αdt∇×dA/dt_{n+1}, ∇×A')
   hephaestus::InputParameters curlCurlParams;
   curlCurlParams.SetParam("CoefficientName", dtalpha_coef_name);
-  addKernel(da_dt_name, std::make_unique<hephaestus::CurlCurlKernel>(curlCurlParams));
+  AddKernel(da_dt_name, std::make_unique<hephaestus::CurlCurlKernel>(curlCurlParams));
 
   // (βdA/dt_{n+1}, A')
   hephaestus::InputParameters vectorFEMassParams;
   vectorFEMassParams.SetParam("CoefficientName", beta_coef_name);
-  addKernel(da_dt_name, std::make_unique<hephaestus::VectorFEMassKernel>(vectorFEMassParams));
+  AddKernel(da_dt_name, std::make_unique<hephaestus::VectorFEMassKernel>(vectorFEMassParams));
 
   // (σ ∇ V, dA'/dt)
   hephaestus::InputParameters mixedVectorGradientParams;
   mixedVectorGradientParams.SetParam("CoefficientName", beta_coef_name);
-  addKernel(v_name,
+  AddKernel(v_name,
             da_dt_name,
             std::make_unique<hephaestus::MixedVectorGradientKernel>(mixedVectorGradientParams));
 
   // (σ ∇ V, ∇ V')
   hephaestus::InputParameters diffusionParams;
   diffusionParams.SetParam("CoefficientName", beta_coef_name);
-  addKernel(v_name, std::make_unique<hephaestus::DiffusionKernel>(diffusionParams));
+  AddKernel(v_name, std::make_unique<hephaestus::DiffusionKernel>(diffusionParams));
 
   // (σdA/dt, ∇ V')
   hephaestus::InputParameters vectorFEWeakDivergenceParams;
   vectorFEWeakDivergenceParams.SetParam("CoefficientName", beta_coef_name);
-  addKernel(
+  AddKernel(
       da_dt_name,
       v_name,
       std::make_unique<hephaestus::VectorFEWeakDivergenceKernel>(vectorFEWeakDivergenceParams));
@@ -250,8 +250,8 @@ AVOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector 
         local_trial_vars.at(ind)->ParFESpace(), dX_dt, true_offsets[ind]);
   }
   _coefficients.SetTime(GetTime());
-  _equation_system->setTimeStep(dt);
-  _equation_system->updateEquationSystem(_bc_map, _sources);
+  _equation_system->SetTimeStep(dt);
+  _equation_system->UpdateEquationSystem(_bc_map, _sources);
 
   _equation_system->FormLinearSystem(blockA, trueX, trueRhs);
 

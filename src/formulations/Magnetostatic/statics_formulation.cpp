@@ -129,8 +129,8 @@ StaticsOperator::Solve(mfem::Vector & X)
   mfem::ParLinearForm b1_(a_.ParFESpace());
   b1_ = 0.0;
   mfem::Array<int> ess_bdr_tdofs_;
-  _bc_map.applyEssentialBCs(h_curl_var_name, ess_bdr_tdofs_, a_, pmesh_);
-  _bc_map.applyIntegratedBCs(h_curl_var_name, b1_, pmesh_);
+  _bc_map.ApplyEssentialBCs(h_curl_var_name, ess_bdr_tdofs_, a_, pmesh_);
+  _bc_map.ApplyIntegratedBCs(h_curl_var_name, b1_, pmesh_);
   b1_.Assemble();
   _sources.Apply(&b1_);
   mfem::ParBilinearForm a1_(a_.ParFESpace());

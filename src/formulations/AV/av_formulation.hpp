@@ -45,7 +45,7 @@ public:
             const hephaestus::FESpaces & fespaces,
             hephaestus::BCMap & bc_map,
             hephaestus::Coefficients & coefficients) override;
-  void addKernels() override;
+  void AddKernels() override;
 
   std::string a_name, v_name, coupled_variable_name, alpha_coef_name, beta_coef_name,
       dtalpha_coef_name, neg_beta_coef_name;
