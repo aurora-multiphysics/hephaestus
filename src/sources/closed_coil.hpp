@@ -47,6 +47,9 @@ public:
   // Resets the domain attributes on the parent mesh to what they were initially
   void RestoreAttributes();
 
+  // Scales the GradPhi field by -σ, thus obtaining an Hcurl representation of J.
+  void AuxCurrentScale();
+
   // Finds the coordinates for the "centre of mass" of the vertices of an
   // element.
   mfem::Vector ElementCentre(int el, mfem::ParMesh * pm);
@@ -84,23 +87,32 @@ private:
   // grad_phi.
   bool _grad_phi_transfer{false};
 
+  // Similarly, setting _J_transfer to true will allow one to visualise the final current density,
+  // at the cost of performance.
+  bool _j_transfer{false};
+
   // Names
   std::string _hcurl_fespace_name;
   std::string _cond_coef_name;
   std::string _h1_fespace_name;
   std::string _grad_phi_name;
+  std::string _j_name;
   std::string _i_coef_name;
 
   // Parent mesh, FE space, and current
   mfem::ParMesh * _mesh_parent{nullptr};
   mfem::ParGridFunction * _grad_phi_parent{nullptr};
+  mfem::ParGridFunction * _j_parent{nullptr};
   mfem::ParFiniteElementSpace * _h_curl_fe_space_parent{nullptr};
   mfem::ParFiniteElementSpace * _h1_fe_space_parent{nullptr};
 
+  // Finite element collections
   std::unique_ptr<mfem::H1_FECollection> _h1_fe_space_parent_fec{nullptr};
+  std::unique_ptr<mfem::H1_FECollection> _h1_fe_space_coil_fec{nullptr};
 
-  // In case J transfer is true
+  // In case J or gradphi transfers are true
   std::unique_ptr<mfem::ParGridFunction> _grad_phi_t_parent{nullptr};
+  std::unique_ptr<mfem::ParGridFunction> _jt_parent{nullptr};
 
   // Coil mesh, FE Space, and current
   std::unique_ptr<mfem::ParSubMesh> _mesh_coil{nullptr};

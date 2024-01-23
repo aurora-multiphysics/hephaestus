@@ -1,4 +1,5 @@
 #include "closed_coil.hpp"
+#include "scaled_curl_vector_gridfunction_aux.hpp"
 
 #include <utility>
 
@@ -32,6 +33,7 @@ ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters & params,
   : _hcurl_fespace_name(params.GetParam<std::string>("HCurlFESpaceName")),
     _h1_fespace_name(params.GetParam<std::string>("H1FESpaceName")),
     _grad_phi_name(params.GetParam<std::string>("GradPotentialName")),
+    _j_name(params.GetParam<std::string>("CurrentDensityName")),
     _i_coef_name(params.GetParam<std::string>("IFuncCoefName")),
     _cond_coef_name(params.GetParam<std::string>("ConductivityCoefName")),
     _grad_phi_transfer(params.GetOptionalParam<bool>("GradPhiTransfer", false)),
@@ -112,6 +114,17 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     mfem::mfem_error("GradPhi GridFunction must be of HCurl type.");
   }
 
+  _j_parent = gridfunctions.Get(_j_name);
+  if (_j_parent != nullptr)
+  {
+    _j_transfer = true;
+    _jt_parent = std::make_unique<mfem::ParGridFunction>(_h_curl_fe_space_parent);
+
+    // Transferring J requires transferring grad_phi
+    _grad_phi_transfer = true;
+    std::cout << "Current density GridFunction detected. GradPhiTransfer set to true.\n";
+  }
+
   _itotal = coefficients._scalars.Get(_i_coef_name);
   if (_itotal == nullptr)
   {
@@ -168,6 +181,12 @@ ClosedCoilSolver::Apply(mfem::ParLinearForm * lf)
   if (_grad_phi_transfer)
   {
     _grad_phi_parent->Add(i, *_grad_phi_t_parent);
+  }
+
+  if (_j_transfer)
+  {
+    *_j_parent = 0.0;
+    _j_parent->Add(i, *_jt_parent);
   }
 }
 
@@ -345,6 +364,12 @@ ClosedCoilSolver::PrepareCoilSubmesh()
   _grad_phi_aux_coil = std::make_unique<mfem::ParGridFunction>(_grad_phi_aux_coil_fes.get());
   *_grad_phi_aux_coil = 0.0;
 
+  _h1_fe_space_coil_fec =
+      std::make_unique<mfem::H1_FECollection>(_order_h1, _mesh_coil->Dimension());
+
+  _h1_fe_space_coil =
+      std::make_unique<mfem::ParFiniteElementSpace>(_mesh_coil.get(), _h1_fe_space_coil_fec.get());
+
   _v_coil = std::make_unique<mfem::ParGridFunction>(_h1_fe_space_coil.get());
   *_v_coil = 0.0;
 
@@ -489,6 +514,9 @@ ClosedCoilSolver::SolveCoil()
     *_grad_phi_t_parent = *_grad_phi_parent;
   }
 
+  if (_j_transfer)
+    AuxCurrentScale();
+
   *_final_lf /= flux;
 }
 
@@ -504,6 +532,23 @@ ClosedCoilSolver::RestoreAttributes()
   _mesh_parent->FinalizeTopology();
   _mesh_parent->Finalize();
   _mesh_parent->SetAttributes();
+}
+
+void
+ClosedCoilSolver::AuxCurrentScale()
+{
+
+  hephaestus::GridFunctions aux_gf;
+  aux_gf.Register("grad_phi", _grad_phi_parent, false);
+  aux_gf.Register("transfer_current_density", _jt_parent.get(), false);
+
+  hephaestus::Coefficients aux_coef;
+  aux_coef._scalars.Register("electrical_conductivity", _sigma, false);
+
+  hephaestus::ScaledCurlVectorGridFunctionAux auxsolver(
+      "grad_phi", "transfer_current_density", "electrical_conductivity", -1.0, _solver_options);
+  auxsolver.Init(aux_gf, aux_coef);
+  auxsolver.Solve(0);
 }
 
 // Auxiliary methods
