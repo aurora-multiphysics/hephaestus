@@ -16,7 +16,7 @@ ComplexAFormulation::ComplexAFormulation(const std::string & magnetic_reluctivit
                               frequency_coef_name,
                               magnetic_vector_potential_complex_name,
                               magnetic_vector_potential_real_name,
-                              magnetic_vector_potential_imag_name){};
+                              magnetic_vector_potential_imag_name){}
 
 // Enable auxiliary calculation of J ∈ H(div)
 void

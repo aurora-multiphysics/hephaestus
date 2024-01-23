@@ -30,7 +30,7 @@ public:
       _bc_map(bc_map),
       _sources(sources),
       _coefficients(coefficients),
-      _solver_options(solver_options){};
+      _solver_options(solver_options){}
 
   ~TimeDomainEquationSystemOperator() override = default;
 

@@ -19,7 +19,7 @@ public:
   void Init(hephaestus::GridFunctions & gridfunctions,
             const hephaestus::FESpaces & fespaces,
             hephaestus::BCMap & bc_map,
-            hephaestus::Coefficients & coefficients) override{};
+            hephaestus::Coefficients & coefficients) override{}
 
   void Apply(mfem::ParLinearForm * lf) override = 0;
   virtual void SubtractSource(mfem::ParGridFunction * gf) = 0;

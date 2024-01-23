@@ -50,7 +50,7 @@ public:
 
   //* Electric field is already a state variable solved for
   void RegisterElectricFieldAux(const std::string & e_field_real_name,
-                                const std::string & e_field_imag_name) override{};
+                                const std::string & e_field_imag_name) override {}
 
   // Enable auxiliary calculation of P ∈ L2
   // Time averaged Joule heating density E.J
