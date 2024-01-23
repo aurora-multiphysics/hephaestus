@@ -2,6 +2,12 @@
 
 const char * DATA_DIR = "../../data/";
 
+static void
+constVec(const mfem::Vector & x, mfem::Vector & V)
+{
+  V = 1.0;
+}
+
 hephaestus::Coefficients
 defineCoefficients()
 {
@@ -94,9 +100,9 @@ main(int argc, char * argv[])
   A_DBC_bdr[4] = 5;
   A_DBC_bdr[5] = 6;
   hephaestus::VectorDirichletBC A_DBC(
-      "magnetic_vector_potential", A_DBC_bdr, new mfem::VectorFunctionCoefficient(3, zeroVec));
+      "magnetic_vector_potential", A_DBC_bdr, new mfem::VectorFunctionCoefficient(3, constVec));
 
-  problem_builder->AddBoundaryCondition("A_DBC", &A_DBC, true);
+  problem_builder->AddBoundaryCondition("A_DBC", &A_DBC, false);
 
   hephaestus::Sources sources = defineSources();
   problem_builder->SetSources(sources);

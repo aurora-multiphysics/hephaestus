@@ -160,8 +160,6 @@ StaticsOperator::Solve(mfem::Vector & X)
   mfem::HypreParVector RHS(a_.ParFESpace());
   a1_.FormLinearSystem(ess_bdr_tdofs_, a_, b1_, CurlMuInvCurl, A, RHS);
 
-  // Define and apply a parallel FGMRES solver for AX=B with the AMS
-  // preconditioner from hypre.
   /*
   mfem::HypreParVector int_nodes;
   int_nodes.SetSize(a_.ParFESpace()->GetNV());
@@ -169,28 +167,27 @@ StaticsOperator::Solve(mfem::Vector & X)
 
   int_nodes = 0;
   mfem::Table* v_to_el = pmesh_->GetVertexToElementTable();
-  v_to_el->Print();
-  std::cout << "NUMBER OF ELEMENTS = " << pmesh_->GetNE() << std::endl;
-  std::cout << "NUMBER OF VERTICES = " << pmesh_->GetNV() << std::endl;
-  std::cout << "NUMBER OF VERTICES FE = " << a_.ParFESpace()->GetNV() << std::endl;
-
-  for (int v = 0; v < pmesh_->GetNV(); ++v)
-    for (int e = 0; e < pmesh_->GetNE(); ++e)
-      std::cout << *v_to_el(v,e) << std::endl;
-  //for (int v = 0; v < int_nodes.Size(); ++v){
-
-    for (auto e:v_to_el[v]){
-      if (isInDomain(e,coil_domains,pmesh_)){
+  //std::cout << "NUMBER OF ELEMENTS = " << pmesh_->GetNE() << std::endl;
+  //std::cout << "NUMBER OF VERTICES = " << pmesh_->GetNV() << std::endl;
+  //std::cout << "SIZE OF VTOEL = " << v_to_el->Size() << std::endl;
+  mfem::Array<int> row;
+  for (int v = 0; v < v_to_el->Size(); ++v){
+    v_to_el->GetRow(v,row);
+    for (int e = 0; e < row.Size(); e++){
+      if (isInDomain(row[e],coil_domains,pmesh_)){
         int_nodes[v] = 1;
         break;
       }
     }
-
-
-
-  //}
+  }
   */
 
+  // mfem::ParBilinearForm beta_mat(a_.ParFESpace());
+  // beta_mat.AddDomainIntegrator(new mfem::VectorFEMassIntegrator(new
+  // mfem::ConstantCoefficient(1.0)));
+
+  // Define and apply a parallel FGMRES solver for AX=B with the AMS
+  // preconditioner from hypre.
   hephaestus::DefaultHCurlFGMRESSolver a1_solver(_solver_options, CurlMuInvCurl, a_.ParFESpace());
   a1_solver.Mult(RHS, A);
   a1_.RecoverFEMSolution(A, b1_, a_);

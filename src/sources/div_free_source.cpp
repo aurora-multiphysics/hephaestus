@@ -115,6 +115,7 @@ DivFreeSource::Apply(mfem::ParLinearForm * lf)
     projector_pars.SetParam("ScalarGridFunctionName", potential_gf_name);
     projector_pars.SetParam("H1FESpaceName", h1_fespace_name);
     projector_pars.SetParam("HCurlFESpaceName", hcurl_fespace_name);
+    projector_pars.SetParam("SolverOptions", solver_options);
 
     hephaestus::BCMap bcs;
 
