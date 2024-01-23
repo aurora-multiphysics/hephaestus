@@ -24,14 +24,16 @@ public:
       _bc_map(bc_map),
       _sources(sources),
       _coefficients(coefficients),
-      _solver_options(solver_options){}
+      _solver_options(solver_options)
+  {
+  }
 
   ~EquationSystemOperator() override = default;
 
   virtual void SetGridFunctions();
   virtual void Init(mfem::Vector & X);
   virtual void Solve(mfem::Vector & X);
-  void Mult(const mfem::Vector & x, mfem::Vector & y) const override{}
+  void Mult(const mfem::Vector & x, mfem::Vector & y) const override {}
 
   mfem::Array<int> _true_offsets, _block_true_offsets;
   // Vector of names of state gridfunctions used in formulation, ordered by

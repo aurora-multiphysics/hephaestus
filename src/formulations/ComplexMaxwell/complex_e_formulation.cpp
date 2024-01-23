@@ -16,7 +16,9 @@ ComplexEFormulation::ComplexEFormulation(const std::string & magnetic_reluctivit
                                           frequency_coef_name,
                                           e_field_complex_name,
                                           e_field_real_name,
-                                          e_field_imag_name){}
+                                          e_field_imag_name)
+{
+}
 
 // Enable auxiliary calculation of J ∈ H(div)
 void

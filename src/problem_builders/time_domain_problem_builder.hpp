@@ -29,7 +29,7 @@ public:
 class TimeDomainProblemBuilder : public hephaestus::ProblemBuilder
 {
 public:
-  TimeDomainProblemBuilder() : _problem(std::make_unique<hephaestus::TimeDomainProblem>()){}
+  TimeDomainProblemBuilder() : _problem(std::make_unique<hephaestus::TimeDomainProblem>()) {}
 
   ~TimeDomainProblemBuilder() override = default;
 
@@ -42,13 +42,13 @@ public:
   RegisterTimeDerivatives(std::vector<std::string> gridfunction_names,
                           hephaestus::GridFunctions & gridfunctions);
 
-  void RegisterFESpaces() override{}
+  void RegisterFESpaces() override {}
 
   void RegisterGridFunctions() override;
 
-  void RegisterAuxSolvers() override{}
+  void RegisterAuxSolvers() override {}
 
-  void RegisterCoefficients() override{}
+  void RegisterCoefficients() override {}
 
   void ConstructEquationSystem() override;
 

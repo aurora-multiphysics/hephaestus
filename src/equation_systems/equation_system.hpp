@@ -60,7 +60,7 @@ public:
   virtual void ApplyBoundaryConditions(hephaestus::BCMap & bc_map);
 
   // override to add kernels
-  virtual void AddKernels(){}
+  virtual void AddKernels() {}
 
   // Build forms
   virtual void Init(hephaestus::GridFunctions & gridfunctions,
