@@ -37,14 +37,14 @@ EquationSystem::AddTestVariableNameIfMissing(const std::string & test_var_name)
 
 void
 EquationSystem::AddKernel(const std::string & test_var_name,
-                          std::unique_ptr<ParBilinearFormKernel> && blf_kernel)
+                          std::shared_ptr<ParBilinearFormKernel> blf_kernel)
 {
   AddTestVariableNameIfMissing(test_var_name);
 
   if (!_blf_kernels_map.Has(test_var_name))
   {
     // 1. Create kernels vector.
-    auto kernels = new std::vector<std::unique_ptr<ParBilinearFormKernel>>;
+    auto kernels = new std::vector<std::shared_ptr<ParBilinearFormKernel>>;
 
     // 2. Register with map to prevent leaks.
     _blf_kernels_map.Register(test_var_name, kernels, true);
@@ -55,13 +55,13 @@ EquationSystem::AddKernel(const std::string & test_var_name,
 
 void
 EquationSystem::AddKernel(const std::string & test_var_name,
-                          std::unique_ptr<ParLinearFormKernel> && lf_kernel)
+                          std::shared_ptr<ParLinearFormKernel> lf_kernel)
 {
   AddTestVariableNameIfMissing(test_var_name);
 
   if (!_lf_kernels_map.Has(test_var_name))
   {
-    auto kernels = new std::vector<std::unique_ptr<ParLinearFormKernel>>;
+    auto kernels = new std::vector<std::shared_ptr<ParLinearFormKernel>>;
 
     _lf_kernels_map.Register(test_var_name, kernels, true);
   }
@@ -71,13 +71,13 @@ EquationSystem::AddKernel(const std::string & test_var_name,
 
 void
 EquationSystem::AddKernel(const std::string & test_var_name,
-                          std::unique_ptr<ParNonlinearFormKernel> && nlf_kernel)
+                          std::shared_ptr<ParNonlinearFormKernel> nlf_kernel)
 {
   AddTestVariableNameIfMissing(test_var_name);
 
   if (!_nlf_kernels_map.Has(test_var_name))
   {
-    auto kernels = new std::vector<std::unique_ptr<ParNonlinearFormKernel>>;
+    auto kernels = new std::vector<std::shared_ptr<ParNonlinearFormKernel>>;
 
     _nlf_kernels_map.Register(test_var_name, kernels, true);
   }
@@ -88,7 +88,7 @@ EquationSystem::AddKernel(const std::string & test_var_name,
 void
 EquationSystem::AddKernel(const std::string & trial_var_name,
                           const std::string & test_var_name,
-                          std::unique_ptr<ParMixedBilinearFormKernel> && mblf_kernel)
+                          std::shared_ptr<ParMixedBilinearFormKernel> mblf_kernel)
 {
   AddTestVariableNameIfMissing(test_var_name);
 
@@ -96,7 +96,7 @@ EquationSystem::AddKernel(const std::string & trial_var_name,
   if (!_mblf_kernels_map_map.Has(test_var_name))
   {
     auto kernel_field_map =
-        new hephaestus::NamedFieldsMap<std::vector<std::unique_ptr<ParMixedBilinearFormKernel>>>;
+        new hephaestus::NamedFieldsMap<std::vector<std::shared_ptr<ParMixedBilinearFormKernel>>>;
 
     _mblf_kernels_map_map.Register(test_var_name, kernel_field_map, true);
   }
@@ -105,7 +105,7 @@ EquationSystem::AddKernel(const std::string & trial_var_name,
   // pair
   if (!_mblf_kernels_map_map.Get(test_var_name)->Has(trial_var_name))
   {
-    auto kernels = new std::vector<std::unique_ptr<ParMixedBilinearFormKernel>>;
+    auto kernels = new std::vector<std::shared_ptr<ParMixedBilinearFormKernel>>;
 
     _mblf_kernels_map_map.Get(test_var_name)->Register(trial_var_name, kernels, true);
   }
