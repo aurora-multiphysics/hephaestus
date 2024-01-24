@@ -69,20 +69,21 @@ public:
   void AddGridFunction(std::string gridfunction_name, std::string fespace_name);
 
   template <class T>
-  void AddKernel(std::string var_name, std::unique_ptr<hephaestus::Kernel<T>> && kernel)
+  void AddKernel(std::string var_name, std::shared_ptr<hephaestus::Kernel<T>> kernel)
   {
     GetProblem()->GetEquationSystem()->AddVariableNameIfMissing(var_name);
-    GetProblem()->GetEquationSystem()->AddKernel(var_name, kernel);
+    GetProblem()->GetEquationSystem()->AddKernel(var_name, std::move(kernel));
   }
 
   template <class T>
   void AddKernel(std::string var_name, hephaestus::Kernel<T> * kernel)
   {
     GetProblem()->GetEquationSystem()->AddVariableNameIfMissing(var_name);
-    GetProblem()->GetEquationSystem()->AddKernel(var_name, std::unique_ptr<Kernel<T>>(kernel));
+    GetProblem()->GetEquationSystem()->AddKernel(var_name, std::shared_ptr<Kernel<T>>(kernel));
   }
 
   void AddBoundaryCondition(std::string bc_name, std::shared_ptr<hephaestus::BoundaryCondition> bc);
+  void AddAuxSolver(std::string auxsolver_name, hephaestus::AuxSolver * aux, bool own_data);
   void AddAuxSolver(std::string auxsolver_name, std::shared_ptr<hephaestus::AuxSolver> aux);
   void AddPostprocessor(std::string auxsolver_name, std::shared_ptr<hephaestus::AuxSolver> aux);
   void AddSource(std::string source_name, std::shared_ptr<hephaestus::Source> source);
