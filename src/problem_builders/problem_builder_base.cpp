@@ -93,10 +93,10 @@ ProblemBuilder::AddFESpace(std::string fespace_name, std::string fec_name, int v
     {
       MFEM_ABORT("ParMesh not found when trying to add " << fespace_name << " to fespaces.");
     }
-    auto * pfes = new mfem::ParFiniteElementSpace(
+    auto pfes = std::make_shared<mfem::ParFiniteElementSpace>(
         GetProblem()->_pmesh.get(), GetProblem()->_fecs.Get(fec_name), vdim, ordering);
 
-    GetProblem()->_fespaces.Register(fespace_name, pfes, true);
+    GetProblem()->_fespaces.Register(fespace_name, std::move(pfes));
   }
 }
 
@@ -117,10 +117,10 @@ ProblemBuilder::AddGridFunction(std::string gridfunction_name, std::string fespa
                           << " associated with it into gridfunctions. Please add " << fespace_name
                           << " to fespaces before adding this gridfunction.");
   }
-  auto * gridfunc = new mfem::ParGridFunction(fespace);
+  auto gridfunc = std::make_shared<mfem::ParGridFunction>(fespace);
   *gridfunc = 0.0;
 
-  GetProblem()->_gridfunctions.Register(gridfunction_name, gridfunc, true);
+  GetProblem()->_gridfunctions.Register(gridfunction_name, std::move(gridfunc));
 }
 
 void
@@ -133,7 +133,7 @@ ProblemBuilder::AddBoundaryCondition(std::string bc_name,
                                       " has already been added to the problem boundary conditions.";
     mfem::mfem_error(error_message.c_str());
   }
-  GetProblem()->bc_map.Register(bc_name, std::move(bc));
+  GetProblem()->_bc_map.Register(bc_name, std::move(bc));
 }
 
 void
@@ -145,7 +145,7 @@ ProblemBuilder::AddAuxSolver(std::string auxsolver_name, std::shared_ptr<hephaes
                                       " has already been added to the problem preprocessors.";
     mfem::mfem_error(error_message.c_str());
   }
-  GetProblem()->preprocessors.Register(auxsolver_name, std::move(aux));
+  GetProblem()->_preprocessors.Register(auxsolver_name, std::move(aux));
 }
 
 void
@@ -158,7 +158,7 @@ ProblemBuilder::AddPostprocessor(std::string auxsolver_name,
                                       " has already been added to the problem postprocessors.";
     mfem::mfem_error(error_message.c_str());
   }
-  GetProblem()->postprocessors.Register(auxsolver_name, std::move(aux));
+  GetProblem()->_postprocessors.Register(auxsolver_name, std::move(aux));
 }
 
 void
@@ -170,7 +170,7 @@ ProblemBuilder::AddSource(std::string source_name, std::shared_ptr<hephaestus::S
         "A source with the name " + source_name + " has already been added to the problem sources.";
     mfem::mfem_error(error_message.c_str());
   }
-  GetProblem()->sources.Register(source_name, std::move(source));
+  GetProblem()->_sources.Register(source_name, std::move(source));
 }
 
 void
