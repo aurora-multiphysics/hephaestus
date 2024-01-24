@@ -173,29 +173,29 @@ AVEquationSystem::AddKernels()
   hephaestus::InputParameters weak_curl_curl_params;
   weak_curl_curl_params.SetParam("CoupledVariableName", _a_name);
   weak_curl_curl_params.SetParam("CoefficientName", _alpha_coef_name);
-  AddKernel(da_dt_name, std::make_unique<hephaestus::WeakCurlCurlKernel>(weak_curl_curl_params));
+  AddKernel(da_dt_name, std::make_shared<hephaestus::WeakCurlCurlKernel>(weak_curl_curl_params));
 
   // (αdt∇×dA/dt_{n+1}, ∇×A')
   hephaestus::InputParameters curl_curl_params;
   curl_curl_params.SetParam("CoefficientName", _dtalpha_coef_name);
-  AddKernel(da_dt_name, std::make_unique<hephaestus::CurlCurlKernel>(curl_curl_params));
+  AddKernel(da_dt_name, std::make_shared<hephaestus::CurlCurlKernel>(curl_curl_params));
 
   // (βdA/dt_{n+1}, A')
   hephaestus::InputParameters vector_fe_mass_params;
   vector_fe_mass_params.SetParam("CoefficientName", _beta_coef_name);
-  AddKernel(da_dt_name, std::make_unique<hephaestus::VectorFEMassKernel>(vector_fe_mass_params));
+  AddKernel(da_dt_name, std::make_shared<hephaestus::VectorFEMassKernel>(vector_fe_mass_params));
 
   // (σ ∇ V, dA'/dt)
   hephaestus::InputParameters mixed_vector_gradient_params;
   mixed_vector_gradient_params.SetParam("CoefficientName", _beta_coef_name);
   AddKernel(_v_name,
             da_dt_name,
-            std::make_unique<hephaestus::MixedVectorGradientKernel>(mixed_vector_gradient_params));
+            std::make_shared<hephaestus::MixedVectorGradientKernel>(mixed_vector_gradient_params));
 
   // (σ ∇ V, ∇ V')
   hephaestus::InputParameters diffusion_params;
   diffusion_params.SetParam("CoefficientName", _beta_coef_name);
-  AddKernel(_v_name, std::make_unique<hephaestus::DiffusionKernel>(diffusion_params));
+  AddKernel(_v_name, std::make_shared<hephaestus::DiffusionKernel>(diffusion_params));
 
   // (σdA/dt, ∇ V')
   hephaestus::InputParameters vector_fe_weak_divergence_params;
@@ -203,7 +203,7 @@ AVEquationSystem::AddKernels()
   AddKernel(
       da_dt_name,
       _v_name,
-      std::make_unique<hephaestus::VectorFEWeakDivergenceKernel>(vector_fe_weak_divergence_params));
+      std::make_shared<hephaestus::VectorFEWeakDivergenceKernel>(vector_fe_weak_divergence_params));
 }
 
 AVOperator::AVOperator(mfem::ParMesh & pmesh,
