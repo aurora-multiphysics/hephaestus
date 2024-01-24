@@ -47,8 +47,7 @@ public:
   void AddKernel(const std::string & test_var_name,
                  std::shared_ptr<ParBilinearFormKernel> blf_kernel);
 
-  void AddKernel(const std::string & test_var_name,
-                 std::shared_ptr<ParLinearFormKernel> lf_kernel);
+  void AddKernel(const std::string & test_var_name, std::shared_ptr<ParLinearFormKernel> lf_kernel);
 
   void AddKernel(const std::string & test_var_name,
                  std::shared_ptr<ParNonlinearFormKernel> nlf_kernel);
