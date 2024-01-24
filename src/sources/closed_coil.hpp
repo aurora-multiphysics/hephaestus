@@ -97,7 +97,9 @@ private:
   mfem::ParFiniteElementSpace * _h_curl_fe_space_parent{nullptr};
   mfem::ParFiniteElementSpace * _h1_fe_space_parent{nullptr};
 
+  // Finite element collections
   std::unique_ptr<mfem::H1_FECollection> _h1_fe_space_parent_fec{nullptr};
+  std::unique_ptr<mfem::H1_FECollection> _h1_fe_space_coil_fec{nullptr};
 
   // In case J transfer is true
   std::unique_ptr<mfem::ParGridFunction> _grad_phi_t_parent{nullptr};
