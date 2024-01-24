@@ -545,7 +545,7 @@ ClosedCoilSolver::AuxCurrentScale()
   hephaestus::Coefficients aux_coef;
   aux_coef._scalars.Register("electrical_conductivity", _sigma, false);
 
-  hephaestus::ScaledCurlVectorGridFunctionAux auxsolver(
+  hephaestus::ScaledVectorGridFunctionAux auxsolver(
       "grad_phi", "transfer_current_density", "electrical_conductivity", -1.0, _solver_options);
   auxsolver.Init(aux_gf, aux_coef);
   auxsolver.Solve(0);
