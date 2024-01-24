@@ -82,10 +82,10 @@ public:
     GetProblem()->GetEquationSystem()->AddKernel(var_name, std::unique_ptr<Kernel<T>>(kernel));
   }
 
-  void AddBoundaryCondition(std::string bc_name, hephaestus::BoundaryCondition * bc, bool own_data);
-  void AddAuxSolver(std::string auxsolver_name, hephaestus::AuxSolver * aux, bool own_data);
+  void AddBoundaryCondition(std::string bc_name, std::shared_ptr<hephaestus::BoundaryCondition> bc);
+  void AddAuxSolver(std::string auxsolver_name, std::shared_ptr<hephaestus::AuxSolver> aux);
   void AddPostprocessor(std::string auxsolver_name, std::shared_ptr<hephaestus::AuxSolver> aux);
-  void AddSource(std::string source_name, hephaestus::Source * source, bool own_data);
+  void AddSource(std::string source_name, std::shared_ptr<hephaestus::Source> source);
 
   virtual void RegisterFESpaces() = 0;
   virtual void RegisterGridFunctions() = 0;

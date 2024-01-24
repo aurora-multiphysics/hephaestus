@@ -125,8 +125,7 @@ ProblemBuilder::AddGridFunction(std::string gridfunction_name, std::string fespa
 
 void
 ProblemBuilder::AddBoundaryCondition(std::string bc_name,
-                                     hephaestus::BoundaryCondition * bc,
-                                     bool own_data)
+                                     std::shared_ptr<hephaestus::BoundaryCondition> bc)
 {
   if (GetProblem()->_bc_map.Has(bc_name))
   {
@@ -134,11 +133,11 @@ ProblemBuilder::AddBoundaryCondition(std::string bc_name,
                                       " has already been added to the problem boundary conditions.";
     mfem::mfem_error(error_message.c_str());
   }
-  GetProblem()->_bc_map.Register(bc_name, bc, own_data);
+  GetProblem()->bc_map.Register(bc_name, std::move(bc));
 }
 
 void
-ProblemBuilder::AddAuxSolver(std::string auxsolver_name, hephaestus::AuxSolver * aux, bool own_data)
+ProblemBuilder::AddAuxSolver(std::string auxsolver_name, std::shared_ptr<hephaestus::AuxSolver> aux)
 {
   if (GetProblem()->_preprocessors.Has(auxsolver_name))
   {
@@ -146,7 +145,7 @@ ProblemBuilder::AddAuxSolver(std::string auxsolver_name, hephaestus::AuxSolver *
                                       " has already been added to the problem preprocessors.";
     mfem::mfem_error(error_message.c_str());
   }
-  GetProblem()->_preprocessors.Register(auxsolver_name, aux, own_data);
+  GetProblem()->preprocessors.Register(auxsolver_name, std::move(aux));
 }
 
 void
@@ -163,7 +162,7 @@ ProblemBuilder::AddPostprocessor(std::string auxsolver_name,
 }
 
 void
-ProblemBuilder::AddSource(std::string source_name, hephaestus::Source * source, bool own_data)
+ProblemBuilder::AddSource(std::string source_name, std::shared_ptr<hephaestus::Source> source)
 {
   if (GetProblem()->_sources.Has(source_name))
   {
@@ -171,7 +170,7 @@ ProblemBuilder::AddSource(std::string source_name, hephaestus::Source * source, 
         "A source with the name " + source_name + " has already been added to the problem sources.";
     mfem::mfem_error(error_message.c_str());
   }
-  GetProblem()->_sources.Register(source_name, source, own_data);
+  GetProblem()->sources.Register(source_name, std::move(source));
 }
 
 void
