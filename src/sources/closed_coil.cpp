@@ -345,6 +345,12 @@ ClosedCoilSolver::PrepareCoilSubmesh()
   _grad_phi_aux_coil = std::make_unique<mfem::ParGridFunction>(_grad_phi_aux_coil_fes.get());
   *_grad_phi_aux_coil = 0.0;
 
+  _h1_fe_space_coil_fec =
+      std::make_unique<mfem::H1_FECollection>(_order_h1, _mesh_coil->Dimension());
+
+  _h1_fe_space_coil =
+      std::make_unique<mfem::ParFiniteElementSpace>(_mesh_coil.get(), _h1_fe_space_coil_fec.get());
+
   _v_coil = std::make_unique<mfem::ParGridFunction>(_h1_fe_space_coil.get());
   *_v_coil = 0.0;
 
