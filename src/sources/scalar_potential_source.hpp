@@ -65,4 +65,4 @@ public:
   int _ir_order, _geom;
 };
 
-}; // namespace hephaestus
+} // namespace hephaestus

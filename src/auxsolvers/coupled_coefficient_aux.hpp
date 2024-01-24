@@ -26,7 +26,7 @@ public:
 
   double Eval(mfem::ElementTransformation & T, const mfem::IntegrationPoint & ip) override;
 
-  void Solve(double t = 0.0) override{};
+  void Solve(double t = 0.0) override {}
 
   std::string _coupled_var_name; // name of the variable
 };

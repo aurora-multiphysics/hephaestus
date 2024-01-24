@@ -607,4 +607,4 @@ Plane3D::Side(const mfem::Vector v)
     return 0;
 }
 
-}; // namespace hephaestus
+} // namespace hephaestus

@@ -23,4 +23,4 @@ public:
   mfem::Coefficient * _coef;
 };
 
-}; // namespace hephaestus
+} // namespace hephaestus

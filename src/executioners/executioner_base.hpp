@@ -8,7 +8,7 @@ class Executioner
 {
 public:
   Executioner() = default;
-  explicit Executioner(const hephaestus::InputParameters & params){};
+  explicit Executioner(const hephaestus::InputParameters & params) {}
 
   virtual ~Executioner() = default;
 

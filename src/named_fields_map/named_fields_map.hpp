@@ -148,4 +148,4 @@ private:
   MapType _field_map{};
   std::map<std::string, std::shared_ptr<T>> _stored_ptrs_map{};
 };
-}; // namespace hephaestus
+} // namespace hephaestus

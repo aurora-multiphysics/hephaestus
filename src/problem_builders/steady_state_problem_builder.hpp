@@ -21,7 +21,7 @@ public:
 class SteadyStateProblemBuilder : public hephaestus::ProblemBuilder
 {
 public:
-  SteadyStateProblemBuilder() : _problem(std::make_unique<hephaestus::SteadyStateProblem>()){};
+  SteadyStateProblemBuilder() : _problem(std::make_unique<hephaestus::SteadyStateProblem>()) {}
 
   ~SteadyStateProblemBuilder() override = default;
 
@@ -30,23 +30,23 @@ public:
     return std::move(_problem);
   };
 
-  void RegisterFESpaces() override{};
+  void RegisterFESpaces() override {}
 
-  void RegisterGridFunctions() override{};
+  void RegisterGridFunctions() override {}
 
-  void RegisterAuxSolvers() override{};
+  void RegisterAuxSolvers() override {}
 
-  void RegisterCoefficients() override{};
+  void RegisterCoefficients() override {}
 
   void InitializeKernels() override;
 
-  void ConstructEquationSystem() override{};
+  void ConstructEquationSystem() override {}
 
   void ConstructOperator() override;
 
   void ConstructState() override;
 
-  void ConstructSolver() override{};
+  void ConstructSolver() override {}
 
 protected:
   std::unique_ptr<hephaestus::SteadyStateProblem> _problem{nullptr};
