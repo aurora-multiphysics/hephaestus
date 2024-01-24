@@ -28,4 +28,4 @@ public:
   std::unique_ptr<mfem::ParMixedBilinearForm> _weak_curl;
 };
 
-}; // namespace hephaestus
+} // namespace hephaestus

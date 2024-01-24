@@ -25,4 +25,4 @@ public:
   virtual void Apply(T * form) = 0;
 };
 
-}; // namespace hephaestus
+} // namespace hephaestus

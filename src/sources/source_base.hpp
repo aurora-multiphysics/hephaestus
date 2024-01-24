@@ -27,4 +27,4 @@ public:
   virtual void SubtractSource(mfem::ParGridFunction * gf) = 0;
 };
 
-}; // namespace hephaestus
+} // namespace hephaestus

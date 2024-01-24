@@ -50,4 +50,4 @@ public:
   mfem::Solver * _solver{nullptr};
 };
 
-}; // namespace hephaestus
+} // namespace hephaestus
