@@ -151,8 +151,7 @@ ProblemBuilder::AddAuxSolver(std::string auxsolver_name, hephaestus::AuxSolver *
 
 void
 ProblemBuilder::AddPostprocessor(std::string auxsolver_name,
-                                 hephaestus::AuxSolver * aux,
-                                 bool own_data)
+                                 std::shared_ptr<hephaestus::AuxSolver> aux)
 {
   if (GetProblem()->_postprocessors.Has(auxsolver_name))
   {
@@ -160,7 +159,7 @@ ProblemBuilder::AddPostprocessor(std::string auxsolver_name,
                                       " has already been added to the problem postprocessors.";
     mfem::mfem_error(error_message.c_str());
   }
-  GetProblem()->_postprocessors.Register(auxsolver_name, aux, own_data);
+  GetProblem()->postprocessors.Register(auxsolver_name, std::move(aux));
 }
 
 void

@@ -84,7 +84,7 @@ public:
 
   void AddBoundaryCondition(std::string bc_name, hephaestus::BoundaryCondition * bc, bool own_data);
   void AddAuxSolver(std::string auxsolver_name, hephaestus::AuxSolver * aux, bool own_data);
-  void AddPostprocessor(std::string auxsolver_name, hephaestus::AuxSolver * aux, bool own_data);
+  void AddPostprocessor(std::string auxsolver_name, std::shared_ptr<hephaestus::AuxSolver> aux);
   void AddSource(std::string source_name, hephaestus::Source * source, bool own_data);
 
   virtual void RegisterFESpaces() = 0;
