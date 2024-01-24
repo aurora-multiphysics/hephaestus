@@ -141,15 +141,15 @@ main(int argc, char * argv[])
   problem_builder->RegisterMagneticFluxDensityAux("magnetic_flux_density");
   hephaestus::Coefficients coefficients = defineCoefficients(itotal);
 
-  mfem::Array<int> A_DBC_bdr(3);
-  A_DBC_bdr[0] = 1;
-  A_DBC_bdr[1] = 2;
-  A_DBC_bdr[2] = 4;
+  mfem::Array<int> a_dbc_bdr(3);
+  a_dbc_bdr[0] = 1;
+  a_dbc_bdr[1] = 2;
+  a_dbc_bdr[2] = 4;
 
-  auto A_DBC = std::make_shared<hephaestus::VectorDirichletBC>(
-      "magnetic_vector_potential", A_DBC_bdr, new mfem::VectorFunctionCoefficient(3, constVec));
+  auto a_dbc = std::make_shared<hephaestus::VectorDirichletBC>(
+      "magnetic_vector_potential", a_dbc_bdr, new mfem::VectorFunctionCoefficient(3, constVec));
 
-  problem_builder->AddBoundaryCondition("A_DBC", A_DBC);
+  problem_builder->AddBoundaryCondition("a_dbc", a_dbc);
 
   problem_builder->SetCoefficients(coefficients);
 
