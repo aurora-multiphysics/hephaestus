@@ -30,12 +30,12 @@ protected:
     sigma_air = 1.0e-6 * sigma;
 
     hephaestus::Subdomain wire("wire", 1);
-    wire._scalar_coefficients.Register(
-        "electrical_conductivity", new mfem::ConstantCoefficient(sigma), true);
+    wire._scalar_coefficients.Register("electrical_conductivity",
+                                       std::make_shared<mfem::ConstantCoefficient>(sigma));
 
     hephaestus::Subdomain air("air", 2);
-    air._scalar_coefficients.Register(
-        "electrical_conductivity", new mfem::ConstantCoefficient(sigma_air), true);
+    air._scalar_coefficients.Register("electrical_conductivity",
+                                      std::make_shared<mfem::ConstantCoefficient>(sigma_air));
 
     hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({wire, air}));
 
@@ -46,40 +46,38 @@ protected:
     //     true);
 
     hephaestus::BCMap bc_map;
-    auto * hdot_vec_coef = new mfem::VectorFunctionCoefficient(3, HdotBc);
-    bc_map.Register("tangential_dHdt",
-                    new hephaestus::VectorDirichletBC(std::string("dmagnetic_field_dt"),
-                                                      mfem::Array<int>({1, 2, 3}),
-                                                      hdot_vec_coef),
-                    true);
-    coefficients._vectors.Register("surface_tangential_dHdt", hdot_vec_coef, true);
-    coefficients._scalars.Register(
-        "magnetic_permeability", new mfem::ConstantCoefficient(1.0), true);
+    auto hdot_vec_coef = std::make_shared<mfem::VectorFunctionCoefficient>(3, HdotBc);
+    bc_map.Register(
+        "tangential_dHdt",
+        std::make_shared<hephaestus::VectorDirichletBC>(
+            std::string("dmagnetic_field_dt"), mfem::Array<int>({1, 2, 3}), hdot_vec_coef.get()));
+    coefficients._vectors.Register("surface_tangential_dHdt", hdot_vec_coef);
+    coefficients._scalars.Register("magnetic_permeability",
+                                   std::make_shared<mfem::ConstantCoefficient>(1.0));
 
     mfem::Array<int> high_terminal(1);
     high_terminal[0] = 1;
     bc_map.Register("high_potential",
-                    new hephaestus::ScalarDirichletBC(
+                    std::make_shared<hephaestus::ScalarDirichletBC>(
                         std::string("magnetic_potential"),
                         high_terminal,
-                        std::make_shared<mfem::FunctionCoefficient>(PotentialHigh)),
-                    true);
+                        std::make_shared<mfem::FunctionCoefficient>(PotentialHigh)));
 
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 2;
     bc_map.Register("ground_potential",
-                    new hephaestus::ScalarDirichletBC(
+                    std::make_shared<hephaestus::ScalarDirichletBC>(
                         std::string("magnetic_potential"),
                         ground_terminal,
-                        std::make_shared<mfem::FunctionCoefficient>(PotentialGround)),
-                    true);
+                        std::make_shared<mfem::FunctionCoefficient>(PotentialGround)));
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./cylinder-hex-q2.gen")).c_str(), 1, 1);
 
     hephaestus::Outputs outputs;
-    outputs.Register("VisItDataCollection", new mfem::VisItDataCollection("HFormVisIt"), true);
-    outputs.Register(
-        "ParaViewDataCollection", new mfem::ParaViewDataCollection("HFormParaView"), true);
+    outputs.Register("VisItDataCollection",
+                     std::make_shared<mfem::VisItDataCollection>("HFormVisIt"));
+    outputs.Register("ParaViewDataCollection",
+                     std::make_shared<mfem::ParaViewDataCollection>("HFormParaView"));
 
     hephaestus::InputParameters solver_options;
     solver_options.SetParam("Tolerance", float(1.0e-16));
@@ -103,7 +101,8 @@ protected:
     current_solver_options.SetParam("PrintLevel", 0);
     scalar_potential_source_params.SetParam("SolverOptions", current_solver_options);
     sources.Register(
-        "source", new hephaestus::ScalarPotentialSource(scalar_potential_source_params), true);
+        "source",
+        std::make_shared<hephaestus::ScalarPotentialSource>(scalar_potential_source_params));
 
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
