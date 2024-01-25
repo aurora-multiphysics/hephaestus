@@ -137,18 +137,6 @@ ProblemBuilder::AddBoundaryCondition(std::string bc_name,
 }
 
 void
-ProblemBuilder::AddAuxSolver(std::string auxsolver_name, hephaestus::AuxSolver * aux, bool own_data)
-{
-  if (GetProblem()->_preprocessors.Has(auxsolver_name))
-  {
-    const std::string error_message = "An auxsolver with the name " + auxsolver_name +
-                                      " has already been added to the problem preprocessors.";
-    mfem::mfem_error(error_message.c_str());
-  }
-  GetProblem()->_preprocessors.Register(auxsolver_name, aux, own_data);
-}
-
-void
 ProblemBuilder::AddAuxSolver(std::string auxsolver_name, std::shared_ptr<hephaestus::AuxSolver> aux)
 {
   if (GetProblem()->_preprocessors.Has(auxsolver_name))

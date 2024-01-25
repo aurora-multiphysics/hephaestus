@@ -83,7 +83,6 @@ public:
   }
 
   void AddBoundaryCondition(std::string bc_name, std::shared_ptr<hephaestus::BoundaryCondition> bc);
-  void AddAuxSolver(std::string auxsolver_name, hephaestus::AuxSolver * aux, bool own_data);
   void AddAuxSolver(std::string auxsolver_name, std::shared_ptr<hephaestus::AuxSolver> aux);
   void AddPostprocessor(std::string auxsolver_name, std::shared_ptr<hephaestus::AuxSolver> aux);
   void AddSource(std::string source_name, std::shared_ptr<hephaestus::Source> source);
