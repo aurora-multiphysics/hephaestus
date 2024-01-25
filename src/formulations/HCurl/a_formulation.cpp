@@ -36,10 +36,12 @@ AFormulation::RegisterCurrentDensityAux(const std::string & j_field_name)
   //* Current density J = Jᵉ -σdA/dt
   //* Induced electric field, Jind = -σdA/dt
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
-  auxsolvers.Register(
-      j_field_name,
-      std::make_shared<hephaestus::ScaledVectorGridFunctionAux>(
-          GetTimeDerivativeName(_h_curl_var_name), j_field_name, _electric_conductivity_name, -1.0));
+  auxsolvers.Register(j_field_name,
+                      std::make_shared<hephaestus::ScaledVectorGridFunctionAux>(
+                          GetTimeDerivativeName(_h_curl_var_name),
+                          j_field_name,
+                          _electric_conductivity_name,
+                          -1.0));
 }
 
 void
@@ -59,7 +61,7 @@ AFormulation::RegisterElectricFieldAux(const std::string & e_field_name)
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
 
   auxsolvers.Register(e_field_name,
-std::make_shared<hephaestus::ScaledVectorGridFunctionAux>(
+                      std::make_shared<hephaestus::ScaledVectorGridFunctionAux>(
                           GetTimeDerivativeName(_h_curl_var_name), e_field_name, "_one", -1.0));
 }
 
