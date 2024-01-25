@@ -146,8 +146,10 @@ main(int argc, char * argv[])
   a_dbc_bdr[1] = 2;
   a_dbc_bdr[2] = 4;
 
+  auto vector_func_coefficient = std::make_unique<mfem::VectorFunctionCoefficient>(3, constVec);
+
   auto a_dbc = std::make_shared<hephaestus::VectorDirichletBC>(
-      "magnetic_vector_potential", a_dbc_bdr, new mfem::VectorFunctionCoefficient(3, constVec));
+      "magnetic_vector_potential", a_dbc_bdr, vector_func_coefficient.get());
 
   problem_builder->AddBoundaryCondition("a_dbc", a_dbc);
 
