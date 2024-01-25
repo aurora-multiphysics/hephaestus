@@ -28,7 +28,7 @@ public:
   template <class FieldType, class... FieldArgs>
   void Register(const std::string & field_name, FieldArgs &&... args)
   {
-    Register(field_name, new FieldType(std::forward<FieldArgs>(args)...), true);
+    Register(field_name, std::make_shared<FieldType>(std::forward<FieldArgs>(args)...));
   }
 
   /// Register association between field @a field and name @a field_name
