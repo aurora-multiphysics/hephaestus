@@ -75,13 +75,6 @@ public:
     GetProblem()->GetEquationSystem()->AddKernel(var_name, std::move(kernel));
   }
 
-  template <class T>
-  void AddKernel(std::string var_name, hephaestus::Kernel<T> * kernel)
-  {
-    GetProblem()->GetEquationSystem()->AddVariableNameIfMissing(var_name);
-    GetProblem()->GetEquationSystem()->AddKernel(var_name, std::shared_ptr<Kernel<T>>(kernel));
-  }
-
   void AddBoundaryCondition(std::string bc_name, std::shared_ptr<hephaestus::BoundaryCondition> bc);
   void AddAuxSolver(std::string auxsolver_name, std::shared_ptr<hephaestus::AuxSolver> aux);
   void AddPostprocessor(std::string auxsolver_name, std::shared_ptr<hephaestus::AuxSolver> aux);
