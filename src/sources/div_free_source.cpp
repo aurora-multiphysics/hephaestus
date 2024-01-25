@@ -58,15 +58,14 @@ DivFreeSource::Init(hephaestus::GridFunctions & gridfunctions,
     MFEM_ABORT("SOURCE NOT FOUND");
   }
 
-  // NB: Register must be false to avoid double-free.
-  _div_free_src_gf = std::make_unique<mfem::ParGridFunction>(_h_curl_fe_space);
-  gridfunctions.Register(_src_gf_name, _div_free_src_gf.get(), false);
+  _div_free_src_gf = std::make_shared<mfem::ParGridFunction>(_h_curl_fe_space);
+  gridfunctions.Register(_src_gf_name, _div_free_src_gf);
 
-  _g = std::make_unique<mfem::ParGridFunction>(_h_curl_fe_space);
-  gridfunctions.Register("_user_source", _g.get(), false);
+  _g = std::make_shared<mfem::ParGridFunction>(_h_curl_fe_space);
+  gridfunctions.Register("_user_source", _g);
 
-  _q = std::make_unique<mfem::ParGridFunction>(_h1_fe_space);
-  gridfunctions.Register(_potential_gf_name, _q.get(), false);
+  _q = std::make_shared<mfem::ParGridFunction>(_h1_fe_space);
+  gridfunctions.Register(_potential_gf_name, _q);
 
   _bc_map = &bc_map;
   _gridfunctions = &gridfunctions;
