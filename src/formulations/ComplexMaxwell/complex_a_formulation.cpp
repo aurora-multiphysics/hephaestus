@@ -30,14 +30,12 @@ ComplexAFormulation::RegisterCurrentDensityAux(const std::string & j_field_real_
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(
       j_field_imag_name,
-      new hephaestus::ScaledVectorGridFunctionAux(
-          _magnetic_vector_potential_real_name, j_field_imag_name, _loss_coef_name, -1.0),
-      true);
+      std::make_shared<hephaestus::ScaledVectorGridFunctionAux>(
+          _magnetic_vector_potential_real_name, j_field_imag_name, _loss_coef_name, -1.0));
   auxsolvers.Register(
       j_field_real_name,
-      new hephaestus::ScaledVectorGridFunctionAux(
-          _magnetic_vector_potential_imag_name, j_field_real_name, _loss_coef_name, 1.0),
-      true);
+      std::make_shared<hephaestus::ScaledVectorGridFunctionAux>(
+          _magnetic_vector_potential_imag_name, j_field_real_name, _loss_coef_name, 1.0));
 };
 
 void
@@ -46,14 +44,12 @@ ComplexAFormulation::RegisterMagneticFluxDensityAux(const std::string & b_field_
 {
   //* Magnetic flux density B = curl A
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
-  auxsolvers.Register(
-      b_field_real_name,
-      new hephaestus::CurlAuxSolver(_magnetic_vector_potential_real_name, b_field_real_name),
-      true);
-  auxsolvers.Register(
-      b_field_imag_name,
-      new hephaestus::CurlAuxSolver(_magnetic_vector_potential_imag_name, b_field_imag_name),
-      true);
+  auxsolvers.Register(b_field_real_name,
+                      std::make_shared<hephaestus::CurlAuxSolver>(
+                          _magnetic_vector_potential_real_name, b_field_real_name));
+  auxsolvers.Register(b_field_imag_name,
+                      std::make_shared<hephaestus::CurlAuxSolver>(
+                          _magnetic_vector_potential_imag_name, b_field_imag_name));
 }
 
 void
@@ -64,14 +60,12 @@ ComplexAFormulation::RegisterElectricFieldAux(const std::string & e_field_real_n
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(
       e_field_imag_name,
-      new hephaestus::ScaledVectorGridFunctionAux(
-          _magnetic_vector_potential_real_name, e_field_imag_name, "_angular_frequency", -1.0),
-      true);
+      std::make_shared<hephaestus::ScaledVectorGridFunctionAux>(
+          _magnetic_vector_potential_real_name, e_field_imag_name, "_angular_frequency", -1.0));
   auxsolvers.Register(
       e_field_real_name,
-      new hephaestus::ScaledVectorGridFunctionAux(
-          _magnetic_vector_potential_imag_name, e_field_real_name, "_angular_frequency", 1.0),
-      true);
+      std::make_shared<hephaestus::ScaledVectorGridFunctionAux>(
+          _magnetic_vector_potential_imag_name, e_field_real_name, "_angular_frequency", 1.0));
 }
 
 // Enable auxiliary calculation of P ∈ L2
@@ -84,17 +78,16 @@ ComplexAFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_
 {
   //* Time averaged Joule heating density = E.J
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
-  auxsolvers.Register(
-      p_field_name,
-      new hephaestus::VectorGridFunctionDotProductAux(p_field_name,
-                                                      p_field_name,
-                                                      _loss_coef_name,
-                                                      _magnetic_vector_potential_real_name,
-                                                      _magnetic_vector_potential_real_name,
-                                                      _magnetic_vector_potential_imag_name,
-                                                      _magnetic_vector_potential_imag_name,
-                                                      true),
-      true);
+  auxsolvers.Register(p_field_name,
+                      std::make_shared<hephaestus::VectorGridFunctionDotProductAux>(
+                          p_field_name,
+                          p_field_name,
+                          _loss_coef_name,
+                          _magnetic_vector_potential_real_name,
+                          _magnetic_vector_potential_real_name,
+                          _magnetic_vector_potential_imag_name,
+                          _magnetic_vector_potential_imag_name,
+                          true));
   auxsolvers.Get(p_field_name)->SetPriority(2);
 }
 

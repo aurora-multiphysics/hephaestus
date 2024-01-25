@@ -106,9 +106,8 @@ VectorGridFunctionDotProductAux::Init(const hephaestus::GridFunctions & gridfunc
   }
 
   coefficients._scalars.Register(_coef_name,
-                                 new VectorGridFunctionDotProductCoefficient(
-                                     *_scaling_coef, _u_gf_re, _v_gf_re, _u_gf_im, _v_gf_im),
-                                 true);
+                                 std::make_shared<VectorGridFunctionDotProductCoefficient>(
+                                     *_scaling_coef, _u_gf_re, _v_gf_re, _u_gf_im, _v_gf_im));
 
   CoefficientAux::Init(gridfunctions, coefficients);
 }

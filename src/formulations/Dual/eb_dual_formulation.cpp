@@ -23,9 +23,8 @@ EBDualFormulation::RegisterCurrentDensityAux(const std::string & j_field_name)
   //* Induced electric field, Jind = σE
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(j_field_name,
-                      new hephaestus::ScaledVectorGridFunctionAux(
-                          _h_curl_var_name, j_field_name, _electric_conductivity_name),
-                      true);
+                      std::make_shared<hephaestus::ScaledVectorGridFunctionAux>(
+                          _h_curl_var_name, j_field_name, _electric_conductivity_name));
 }
 
 void
@@ -36,9 +35,8 @@ EBDualFormulation::RegisterLorentzForceDensityAux(const std::string & f_field_na
   //* Lorentz force density = J x B
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(f_field_name,
-                      new hephaestus::VectorGridFunctionCrossProductAux(
-                          f_field_name, f_field_name, j_field_name, b_field_name),
-                      true);
+                      std::make_shared<hephaestus::VectorGridFunctionCrossProductAux>(
+                          f_field_name, f_field_name, j_field_name, b_field_name));
   auxsolvers.Get(f_field_name)->SetPriority(2);
 }
 
@@ -51,9 +49,8 @@ EBDualFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_na
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(
       p_field_name,
-      new hephaestus::VectorGridFunctionDotProductAux(
-          p_field_name, p_field_name, _electric_conductivity_name, e_field_name, e_field_name),
-      true);
+      std::make_shared<hephaestus::VectorGridFunctionDotProductAux>(
+          p_field_name, p_field_name, _electric_conductivity_name, e_field_name, e_field_name));
   auxsolvers.Get(p_field_name)->SetPriority(2);
 }
 
@@ -67,9 +64,8 @@ EBDualFormulation::RegisterCoefficients()
   }
   coefficients._scalars.Register(
       _magnetic_reluctivity_name,
-      new mfem::TransformedCoefficient(
-          &_one_coef, coefficients._scalars.Get(_magnetic_permeability_name), fracFunc),
-      true);
+      std::make_shared<mfem::TransformedCoefficient>(
+          &_one_coef, coefficients._scalars.Get(_magnetic_permeability_name), fracFunc));
   DualFormulation::RegisterCoefficients();
 }
 

@@ -56,8 +56,7 @@ VectorGridFunctionCrossProductAux::Init(const hephaestus::GridFunctions & gridfu
 
   coefficients._vectors.Register(
       _vec_coef_name,
-      new hephaestus::VectorGridFunctionCrossProductCoefficient(*_u_gf, *_v_gf),
-      true);
+      std::make_shared<hephaestus::VectorGridFunctionCrossProductCoefficient>(*_u_gf, *_v_gf));
 
   VectorCoefficientAux::Init(gridfunctions, coefficients);
 }

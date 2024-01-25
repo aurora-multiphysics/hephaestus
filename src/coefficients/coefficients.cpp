@@ -29,7 +29,7 @@ Coefficients::Coefficients(std::vector<Subdomain> subdomains_) : _subdomains(std
 void
 Coefficients::RegisterDefaultCoefficients()
 {
-  _scalars.Register("_one", new mfem::ConstantCoefficient(1.0), true);
+  _scalars.Register("_one", std::make_shared<mfem::ConstantCoefficient>(1.0));
 }
 
 void
@@ -82,8 +82,8 @@ Coefficients::AddGlobalCoefficientsFromSubdomains()
     }
     if (!_scalars.Has(scalar_property_name))
     {
-      _scalars.Register(
-          scalar_property_name, new mfem::PWCoefficient(subdomain_ids, subdomain_coefs), true);
+      _scalars.Register(scalar_property_name,
+                        std::make_shared<mfem::PWCoefficient>(subdomain_ids, subdomain_coefs));
     }
   }
 }

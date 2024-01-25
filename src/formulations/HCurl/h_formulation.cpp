@@ -32,8 +32,8 @@ HFormulation::RegisterCurrentDensityAux(const std::string & j_field_name)
 {
   //* Current density J = ∇×H
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
-  auxsolvers.Register(
-      j_field_name, new hephaestus::CurlAuxSolver(_h_curl_var_name, j_field_name), true);
+  auxsolvers.Register(j_field_name,
+                      std::make_shared<hephaestus::CurlAuxSolver>(_h_curl_var_name, j_field_name));
 }
 
 void
@@ -43,9 +43,8 @@ HFormulation::RegisterMagneticFluxDensityAux(const std::string & b_field_name)
   //* Induced flux density, B = μH
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(b_field_name,
-                      new hephaestus::ScaledVectorGridFunctionAux(
-                          _h_curl_var_name, b_field_name, _magnetic_permeability_name),
-                      true);
+                      std::make_shared<hephaestus::ScaledVectorGridFunctionAux>(
+                          _h_curl_var_name, b_field_name, _magnetic_permeability_name));
 }
 
 void
@@ -54,9 +53,8 @@ HFormulation::RegisterElectricFieldAux(const std::string & e_field_name)
   //* Electric field, E = ρ∇×H
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(e_field_name,
-                      new hephaestus::ScaledCurlVectorGridFunctionAux(
-                          _h_curl_var_name, e_field_name, _electric_resistivity_name),
-                      true);
+                      std::make_shared<hephaestus::ScaledCurlVectorGridFunctionAux>(
+                          _h_curl_var_name, e_field_name, _electric_resistivity_name));
 }
 
 void
@@ -73,9 +71,8 @@ HFormulation::RegisterLorentzForceDensityAux(const std::string & f_field_name,
   //* Lorentz force density = J x B
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(f_field_name,
-                      new hephaestus::VectorGridFunctionCrossProductAux(
-                          f_field_name, f_field_name, j_field_name, b_field_name),
-                      true);
+                      std::make_shared<hephaestus::VectorGridFunctionCrossProductAux>(
+                          f_field_name, f_field_name, j_field_name, b_field_name));
   auxsolvers.Get(f_field_name)->SetPriority(2);
 }
 
@@ -88,9 +85,8 @@ HFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_name,
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(
       p_field_name,
-      new hephaestus::VectorGridFunctionDotProductAux(
-          p_field_name, p_field_name, _electric_conductivity_name, e_field_name, e_field_name),
-      true);
+      std::make_shared<hephaestus::VectorGridFunctionDotProductAux>(
+          p_field_name, p_field_name, _electric_conductivity_name, e_field_name, e_field_name));
   auxsolvers.Get(p_field_name)->SetPriority(2);
 }
 
@@ -104,9 +100,8 @@ HFormulation::RegisterCoefficients()
   }
   coefficients._scalars.Register(
       _electric_resistivity_name,
-      new mfem::TransformedCoefficient(
-          &_one_coef, coefficients._scalars.Get(_electric_conductivity_name), fracFunc),
-      true);
+      std::make_shared<mfem::TransformedCoefficient>(
+          &_one_coef, coefficients._scalars.Get(_electric_conductivity_name), fracFunc));
   HCurlFormulation::RegisterCoefficients();
 }
 
