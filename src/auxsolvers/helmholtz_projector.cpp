@@ -51,6 +51,8 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
     _h_curl_fe_space = _div_free_src_gf->ParFESpace();
   }
 
+  std::unique_ptr<mfem::H1_FECollection> h1_fec{nullptr};
+
   _h1_fe_space = fespaces.Get(_h1_fespace_name);
   if (_h1_fe_space == nullptr)
   {
@@ -60,10 +62,10 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
 
     // Creates an H1 FES on the same mesh and with the same order as the HCurl
     // FES
-    _h1_fe_space = new mfem::ParFiniteElementSpace(
-        _h_curl_fe_space->GetParMesh(),
-        new mfem::H1_FECollection(_h_curl_fe_space->GetMaxElementOrder(),
-                                  _h_curl_fe_space->GetParMesh()->Dimension()));
+    h1_fec = std::make_unique<mfem::H1_FECollection>(_h_curl_fe_space->GetMaxElementOrder(),
+                                                     _h_curl_fe_space->GetParMesh()->Dimension());
+
+    _h1_fe_space = new mfem::ParFiniteElementSpace(_h_curl_fe_space->GetParMesh(), h1_fec.get());
   }
 
   _q = gridfunctions.Get(_gf_name);
