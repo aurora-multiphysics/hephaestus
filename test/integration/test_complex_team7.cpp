@@ -99,29 +99,35 @@ protected:
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team7.g")).c_str(), 1, 1);
 
     hephaestus::Outputs outputs;
-    outputs.Register(
-        "VisItDataCollection", new mfem::VisItDataCollection("ComplexMaxwellTeam7VisIt"), true);
+    outputs.Register("VisItDataCollection",
+                     std::make_shared<mfem::VisItDataCollection>("ComplexMaxwellTeam7VisIt"));
     outputs.Register("ParaViewDataCollection",
-                     new mfem::ParaViewDataCollection("ComplexMaxwellTeam7ParaView"),
-                     true);
+                     std::make_shared<mfem::ParaViewDataCollection>("ComplexMaxwellTeam7ParaView"));
 
     hephaestus::AuxSolvers postprocessors;
     hephaestus::AuxSolvers preprocessors;
 
     hephaestus::Sources sources;
-    auto * j_src_coef = new mfem::VectorFunctionCoefficient(3, SourceCurrent);
+
+    // NB: needs to live to end of program so register to keep non-zero reference count.
+    auto j_src_coef = std::make_shared<mfem::VectorFunctionCoefficient>(3, SourceCurrent);
+    coefficients._vectors.Register("source_coefficient", j_src_coef);
+
     mfem::Array<mfem::VectorCoefficient *> sourcecoefs(4);
-    sourcecoefs[0] = j_src_coef;
-    sourcecoefs[1] = j_src_coef;
-    sourcecoefs[2] = j_src_coef;
-    sourcecoefs[3] = j_src_coef;
+    sourcecoefs[0] = j_src_coef.get();
+    sourcecoefs[1] = j_src_coef.get();
+    sourcecoefs[2] = j_src_coef.get();
+    sourcecoefs[3] = j_src_coef.get();
+
     mfem::Array<int> coilsegments(4);
     coilsegments[0] = 3;
     coilsegments[1] = 4;
     coilsegments[2] = 5;
     coilsegments[3] = 6;
-    auto * j_src_restricted = new mfem::PWVectorCoefficient(3, coilsegments, sourcecoefs);
-    coefficients._vectors.Register("source", j_src_restricted, true);
+
+    auto j_src_restricted =
+        std::make_shared<mfem::PWVectorCoefficient>(3, coilsegments, sourcecoefs);
+    coefficients._vectors.Register("source", j_src_restricted);
 
     hephaestus::InputParameters div_free_source_params;
     div_free_source_params.SetParam("SourceName", std::string("source"));
