@@ -10,9 +10,9 @@ ScalarDirichletBC::ScalarDirichletBC(const std::string & name_, mfem::Array<int>
 
 ScalarDirichletBC::ScalarDirichletBC(const std::string & name_,
                                      mfem::Array<int> bdr_attributes_,
-                                     mfem::Coefficient * coeff_,
-                                     mfem::Coefficient * coeff_im_)
-  : EssentialBC(name_, bdr_attributes_), _coeff(coeff_), _coeff_im(coeff_im_)
+                                     std::shared_ptr<mfem::Coefficient> coeff_,
+                                     std::shared_ptr<mfem::Coefficient> coeff_im_)
+  : EssentialBC(name_, bdr_attributes_), _coeff(std::move(coeff_)), _coeff_im(std::move(coeff_im_))
 {
 }
 

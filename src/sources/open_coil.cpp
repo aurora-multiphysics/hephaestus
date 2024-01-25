@@ -185,8 +185,8 @@ OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters & params,
     _grad_phi_transfer(params.GetOptionalParam<bool>("GradPhiTransfer", true)),
     _coil_domains(std::move(coil_dom)),
     _elec_attrs(electrodes),
-    _high_src(highV),
-    _low_src(lowV),
+    _high_src(std::make_shared<mfem::FunctionCoefficient>(highV)),
+    _low_src(std::make_shared<mfem::FunctionCoefficient>(lowV)),
     _high_terminal(1),
     _low_terminal(1)
 {
@@ -372,11 +372,11 @@ void
 OpenCoilSolver::SPSCurrent()
 {
   _bc_maps.Register("high_potential",
-                    new hephaestus::ScalarDirichletBC(std::string("V"), _high_terminal, &_high_src),
+                    new hephaestus::ScalarDirichletBC(std::string("V"), _high_terminal, _high_src),
                     true);
 
   _bc_maps.Register("low_potential",
-                    new hephaestus::ScalarDirichletBC(std::string("V"), _low_terminal, &_low_src),
+                    new hephaestus::ScalarDirichletBC(std::string("V"), _low_terminal, _low_src),
                     true);
 
   // NB: register false to avoid double-free.

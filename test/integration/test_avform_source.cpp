@@ -71,13 +71,15 @@ protected:
 
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 1;
-    auto * ground_coeff = new mfem::FunctionCoefficient(PotentialGround);
+
+    auto ground_coeff = std::make_shared<mfem::FunctionCoefficient>(PotentialGround);
+
     bc_map.Register("ground_potential",
                     new hephaestus::ScalarDirichletBC(std::string("electric_potential"),
                                                       mfem::Array<int>({1, 2, 3}),
                                                       ground_coeff),
                     true);
-    coefficients._scalars.Register("ground_potential", ground_coeff, true);
+    coefficients._scalars.Register("ground_potential", ground_coeff);
 
     auto * a_exact = new mfem::VectorFunctionCoefficient(3, AExactExpr);
     coefficients._vectors.Register("a_exact_coeff", a_exact, true);

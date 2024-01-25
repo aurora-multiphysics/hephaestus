@@ -59,21 +59,21 @@ protected:
 
     mfem::Array<int> high_terminal(1);
     high_terminal[0] = 1;
-    auto * potential_src = new mfem::FunctionCoefficient(PotentialHigh);
+    auto potential_src = std::make_shared<mfem::FunctionCoefficient>(PotentialHigh);
     bc_map.Register("high_potential",
                     new hephaestus::ScalarDirichletBC(
                         std::string("electric_potential"), high_terminal, potential_src),
                     true);
-    coefficients._scalars.Register("source_potential", potential_src, true);
+    coefficients._scalars.Register("source_potential", potential_src);
 
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 2;
-    bc_map.Register(
-        "ground_potential",
-        new hephaestus::ScalarDirichletBC(std::string("electric_potential"),
-                                          ground_terminal,
-                                          new mfem::FunctionCoefficient(PotentialGround)),
-        true);
+    bc_map.Register("ground_potential",
+                    new hephaestus::ScalarDirichletBC(
+                        std::string("electric_potential"),
+                        ground_terminal,
+                        std::make_shared<mfem::FunctionCoefficient>(PotentialGround)),
+                    true);
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./cylinder-hex-q2.gen")).c_str(), 1, 1);
 

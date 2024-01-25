@@ -117,8 +117,8 @@ private:
   std::unique_ptr<mfem::ParGridFunction> _v{nullptr};
 
   // Child boundary condition objects
-  mfem::FunctionCoefficient _high_src;
-  mfem::FunctionCoefficient _low_src;
+  std::shared_ptr<mfem::FunctionCoefficient> _high_src{nullptr};
+  std::shared_ptr<mfem::FunctionCoefficient> _low_src{nullptr};
 
   mfem::Array<int> _high_terminal;
   mfem::Array<int> _low_terminal;

@@ -58,6 +58,7 @@ AFormulation::RegisterElectricFieldAux(const std::string & e_field_name)
   //* Total electric field, E = ρJᵉ -dA/dt
   //* Induced electric field, Eind = -dA/dt
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
+
   auxsolvers.Register(e_field_name,
                       new hephaestus::ScaledVectorGridFunctionAux(
                           GetTimeDerivativeName(_h_curl_var_name), e_field_name, "_one", -1.0),
