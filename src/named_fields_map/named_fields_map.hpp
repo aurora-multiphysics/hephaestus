@@ -50,6 +50,18 @@ public:
     }
   }
 
+  /// Register with a shared pointer (own_data = true).
+  void Register(const std::string & field_name, std::shared_ptr<T> field)
+  {
+    CheckForDoubleRegistration(field_name, field.get());
+
+    Deregister(field_name);
+
+    _field_map[field_name] = field.get();
+
+    _stored_ptrs_map[field_name] = std::move(field);
+  }
+
   /// Unregister association between field @a field and name @a field_name.
   void Deregister(const std::string & field_name)
   {

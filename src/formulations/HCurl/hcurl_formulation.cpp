@@ -133,18 +133,18 @@ CurlCurlEquationSystem::AddKernels()
   weak_curl_curl_params.SetParam("CoupledVariableName", _h_curl_var_name);
   weak_curl_curl_params.SetParam("CoefficientName", _alpha_coef_name);
   AddKernel(dh_curl_var_dt,
-            std::make_unique<hephaestus::WeakCurlCurlKernel>(weak_curl_curl_params));
+            std::make_shared<hephaestus::WeakCurlCurlKernel>(weak_curl_curl_params));
 
   // (αdt∇×du/dt_{n+1}, ∇×u')
   hephaestus::InputParameters curl_curl_params;
   curl_curl_params.SetParam("CoefficientName", _dtalpha_coef_name);
-  AddKernel(dh_curl_var_dt, std::make_unique<hephaestus::CurlCurlKernel>(curl_curl_params));
+  AddKernel(dh_curl_var_dt, std::make_shared<hephaestus::CurlCurlKernel>(curl_curl_params));
 
   // (βdu/dt_{n+1}, u')
   hephaestus::InputParameters vector_fe_mass_params;
   vector_fe_mass_params.SetParam("CoefficientName", _beta_coef_name);
   AddKernel(dh_curl_var_dt,
-            std::make_unique<hephaestus::VectorFEMassKernel>(vector_fe_mass_params));
+            std::make_shared<hephaestus::VectorFEMassKernel>(vector_fe_mass_params));
 }
 
 void

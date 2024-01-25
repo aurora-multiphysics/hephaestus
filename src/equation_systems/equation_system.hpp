@@ -45,17 +45,16 @@ public:
 
   // Add kernels.
   void AddKernel(const std::string & test_var_name,
-                 std::unique_ptr<ParBilinearFormKernel> && blf_kernel);
+                 std::shared_ptr<ParBilinearFormKernel> blf_kernel);
+
+  void AddKernel(const std::string & test_var_name, std::shared_ptr<ParLinearFormKernel> lf_kernel);
 
   void AddKernel(const std::string & test_var_name,
-                 std::unique_ptr<ParLinearFormKernel> && lf_kernel);
-
-  void AddKernel(const std::string & test_var_name,
-                 std::unique_ptr<ParNonlinearFormKernel> && nlf_kernel);
+                 std::shared_ptr<ParNonlinearFormKernel> nlf_kernel);
 
   void AddKernel(const std::string & trial_var_name,
                  const std::string & test_var_name,
-                 std::unique_ptr<ParMixedBilinearFormKernel> && mblf_kernel);
+                 std::shared_ptr<ParMixedBilinearFormKernel> mblf_kernel);
 
   virtual void ApplyBoundaryConditions(hephaestus::BCMap & bc_map);
 
@@ -93,14 +92,14 @@ protected:
 
   // Arrays to store kernels to act on each component of weak form. Named
   // according to test variable
-  hephaestus::NamedFieldsMap<std::vector<std::unique_ptr<ParBilinearFormKernel>>> _blf_kernels_map;
+  hephaestus::NamedFieldsMap<std::vector<std::shared_ptr<ParBilinearFormKernel>>> _blf_kernels_map;
 
-  hephaestus::NamedFieldsMap<std::vector<std::unique_ptr<ParLinearFormKernel>>> _lf_kernels_map;
+  hephaestus::NamedFieldsMap<std::vector<std::shared_ptr<ParLinearFormKernel>>> _lf_kernels_map;
 
-  hephaestus::NamedFieldsMap<std::vector<std::unique_ptr<ParNonlinearFormKernel>>> _nlf_kernels_map;
+  hephaestus::NamedFieldsMap<std::vector<std::shared_ptr<ParNonlinearFormKernel>>> _nlf_kernels_map;
 
   hephaestus::NamedFieldsMap<
-      hephaestus::NamedFieldsMap<std::vector<std::unique_ptr<ParMixedBilinearFormKernel>>>>
+      hephaestus::NamedFieldsMap<std::vector<std::shared_ptr<ParMixedBilinearFormKernel>>>>
       _mblf_kernels_map_map;
 };
 
