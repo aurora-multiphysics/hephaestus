@@ -8,12 +8,16 @@ const double eps{1e-10};
 TEST_CASE("CoefficientsTest", "[CheckData]")
 {
   hephaestus::Subdomain wire("wire", 1);
-  wire._scalar_coefficients.Register("property_one", new mfem::ConstantCoefficient(1.0), true);
-  wire._scalar_coefficients.Register("property_two", new mfem::ConstantCoefficient(150.0), true);
+  wire._scalar_coefficients.Register("property_one",
+                                     std::make_shared<mfem::ConstantCoefficient>(1.0));
+  wire._scalar_coefficients.Register("property_two",
+                                     std::make_shared<mfem::ConstantCoefficient>(150.0));
 
   hephaestus::Subdomain air("air", 2);
-  air._scalar_coefficients.Register("property_one", new mfem::ConstantCoefficient(26.0), true);
-  air._scalar_coefficients.Register("property_two", new mfem::ConstantCoefficient(152.0), true);
+  air._scalar_coefficients.Register("property_one",
+                                    std::make_shared<mfem::ConstantCoefficient>(26.0));
+  air._scalar_coefficients.Register("property_two",
+                                    std::make_shared<mfem::ConstantCoefficient>(152.0));
 
   hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({wire, air}));
 
