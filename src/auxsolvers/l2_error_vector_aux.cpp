@@ -13,8 +13,8 @@ void
 L2ErrorVectorPostprocessor::Init(const hephaestus::GridFunctions & gridfunctions,
                                  hephaestus::Coefficients & coefficients)
 {
-  _gf = gridfunctions.GetShared(_var_name);
-  _vec_coeff = coefficients._vectors.GetShared(_vec_coef_name);
+  _gf = gridfunctions.Get(_var_name);
+  _vec_coeff = coefficients._vectors.Get(_vec_coef_name);
 }
 
 void

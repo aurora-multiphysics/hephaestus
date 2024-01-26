@@ -73,7 +73,7 @@ HFormulation::RegisterLorentzForceDensityAux(const std::string & f_field_name,
   auxsolvers.Register(f_field_name,
                       std::make_shared<hephaestus::VectorGridFunctionCrossProductAux>(
                           f_field_name, f_field_name, j_field_name, b_field_name));
-  auxsolvers.GetShared(f_field_name)->SetPriority(2);
+  auxsolvers.Get(f_field_name)->SetPriority(2);
 }
 
 void
@@ -87,7 +87,7 @@ HFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_name,
       p_field_name,
       std::make_shared<hephaestus::VectorGridFunctionDotProductAux>(
           p_field_name, p_field_name, _electric_conductivity_name, e_field_name, e_field_name));
-  auxsolvers.GetShared(p_field_name)->SetPriority(2);
+  auxsolvers.Get(p_field_name)->SetPriority(2);
 }
 
 void
@@ -102,7 +102,7 @@ HFormulation::RegisterCoefficients()
       _electric_resistivity_name,
       std::make_shared<mfem::TransformedCoefficient>(
           &_one_coef,
-          coefficients._scalars.GetShared(_electric_conductivity_name).get(),
+          coefficients._scalars.Get(_electric_conductivity_name).get(),
           fracFunc));
   HCurlFormulation::RegisterCoefficients();
 }

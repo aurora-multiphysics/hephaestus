@@ -17,10 +17,10 @@ WeakCurlKernel::Init(hephaestus::GridFunctions & gridfunctions,
                      hephaestus::BCMap & bc_map,
                      hephaestus::Coefficients & coefficients)
 {
-  _u = gridfunctions.GetShared(_hcurl_gf_name);
-  _v = gridfunctions.GetShared(_hdiv_gf_name);
+  _u = gridfunctions.Get(_hcurl_gf_name);
+  _v = gridfunctions.Get(_hdiv_gf_name);
 
-  _coef = coefficients._scalars.GetShared(_coef_name);
+  _coef = coefficients._scalars.Get(_coef_name);
 
   _weak_curl = std::make_unique<mfem::ParMixedBilinearForm>(_u->ParFESpace(), _v->ParFESpace());
   _weak_curl->AddDomainIntegrator(new mfem::VectorFECurlIntegrator(*_coef));

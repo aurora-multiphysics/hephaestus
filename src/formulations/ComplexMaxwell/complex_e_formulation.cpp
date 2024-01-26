@@ -74,7 +74,7 @@ ComplexEFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_
                                                                     _electric_field_imag_name,
                                                                     _electric_field_imag_name,
                                                                     true));
-  auxsolvers.GetShared(p_field_name)->SetPriority(2);
+  auxsolvers.Get(p_field_name)->SetPriority(2);
 }
 
 } // namespace hephaestus

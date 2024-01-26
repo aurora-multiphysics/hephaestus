@@ -17,8 +17,8 @@ TEST_CASE("VariablesTest", "[CheckSetup]")
 
   auto problem = problem_builder->ReturnProblem();
 
-  auto stored_gf = problem->_gridfunctions.GetShared("vector_potential");
-  auto stored_fespace = problem->_fespaces.GetShared("HCurl");
+  auto stored_gf = problem->_gridfunctions.Get("vector_potential");
+  auto stored_fespace = problem->_fespaces.Get("HCurl");
 
   REQUIRE(stored_fespace->GetVSize() == stored_gf->ParFESpace()->GetVSize());
   REQUIRE(stored_fespace->GetVSize() > 0);

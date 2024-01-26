@@ -23,7 +23,7 @@ ScalarPotentialSource::Init(hephaestus::GridFunctions & gridfunctions,
                             hephaestus::BCMap & bc_map,
                             hephaestus::Coefficients & coefficients)
 {
-  _h1_fe_space = fespaces.GetShared(_h1_fespace_name);
+  _h1_fe_space = fespaces.Get(_h1_fespace_name);
   if (_h1_fe_space == nullptr)
   {
     const std::string error_message = _h1_fespace_name + " not found in fespaces when "
@@ -31,7 +31,7 @@ ScalarPotentialSource::Init(hephaestus::GridFunctions & gridfunctions,
     mfem::mfem_error(error_message.c_str());
   }
 
-  _h_curl_fe_space = fespaces.GetShared(_hcurl_fespace_name);
+  _h_curl_fe_space = fespaces.Get(_hcurl_fespace_name);
   if (_h_curl_fe_space == nullptr)
   {
     const std::string error_message = _hcurl_fespace_name + " not found in fespaces when "
@@ -39,7 +39,7 @@ ScalarPotentialSource::Init(hephaestus::GridFunctions & gridfunctions,
     mfem::mfem_error(error_message.c_str());
   }
 
-  _p = gridfunctions.GetShared(_potential_gf_name);
+  _p = gridfunctions.Get(_potential_gf_name);
   if (_p == nullptr)
   {
     std::cout << _potential_gf_name + " not found in gridfunctions when "
@@ -49,7 +49,7 @@ ScalarPotentialSource::Init(hephaestus::GridFunctions & gridfunctions,
     gridfunctions.Register(_potential_gf_name, _p);
   }
 
-  _grad_p = gridfunctions.GetShared(_grad_phi_name);
+  _grad_p = gridfunctions.Get(_grad_phi_name);
   if (_grad_p == nullptr)
   {
     _grad_p = std::make_shared<mfem::ParGridFunction>(_h_curl_fe_space.get());
@@ -58,7 +58,7 @@ ScalarPotentialSource::Init(hephaestus::GridFunctions & gridfunctions,
 
   _bc_map = &bc_map;
 
-  _beta_coef = coefficients._scalars.GetShared(_beta_coef_name);
+  _beta_coef = coefficients._scalars.Get(_beta_coef_name);
 
   _a0 = std::make_unique<mfem::ParBilinearForm>(_h1_fe_space.get());
   _a0->AddDomainIntegrator(new mfem::DiffusionIntegrator(*_beta_coef));

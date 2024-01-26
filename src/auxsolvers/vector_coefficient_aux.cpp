@@ -14,12 +14,12 @@ void
 VectorCoefficientAux::Init(const hephaestus::GridFunctions & gridfunctions,
                            hephaestus::Coefficients & coefficients)
 {
-  _gf = gridfunctions.GetShared(_gf_name);
+  _gf = gridfunctions.Get(_gf_name);
   if (_gf == nullptr)
   {
     MFEM_ABORT("GridFunction " << _gf_name << " not found when initializing VectorCoefficientAux");
   }
-  _vec_coef = coefficients._vectors.GetShared(_vec_coef_name);
+  _vec_coef = coefficients._vectors.Get(_vec_coef_name);
   if (_vec_coef == nullptr)
   {
     MFEM_ABORT("VectorCoefficient " << _vec_coef_name

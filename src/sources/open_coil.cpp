@@ -210,7 +210,7 @@ OpenCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
                      hephaestus::BCMap & bc_map,
                      hephaestus::Coefficients & coefficients)
 {
-  _itotal = coefficients._scalars.GetShared(_i_coef_name);
+  _itotal = coefficients._scalars.Get(_i_coef_name);
   if (_itotal == nullptr)
   {
     std::cout << _i_coef_name + " not found in coefficients when "
@@ -219,7 +219,7 @@ OpenCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     _itotal = std::make_shared<mfem::ConstantCoefficient>(1.0);
   }
 
-  _sigma = coefficients._scalars.GetShared(_cond_coef_name);
+  _sigma = coefficients._scalars.Get(_cond_coef_name);
   if (_sigma == nullptr)
   {
     std::cout << _cond_coef_name + " not found in coefficients when "
@@ -233,7 +233,7 @@ OpenCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     _grad_phi_transfer = false;
   }
 
-  _grad_phi_parent = gridfunctions.GetShared(_grad_phi_name);
+  _grad_phi_parent = gridfunctions.Get(_grad_phi_name);
   if (_grad_phi_parent == nullptr)
   {
     const std::string error_message = _grad_phi_name + " not found in gridfunctions when "
@@ -248,7 +248,7 @@ OpenCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
 
   _order_hcurl = _grad_phi_parent->ParFESpace()->FEColl()->GetOrder();
 
-  _v_parent = gridfunctions.GetShared(_v_gf_name);
+  _v_parent = gridfunctions.Get(_v_gf_name);
   if (_v_parent == nullptr)
   {
     std::cout << _v_gf_name + " not found in gridfunctions when "

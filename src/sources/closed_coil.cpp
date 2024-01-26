@@ -58,7 +58,7 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
 
   // Retrieving the parent FE space and mesh
 
-  _h_curl_fe_space_parent = fespaces.GetShared(_hcurl_fespace_name);
+  _h_curl_fe_space_parent = fespaces.Get(_hcurl_fespace_name);
   if (_h_curl_fe_space_parent == nullptr)
   {
     const std::string error_message = _hcurl_fespace_name + " not found in fespaces when "
@@ -71,7 +71,7 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
   _order_h1 = _order_hcurl;
 
   // Optional FE Spaces and parameters
-  _h1_fe_space_parent = fespaces.GetShared(_h1_fespace_name);
+  _h1_fe_space_parent = fespaces.Get(_h1_fespace_name);
   if (_h1_fe_space_parent == nullptr)
   {
     std::cout << _h1_fespace_name + " not found in fespaces when "
@@ -85,7 +85,7 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
         std::make_shared<mfem::ParFiniteElementSpace>(_mesh_parent, _h1_fe_space_parent_fec.get());
   }
 
-  _grad_phi_parent = gridfunctions.GetShared(_grad_phi_name);
+  _grad_phi_parent = gridfunctions.Get(_grad_phi_name);
   if (_grad_phi_parent == nullptr)
   {
     std::cout << _grad_phi_name + " not found in gridfunctions when "
@@ -98,7 +98,7 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     mfem::mfem_error("GradPhi GridFunction must be of HCurl type.");
   }
 
-  _itotal = coefficients._scalars.GetShared(_i_coef_name);
+  _itotal = coefficients._scalars.Get(_i_coef_name);
   if (_itotal == nullptr)
   {
     std::cout << _i_coef_name + " not found in coefficients when "
@@ -108,7 +108,7 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     _itotal = std::make_shared<mfem::ConstantCoefficient>(1.0);
   }
 
-  _sigma = coefficients._scalars.GetShared(_cond_coef_name);
+  _sigma = coefficients._scalars.Get(_cond_coef_name);
   if (_sigma == nullptr)
   {
     std::cout << _cond_coef_name + " not found in coefficients when "

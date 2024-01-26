@@ -14,7 +14,7 @@ CoupledCoefficient::Init(const hephaestus::GridFunctions & gridfunctions,
 {
   if (gridfunctions.Has(_coupled_var_name))
   {
-    _gf = gridfunctions.GetShared(_coupled_var_name);
+    _gf = gridfunctions.Get(_coupled_var_name);
   }
   else
   {

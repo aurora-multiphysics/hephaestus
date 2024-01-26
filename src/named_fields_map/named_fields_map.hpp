@@ -51,7 +51,7 @@ public:
   }
 
   /// Get a shared pointer to the field associated with name @a field_name.
-  [[nodiscard]] inline std::shared_ptr<T> GetShared(const std::string & field_name) const
+  [[nodiscard]] inline std::shared_ptr<T> Get(const std::string & field_name) const
   {
     auto it = find(field_name);
     return it != _field_map.end() ? it->second : nullptr;
@@ -59,9 +59,9 @@ public:
 
   /// Get a shared pointer to the field and cast to subclass TDerived.
   template <typename TDerived>
-  [[nodiscard]] inline std::shared_ptr<TDerived> GetShared(const std::string & field_name) const
+  [[nodiscard]] inline std::shared_ptr<TDerived> Get(const std::string & field_name) const
   {
-    auto owned_ptr = GetShared(field_name);
+    auto owned_ptr = Get(field_name);
 
     return owned_ptr ? std::dynamic_pointer_cast<TDerived>(owned_ptr) : nullptr;
   }
@@ -74,7 +74,7 @@ public:
     for (const auto & key : keys)
     {
       if (Has(key))
-        values.push_back(GetShared(key));
+        values.push_back(Get(key));
       else
       {
         std::string key_not_found_msg("Key " + key + " not found in NamedFieldsMap.");
@@ -127,7 +127,7 @@ protected:
   /// result in undefined behavior.
   void CheckForDoubleRegistration(const std::string & field_name, T * field)
   {
-    if (Has(field_name) && GetShared(field_name).get() == field)
+    if (Has(field_name) && Get(field_name).get() == field)
     {
       MFEM_ABORT("The field '" << field_name << "' is already registered.");
     }

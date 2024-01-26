@@ -34,7 +34,7 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
 {
 
   // Retrieving vector GridFunction. This is the only mandatory one
-  _div_free_src_gf = gridfunctions.GetShared(_gf_grad_name);
+  _div_free_src_gf = gridfunctions.Get(_gf_grad_name);
   if (_div_free_src_gf == nullptr)
   {
     const std::string error_message = _gf_grad_name + " not found in gridfunctions when "
@@ -42,7 +42,7 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
     mfem::mfem_error(error_message.c_str());
   }
 
-  _h_curl_fe_space = fespaces.GetShared(_hcurl_fespace_name).get(); // NB: needs to be a pointer.
+  _h_curl_fe_space = fespaces.Get(_hcurl_fespace_name).get(); // NB: needs to be a pointer.
   if (_h_curl_fe_space == nullptr)
   {
     std::cout << _hcurl_fespace_name + " not found in fespaces when "
@@ -53,7 +53,7 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
 
   std::unique_ptr<mfem::H1_FECollection> h1_fec{nullptr};
 
-  _h1_fe_space = fespaces.GetShared(_h1_fespace_name);
+  _h1_fe_space = fespaces.Get(_h1_fespace_name);
   if (_h1_fe_space == nullptr)
   {
     std::cout << _h1_fespace_name + " not found in fespaces when "
@@ -69,7 +69,7 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
         std::make_shared<mfem::ParFiniteElementSpace>(_h_curl_fe_space->GetParMesh(), h1_fec.get());
   }
 
-  _q = gridfunctions.GetShared(_gf_name);
+  _q = gridfunctions.Get(_gf_name);
   if (_q == nullptr)
   {
     std::cout << _gf_name + " not found in gridfunctions when "

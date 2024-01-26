@@ -28,19 +28,19 @@ void
 ScaledVectorGridFunctionAux::Init(const hephaestus::GridFunctions & gridfunctions,
                                   hephaestus::Coefficients & coefficients)
 {
-  _input_gf = gridfunctions.GetShared(_input_gf_name);
+  _input_gf = gridfunctions.Get(_input_gf_name);
   if (_input_gf == nullptr)
   {
     MFEM_ABORT("GridFunction " << _input_gf_name
                                << " not found when initializing ScaledVectorGridFunctionAux");
   }
-  _scaled_gf = gridfunctions.GetShared(_scaled_gf_name);
+  _scaled_gf = gridfunctions.Get(_scaled_gf_name);
   if (_scaled_gf == nullptr)
   {
     MFEM_ABORT("GridFunction " << _scaled_gf_name
                                << " not found when initializing ScaledVectorGridFunctionAux");
   }
-  _coef = coefficients._scalars.GetShared(_coef_name);
+  _coef = coefficients._scalars.Get(_coef_name);
   if (_coef == nullptr)
   {
     MFEM_ABORT("Coefficient " << _coef_name

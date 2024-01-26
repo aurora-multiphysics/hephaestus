@@ -44,7 +44,7 @@ EFormulation::RegisterCoefficients()
       _magnetic_reluctivity_name,
       std::make_shared<mfem::TransformedCoefficient>(
           &_one_coef,
-          coefficients._scalars.GetShared(_magnetic_permeability_name).get(),
+          coefficients._scalars.Get(_magnetic_permeability_name).get(),
           fracFunc));
 }
 
@@ -70,7 +70,7 @@ EFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_name,
       p_field_name,
       std::make_shared<hephaestus::VectorGridFunctionDotProductAux>(
           p_field_name, p_field_name, _electric_conductivity_name, e_field_name, e_field_name));
-  auxsolvers.GetShared(p_field_name)->SetPriority(2);
+  auxsolvers.Get(p_field_name)->SetPriority(2);
 }
 
 } // namespace hephaestus

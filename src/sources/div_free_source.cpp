@@ -35,14 +35,14 @@ DivFreeSource::Init(hephaestus::GridFunctions & gridfunctions,
                     hephaestus::BCMap & bc_map,
                     hephaestus::Coefficients & coefficients)
 {
-  _h1_fe_space = fespaces.GetShared(_h1_fespace_name);
+  _h1_fe_space = fespaces.Get(_h1_fespace_name);
   if (_h1_fe_space == nullptr)
   {
     const std::string error_message = _h1_fespace_name + " not found in fespaces when "
                                                          "creating DivFreeSource\n";
     mfem::mfem_error(error_message.c_str());
   }
-  _h_curl_fe_space = fespaces.GetShared(_hcurl_fespace_name);
+  _h_curl_fe_space = fespaces.Get(_hcurl_fespace_name);
   if (_h_curl_fe_space == nullptr)
   {
     const std::string error_message = _hcurl_fespace_name + " not found in fespaces when "
@@ -51,7 +51,7 @@ DivFreeSource::Init(hephaestus::GridFunctions & gridfunctions,
   }
   if (coefficients._vectors.Has(_src_coef_name))
   {
-    _source_vec_coef = coefficients._vectors.GetShared(_src_coef_name);
+    _source_vec_coef = coefficients._vectors.Get(_src_coef_name);
   }
   else
   {

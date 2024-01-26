@@ -204,7 +204,7 @@ TEST_CASE_METHOD(TestHFormSource, "TestHFormSource", "[CheckRun]")
 
   auto l2errpostprocessor =
       params.GetParam<hephaestus::AuxSolvers>("PostProcessors")
-          .GetShared<hephaestus::L2ErrorVectorPostprocessor>("L2ErrorPostprocessor");
+          .Get<hephaestus::L2ErrorVectorPostprocessor>("L2ErrorPostprocessor");
 
   double r;
   for (std::size_t i = 1; i < l2errpostprocessor->_ndofs.Size(); ++i)

@@ -152,7 +152,7 @@ WeakCurlEquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
   coefficients._scalars.Register(
       _dtalpha_coef_name,
       std::make_shared<mfem::TransformedCoefficient>(
-          &_dt_coef, coefficients._scalars.GetShared(_alpha_coef_name).get(), prodFunc));
+          &_dt_coef, coefficients._scalars.Get(_alpha_coef_name).get(), prodFunc));
   TimeDependentEquationSystem::Init(gridfunctions, fespaces, bc_map, coefficients);
 }
 
@@ -201,8 +201,8 @@ DualOperator::Init(mfem::Vector & X)
   auto * eqs = dynamic_cast<hephaestus::WeakCurlEquationSystem *>(_equation_system);
   _h_curl_var_name = eqs->_h_curl_var_name;
   _h_div_var_name = eqs->_h_div_var_name;
-  _u = _gridfunctions.GetShared(_h_curl_var_name);
-  _dv = _gridfunctions.GetShared(GetTimeDerivativeName(_h_div_var_name));
+  _u = _gridfunctions.Get(_h_curl_var_name);
+  _dv = _gridfunctions.Get(GetTimeDerivativeName(_h_div_var_name));
   _h_curl_fe_space = _u->ParFESpace();
   _h_div_fe_space = _dv->ParFESpace();
 
