@@ -33,11 +33,11 @@ public:
 
   const hephaestus::InputParameters _solver_options;
 
-  mfem::ParFiniteElementSpace * _h1_fe_space;
-  mfem::ParFiniteElementSpace * _h_curl_fe_space;
+  std::shared_ptr<mfem::ParFiniteElementSpace> _h1_fe_space{nullptr};
+  std::shared_ptr<mfem::ParFiniteElementSpace> _h_curl_fe_space{nullptr};
   std::shared_ptr<mfem::ParGridFunction> _p{nullptr}; // Potential
   hephaestus::BCMap * _bc_map;
-  mfem::Coefficient * _beta_coef;
+  std::shared_ptr<mfem::Coefficient> _beta_coef{nullptr};
 
   std::unique_ptr<mfem::ParBilinearForm> _a0{nullptr};
 
