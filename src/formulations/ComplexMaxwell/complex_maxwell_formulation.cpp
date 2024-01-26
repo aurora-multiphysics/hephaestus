@@ -40,9 +40,9 @@ ComplexMaxwellOperator::Init(mfem::Vector & X)
 {
   EquationSystemOperator::Init(X);
 
-  _stiff_coef = _coefficients._scalars.Get(_stiffness_coef_name);
-  _mass_coef = _coefficients._scalars.Get(_mass_coef_name);
-  _loss_coef = _coefficients._scalars.Get(_loss_coef_name);
+  _stiff_coef = _coefficients._scalars.GetShared(_stiffness_coef_name);
+  _mass_coef = _coefficients._scalars.GetShared(_mass_coef_name);
+  _loss_coef = _coefficients._scalars.GetShared(_loss_coef_name);
 }
 
 void
@@ -98,8 +98,8 @@ ComplexMaxwellOperator::Solve(mfem::Vector & X)
 
   sqlf.RecoverFEMSolution(u, lf, *_u);
 
-  *_gridfunctions.Get(_state_var_names.at(0)) = _u->real();
-  *_gridfunctions.Get(_state_var_names.at(1)) = _u->imag();
+  *_gridfunctions.GetShared(_state_var_names.at(0)) = _u->real();
+  *_gridfunctions.GetShared(_state_var_names.at(1)) = _u->imag();
 }
 
 ComplexMaxwellFormulation::ComplexMaxwellFormulation(std::string alpha_coef_name,
