@@ -13,7 +13,7 @@ class CoupledCoefficient : public mfem::Coefficient, public AuxSolver
 {
 protected:
   // pointer to coupled variable (could just be to vars?)
-  mfem::ParGridFunction * _gf;
+  std::shared_ptr<mfem::ParGridFunction> _gf{nullptr};
   double _scalar_val;
 
 public:

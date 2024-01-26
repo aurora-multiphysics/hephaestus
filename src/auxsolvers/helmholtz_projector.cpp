@@ -34,7 +34,7 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
 {
 
   // Retrieving vector GridFunction. This is the only mandatory one
-  _div_free_src_gf = gridfunctions.Get(_gf_grad_name);
+  _div_free_src_gf = gridfunctions.GetShared(_gf_grad_name);
   if (_div_free_src_gf == nullptr)
   {
     const std::string error_message = _gf_grad_name + " not found in gridfunctions when "
@@ -42,7 +42,7 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
     mfem::mfem_error(error_message.c_str());
   }
 
-  _h_curl_fe_space = fespaces.Get(_hcurl_fespace_name);
+  _h_curl_fe_space = fespaces.Get(_hcurl_fespace_name); // NB: needs to be a pointer.
   if (_h_curl_fe_space == nullptr)
   {
     std::cout << _hcurl_fespace_name + " not found in fespaces when "
@@ -53,7 +53,7 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
 
   std::unique_ptr<mfem::H1_FECollection> h1_fec{nullptr};
 
-  _h1_fe_space = fespaces.Get(_h1_fespace_name);
+  _h1_fe_space = fespaces.GetShared(_h1_fespace_name);
   if (_h1_fe_space == nullptr)
   {
     std::cout << _h1_fespace_name + " not found in fespaces when "
@@ -65,16 +65,17 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
     h1_fec = std::make_unique<mfem::H1_FECollection>(_h_curl_fe_space->GetMaxElementOrder(),
                                                      _h_curl_fe_space->GetParMesh()->Dimension());
 
-    _h1_fe_space = new mfem::ParFiniteElementSpace(_h_curl_fe_space->GetParMesh(), h1_fec.get());
+    _h1_fe_space =
+        std::make_shared<mfem::ParFiniteElementSpace>(_h_curl_fe_space->GetParMesh(), h1_fec.get());
   }
 
-  _q = gridfunctions.Get(_gf_name);
+  _q = gridfunctions.GetShared(_gf_name);
   if (_q == nullptr)
   {
     std::cout << _gf_name + " not found in gridfunctions when "
                             "creating HelmholtzProjector. "
                             "Creating new GridFunction\n";
-    _q = new mfem::ParGridFunction(_h1_fe_space);
+    _q = std::make_shared<mfem::ParGridFunction>(_h1_fe_space.get());
   }
 
   _g = std::make_unique<mfem::ParGridFunction>(_h_curl_fe_space);
@@ -93,11 +94,6 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
   _grad->Mult(*_q, *_div_free_src_gf);
   *_div_free_src_gf -= *_g;
   *_div_free_src_gf *= -1.0;
-
-  if (!gridfunctions.Has(_gf_name))
-    delete _q;
-  if (!fespaces.Has(_h1_fespace_name))
-    delete _h1_fe_space;
 }
 
 void
@@ -105,11 +101,11 @@ HelmholtzProjector::SetForms()
 {
 
   if (_g_div == nullptr)
-    _g_div = std::make_unique<mfem::ParLinearForm>(_h1_fe_space);
+    _g_div = std::make_unique<mfem::ParLinearForm>(_h1_fe_space.get());
 
   if (_weak_div == nullptr)
   {
-    _weak_div = std::make_unique<mfem::ParMixedBilinearForm>(_h_curl_fe_space, _h1_fe_space);
+    _weak_div = std::make_unique<mfem::ParMixedBilinearForm>(_h_curl_fe_space, _h1_fe_space.get());
     _weak_div->AddDomainIntegrator(new mfem::VectorFEWeakDivergenceIntegrator);
     _weak_div->Assemble();
     _weak_div->Finalize();
@@ -117,7 +113,7 @@ HelmholtzProjector::SetForms()
 
   if (_a0 == nullptr)
   {
-    _a0 = std::make_unique<mfem::ParBilinearForm>(_h1_fe_space);
+    _a0 = std::make_unique<mfem::ParBilinearForm>(_h1_fe_space.get());
     _a0->AddDomainIntegrator(new mfem::DiffusionIntegrator);
     _a0->Assemble();
     _a0->Finalize();
@@ -130,7 +126,7 @@ HelmholtzProjector::SetGrad()
 
   if (_grad == nullptr)
   {
-    _grad = std::make_unique<mfem::ParDiscreteLinearOperator>(_h1_fe_space, _h_curl_fe_space);
+    _grad = std::make_unique<mfem::ParDiscreteLinearOperator>(_h1_fe_space.get(), _h_curl_fe_space);
     _grad->AddDomainInterpolator(new mfem::GradientInterpolator());
     _grad->Assemble();
     _grad->Finalize();

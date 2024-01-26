@@ -25,14 +25,15 @@ private:
   std::string _gf_name;
   hephaestus::InputParameters _solver_options;
 
-  mfem::ParFiniteElementSpace * _h1_fe_space{nullptr};
+  std::shared_ptr<mfem::ParFiniteElementSpace> _h1_fe_space{nullptr};
   mfem::ParFiniteElementSpace * _h_curl_fe_space{nullptr};
-  mfem::ParGridFunction * _q{nullptr};
+  std::shared_ptr<mfem::ParGridFunction> _q{nullptr};
 
   // H(Curl) projection of user specified source
   std::unique_ptr<mfem::ParGridFunction> _g;
 
-  mfem::ParGridFunction * _div_free_src_gf{nullptr}; // Divergence free projected source
+  // Divergence free projected source.
+  std::shared_ptr<mfem::ParGridFunction> _div_free_src_gf{nullptr};
 
   std::unique_ptr<mfem::ParLinearForm> _g_div;
   std::unique_ptr<mfem::ParBilinearForm> _a0;
