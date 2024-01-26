@@ -22,10 +22,10 @@ public:
 
   std::string _coupled_gf_name;
   std::string _coef_name;
-  mfem::ParGridFunction * _u; //
+  std::shared_ptr<mfem::ParGridFunction> _u{nullptr};
   mfem::ParFiniteElementSpace * _h1_fe_space;
-  mfem::Coefficient * _coef;
 
+  std::shared_ptr<mfem::Coefficient> _coef{nullptr};
   std::unique_ptr<mfem::ParBilinearForm> _curl_curl;
 };
 
