@@ -35,14 +35,14 @@ DivFreeSource::Init(hephaestus::GridFunctions & gridfunctions,
                     hephaestus::BCMap & bc_map,
                     hephaestus::Coefficients & coefficients)
 {
-  _h1_fe_space = fespaces.Get(_h1_fespace_name);
+  _h1_fe_space = fespaces.GetShared(_h1_fespace_name);
   if (_h1_fe_space == nullptr)
   {
     const std::string error_message = _h1_fespace_name + " not found in fespaces when "
                                                          "creating DivFreeSource\n";
     mfem::mfem_error(error_message.c_str());
   }
-  _h_curl_fe_space = fespaces.Get(_hcurl_fespace_name);
+  _h_curl_fe_space = fespaces.GetShared(_hcurl_fespace_name);
   if (_h_curl_fe_space == nullptr)
   {
     const std::string error_message = _hcurl_fespace_name + " not found in fespaces when "
@@ -51,20 +51,20 @@ DivFreeSource::Init(hephaestus::GridFunctions & gridfunctions,
   }
   if (coefficients._vectors.Has(_src_coef_name))
   {
-    _source_vec_coef = coefficients._vectors.Get(_src_coef_name);
+    _source_vec_coef = coefficients._vectors.GetShared(_src_coef_name);
   }
   else
   {
     MFEM_ABORT("SOURCE NOT FOUND");
   }
 
-  _div_free_src_gf = std::make_shared<mfem::ParGridFunction>(_h_curl_fe_space);
+  _div_free_src_gf = std::make_shared<mfem::ParGridFunction>(_h_curl_fe_space.get());
   gridfunctions.Register(_src_gf_name, _div_free_src_gf);
 
-  _g = std::make_shared<mfem::ParGridFunction>(_h_curl_fe_space);
+  _g = std::make_shared<mfem::ParGridFunction>(_h_curl_fe_space.get());
   gridfunctions.Register("_user_source", _g);
 
-  _q = std::make_shared<mfem::ParGridFunction>(_h1_fe_space);
+  _q = std::make_shared<mfem::ParGridFunction>(_h1_fe_space.get());
   gridfunctions.Register(_potential_gf_name, _q);
 
   _bc_map = &bc_map;
@@ -77,7 +77,7 @@ DivFreeSource::Init(hephaestus::GridFunctions & gridfunctions,
 void
 DivFreeSource::BuildHCurlMass()
 {
-  _h_curl_mass = std::make_unique<mfem::ParBilinearForm>(_h_curl_fe_space);
+  _h_curl_mass = std::make_unique<mfem::ParBilinearForm>(_h_curl_fe_space.get());
   _h_curl_mass->AddDomainIntegrator(new mfem::VectorFEMassIntegrator);
   _h_curl_mass->Assemble();
   _h_curl_mass->Finalize();
@@ -88,7 +88,7 @@ DivFreeSource::Apply(mfem::ParLinearForm * lf)
 {
   // Find an averaged representation of current density in H(curl)*
   _g->ProjectCoefficient(*_source_vec_coef);
-  mfem::ParLinearForm j(_h_curl_fe_space);
+  mfem::ParLinearForm j(_h_curl_fe_space.get());
   j.AddDomainIntegrator(new mfem::VectorFEDomainLFIntegrator(*_source_vec_coef));
   j.Assemble();
   {
