@@ -1,6 +1,6 @@
 # Build Hephaestus image
 # Get base image
-FROM alexanderianblair/hephaestus-deps:master
+FROM alexanderianblair/hephaestus-debug-deps:master
 
 # By default checkout master branch
 ARG WORKDIR="opt"
