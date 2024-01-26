@@ -110,9 +110,7 @@ EquationSystem::AddKernel(const std::string & trial_var_name,
     _mblf_kernels_map_map.Get(test_var_name)->Register(trial_var_name, std::move(kernels));
   }
 
-  _mblf_kernels_map_map.Get(test_var_name)
-      ->Get(trial_var_name)
-      ->push_back(std::move(mblf_kernel));
+  _mblf_kernels_map_map.Get(test_var_name)->Get(trial_var_name)->push_back(std::move(mblf_kernel));
 }
 
 void
@@ -224,8 +222,8 @@ EquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
     // Store pointers to variable FESpaces
     _test_pfespaces.push_back(gridfunctions.Get(test_var_name)->ParFESpace());
     // Create auxiliary gridfunctions for applying Dirichlet conditions
-    _xs.emplace_back(std::make_unique<mfem::ParGridFunction>(
-        gridfunctions.Get(test_var_name)->ParFESpace()));
+    _xs.emplace_back(
+        std::make_unique<mfem::ParGridFunction>(gridfunctions.Get(test_var_name)->ParFESpace()));
   }
 
   // Initialise bilinear forms
@@ -345,8 +343,7 @@ EquationSystem::BuildMixedBilinearForms()
       if (_mblf_kernels_map_map.Has(test_var_name) &&
           _mblf_kernels_map_map.Get(test_var_name)->Has(trial_var_name))
       {
-        auto mblf_kernels =
-            _mblf_kernels_map_map.Get(test_var_name)->Get(trial_var_name);
+        auto mblf_kernels = _mblf_kernels_map_map.Get(test_var_name)->Get(trial_var_name);
         auto mblf = std::make_shared<mfem::ParMixedBilinearForm>(_test_pfespaces.at(j),
                                                                  _test_pfespaces.at(i));
         // Apply all mixed kernels with this test/trial pair

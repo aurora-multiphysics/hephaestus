@@ -101,9 +101,7 @@ HFormulation::RegisterCoefficients()
   coefficients._scalars.Register(
       _electric_resistivity_name,
       std::make_shared<mfem::TransformedCoefficient>(
-          &_one_coef,
-          coefficients._scalars.Get(_electric_conductivity_name).get(),
-          fracFunc));
+          &_one_coef, coefficients._scalars.Get(_electric_conductivity_name).get(), fracFunc));
   HCurlFormulation::RegisterCoefficients();
 }
 

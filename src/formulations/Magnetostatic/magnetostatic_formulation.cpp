@@ -71,8 +71,6 @@ MagnetostaticFormulation::RegisterCoefficients()
   coefficients._scalars.Register(
       _magnetic_reluctivity_name,
       std::make_shared<mfem::TransformedCoefficient>(
-          &_one_coef,
-          coefficients._scalars.Get(_magnetic_permeability_name).get(),
-          fracFunc));
+          &_one_coef, coefficients._scalars.Get(_magnetic_permeability_name).get(), fracFunc));
 }
 } // namespace hephaestus
