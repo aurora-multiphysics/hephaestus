@@ -95,10 +95,10 @@ private:
   // Parent mesh, FE space, and current
   mfem::ParMesh * _mesh_parent{nullptr};
 
-  mfem::ParGridFunction * _grad_phi_parent{nullptr};
+  std::shared_ptr<mfem::ParGridFunction> _grad_phi_parent{nullptr};
   std::unique_ptr<mfem::ParGridFunction> _grad_phi_t_parent{nullptr};
 
-  mfem::ParGridFunction * _v_parent{nullptr};
+  std::shared_ptr<mfem::ParGridFunction> _v_parent{nullptr};
   std::unique_ptr<mfem::ParGridFunction> _vt_parent{nullptr};
 
   // Child mesh and FE spaces
