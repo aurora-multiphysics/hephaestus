@@ -184,10 +184,10 @@ TEST_CASE_METHOD(TestComplexIrisWaveguide, "TestComplexIrisWaveguide", "[CheckRu
   zero_vec = 0.0;
   mfem::VectorConstantCoefficient zero_coef(zero_vec);
 
-  double norm_r =
-      executioner->_problem->_gridfunctions.Get("electric_field_real")->ComputeMaxError(zero_coef);
-  double norm_i =
-      executioner->_problem->_gridfunctions.Get("electric_field_imag")->ComputeMaxError(zero_coef);
+  double norm_r = executioner->_problem->_gridfunctions.GetShared("electric_field_real")
+                      ->ComputeMaxError(zero_coef);
+  double norm_i = executioner->_problem->_gridfunctions.GetShared("electric_field_imag")
+                      ->ComputeMaxError(zero_coef);
   REQUIRE_THAT(norm_r, Catch::Matchers::WithinAbs(4896.771, 0.001));
   REQUIRE_THAT(norm_i, Catch::Matchers::WithinAbs(5357.650, 0.001));
 }

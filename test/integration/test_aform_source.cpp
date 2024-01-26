@@ -185,17 +185,17 @@ TEST_CASE_METHOD(TestAFormSource, "TestAForm", "[CheckRun]")
     executioner->Execute();
   }
 
-  hephaestus::L2ErrorVectorPostprocessor l2errpostprocessor =
-      *(dynamic_cast<hephaestus::L2ErrorVectorPostprocessor *>(
-          params.GetParam<hephaestus::AuxSolvers>("PostProcessors").Get("L2ErrorPostprocessor")));
+  auto l2errpostprocessor =
+      params.GetParam<hephaestus::AuxSolvers>("PostProcessors")
+          .GetShared<hephaestus::L2ErrorVectorPostprocessor>("L2ErrorPostprocessor");
 
   double r;
-  for (std::size_t i = 1; i < l2errpostprocessor._ndofs.Size(); ++i)
+  for (std::size_t i = 1; i < l2errpostprocessor->_ndofs.Size(); ++i)
   {
-    r = EstimateConvergenceRate(l2errpostprocessor._ndofs[i],
-                                l2errpostprocessor._ndofs[i - 1],
-                                l2errpostprocessor._l2_errs[i],
-                                l2errpostprocessor._l2_errs[i - 1],
+    r = EstimateConvergenceRate(l2errpostprocessor->_ndofs[i],
+                                l2errpostprocessor->_ndofs[i - 1],
+                                l2errpostprocessor->_l2_errs[i],
+                                l2errpostprocessor->_l2_errs[i - 1],
                                 3);
     std::cout << r << std::endl;
     REQUIRE(r > 2 - 0.15);
