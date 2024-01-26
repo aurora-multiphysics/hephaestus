@@ -54,7 +54,7 @@ public:
   [[nodiscard]] inline std::shared_ptr<T> Get(const std::string & field_name) const
   {
     auto it = find(field_name);
-    return it != _field_map.end() ? it->second : nullptr;
+    return it != end() ? it->second : nullptr;
   }
 
   /// Get a shared pointer to the field and cast to subclass TDerived.
