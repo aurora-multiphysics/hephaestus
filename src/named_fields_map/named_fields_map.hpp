@@ -82,6 +82,31 @@ public:
     return it != _field_map.end() ? it->second : nullptr;
   }
 
+  /// Get a pointer to the field and cast to subclass TDerived.
+  template <typename TDerived>
+  [[nodiscard]] inline TDerived * Get(const std::string & field_name) const
+  {
+    auto ptr = Get(field_name);
+
+    return ptr ? std::dynamic_pointer_cast<TDerived>(ptr) : nullptr;
+  }
+
+  /// Get a shared pointer to the field associated with name @a field_name.
+  [[nodiscard]] inline std::shared_ptr<T> GetShared(const std::string & field_name) const
+  {
+    auto it = _stored_ptrs_map.find(field_name);
+    return it != _stored_ptrs_map.end() ? it->second : nullptr;
+  }
+
+  /// Get a shared pointer to the field and cast to subclass TDerived.
+  template <typename TDerived>
+  [[nodiscard]] inline std::shared_ptr<TDerived> GetShared(const std::string & field_name) const
+  {
+    auto shared_ptr = GetShared(field_name);
+
+    return shared_ptr ? std::dynamic_pointer_cast<TDerived>(shared_ptr) : nullptr;
+  }
+
   /// Returns a vector containing all values for supplied keys.
   std::vector<T *> Get(const std::vector<std::string> keys)
   {
