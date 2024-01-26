@@ -22,8 +22,9 @@ public:
 
   std::string _hcurl_gf_name, _hdiv_gf_name;
   std::string _coef_name;
-  mfem::ParGridFunction *_u, *_v; //
-  mfem::Coefficient * _coef;
+  std::shared_ptr<mfem::ParGridFunction> _u{nullptr};
+  std::shared_ptr<mfem::ParGridFunction> _v{nullptr};
+  std::shared_ptr<mfem::Coefficient> _coef{nullptr};
 
   std::unique_ptr<mfem::ParMixedBilinearForm> _weak_curl;
 };
