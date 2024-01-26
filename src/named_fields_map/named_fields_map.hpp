@@ -66,23 +66,6 @@ public:
     return owned_ptr ? std::dynamic_pointer_cast<TDerived>(owned_ptr) : nullptr;
   }
 
-  /// Get a pointer to the field associated with name @a field_name.
-  [[nodiscard]] inline T * Get(const std::string & field_name) const
-  {
-    auto owned_ptr = GetShared(field_name);
-
-    return owned_ptr ? owned_ptr.get() : nullptr;
-  }
-
-  /// Get a pointer to the field and cast to subclass TDerived.
-  template <typename TDerived>
-  [[nodiscard]] inline TDerived * Get(const std::string & field_name) const
-  {
-    auto owned_ptr = GetShared<TDerived>(field_name);
-
-    return owned_ptr ? owned_ptr.get() : nullptr;
-  }
-
   /// Returns a vector containing all values for supplied keys.
   std::vector<std::shared_ptr<T>> Get(const std::vector<std::string> keys)
   {
@@ -144,7 +127,7 @@ protected:
   /// result in undefined behavior.
   void CheckForDoubleRegistration(const std::string & field_name, T * field)
   {
-    if (Has(field_name) && Get(field_name) == field)
+    if (Has(field_name) && GetShared(field_name).get() == field)
     {
       MFEM_ABORT("The field '" << field_name << "' is already registered.");
     }
