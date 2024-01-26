@@ -80,7 +80,7 @@ defineCoefficients()
   coefficients._scalars.Register("magnetic_permeability",
                                  std::make_shared<mfem::ConstantCoefficient>(M_PI * 4.0e-7));
 
-  auto j_src_coef = std::make_unique<mfem::VectorFunctionCoefficient>(3, source_current);
+  auto j_src_coef = std::make_shared<mfem::VectorFunctionCoefficient>(3, source_current);
 
   mfem::Array<mfem::VectorCoefficient *> sourcecoefs(4);
   sourcecoefs[0] = j_src_coef.get();
@@ -93,6 +93,9 @@ defineCoefficients()
   coilsegments[1] = 4;
   coilsegments[2] = 5;
   coilsegments[3] = 6;
+
+  // Register to prevent j_src_coef being destroyed when it goes out of scope.
+  coefficients._vectors.Register("source_coefficient", std::move(j_src_coef));
 
   auto j_src_restricted = std::make_shared<mfem::PWVectorCoefficient>(3, coilsegments, sourcecoefs);
   coefficients._vectors.Register("source", j_src_restricted);
