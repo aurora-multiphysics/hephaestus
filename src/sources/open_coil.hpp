@@ -17,7 +17,8 @@ void inheritBdrAttributes(const mfem::ParMesh * parent_mesh, mfem::ParSubMesh * 
 
 // Applies the HelmholtzProjector onto the J GridFunction to clean it of any
 // divergences. This is for the simplest case with no BCs
-void cleanDivergence(mfem::ParGridFunction & Vec_GF, hephaestus::InputParameters solve_pars);
+void cleanDivergence(std::shared_ptr<mfem::ParGridFunction> Vec_GF,
+                     hephaestus::InputParameters solve_pars);
 
 // The more complicated case where BCs are needed
 void cleanDivergence(const hephaestus::GridFunctions & gfs,
@@ -82,11 +83,8 @@ private:
   mfem::Array<int> _coil_markers;
   hephaestus::InputParameters _solver_options;
 
-  mfem::Coefficient * _sigma{nullptr};
-  mfem::Coefficient * _itotal{nullptr};
-
-  bool _owns_sigma{false};
-  bool _owns_itotal{false};
+  std::shared_ptr<mfem::Coefficient> _sigma{nullptr};
+  std::shared_ptr<mfem::Coefficient> _itotal{nullptr};
 
   // Names
   std::string _grad_phi_name;

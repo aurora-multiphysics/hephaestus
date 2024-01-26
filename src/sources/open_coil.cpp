@@ -140,7 +140,8 @@ attrToMarker(const mfem::Array<int> attr_list, mfem::Array<int> & marker_list, i
 }
 
 void
-cleanDivergence(mfem::ParGridFunction & Vec_GF, hephaestus::InputParameters solve_pars)
+cleanDivergence(std::shared_ptr<mfem::ParGridFunction> Vec_GF,
+                hephaestus::InputParameters solve_pars)
 {
 
   hephaestus::InputParameters pars;
@@ -148,7 +149,7 @@ cleanDivergence(mfem::ParGridFunction & Vec_GF, hephaestus::InputParameters solv
   hephaestus::FESpaces fes;
   hephaestus::BCMap bcs;
 
-  gfs.Register("Vector_GF", &Vec_GF, false);
+  gfs.Register("Vector_GF", std::move(Vec_GF));
   pars.SetParam("VectorGridFunctionName", std::string("Vector_GF"));
   pars.SetParam("SolverOptions", solve_pars);
   hephaestus::HelmholtzProjector projector(pars);
@@ -203,13 +204,7 @@ OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters & params,
   _ref_face = _elec_attrs.first;
 }
 
-OpenCoilSolver::~OpenCoilSolver()
-{
-  if (_owns_sigma)
-    delete _sigma;
-  if (_owns_itotal)
-    delete _itotal;
-}
+OpenCoilSolver::~OpenCoilSolver() {}
 
 void
 OpenCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
@@ -217,18 +212,16 @@ OpenCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
                      hephaestus::BCMap & bc_map,
                      hephaestus::Coefficients & coefficients)
 {
-
-  _itotal = coefficients._scalars.Get(_i_coef_name);
+  _itotal = coefficients._scalars.GetShared(_i_coef_name);
   if (_itotal == nullptr)
   {
     std::cout << _i_coef_name + " not found in coefficients when "
                                 "creating OpenCoilSolver. "
                                 "Assuming unit current.\n";
-    _itotal = new mfem::ConstantCoefficient(1.0);
-    _owns_itotal = true;
+    _itotal = std::make_shared<mfem::ConstantCoefficient>(1.0);
   }
 
-  _sigma = coefficients._scalars.Get(_cond_coef_name);
+  _sigma = coefficients._scalars.GetShared(_cond_coef_name);
   if (_sigma == nullptr)
   {
     std::cout << _cond_coef_name + " not found in coefficients when "
@@ -237,8 +230,7 @@ OpenCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     std::cout << "Warning: GradPhi field undefined. The GridFunction "
                  "associated with it will be set to zero.\n";
 
-    _sigma = new mfem::ConstantCoefficient(1.0);
-    _owns_sigma = true;
+    _sigma = std::make_shared<mfem::ConstantCoefficient>(1.0);
 
     _grad_phi_transfer = false;
   }
@@ -395,7 +387,7 @@ OpenCoilSolver::SPSCurrent()
   sps_params.SetParam("ConductivityCoefName", std::string("electric_conductivity"));
 
   hephaestus::Coefficients coefs;
-  coefs._scalars.Register("electric_conductivity", _sigma, false);
+  coefs._scalars.Register("electric_conductivity", _sigma);
 
   hephaestus::ScalarPotentialSource sps(sps_params);
   sps.Init(gridfunctions, fespaces, _bc_maps, coefs);
@@ -427,7 +419,7 @@ OpenCoilSolver::BuildM1()
   {
     _m1 = std::make_unique<mfem::ParBilinearForm>(_grad_phi_parent->ParFESpace());
     hephaestus::attrToMarker(_coil_domains, _coil_markers, _mesh_parent->attributes.Max());
-    _m1->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(_sigma), _coil_markers);
+    _m1->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(_sigma.get()), _coil_markers);
     _m1->Assemble();
     _m1->Finalize();
   }
