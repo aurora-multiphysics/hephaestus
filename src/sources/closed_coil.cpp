@@ -49,12 +49,6 @@ ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters & params,
   _elec_attrs.first = electrode_face;
 }
 
-ClosedCoilSolver::~ClosedCoilSolver()
-{
-  if (_owns_h1_fe_space_parent)
-    delete _h1_fe_space_parent;
-}
-
 void
 ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
                        const hephaestus::FESpaces & fespaces,
@@ -64,7 +58,7 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
 
   // Retrieving the parent FE space and mesh
 
-  _h_curl_fe_space_parent = fespaces.Get(_hcurl_fespace_name);
+  _h_curl_fe_space_parent = fespaces.GetShared(_hcurl_fespace_name);
   if (_h_curl_fe_space_parent == nullptr)
   {
     const std::string error_message = _hcurl_fespace_name + " not found in fespaces when "
@@ -77,7 +71,7 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
   _order_h1 = _order_hcurl;
 
   // Optional FE Spaces and parameters
-  _h1_fe_space_parent = fespaces.Get(_h1_fespace_name);
+  _h1_fe_space_parent = fespaces.GetShared(_h1_fespace_name);
   if (_h1_fe_space_parent == nullptr)
   {
     std::cout << _h1_fespace_name + " not found in fespaces when "
@@ -88,8 +82,7 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
         std::make_unique<mfem::H1_FECollection>(_order_h1, _mesh_parent->Dimension());
 
     _h1_fe_space_parent =
-        new mfem::ParFiniteElementSpace(_mesh_parent, _h1_fe_space_parent_fec.get());
-    _owns_h1_fe_space_parent = true;
+        std::make_shared<mfem::ParFiniteElementSpace>(_mesh_parent, _h1_fe_space_parent_fec.get());
   }
 
   _grad_phi_parent = gridfunctions.GetShared(_grad_phi_name);
@@ -97,7 +90,7 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
   {
     std::cout << _grad_phi_name + " not found in gridfunctions when "
                                   "creating OpenCoilSolver. Creating new GridFunction.\n";
-    _grad_phi_parent = std::make_shared<mfem::ParGridFunction>(_h_curl_fe_space_parent);
+    _grad_phi_parent = std::make_shared<mfem::ParGridFunction>(_h_curl_fe_space_parent.get());
   }
   else if (_grad_phi_parent->ParFESpace()->FEColl()->GetContType() !=
            mfem::FiniteElementCollection::TANGENTIAL)
@@ -131,7 +124,7 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
 
   if (_final_lf == nullptr)
   {
-    _final_lf = std::make_unique<mfem::ParLinearForm>(_h_curl_fe_space_parent);
+    _final_lf = std::make_unique<mfem::ParLinearForm>(_h_curl_fe_space_parent.get());
     *_final_lf = 0.0;
   }
 
@@ -352,8 +345,7 @@ ClosedCoilSolver::PrepareCoilSubmesh()
 void
 ClosedCoilSolver::SolveTransition()
 {
-
-  auto v_parent = std::make_shared<mfem::ParGridFunction>(_h1_fe_space_parent);
+  auto v_parent = std::make_shared<mfem::ParGridFunction>(_h1_fe_space_parent.get());
   *v_parent = 0.0;
 
   hephaestus::FESpaces fespaces;
@@ -454,7 +446,7 @@ ClosedCoilSolver::SolveCoil()
   *_grad_phi_parent = 0.0;
   _mesh_coil->Transfer(*_grad_phi_aux_coil, *_grad_phi_parent);
 
-  mfem::ParBilinearForm m1(_h_curl_fe_space_parent);
+  mfem::ParBilinearForm m1(_h_curl_fe_space_parent.get());
   hephaestus::attrToMarker(_coil_domains, _coil_markers, _mesh_parent->attributes.Max());
 
   m1.AddDomainIntegrator(new mfem::VectorFEMassIntegrator(_sigma.get()), _coil_markers);
