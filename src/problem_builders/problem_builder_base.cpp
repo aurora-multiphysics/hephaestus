@@ -82,8 +82,9 @@ ProblemBuilder::AddFESpace(std::string fespace_name, std::string fec_name, int v
   }
   if (!GetProblem()->_fecs.Has(fec_name))
   {
-    mfem::FiniteElementCollection * fec = mfem::FiniteElementCollection::New(fec_name.c_str());
-    GetProblem()->_fecs.Register(fec_name, fec, true);
+    auto fec = std::shared_ptr<mfem::FiniteElementCollection>(
+        mfem::FiniteElementCollection::New(fec_name.c_str()));
+    GetProblem()->_fecs.Register(fec_name, fec);
   }
 
   if (!GetProblem()->_fespaces.Has(fespace_name))
