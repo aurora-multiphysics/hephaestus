@@ -67,7 +67,7 @@ public:
   }
 
   /// Returns a vector containing all values for supplied keys.
-  std::vector<std::shared_ptr<T>> Get(const std::vector<std::string> keys) const
+  [[nodiscard]] std::vector<std::shared_ptr<T>> Get(const std::vector<std::string> keys) const
   {
     std::vector<std::shared_ptr<T>> values;
 
