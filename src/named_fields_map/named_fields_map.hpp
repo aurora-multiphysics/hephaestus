@@ -61,26 +61,26 @@ public:
   template <typename TDerived>
   [[nodiscard]] inline std::shared_ptr<TDerived> GetShared(const std::string & field_name) const
   {
-    auto shared_ptr = GetShared(field_name);
+    auto owned_ptr = GetShared(field_name);
 
-    return shared_ptr ? std::dynamic_pointer_cast<TDerived>(shared_ptr) : nullptr;
+    return owned_ptr ? std::dynamic_pointer_cast<TDerived>(owned_ptr) : nullptr;
   }
 
   /// Get a pointer to the field associated with name @a field_name.
   [[nodiscard]] inline T * Get(const std::string & field_name) const
   {
-    auto shared_ptr = GetShared(field_name);
+    auto owned_ptr = GetShared(field_name);
 
-    return shared_ptr ? shared_ptr.get() : nullptr;
+    return owned_ptr ? owned_ptr.get() : nullptr;
   }
 
   /// Get a pointer to the field and cast to subclass TDerived.
   template <typename TDerived>
   [[nodiscard]] inline TDerived * Get(const std::string & field_name) const
   {
-    auto shared_ptr = GetShared<TDerived>(field_name);
+    auto owned_ptr = GetShared<TDerived>(field_name);
 
-    return shared_ptr ? shared_ptr.get() : nullptr;
+    return owned_ptr ? owned_ptr.get() : nullptr;
   }
 
   /// Returns a vector containing all values for supplied keys.
