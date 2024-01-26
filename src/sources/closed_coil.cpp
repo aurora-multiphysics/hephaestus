@@ -51,12 +51,6 @@ ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters & params,
 
 ClosedCoilSolver::~ClosedCoilSolver()
 {
-  if (_owns_sigma)
-    delete _sigma;
-  if (_owns_itotal)
-    delete _itotal;
-  if (_owns_grad_phi_parent)
-    delete _grad_phi_parent;
   if (_owns_h1_fe_space_parent)
     delete _h1_fe_space_parent;
 }
@@ -98,13 +92,12 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     _owns_h1_fe_space_parent = true;
   }
 
-  _grad_phi_parent = gridfunctions.Get(_grad_phi_name);
+  _grad_phi_parent = gridfunctions.GetShared(_grad_phi_name);
   if (_grad_phi_parent == nullptr)
   {
     std::cout << _grad_phi_name + " not found in gridfunctions when "
                                   "creating OpenCoilSolver. Creating new GridFunction.\n";
-    _grad_phi_parent = new mfem::ParGridFunction(_h_curl_fe_space_parent);
-    _owns_grad_phi_parent = true;
+    _grad_phi_parent = std::make_shared<mfem::ParGridFunction>(_h_curl_fe_space_parent);
   }
   else if (_grad_phi_parent->ParFESpace()->FEColl()->GetContType() !=
            mfem::FiniteElementCollection::TANGENTIAL)
@@ -112,18 +105,17 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     mfem::mfem_error("GradPhi GridFunction must be of HCurl type.");
   }
 
-  _itotal = coefficients._scalars.Get(_i_coef_name);
+  _itotal = coefficients._scalars.GetShared(_i_coef_name);
   if (_itotal == nullptr)
   {
     std::cout << _i_coef_name + " not found in coefficients when "
                                 "creating ClosedCoilSolver. "
                                 "Assuming unit current. ";
 
-    _itotal = new mfem::ConstantCoefficient(1.0);
-    _owns_itotal = true; // Responsible for deleting this.
+    _itotal = std::make_shared<mfem::ConstantCoefficient>(1.0);
   }
 
-  _sigma = coefficients._scalars.Get(_cond_coef_name);
+  _sigma = coefficients._scalars.GetShared(_cond_coef_name);
   if (_sigma == nullptr)
   {
     std::cout << _cond_coef_name + " not found in coefficients when "
@@ -132,8 +124,7 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     std::cout << "Warning: GradPhi field undefined. The GridFunction "
                  "associated with it will be set to zero.\n";
 
-    _sigma = new mfem::ConstantCoefficient(1.0);
-    _owns_sigma = true;
+    _sigma = std::make_shared<mfem::ConstantCoefficient>(1.0);
 
     _grad_phi_transfer = false;
   }
@@ -369,10 +360,10 @@ ClosedCoilSolver::SolveTransition()
   hephaestus::BCMap bc_maps;
 
   hephaestus::Coefficients coefs;
-  coefs._scalars.Register("electrical_conductivity", _sigma, false);
+  coefs._scalars.Register("electrical_conductivity", _sigma);
 
   hephaestus::GridFunctions gridfunctions;
-  gridfunctions.Register("GradPhi_parent", _grad_phi_parent, false);
+  gridfunctions.Register("GradPhi_parent", _grad_phi_parent);
   gridfunctions.Register("V_parent", v_parent);
 
   hephaestus::InputParameters ocs_params;
@@ -466,7 +457,7 @@ ClosedCoilSolver::SolveCoil()
   mfem::ParBilinearForm m1(_h_curl_fe_space_parent);
   hephaestus::attrToMarker(_coil_domains, _coil_markers, _mesh_parent->attributes.Max());
 
-  m1.AddDomainIntegrator(new mfem::VectorFEMassIntegrator(_sigma), _coil_markers);
+  m1.AddDomainIntegrator(new mfem::VectorFEMassIntegrator(_sigma.get()), _coil_markers);
   m1.Assemble();
   m1.AddMult(*_grad_phi_parent, *_final_lf, -1.0);
 
