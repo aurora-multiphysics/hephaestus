@@ -69,8 +69,8 @@ public:
 
   std::string _h_curl_var_name, _h_div_var_name;
 
-  mfem::ParGridFunction * _u;  // HCurl vector field
-  mfem::ParGridFunction * _dv; // HDiv vector field
+  std::shared_ptr<mfem::ParGridFunction> _u{nullptr};  // HCurl vector field
+  std::shared_ptr<mfem::ParGridFunction> _dv{nullptr}; // HDiv vector field
 
 protected:
   std::unique_ptr<mfem::ParDiscreteLinearOperator> _curl;
