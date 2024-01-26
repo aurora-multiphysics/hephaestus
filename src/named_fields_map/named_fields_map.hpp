@@ -125,7 +125,7 @@ public:
 protected:
   /// Check for double-registration of a field. A double-registered field may
   /// result in undefined behavior.
-  void CheckForDoubleRegistration(const std::string & field_name, T * field)
+  void CheckForDoubleRegistration(const std::string & field_name, T * field) const
   {
     if (Has(field_name) && Get(field_name).get() == field)
     {
