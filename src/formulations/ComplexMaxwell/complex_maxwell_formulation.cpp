@@ -31,7 +31,7 @@ ComplexMaxwellOperator::SetGridFunctions()
 
   EquationSystemOperator::SetGridFunctions();
 
-  _u = new mfem::ParComplexGridFunction(_local_test_vars.at(0)->ParFESpace());
+  _u = std::make_unique<mfem::ParComplexGridFunction>(_local_test_vars.at(0)->ParFESpace());
   *_u = std::complex(0.0, 0.0);
 };
 
