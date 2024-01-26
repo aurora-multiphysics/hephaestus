@@ -106,15 +106,15 @@ private:
   // Child mesh and FE spaces
   std::unique_ptr<mfem::ParSubMesh> _mesh{nullptr};
 
-  std::unique_ptr<mfem::ParFiniteElementSpace> _h1_fe_space{nullptr};
+  std::shared_ptr<mfem::ParFiniteElementSpace> _h1_fe_space{nullptr};
   std::unique_ptr<mfem::H1_FECollection> _h1_fe_space_fec{nullptr};
 
-  std::unique_ptr<mfem::ParFiniteElementSpace> _h_curl_fe_space{nullptr};
+  std::shared_ptr<mfem::ParFiniteElementSpace> _h_curl_fe_space{nullptr};
   std::unique_ptr<mfem::ND_FECollection> _h_curl_fe_space_fec{nullptr};
 
   // Child GridFunctions
-  std::unique_ptr<mfem::ParGridFunction> _grad_phi{nullptr};
-  std::unique_ptr<mfem::ParGridFunction> _v{nullptr};
+  std::shared_ptr<mfem::ParGridFunction> _grad_phi{nullptr};
+  std::shared_ptr<mfem::ParGridFunction> _v{nullptr};
 
   // Child boundary condition objects
   std::shared_ptr<mfem::FunctionCoefficient> _high_src{nullptr};

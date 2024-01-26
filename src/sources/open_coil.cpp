@@ -330,7 +330,7 @@ OpenCoilSolver::MakeFESpaces()
   {
     _h1_fe_space_fec = std::make_unique<mfem::H1_FECollection>(_order_h1, _mesh->Dimension());
     _h1_fe_space =
-        std::make_unique<mfem::ParFiniteElementSpace>(_mesh.get(), _h1_fe_space_fec.get());
+        std::make_shared<mfem::ParFiniteElementSpace>(_mesh.get(), _h1_fe_space_fec.get());
   }
 
   if (_h_curl_fe_space == nullptr)
@@ -338,19 +338,18 @@ OpenCoilSolver::MakeFESpaces()
     _h_curl_fe_space_fec =
         std::make_unique<mfem::ND_FECollection>(_order_hcurl, _mesh->Dimension());
     _h_curl_fe_space =
-        std::make_unique<mfem::ParFiniteElementSpace>(_mesh.get(), _h_curl_fe_space_fec.get());
+        std::make_shared<mfem::ParFiniteElementSpace>(_mesh.get(), _h_curl_fe_space_fec.get());
   }
 }
 
 void
 OpenCoilSolver::MakeGridFunctions()
 {
-
   if (_v == nullptr)
-    _v = std::make_unique<mfem::ParGridFunction>(_h1_fe_space.get());
+    _v = std::make_shared<mfem::ParGridFunction>(_h1_fe_space.get());
 
   if (_grad_phi == nullptr)
-    _grad_phi = std::make_unique<mfem::ParGridFunction>(_h_curl_fe_space.get());
+    _grad_phi = std::make_shared<mfem::ParGridFunction>(_h_curl_fe_space.get());
 
   if (_grad_phi_t_parent == nullptr)
     _grad_phi_t_parent = std::make_unique<mfem::ParGridFunction>(*_grad_phi_parent);
@@ -379,15 +378,13 @@ OpenCoilSolver::SPSCurrent()
       "low_potential",
       std::make_shared<hephaestus::ScalarDirichletBC>(std::string("V"), _low_terminal, _low_src));
 
-  // NB: register false to avoid double-free.
   hephaestus::FESpaces fespaces;
-  fespaces.Register(std::string("HCurl"), _h_curl_fe_space.get(), false);
-  fespaces.Register(std::string("H1"), _h1_fe_space.get(), false);
+  fespaces.Register(std::string("HCurl"), _h_curl_fe_space);
+  fespaces.Register(std::string("H1"), _h1_fe_space);
 
-  // NB: register false to avoid double-free.
   hephaestus::GridFunctions gridfunctions;
-  gridfunctions.Register(std::string("GradPhi"), _grad_phi.get(), false);
-  gridfunctions.Register(std::string("V"), _v.get(), false);
+  gridfunctions.Register(std::string("GradPhi"), _grad_phi);
+  gridfunctions.Register(std::string("V"), _v);
 
   hephaestus::InputParameters sps_params;
   sps_params.SetParam("GradPotentialName", std::string("GradPhi"));
