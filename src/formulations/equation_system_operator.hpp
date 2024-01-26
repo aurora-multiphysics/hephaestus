@@ -46,7 +46,7 @@ public:
   // in formulation,
   std::vector<std::string> _active_aux_var_names;
 
-  std::vector<mfem::ParGridFunction *> _local_test_vars;
+  std::vector<std::shared_ptr<mfem::ParGridFunction>> _local_test_vars;
 
   int _myid{0};
   int _num_procs{1};
