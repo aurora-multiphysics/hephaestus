@@ -204,8 +204,6 @@ OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters & params,
   _ref_face = _elec_attrs.first;
 }
 
-OpenCoilSolver::~OpenCoilSolver() {}
-
 void
 OpenCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
                      const hephaestus::FESpaces & fespaces,

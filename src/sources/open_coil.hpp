@@ -37,7 +37,7 @@ public:
                  mfem::Array<int> coil_dom,
                  const std::pair<int, int> electrodes);
 
-  ~OpenCoilSolver() override;
+  ~OpenCoilSolver() override = default;
 
   void Init(hephaestus::GridFunctions & gridfunctions,
             const hephaestus::FESpaces & fespaces,
