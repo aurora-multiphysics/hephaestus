@@ -14,8 +14,7 @@ DiffusionKernel::Init(hephaestus::GridFunctions & gridfunctions,
                       hephaestus::BCMap & bc_map,
                       hephaestus::Coefficients & coefficients)
 {
-
-  _coef = coefficients._scalars.Get(_coef_name);
+  _coef = coefficients._scalars.GetShared(_coef_name);
 }
 
 void

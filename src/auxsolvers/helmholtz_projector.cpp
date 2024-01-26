@@ -42,7 +42,7 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
     mfem::mfem_error(error_message.c_str());
   }
 
-  _h_curl_fe_space = fespaces.Get(_hcurl_fespace_name); // NB: needs to be a pointer.
+  _h_curl_fe_space = fespaces.GetShared(_hcurl_fespace_name).get(); // NB: needs to be a pointer.
   if (_h_curl_fe_space == nullptr)
   {
     std::cout << _hcurl_fespace_name + " not found in fespaces when "

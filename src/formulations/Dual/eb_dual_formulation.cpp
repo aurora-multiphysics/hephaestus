@@ -37,7 +37,7 @@ EBDualFormulation::RegisterLorentzForceDensityAux(const std::string & f_field_na
   auxsolvers.Register(f_field_name,
                       std::make_shared<hephaestus::VectorGridFunctionCrossProductAux>(
                           f_field_name, f_field_name, j_field_name, b_field_name));
-  auxsolvers.Get(f_field_name)->SetPriority(2);
+  auxsolvers.GetShared(f_field_name)->SetPriority(2);
 }
 
 void
@@ -51,7 +51,7 @@ EBDualFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_na
       p_field_name,
       std::make_shared<hephaestus::VectorGridFunctionDotProductAux>(
           p_field_name, p_field_name, _electric_conductivity_name, e_field_name, e_field_name));
-  auxsolvers.Get(p_field_name)->SetPriority(2);
+  auxsolvers.GetShared(p_field_name)->SetPriority(2);
 }
 
 void
@@ -65,7 +65,9 @@ EBDualFormulation::RegisterCoefficients()
   coefficients._scalars.Register(
       _magnetic_reluctivity_name,
       std::make_shared<mfem::TransformedCoefficient>(
-          &_one_coef, coefficients._scalars.Get(_magnetic_permeability_name), fracFunc));
+          &_one_coef,
+          coefficients._scalars.GetShared(_magnetic_permeability_name).get(),
+          fracFunc));
   DualFormulation::RegisterCoefficients();
 }
 

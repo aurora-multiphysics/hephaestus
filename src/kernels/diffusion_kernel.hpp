@@ -21,7 +21,7 @@ public:
   void Apply(mfem::ParBilinearForm * blf) override;
 
   std::string _coef_name;
-  mfem::Coefficient * _coef{nullptr};
+  std::shared_ptr<mfem::Coefficient> _coef{nullptr};
 };
 
 } // namespace hephaestus

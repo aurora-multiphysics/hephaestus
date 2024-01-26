@@ -117,7 +117,7 @@ CurlCurlEquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
   coefficients._scalars.Register(
       _dtalpha_coef_name,
       std::make_shared<mfem::TransformedCoefficient>(
-          &_dt_coef, coefficients._scalars.Get(_alpha_coef_name), prodFunc));
+          &_dt_coef, coefficients._scalars.GetShared(_alpha_coef_name).get(), prodFunc));
   TimeDependentEquationSystem::Init(gridfunctions, fespaces, bc_map, coefficients);
 }
 

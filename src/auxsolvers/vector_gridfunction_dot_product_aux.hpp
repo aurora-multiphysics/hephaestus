@@ -36,11 +36,11 @@ public:
 class VectorGridFunctionDotProductAux : public CoefficientAux
 {
 private:
-  mfem::Coefficient * _scaling_coef{nullptr};
-  mfem::ParGridFunction * _u_gf_re{nullptr};
-  mfem::ParGridFunction * _u_gf_im{nullptr};
-  mfem::ParGridFunction * _v_gf_re{nullptr};
-  mfem::ParGridFunction * _v_gf_im{nullptr};
+  std::shared_ptr<mfem::Coefficient> _scaling_coef{nullptr};
+  std::shared_ptr<mfem::ParGridFunction> _u_gf_re{nullptr};
+  std::shared_ptr<mfem::ParGridFunction> _u_gf_im{nullptr};
+  std::shared_ptr<mfem::ParGridFunction> _v_gf_re{nullptr};
+  std::shared_ptr<mfem::ParGridFunction> _v_gf_im{nullptr};
 
   const std::string _u_gf_real_name;
   const std::string _v_gf_real_name;
