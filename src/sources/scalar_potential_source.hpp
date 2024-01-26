@@ -35,7 +35,7 @@ public:
 
   mfem::ParFiniteElementSpace * _h1_fe_space;
   mfem::ParFiniteElementSpace * _h_curl_fe_space;
-  mfem::ParGridFunction * _p; // Potential
+  std::shared_ptr<mfem::ParGridFunction> _p{nullptr}; // Potential
   hephaestus::BCMap * _bc_map;
   mfem::Coefficient * _beta_coef;
 
@@ -56,8 +56,8 @@ public:
   mutable std::unique_ptr<hephaestus::DefaultH1PCGSolver> _a0_solver{nullptr};
 
   std::unique_ptr<mfem::ParLinearForm> _b0{nullptr};
-  mfem::ParGridFunction *_grad_p, *_x_div;
-
+  std::shared_ptr<mfem::ParGridFunction> _grad_p{nullptr};
+  mfem::ParGridFunction * _x_div;
   mfem::VectorCoefficient * _source_vec_coef;
   mfem::ParGridFunction * _div_free_src_gf; // Source field
 

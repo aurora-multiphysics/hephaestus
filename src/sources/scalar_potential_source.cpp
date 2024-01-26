@@ -39,21 +39,21 @@ ScalarPotentialSource::Init(hephaestus::GridFunctions & gridfunctions,
     mfem::mfem_error(error_message.c_str());
   }
 
-  _p = gridfunctions.Get(_potential_gf_name);
+  _p = gridfunctions.GetShared(_potential_gf_name);
   if (_p == nullptr)
   {
     std::cout << _potential_gf_name + " not found in gridfunctions when "
                                       "creating ScalarPotentialSource. "
                                       "Creating new ParGridFunction\n";
-    _p = new mfem::ParGridFunction(_h1_fe_space);
-    gridfunctions.Register(_potential_gf_name, _p, true);
+    _p = std::make_shared<mfem::ParGridFunction>(_h1_fe_space);
+    gridfunctions.Register(_potential_gf_name, _p);
   }
 
-  _grad_p = gridfunctions.Get(_grad_phi_name);
+  _grad_p = gridfunctions.GetShared(_grad_phi_name);
   if (_grad_p == nullptr)
   {
-    _grad_p = new mfem::ParGridFunction(_h_curl_fe_space);
-    gridfunctions.Register(_grad_phi_name, _grad_p, true);
+    _grad_p = std::make_shared<mfem::ParGridFunction>(_h_curl_fe_space);
+    gridfunctions.Register(_grad_phi_name, _grad_p);
   }
 
   _bc_map = &bc_map;

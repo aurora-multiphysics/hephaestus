@@ -32,23 +32,23 @@ public:
   }
 
   /// Register association between field @a field and name @a field_name
-  void Register(const std::string & field_name, T * field, bool own_data)
-  {
-    // 0. Prevent double-registration of field.
-    CheckForDoubleRegistration(field_name, field);
+  // void Register(const std::string & field_name, T * field, bool own_data)
+  // {
+  //   // 0. Prevent double-registration of field.
+  //   CheckForDoubleRegistration(field_name, field);
 
-    // 1. Deregister existing field with that name.
-    Deregister(field_name);
+  //   // 1. Deregister existing field with that name.
+  //   Deregister(field_name);
 
-    // 2. Add to field map.
-    _field_map[field_name] = field;
+  //   // 2. Add to field map.
+  //   _field_map[field_name] = field;
 
-    // 3. Keep track of ownership.
-    if (own_data)
-    {
-      _stored_ptrs_map.emplace(field_name, std::shared_ptr<T>(field));
-    }
-  }
+  //   // 3. Keep track of ownership.
+  //   if (own_data)
+  //   {
+  //     _stored_ptrs_map.emplace(field_name, std::shared_ptr<T>(field));
+  //   }
+  // }
 
   /// Register with a shared pointer (own_data = true).
   void Register(const std::string & field_name, std::shared_ptr<T> field)
