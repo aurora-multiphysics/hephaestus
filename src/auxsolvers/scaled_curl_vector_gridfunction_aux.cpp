@@ -8,8 +8,11 @@ ScaledCurlVectorGridFunctionAux::ScaledCurlVectorGridFunctionAux(
     const std::string & scaled_gf_name,
     const std::string & coef_name,
     const double & aConst,
+    const double & bConst,
+    const std::string & shift_gf_name,
     const hephaestus::InputParameters & solver_options)
-  : ScaledVectorGridFunctionAux(input_gf_name, scaled_gf_name, coef_name, aConst, solver_options)
+  : ScaledVectorGridFunctionAux(
+        input_gf_name, scaled_gf_name, coef_name, aConst, bConst, shift_gf_name, solver_options)
 {
 }
 

@@ -48,14 +48,19 @@ EFormulation::RegisterCoefficients()
 }
 
 void
-EFormulation::RegisterCurrentDensityAux(const std::string & j_field_name)
+EFormulation::RegisterCurrentDensityAux(const std::string & j_field_name,
+                                        const std::string & external_j_field_name)
 {
   //* Current density J = Jᵉ + σE
   //* Induced electric field, Jind = σE
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(j_field_name,
-                      new hephaestus::ScaledVectorGridFunctionAux(
-                          _h_curl_var_name, j_field_name, _electric_conductivity_name),
+                      new hephaestus::ScaledVectorGridFunctionAux(_h_curl_var_name,
+                                                                  j_field_name,
+                                                                  _electric_conductivity_name,
+                                                                  1.0,
+                                                                  1.0,
+                                                                  external_j_field_name),
                       true);
 }
 

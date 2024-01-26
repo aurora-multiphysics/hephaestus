@@ -18,7 +18,8 @@ public:
   ~EBDualFormulation() override = default;
 
   // Enable auxiliary calculation of J ∈ H(div)
-  void RegisterCurrentDensityAux(const std::string & j_field_name) override;
+  void RegisterCurrentDensityAux(const std::string & j_field_name,
+                                 const std::string & external_j_field_name = "") override;
 
   // Enable auxiliary calculation of F ∈ L2
   void RegisterLorentzForceDensityAux(const std::string & f_field_name,

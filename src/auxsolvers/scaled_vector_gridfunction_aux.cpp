@@ -4,16 +4,23 @@
 
 namespace hephaestus
 {
-
+// result = ax+by vector gridfunction aux
+// y should be in same FESpace as result
+// shift_gf_name?
+// b_Const
 ScaledVectorGridFunctionAux::ScaledVectorGridFunctionAux(std::string input_gf_name,
                                                          std::string scaled_gf_name,
                                                          std::string coef_name,
                                                          const double & aConst,
+                                                         const double & bConst,
+                                                         std::string shift_gf_name,
                                                          hephaestus::InputParameters solver_options)
   : _input_gf_name(std::move(input_gf_name)),
     _scaled_gf_name(std::move(scaled_gf_name)),
+    _shift_gf_name(std::move(shift_gf_name)),
     _coef_name(std::move(coef_name)),
     _a_const(aConst),
+    _b_const(bConst),
     _solver_options(std::move(solver_options)),
 
     _a(nullptr),
@@ -46,7 +53,16 @@ ScaledVectorGridFunctionAux::Init(const hephaestus::GridFunctions & gridfunction
     MFEM_ABORT("Coefficient " << _coef_name
                               << " not found when initializing ScaledVectorGridFunctionAux");
   }
-
+  if (!_shift_gf_name.empty())
+  {
+    _shift_gf = gridfunctions.Get(_shift_gf_name);
+    // TODO - add check that shift_gf is on same FESpace as scaled_gf
+    if (_shift_gf == nullptr)
+    {
+      MFEM_ABORT("GridFunction " << _shift_gf_name
+                                 << " not found when initializing ScaledVectorGridFunctionAux");
+    }
+  }
   _test_fes = _scaled_gf->ParFESpace();
   _trial_fes = _input_gf->ParFESpace();
   BuildBilinearForm();
@@ -94,6 +110,10 @@ ScaledVectorGridFunctionAux::Solve(double t)
   x = 0.0;
   _solver->Mult(b, x);
   _scaled_gf->SetFromTrueDofs(x);
+  if (_shift_gf != nullptr)
+  {
+    _scaled_gf->Add(_b_const, *_shift_gf);
+  }
 }
 
 } // namespace hephaestus
