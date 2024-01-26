@@ -362,8 +362,8 @@ void
 ClosedCoilSolver::SolveTransition()
 {
 
-  mfem::ParGridFunction v_parent(_h1_fe_space_parent);
-  v_parent = 0.0;
+  auto v_parent = std::make_shared<mfem::ParGridFunction>(_h1_fe_space_parent);
+  *v_parent = 0.0;
 
   hephaestus::FESpaces fespaces;
   hephaestus::BCMap bc_maps;
@@ -373,7 +373,7 @@ ClosedCoilSolver::SolveTransition()
 
   hephaestus::GridFunctions gridfunctions;
   gridfunctions.Register("GradPhi_parent", _grad_phi_parent, false);
-  gridfunctions.Register("V_parent", &v_parent, false);
+  gridfunctions.Register("V_parent", v_parent);
 
   hephaestus::InputParameters ocs_params;
   ocs_params.SetParam("GradPotentialName", std::string("GradPhi_parent"));
@@ -387,7 +387,7 @@ ClosedCoilSolver::SolveTransition()
   opencoil.Init(gridfunctions, fespaces, bc_maps, coefs);
   opencoil.Apply(_final_lf.get());
 
-  _mesh_coil->Transfer(v_parent, *_v_coil);
+  _mesh_coil->Transfer(*v_parent, *_v_coil);
 }
 
 void
