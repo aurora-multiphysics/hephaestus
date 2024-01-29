@@ -63,8 +63,6 @@ protected:
                         ground_terminal,
                         std::make_shared<mfem::FunctionCoefficient>(PotentialGround)));
 
-    auto * j_src_coef = new mfem::VectorFunctionCoefficient(3, SourceCurrent);
-
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./cylinder-hex-q2.gen")).c_str(), 1, 1);
 
     hephaestus::Outputs outputs;
