@@ -10,19 +10,24 @@ namespace hephaestus
 class VectorGridFunctionDotProductCoefficient : public mfem::Coefficient
 {
 private:
-  const mfem::ParGridFunction * _u_gf_re{nullptr};
-  const mfem::ParGridFunction * _u_gf_im{nullptr};
-  const mfem::ParGridFunction * _v_gf_re{nullptr};
-  const mfem::ParGridFunction * _v_gf_im{nullptr};
+  const std::shared_ptr<mfem::ParGridFunction> _u_gf_re{nullptr};
+  const std::shared_ptr<mfem::ParGridFunction> _u_gf_im{nullptr};
+  const std::shared_ptr<mfem::ParGridFunction> _v_gf_re{nullptr};
+  const std::shared_ptr<mfem::ParGridFunction> _v_gf_im{nullptr};
   mfem::Coefficient & _coef;
 
 public:
-  VectorGridFunctionDotProductCoefficient(mfem::Coefficient & coef,
-                                          const mfem::ParGridFunction * u_gf_re,
-                                          const mfem::ParGridFunction * v_gf_re,
-                                          const mfem::ParGridFunction * u_gf_im = nullptr,
-                                          const mfem::ParGridFunction * v_gf_im = nullptr)
-    : _u_gf_re(u_gf_re), _u_gf_im(u_gf_im), _v_gf_re(v_gf_re), _v_gf_im(v_gf_im), _coef(coef)
+  VectorGridFunctionDotProductCoefficient(
+      mfem::Coefficient & coef,
+      const std::shared_ptr<mfem::ParGridFunction> u_gf_re,
+      const std::shared_ptr<mfem::ParGridFunction> v_gf_re,
+      const std::shared_ptr<mfem::ParGridFunction> u_gf_im = nullptr,
+      const std::shared_ptr<mfem::ParGridFunction> v_gf_im = nullptr)
+    : _u_gf_re{std::move(u_gf_re)},
+      _v_gf_re{std::move(v_gf_re)},
+      _u_gf_im{std::move(u_gf_im)},
+      _v_gf_im{std::move(v_gf_im)},
+      _coef(coef)
   {
   }
 
