@@ -24,8 +24,8 @@ public:
       const std::shared_ptr<mfem::ParGridFunction> u_gf_im = nullptr,
       const std::shared_ptr<mfem::ParGridFunction> v_gf_im = nullptr)
     : _u_gf_re{std::move(u_gf_re)},
-      _v_gf_re{std::move(v_gf_re)},
       _u_gf_im{std::move(u_gf_im)},
+      _v_gf_re{std::move(v_gf_re)},
       _v_gf_im{std::move(v_gf_im)},
       _coef(coef)
   {
