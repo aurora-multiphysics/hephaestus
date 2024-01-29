@@ -48,9 +48,8 @@ protected:
     hephaestus::BCMap bc_map;
     auto edot_vec_coef = std::make_shared<mfem::VectorFunctionCoefficient>(3, EdotBc);
     bc_map.Register("tangential_dEdt",
-                    std::make_shared<hephaestus::VectorDirichletBC>(std::string("electric_field"),
-                                                                    mfem::Array<int>({1, 2, 3}),
-                                                                    edot_vec_coef.get()));
+                    std::make_shared<hephaestus::VectorDirichletBC>(
+                        std::string("electric_field"), mfem::Array<int>({1, 2, 3}), edot_vec_coef));
     coefficients._scalars.Register("magnetic_permeability",
                                    std::make_shared<mfem::ConstantCoefficient>(1.0));
     coefficients._vectors.Register("surface_tangential_dEdt", edot_vec_coef);

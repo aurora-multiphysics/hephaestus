@@ -55,8 +55,8 @@ protected:
                     std::make_shared<hephaestus::VectorDirichletBC>(
                         std::string("magnetic_vector_potential"),
                         mfem::Array<int>({1, 2, 3}),
-                        new mfem::VectorFunctionCoefficient(3, ABcR),
-                        new mfem::VectorFunctionCoefficient(3, ABcI)));
+                        std::make_shared<mfem::VectorFunctionCoefficient>(3, ABcR),
+                        std::make_shared<mfem::VectorFunctionCoefficient>(3, ABcI)));
 
     mfem::Array<int> high_terminal(1);
     high_terminal[0] = 1;

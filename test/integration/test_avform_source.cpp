@@ -64,7 +64,7 @@ protected:
                     std::make_shared<hephaestus::VectorDirichletBC>(
                         std::string("dmagnetic_vector_potential_dt"),
                         mfem::Array<int>({1, 2, 3}),
-                        adot_vec_coef.get()));
+                        adot_vec_coef));
     coefficients._vectors.Register("surface_tangential_dAdt", adot_vec_coef);
     coefficients._scalars.Register("electrical_conductivity",
                                    std::make_shared<mfem::ConstantCoefficient>(1.0));

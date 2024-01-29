@@ -50,7 +50,7 @@ protected:
     bc_map.Register(
         "tangential_dHdt",
         std::make_shared<hephaestus::VectorDirichletBC>(
-            std::string("dmagnetic_field_dt"), mfem::Array<int>({1, 2, 3}), hdot_vec_coef.get()));
+            std::string("dmagnetic_field_dt"), mfem::Array<int>({1, 2, 3}), hdot_vec_coef));
     coefficients._vectors.Register("surface_tangential_dHdt", hdot_vec_coef);
     coefficients._scalars.Register("magnetic_permeability",
                                    std::make_shared<mfem::ConstantCoefficient>(1.0));

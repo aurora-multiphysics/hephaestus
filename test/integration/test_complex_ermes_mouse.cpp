@@ -59,8 +59,8 @@ protected:
                     std::make_shared<hephaestus::VectorDirichletBC>(
                         std::string("electric_field"),
                         dirichlet_attr,
-                        new mfem::VectorFunctionCoefficient(3, EBcR),
-                        new mfem::VectorFunctionCoefficient(3, EBcI)));
+                        std::make_shared<mfem::VectorFunctionCoefficient>(3, EBcR),
+                        std::make_shared<mfem::VectorFunctionCoefficient>(3, EBcI)));
 
     mfem::Array<int> wgi_in_attr(1);
     wgi_in_attr[0] = 5;
