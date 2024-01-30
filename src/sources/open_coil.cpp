@@ -183,6 +183,8 @@ OpenCoilSolver::OpenCoilSolver(const hephaestus::InputParameters & params,
     _i_coef_name(params.GetParam<std::string>("IFuncCoefName")),
     _cond_coef_name(params.GetParam<std::string>("ConductivityCoefName")),
     _grad_phi_transfer(params.GetOptionalParam<bool>("GradPhiTransfer", true)),
+    _source_efield_gf_name(params.GetOptionalParam<std::string>("SourceElectricFieldName", "")),
+    _source_jfield_gf_name(params.GetOptionalParam<std::string>("SourceCurrentDensityName", "")),
     _coil_domains(std::move(coil_dom)),
     _elec_attrs(electrodes),
     _high_src(highV),
@@ -256,6 +258,38 @@ OpenCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     mfem::mfem_error("GradPhi GridFunction must be of HCurl type.");
   }
 
+  if (!_source_efield_gf_name.empty())
+  {
+    _source_electric_field = gridfunctions.Get(_source_efield_gf_name);
+    if (_source_electric_field == nullptr)
+    {
+      const std::string error_message = _source_efield_gf_name + " not found in gridfunctions when "
+                                                                 "creating OpenCoilSolver\n";
+      mfem::mfem_error(error_message.c_str());
+    }
+    else if (_source_electric_field->ParFESpace()->FEColl()->GetContType() !=
+             mfem::FiniteElementCollection::TANGENTIAL)
+    {
+      mfem::mfem_error("Electric field GridFunction must be of HCurl type.");
+    }
+  }
+
+  if (!_source_jfield_gf_name.empty())
+  {
+    _source_current_density = gridfunctions.Get(_source_jfield_gf_name);
+    if (_source_current_density == nullptr)
+    {
+      const std::string error_message = _source_jfield_gf_name + " not found in gridfunctions when "
+                                                                 "creating OpenCoilSolver\n";
+      mfem::mfem_error(error_message.c_str());
+    }
+    else if (_source_current_density->ParFESpace()->FEColl()->GetContType() !=
+             mfem::FiniteElementCollection::NORMAL)
+    {
+      mfem::mfem_error("Current density GridFunction must be of HDiv type.");
+    }
+  }
+
   _order_hcurl = _grad_phi_parent->ParFESpace()->FEColl()->GetOrder();
 
   _v_parent = gridfunctions.Get(_v_gf_name);
@@ -297,14 +331,36 @@ OpenCoilSolver::Apply(mfem::ParLinearForm * lf)
 
   double i = _itotal->Eval(*tr, ip);
 
-  *_grad_phi_parent = 0.0;
   if (_grad_phi_transfer)
+  {
+    *_grad_phi_parent = 0.0;
     _grad_phi_parent->Add(i, *_grad_phi_t_parent);
+  }
 
   if (_v_parent != nullptr)
   {
     *_v_parent = 0.0;
     _v_parent->Add(i, *_vt_parent);
+  }
+
+  if (_source_electric_field)
+  {
+    *_source_electric_field = *_grad_phi_parent;
+  }
+
+  if (_source_current_density)
+  {
+    hephaestus::GridFunctions aux_gf;
+    aux_gf.Register("grad_phi", _grad_phi_parent, false);
+    aux_gf.Register("source_current_density", _source_current_density, false);
+
+    hephaestus::Coefficients aux_coef;
+    aux_coef._scalars.Register("electrical_conductivity", _sigma, false);
+
+    hephaestus::ScaledVectorGridFunctionAux current_density_auxsolver(
+        "grad_phi", "source_current_density", "electrical_conductivity");
+    current_density_auxsolver.Init(aux_gf, aux_coef);
+    current_density_auxsolver.Solve();
   }
 
   lf->Add(i, *_final_lf);

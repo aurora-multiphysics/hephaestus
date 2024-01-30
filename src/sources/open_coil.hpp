@@ -1,6 +1,7 @@
 #pragma once
 #include "helmholtz_projector.hpp"
 #include "scalar_potential_source.hpp"
+#include "scaled_vector_gridfunction_aux.hpp"
 #include "source_base.hpp"
 
 namespace hephaestus
@@ -93,6 +94,8 @@ private:
   std::string _v_gf_name;
   std::string _i_coef_name;
   std::string _cond_coef_name;
+  std::string _source_efield_gf_name;
+  std::string _source_jfield_gf_name;
 
   // Parent mesh, FE space, and current
   mfem::ParMesh * _mesh_parent{nullptr};
@@ -102,6 +105,9 @@ private:
 
   mfem::ParGridFunction * _v_parent{nullptr};
   std::unique_ptr<mfem::ParGridFunction> _vt_parent{nullptr};
+
+  mfem::ParGridFunction * _source_electric_field{nullptr};
+  mfem::ParGridFunction * _source_current_density{nullptr};
 
   // Child mesh and FE spaces
   std::unique_ptr<mfem::ParSubMesh> _mesh{nullptr};
