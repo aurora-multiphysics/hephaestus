@@ -34,6 +34,8 @@ public:
   virtual void Init(mfem::Vector & X);
   virtual void Solve(mfem::Vector & X);
   void Mult(const mfem::Vector & x, mfem::Vector & y) const override {}
+  void SetSolver(const mfem::HypreParMatrix & M);
+  void SetSolver(const mfem::HypreParMatrix & M, mfem::ParFiniteElementSpace * edge_fespace);
 
   mfem::Array<int> _true_offsets, _block_true_offsets;
   // Vector of names of state gridfunctions used in formulation, ordered by
@@ -60,6 +62,8 @@ public:
 
   mfem::OperatorHandle _block_a;
   mfem::BlockVector _true_x, _true_rhs;
+
+  std::unique_ptr<mfem::HypreSolver> _solver{nullptr};
 };
 
 } // namespace hephaestus

@@ -51,6 +51,15 @@ public:
     }
     return param;
   };
+
+  [[nodiscard]] bool HasParam(std::string param_name) const
+  {
+    bool has;
+    if (_params.find(param_name) == _params.end())
+      return false;
+    else
+      return true;
+  };
 };
 
 } // namespace hephaestus
