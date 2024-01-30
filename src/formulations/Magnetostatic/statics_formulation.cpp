@@ -43,8 +43,11 @@ StaticsFormulation::ConstructOperator()
   hephaestus::InputParameters & solver_options = GetProblem()->_solver_options;
   solver_options.SetParam("HCurlVarName", _h_curl_var_name);
   solver_options.SetParam("StiffnessCoefName", _alpha_coef_name);
+
   if (!solver_options.HasParam("Solver"))
-    solver_options.SetParam("Solver", "HCurl_FGMRES");
+  {
+    solver_options.SetParam("Solver", std::string("HCurl_FGMRES"));
+  }
 
   _problem->_eq_sys_operator =
       std::make_unique<hephaestus::StaticsOperator>(*(_problem->_pmesh),

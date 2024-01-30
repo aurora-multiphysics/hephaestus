@@ -103,6 +103,7 @@ main(int argc, char * argv[])
   solver_options.SetParam("AbsTolerance", float(1.0e-16));
   solver_options.SetParam("MaxIter", (unsigned int)500);
   solver_options.SetParam("PrintLevel", 2);
+  solver_options.SetParam("Solver", std::string("HCurl_PCG"));
   problem_builder->SetSolverOptions(solver_options);
 
   hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
