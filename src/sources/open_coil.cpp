@@ -416,18 +416,11 @@ OpenCoilSolver::SPSCurrent()
   gridfunctions.Register(std::string("GradPhi"), _grad_phi_child.get(), false);
   gridfunctions.Register(std::string("V"), _phi_child.get(), false);
 
-  hephaestus::InputParameters sps_params;
-  sps_params.SetParam("GradPotentialName", std::string("GradPhi"));
-  sps_params.SetParam("PotentialName", std::string("V"));
-  sps_params.SetParam("HCurlFESpaceName", std::string("HCurl"));
-  sps_params.SetParam("H1FESpaceName", std::string("H1"));
-  sps_params.SetParam("SolverOptions", _solver_options);
-  sps_params.SetParam("ConductivityCoefName", std::string("electric_conductivity"));
-
   hephaestus::Coefficients coefs;
   coefs._scalars.Register("electric_conductivity", _sigma, false);
 
-  hephaestus::ScalarPotentialSource sps(sps_params);
+  hephaestus::ScalarPotentialSource sps(
+      "GradPhi", "V", "HCurl", "H1", "electric_conductivity", _solver_options);
   sps.Init(gridfunctions, fespaces, _bc_maps, coefs);
 
   mfem::ParLinearForm dummy(_h_curl_fe_space_child.get());
