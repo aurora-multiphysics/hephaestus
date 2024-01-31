@@ -14,9 +14,20 @@ class ClosedCoilSolver : public hephaestus::Source
 {
 
 public:
-  ClosedCoilSolver(const hephaestus::InputParameters & params,
+  ClosedCoilSolver(std::string source_efield_gf_name,
+                   std::string hcurl_fespace_name,
+                   std::string h1_fespace_name,
+                   std::string i_coef_name,
+                   std::string cond_coef_name,
                    mfem::Array<int> coil_dom,
-                   const int electrode_face);
+                   const int electrode_face,
+                   bool grad_phi_transfer = false,
+                   std::string source_jfield_gf_name = "",
+                   hephaestus::InputParameters solver_options =
+                       hephaestus::InputParameters({{"Tolerance", float(1.0e-18)},
+                                                    {"AbsTolerance", float(1.0e-18)},
+                                                    {"MaxIter", (unsigned int)1000},
+                                                    {"PrintLevel", 1}}));
 
   // Override virtual Source destructor to avoid leaks.
   ~ClosedCoilSolver() override;

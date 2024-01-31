@@ -25,7 +25,6 @@ TEST_CASE("ClosedCoilTest", "[CheckData]")
   mfem::ConstantCoefficient itot(ival);
   mfem::ConstantCoefficient conductivity(cond_val);
 
-  hephaestus::InputParameters ccs_params;
   hephaestus::BCMap bc_maps;
 
   hephaestus::Coefficients coefficients;
@@ -38,17 +37,11 @@ TEST_CASE("ClosedCoilTest", "[CheckData]")
   hephaestus::GridFunctions gridfunctions;
   gridfunctions.Register(std::string("GradPhi"), &grad_phi, false);
 
-  ccs_params.SetParam("H1FESpaceName", std::string("H1"));
-  ccs_params.SetParam("HCurlFESpaceName", std::string("HCurl"));
-  ccs_params.SetParam("GradPotentialName", std::string("GradPhi"));
-  ccs_params.SetParam("IFuncCoefName", std::string("Itotal"));
-  ccs_params.SetParam("ConductivityCoefName", std::string("Conductivity"));
-  ccs_params.SetParam("GradPhiTransfer", true);
-
   int elec_attr = 7;
   mfem::Array<int> submesh_domains({3, 4, 5, 6});
 
-  hephaestus::ClosedCoilSolver closedcoil(ccs_params, submesh_domains, elec_attr);
+  hephaestus::ClosedCoilSolver closedcoil(
+      "GradPhi", "HCurl", "H1", "Itotal", "Conductivity", submesh_domains, elec_attr, true);
   closedcoil.Init(gridfunctions, fespaces, bc_maps, coefficients);
   mfem::ParLinearForm dummy(&h_curl_fe_space);
   closedcoil.Apply(&dummy);

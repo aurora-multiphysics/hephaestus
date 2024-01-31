@@ -35,17 +35,16 @@ defineSources()
   while (ss >> att)
     coil_domains.Append(att);
 
-  hephaestus::InputParameters coilsolver_pars;
-  coilsolver_pars.SetParam("HCurlFESpaceName", std::string("HCurl"));
-  coilsolver_pars.SetParam("GradPotentialName", std::string("source_grad_phi"));
-  coilsolver_pars.SetParam("IFuncCoefName", std::string("I"));
-  coilsolver_pars.SetParam("ConductivityCoefName", std::string("electrical_conductivity"));
-  coilsolver_pars.SetParam("H1FESpaceName", std::string("H1"));
-  coilsolver_pars.SetParam("GradPhiTransfer", true);
-
   hephaestus::Sources sources;
   sources.Register("source",
-                   new hephaestus::ClosedCoilSolver(coilsolver_pars, coil_domains, electrode_attr),
+                   new hephaestus::ClosedCoilSolver("source_grad_phi",
+                                                    "HCurl",
+                                                    "H1",
+                                                    "I",
+                                                    "electrical_conductivity",
+                                                    coil_domains,
+                                                    electrode_attr,
+                                                    true),
                    true);
   return sources;
 }

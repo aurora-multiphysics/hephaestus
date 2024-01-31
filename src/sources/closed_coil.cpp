@@ -26,26 +26,24 @@ pushIfUnique(std::vector<T> & vec, const T el)
 
 // Base class methods
 
-ClosedCoilSolver::ClosedCoilSolver(const hephaestus::InputParameters & params,
+ClosedCoilSolver::ClosedCoilSolver(std::string source_efield_gf_name,
+                                   std::string hcurl_fespace_name,
+                                   std::string h1_fespace_name,
+                                   std::string i_coef_name,
+                                   std::string cond_coef_name,
                                    mfem::Array<int> coil_dom,
-                                   const int electrode_face)
-  : _hcurl_fespace_name(params.GetParam<std::string>("HCurlFESpaceName")),
-    _h1_fespace_name(params.GetParam<std::string>("H1FESpaceName")),
-    _grad_phi_name(params.GetParam<std::string>("GradPotentialName")),
-    _i_coef_name(params.GetParam<std::string>("IFuncCoefName")),
-    _cond_coef_name(params.GetParam<std::string>("ConductivityCoefName")),
-    _grad_phi_transfer(params.GetOptionalParam<bool>("GradPhiTransfer", false)),
+                                   const int electrode_face,
+                                   bool grad_phi_transfer,
+                                   std::string source_jfield_gf_name,
+                                   hephaestus::InputParameters solver_options)
+  : _hcurl_fespace_name(std::move(hcurl_fespace_name)),
+    _h1_fespace_name(std::move(h1_fespace_name)),
+    _grad_phi_name(std::move(source_efield_gf_name)),
+    _i_coef_name(std::move(i_coef_name)),
+    _cond_coef_name(std::move(cond_coef_name)),
+    _grad_phi_transfer(std::move(grad_phi_transfer)),
     _coil_domains(std::move(coil_dom))
 {
-  hephaestus::InputParameters default_pars;
-  default_pars.SetParam("Tolerance", float(1e-18));
-  default_pars.SetParam("AbsTolerance", float(1e-18));
-  default_pars.SetParam("MaxIter", (unsigned int)1000);
-  default_pars.SetParam("PrintLevel", 1);
-
-  _solver_options =
-      params.GetOptionalParam<hephaestus::InputParameters>("SolverOptions", default_pars);
-
   _elec_attrs.first = electrode_face;
 }
 
@@ -67,7 +65,6 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
                        hephaestus::BCMap & bc_map,
                        hephaestus::Coefficients & coefficients)
 {
-
   // Retrieving the parent FE space and mesh
 
   _h_curl_fe_space_parent = fespaces.Get(_hcurl_fespace_name);
@@ -154,7 +151,6 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
 void
 ClosedCoilSolver::Apply(mfem::ParLinearForm * lf)
 {
-
   // The transformation and integration points themselves are not relevant, it's
   // just so we can call Eval
   mfem::ElementTransformation * tr = _mesh_parent->GetElementTransformation(0);
@@ -361,7 +357,6 @@ ClosedCoilSolver::PrepareCoilSubmesh()
 void
 ClosedCoilSolver::SolveTransition()
 {
-
   mfem::ParGridFunction v_parent(_h1_fe_space_parent);
   v_parent = 0.0;
 
@@ -518,7 +513,6 @@ ClosedCoilSolver::RestoreAttributes()
 bool
 ClosedCoilSolver::IsInDomain(const int el, const mfem::Array<int> & dom, const mfem::ParMesh * mesh)
 {
-
   // This is for ghost elements
   if (el < 0)
     return false;
@@ -537,7 +531,6 @@ ClosedCoilSolver::IsInDomain(const int el, const mfem::Array<int> & dom, const m
 bool
 ClosedCoilSolver::IsInDomain(const int el, const int & sd, const mfem::ParMesh * mesh)
 {
-
   // This is for ghost elements
   if (el < 0)
     return false;
@@ -548,7 +541,6 @@ ClosedCoilSolver::IsInDomain(const int el, const int & sd, const mfem::ParMesh *
 mfem::Vector
 ClosedCoilSolver::ElementCentre(int el, mfem::ParMesh * pm)
 {
-
   mfem::Array<int> elem_vtx;
   mfem::Vector com(3);
   com = 0.0;
@@ -575,7 +567,6 @@ Plane3D::Plane3D()
 void
 Plane3D::Make3DPlane(const mfem::ParMesh * pm, const int face)
 {
-
   MFEM_ASSERT(pm->Dimension() == 3, "Plane3D only works in 3-dimensional meshes!");
 
   mfem::Array<int> face_vtx;
