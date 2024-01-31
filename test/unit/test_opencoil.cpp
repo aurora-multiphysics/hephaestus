@@ -29,7 +29,6 @@ TEST_CASE("OpenCoilTest", "[CheckData]")
   mfem::ConstantCoefficient itot(ival);
   mfem::ConstantCoefficient conductivity(cond_val);
 
-  hephaestus::InputParameters ocs_params;
   hephaestus::BCMap bc_maps;
 
   hephaestus::Coefficients coefficients;
@@ -42,16 +41,12 @@ TEST_CASE("OpenCoilTest", "[CheckData]")
   hephaestus::GridFunctions gridfunctions;
   gridfunctions.Register(std::string("E"), &e, false);
 
-  ocs_params.SetParam("GradPotentialName", std::string("E"));
-  ocs_params.SetParam("IFuncCoefName", std::string("Itotal"));
-  ocs_params.SetParam("PotentialName", std::string("V"));
-  ocs_params.SetParam("ConductivityCoefName", std::string("Conductivity"));
-
   std::pair<int, int> elec_attrs{1, 2};
   mfem::Array<int> submesh_domains;
   submesh_domains.Append(1);
 
-  hephaestus::OpenCoilSolver opencoil(ocs_params, submesh_domains, elec_attrs);
+  hephaestus::OpenCoilSolver opencoil(
+      "E", "V", "Itotal", "Conductivity", submesh_domains, elec_attrs);
   opencoil.Init(gridfunctions, fespaces, bc_maps, coefficients);
   mfem::ParLinearForm dummy(&h_curl_fe_space);
   opencoil.Apply(&dummy);

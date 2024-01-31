@@ -29,15 +29,12 @@ defineCoefficients(double Itotal)
 hephaestus::Sources
 defineSources(std::pair<int, int> elec, mfem::Array<int> coil_domains)
 {
-  hephaestus::InputParameters coilsolver_pars;
-  coilsolver_pars.SetParam("GradPotentialName", std::string("grad_phi"));
-  coilsolver_pars.SetParam("PotentialName", std::string("auxiliary_potential"));
-  coilsolver_pars.SetParam("IFuncCoefName", std::string("I"));
-  coilsolver_pars.SetParam("ConductivityCoefName", std::string("electrical_conductivity"));
-
   hephaestus::Sources sources;
   sources.Register(
-      "source", new hephaestus::OpenCoilSolver(coilsolver_pars, coil_domains, elec), true);
+      "source",
+      new hephaestus::OpenCoilSolver(
+          "grad_phi", "auxiliary_potential", "I", "electrical_conductivity", coil_domains, elec),
+      true);
   return sources;
 }
 

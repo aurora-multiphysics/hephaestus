@@ -375,14 +375,15 @@ ClosedCoilSolver::SolveTransition()
   gridfunctions.Register("GradPhi_parent", _grad_phi_parent, false);
   gridfunctions.Register("V_parent", &v_parent, false);
 
-  hephaestus::InputParameters ocs_params;
-  ocs_params.SetParam("GradPotentialName", std::string("GradPhi_parent"));
-  ocs_params.SetParam("ConductivityCoefName", std::string("electrical_conductivity"));
-  ocs_params.SetParam("IFuncCoefName", std::string("I"));
-  ocs_params.SetParam("PotentialName", std::string("V_parent"));
-  ocs_params.SetParam("SolverOptions", _solver_options);
-
-  hephaestus::OpenCoilSolver opencoil(ocs_params, _transition_domain, _elec_attrs);
+  hephaestus::OpenCoilSolver opencoil("GradPhi_parent",
+                                      "V_parent",
+                                      "I",
+                                      "electrical_conductivity",
+                                      _transition_domain,
+                                      _elec_attrs,
+                                      true,
+                                      "",
+                                      _solver_options);
 
   opencoil.Init(gridfunctions, fespaces, bc_maps, coefs);
   opencoil.Apply(_final_lf.get());
