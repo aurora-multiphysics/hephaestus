@@ -39,7 +39,7 @@ public:
                  std::string cond_coef_name,
                  mfem::Array<int> coil_dom,
                  const std::pair<int, int> electrodes,
-                 bool grad_phi_transfer = true,
+                 bool electric_field_transfer = true,
                  std::string source_jfield_gf_name = "",
                  hephaestus::InputParameters solver_options =
                      hephaestus::InputParameters({{"Tolerance", float(1.0e-20)},
@@ -91,7 +91,7 @@ private:
   int _order_h1;
   int _order_hcurl;
   int _ref_face;
-  bool _grad_phi_transfer;
+  bool _electric_field_transfer;
 
   mfem::Coefficient * _sigma{nullptr};
   mfem::Coefficient * _itotal{nullptr};

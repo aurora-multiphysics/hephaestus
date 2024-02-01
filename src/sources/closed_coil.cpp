@@ -33,15 +33,16 @@ ClosedCoilSolver::ClosedCoilSolver(std::string source_efield_gf_name,
                                    std::string cond_coef_name,
                                    mfem::Array<int> coil_dom,
                                    const int electrode_face,
-                                   bool grad_phi_transfer,
+                                   bool electric_field_transfer,
                                    std::string source_jfield_gf_name,
                                    hephaestus::InputParameters solver_options)
   : _hcurl_fespace_name(std::move(hcurl_fespace_name)),
     _h1_fespace_name(std::move(h1_fespace_name)),
-    _grad_phi_name(std::move(source_efield_gf_name)),
+    _source_electric_field_name(std::move(source_efield_gf_name)),
+    _source_current_density_name(std::move(source_jfield_gf_name)),
     _i_coef_name(std::move(i_coef_name)),
     _cond_coef_name(std::move(cond_coef_name)),
-    _grad_phi_transfer(std::move(grad_phi_transfer)),
+    _electric_field_transfer(std::move(electric_field_transfer)),
     _coil_domains(std::move(coil_dom))
 {
   _elec_attrs.first = electrode_face;
@@ -53,8 +54,8 @@ ClosedCoilSolver::~ClosedCoilSolver()
     delete _sigma;
   if (_owns_itotal)
     delete _itotal;
-  if (_owns_grad_phi_parent)
-    delete _grad_phi_parent;
+  if (_owns_source_electric_field)
+    delete _source_electric_field;
   if (_owns_h1_fe_space_parent)
     delete _h1_fe_space_parent;
 }
@@ -95,18 +96,36 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     _owns_h1_fe_space_parent = true;
   }
 
-  _grad_phi_parent = gridfunctions.Get(_grad_phi_name);
-  if (_grad_phi_parent == nullptr)
+  _source_electric_field = gridfunctions.Get(_source_electric_field_name);
+  if (_source_electric_field == nullptr)
   {
-    std::cout << _grad_phi_name + " not found in gridfunctions when "
-                                  "creating OpenCoilSolver. Creating new GridFunction.\n";
-    _grad_phi_parent = new mfem::ParGridFunction(_h_curl_fe_space_parent);
-    _owns_grad_phi_parent = true;
+    std::cout << _source_electric_field_name +
+                     " not found in gridfunctions when "
+                     "creating OpenCoilSolver. Creating new GridFunction.\n";
+    _source_electric_field = new mfem::ParGridFunction(_h_curl_fe_space_parent);
+    _owns_source_electric_field = true;
   }
-  else if (_grad_phi_parent->ParFESpace()->FEColl()->GetContType() !=
+  else if (_source_electric_field->ParFESpace()->FEColl()->GetContType() !=
            mfem::FiniteElementCollection::TANGENTIAL)
   {
-    mfem::mfem_error("GradPhi GridFunction must be of HCurl type.");
+    mfem::mfem_error("Electric field GridFunction must be of HCurl type.");
+  }
+
+  if (!_source_current_density_name.empty())
+  {
+    _source_current_density = gridfunctions.Get(_source_current_density_name);
+    if (_source_current_density == nullptr)
+    {
+      const std::string error_message = _source_current_density_name +
+                                        " not found in gridfunctions when "
+                                        "creating OpenCoilSolver\n";
+      mfem::mfem_error(error_message.c_str());
+    }
+    else if (_source_current_density->ParFESpace()->FEColl()->GetContType() !=
+             mfem::FiniteElementCollection::NORMAL)
+    {
+      mfem::mfem_error("Current density GridFunction must be of HDiv type.");
+    }
   }
 
   _itotal = coefficients._scalars.Get(_i_coef_name);
@@ -132,7 +151,7 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     _sigma = new mfem::ConstantCoefficient(1.0);
     _owns_sigma = true;
 
-    _grad_phi_transfer = false;
+    _electric_field_transfer = false;
   }
 
   if (_final_lf == nullptr)
@@ -160,10 +179,25 @@ ClosedCoilSolver::Apply(mfem::ParLinearForm * lf)
   double i = _itotal->Eval(*tr, ip);
   lf->Add(i, *_final_lf);
 
-  *_grad_phi_parent = 0.0;
-  if (_grad_phi_transfer)
+  *_source_electric_field = 0.0;
+  if (_electric_field_transfer)
   {
-    _grad_phi_parent->Add(i, *_grad_phi_t_parent);
+    _source_electric_field->Add(i, *_electric_field_t_parent);
+  }
+
+  if (_source_current_density)
+  {
+    hephaestus::GridFunctions aux_gf;
+    aux_gf.Register("source_electric_field", _source_electric_field, false);
+    aux_gf.Register("source_current_density", _source_current_density, false);
+
+    hephaestus::Coefficients aux_coef;
+    aux_coef._scalars.Register("electrical_conductivity", _sigma, false);
+
+    hephaestus::ScaledVectorGridFunctionAux current_density_auxsolver(
+        "source_electric_field", "source_current_density", "electrical_conductivity", 1.0);
+    current_density_auxsolver.Init(aux_gf, aux_coef);
+    current_density_auxsolver.Solve();
   }
 }
 
@@ -332,14 +366,15 @@ ClosedCoilSolver::PrepareCoilSubmesh()
   _mesh_coil = std::make_unique<mfem::ParSubMesh>(
       mfem::ParSubMesh::CreateFromDomain(*_mesh_parent, _coil_domains));
 
-  _grad_phi_aux_coil_fec =
+  _electric_field_aux_coil_fec =
       std::make_unique<mfem::ND_FECollection>(_order_hcurl, _mesh_coil->Dimension());
 
-  _grad_phi_aux_coil_fes =
-      std::make_unique<mfem::ParFiniteElementSpace>(_mesh_coil.get(), _grad_phi_aux_coil_fec.get());
+  _electric_field_aux_coil_fes = std::make_unique<mfem::ParFiniteElementSpace>(
+      _mesh_coil.get(), _electric_field_aux_coil_fec.get());
 
-  _grad_phi_aux_coil = std::make_unique<mfem::ParGridFunction>(_grad_phi_aux_coil_fes.get());
-  *_grad_phi_aux_coil = 0.0;
+  _electric_field_aux_coil =
+      std::make_unique<mfem::ParGridFunction>(_electric_field_aux_coil_fes.get());
+  *_electric_field_aux_coil = 0.0;
 
   _h1_fe_space_coil_fec =
       std::make_unique<mfem::H1_FECollection>(_order_h1, _mesh_coil->Dimension());
@@ -367,10 +402,10 @@ ClosedCoilSolver::SolveTransition()
   coefs._scalars.Register("electrical_conductivity", _sigma, false);
 
   hephaestus::GridFunctions gridfunctions;
-  gridfunctions.Register("GradPhi_parent", _grad_phi_parent, false);
+  gridfunctions.Register("ElectricField_parent", _source_electric_field, false);
   gridfunctions.Register("V_parent", &v_parent, false);
 
-  hephaestus::OpenCoilSolver opencoil("GradPhi_parent",
+  hephaestus::OpenCoilSolver opencoil("ElectricField_parent",
                                       "V_parent",
                                       "I",
                                       "electrical_conductivity",
@@ -384,7 +419,7 @@ ClosedCoilSolver::SolveTransition()
   opencoil.Apply(_final_lf.get());
 
   v_parent *= -1.0;
-  *_grad_phi_parent *= -1.0;
+  *_source_electric_field *= -1.0;
   _mesh_coil->Transfer(v_parent, *_v_coil);
 }
 
@@ -450,47 +485,49 @@ ClosedCoilSolver::SolveCoil()
   a_coil.RecoverFEMSolution(x0_coil, b_coil, vaux_coil);
 
   // Now we form the final coil current
-  mfem::ParDiscreteLinearOperator grad(_h1_fe_space_coil.get(), _grad_phi_aux_coil->ParFESpace());
+  mfem::ParDiscreteLinearOperator grad(_h1_fe_space_coil.get(),
+                                       _electric_field_aux_coil->ParFESpace());
   grad.AddDomainInterpolator(new mfem::GradientInterpolator());
   grad.Assemble();
-  grad.Mult(vaux_coil, *_grad_phi_aux_coil);
+  grad.Mult(vaux_coil, *_electric_field_aux_coil);
 
-  if (_grad_phi_transfer)
-    _grad_phi_t_parent = std::make_unique<mfem::ParGridFunction>(*_grad_phi_parent);
+  if (_electric_field_transfer)
+    _electric_field_t_parent = std::make_unique<mfem::ParGridFunction>(*_source_electric_field);
 
-  *_grad_phi_parent = 0.0;
-  _mesh_coil->Transfer(*_grad_phi_aux_coil, *_grad_phi_parent);
+  *_source_electric_field = 0.0;
+  _mesh_coil->Transfer(*_electric_field_aux_coil, *_source_electric_field);
 
   mfem::ParBilinearForm m1(_h_curl_fe_space_parent);
   hephaestus::attrToMarker(_coil_domains, _coil_markers, _mesh_parent->attributes.Max());
 
   m1.AddDomainIntegrator(new mfem::VectorFEMassIntegrator(_sigma), _coil_markers);
   m1.Assemble();
-  m1.AddMult(*_grad_phi_parent, *_final_lf, -1.0);
+  m1.AddMult(*_source_electric_field, *_final_lf, 1.0);
 
   // We can't properly calculate the flux of Jaux on the parent mesh, so we
   // transfer it first to the transition mesh. This will be used in the
   // normalisation step
-  auto grad_phi_aux_t_fec =
+  auto electric_field_aux_t_fec =
       std::make_unique<mfem::ND_FECollection>(_order_hcurl, _mesh_t->Dimension());
 
-  auto grad_phi_aux_t_pfes =
-      std::make_unique<mfem::ParFiniteElementSpace>(_mesh_t.get(), grad_phi_aux_t_fec.get());
+  auto electric_field_aux_t_pfes =
+      std::make_unique<mfem::ParFiniteElementSpace>(_mesh_t.get(), electric_field_aux_t_fec.get());
 
-  auto grad_phi_aux_t = std::make_unique<mfem::ParGridFunction>(grad_phi_aux_t_pfes.get());
-  *grad_phi_aux_t = 0.0;
+  auto electric_field_aux_t =
+      std::make_unique<mfem::ParGridFunction>(electric_field_aux_t_pfes.get());
+  *electric_field_aux_t = 0.0;
 
-  _mesh_t->Transfer(*_grad_phi_parent, *grad_phi_aux_t);
+  _mesh_t->Transfer(*_source_electric_field, *electric_field_aux_t);
 
   // The total flux across the electrode face is Φ_t-Φ_aux
   // where Φ_t is the transition flux, already normalised to be 1
-  double flux = 1.0 - calcFlux(grad_phi_aux_t.get(), _elec_attrs.first, *_sigma);
+  double flux = 1.0 - calcFlux(electric_field_aux_t.get(), _elec_attrs.first, *_sigma);
 
-  if (_grad_phi_transfer)
+  if (_electric_field_transfer)
   {
-    *_grad_phi_parent -= *_grad_phi_t_parent;
-    *_grad_phi_parent /= -flux;
-    *_grad_phi_t_parent = *_grad_phi_parent;
+    *_source_electric_field -= *_electric_field_t_parent;
+    *_source_electric_field /= -flux;
+    *_electric_field_t_parent = *_source_electric_field;
   }
 
   *_final_lf /= flux;

@@ -181,7 +181,7 @@ OpenCoilSolver::OpenCoilSolver(std::string source_efield_gf_name,
                                std::string cond_coef_name,
                                mfem::Array<int> coil_dom,
                                const std::pair<int, int> electrodes,
-                               bool grad_phi_transfer,
+                               bool electric_field_transfer,
                                std::string source_jfield_gf_name,
                                hephaestus::InputParameters solver_options)
   : _source_efield_gf_name(std::move(source_efield_gf_name)),
@@ -189,7 +189,7 @@ OpenCoilSolver::OpenCoilSolver(std::string source_efield_gf_name,
     _phi_gf_name(std::move(phi_gf_name)),
     _i_coef_name(std::move(i_coef_name)),
     _cond_coef_name(std::move(cond_coef_name)),
-    _grad_phi_transfer(std::move(grad_phi_transfer)),
+    _electric_field_transfer(std::move(electric_field_transfer)),
     _solver_options(std::move(solver_options)),
     _coil_domains(std::move(coil_dom)),
     _elec_attrs(electrodes),
@@ -237,7 +237,7 @@ OpenCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     _sigma = new mfem::ConstantCoefficient(1.0);
     _owns_sigma = true;
 
-    _grad_phi_transfer = false;
+    _electric_field_transfer = false;
   }
 
   _source_electric_field = gridfunctions.Get(_source_efield_gf_name);
@@ -311,7 +311,7 @@ OpenCoilSolver::Apply(mfem::ParLinearForm * lf)
 
   double i = _itotal->Eval(*tr, ip);
 
-  if (_grad_phi_transfer)
+  if (_electric_field_transfer)
   {
     *_source_electric_field = 0.0;
     _source_electric_field->Add(-i, *_grad_phi_t_parent);
