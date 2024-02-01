@@ -11,6 +11,38 @@
 namespace hephaestus
 {
 
+class ProblemSolvers
+{
+
+public:
+  ProblemSolvers() = default;
+  ProblemSolvers(hephaestus::InputParameters solver_options, MPI_Comm comm)
+    : _solver_options{std::move(solver_options)}, _comm{std::move(comm)}, _comm_set{true}
+  {
+  }
+  ~ProblemSolvers() = default;
+
+  void
+  SetSolver(std::unique_ptr<mfem::Solver> & solver, std::string solve_type, mfem::Operator & A);
+  void SetFEMPreconditioner(mfem::Operator & A);
+  void SetFEMSolver(mfem::Operator & A);
+  void SetJacobianPreconditioner(mfem::Operator & A);
+  void SetJacobianSolver(mfem::Operator & A);
+
+  void SetComm(MPI_Comm comm);
+  void SetSolverOptions(hephaestus::InputParameters solver_options);
+
+private:
+  std::unique_ptr<mfem::Solver> _fem_solver{nullptr};
+  std::unique_ptr<mfem::Solver> _fem_preconditioner{nullptr};
+  std::unique_ptr<mfem::Solver> _jacobian_solver{nullptr};
+  std::unique_ptr<mfem::Solver> _jacobian_preconditioner{nullptr};
+
+  MPI_Comm _comm;
+  bool _comm_set{false};
+  hephaestus::InputParameters _solver_options;
+};
+
 class Problem
 {
 public:
@@ -29,10 +61,7 @@ public:
   std::unique_ptr<mfem::ODESolver> _ode_solver{nullptr};
   std::unique_ptr<mfem::BlockVector> _f{nullptr};
 
-  std::unique_ptr<mfem::Solver> _fem_solver{nullptr};
-  std::unique_ptr<mfem::Solver> _fem_preconditioner{nullptr};
-  std::unique_ptr<mfem::Solver> _jacobian_solver{nullptr};
-  std::unique_ptr<mfem::Solver> _jacobian_preconditioner{nullptr};
+  ProblemSolvers _solvers;
 
   hephaestus::FECollections _fecs;
   hephaestus::FESpaces _fespaces;
@@ -66,13 +95,6 @@ public:
   void SetOutputs(hephaestus::Outputs & outputs);
   void SetSolverOptions(hephaestus::InputParameters & solver_options);
   void SetCoefficients(hephaestus::Coefficients & coefficients);
-  void SetSolverOperator(std::unique_ptr<mfem::Solver> & solver,
-                         std::string solve_type,
-                         mfem::HypreParMatrix & A);
-  void SetFEMPreconditioner(mfem::HypreParMatrix & A);
-  void SetFEMSolver(mfem::HypreParMatrix & A);
-  void SetJacobianPreconditioner(mfem::HypreParMatrix & A);
-  void SetJacobianSolver(mfem::HypreParMatrix & A);
 
   void AddFESpace(std::string fespace_name,
                   std::string fec_name,

@@ -14,6 +14,8 @@ void
 ProblemBuilder::SetMesh(std::shared_ptr<mfem::ParMesh> pmesh)
 {
   GetProblem()->_pmesh = pmesh;
+  GetProblem()->_solvers.SetComm(pmesh->GetComm());
+  MPI_Comm_size(pmesh->GetComm(), &(GetProblem()->_num_procs));
   MPI_Comm_rank(pmesh->GetComm(), &(GetProblem()->_myid));
 }
 
@@ -63,116 +65,7 @@ void
 ProblemBuilder::SetSolverOptions(hephaestus::InputParameters & solver_options)
 {
   GetProblem()->_solver_options = solver_options;
-}
-
-void
-ProblemBuilder::SetSolverOperator(std::unique_ptr<mfem::Solver> & solver,
-                                  std::string solve_type,
-                                  mfem::HypreParMatrix & A)
-{
-
-  if (solve_type == "PCG")
-  {
-    solver = std::make_unique<mfem::HyprePCG>(A);
-  }
-  else if (solve_type == "GMRES")
-  {
-    solver = std::make_unique<mfem::HypreGMRES>(A);
-    // GetProblem()->_jacobian_preconditioner->SetKDim(GetProblem()->_solver_options.GetParam<int>("KDim"));
-  }
-  else if (solve_type == "FGMRES")
-  {
-    solver = std::make_unique<mfem::HypreFGMRES>(A);
-    // GetProblem()->_jacobian_preconditioner->SetKDim(GetProblem()->_solver_options.GetParam<int>("KDim"));
-  }
-  // Add others!
-}
-
-void
-ProblemBuilder::SetJacobianPreconditioner(mfem::HypreParMatrix & A)
-{
-
-  auto solve_type = GetProblem()->_solver_options.GetParam<std::string>("JacobianPreconditioner");
-
-  SetSolverOperator(GetProblem()->_jacobian_preconditioner, solve_type, A);
-
-  if (!GetProblem()->_jacobian_preconditioner)
-    std::cout
-        << "Warning: Jacobian preconditioner type not recognised or not set. Proceeding without "
-           "preconditioner. If you wish to use a preconditioner, please set "
-           "JacobianPreconditioner field to one of the following values: PCG, GMRES, FGMRES"
-        << std::endl;
-
-  // if (GetProblem()->_jacobian_preconditioner)
-  //{
-  //   GetProblem()->_jacobian_preconditioner->SetTol(GetProblem()->_solver_options.GetParam<float>("Tolerance"));
-  //   GetProblem()->_jacobian_preconditioner->SetAbsTol(GetProblem()->_solver_options.GetParam<float>("AbsTolerance"));
-  //   GetProblem()->_jacobian_preconditioner->SetMaxIter(GetProblem()->_solver_options.GetParam<int>("MaxIter"));
-  //   GetProblem()->_jacobian_preconditioner->SetPrintLevel(GetProblem()->_solver_options.GetParam<int>("PrintLevel"));
-  // }
-}
-
-void
-ProblemBuilder::SetJacobianSolver(mfem::HypreParMatrix & A)
-{
-
-  auto solve_type = GetProblem()->_solver_options.GetParam<std::string>("JacobianSolver");
-
-  SetSolverOperator(GetProblem()->_jacobian_solver, solve_type, A);
-
-  if (!GetProblem()->_jacobian_solver)
-    mfem::mfem_error("Jacobian solver type not recognised! Please set JacobianSolver field "
-                     "to one of the following values: PCG, GMRES, FGMRES");
-
-  // GetProblem()->_jacobian_solver->SetTol(GetProblem()->_solver_options.GetParam<float>("Tolerance"));
-  // GetProblem()->_jacobian_solver->SetAbsTol(GetProblem()->_solver_options.GetParam<float>("AbsTolerance"));
-  // GetProblem()->_jacobian_solver->SetMaxIter(GetProblem()->_solver_options.GetParam<int>("MaxIter"));
-  // GetProblem()->_jacobian_solver->SetPrintLevel(GetProblem()->_solver_options.GetParam<int>("PrintLevel"));
-  // if (GetProblem()->_jacobian_preconditioner)
-  //   GetProblem()->_jacobian_solver->SetPreconditioner(GetProblem()->_jacobian_preconditioner);
-}
-
-void
-ProblemBuilder::SetFEMPreconditioner(mfem::HypreParMatrix & A)
-{
-
-  auto solve_type = GetProblem()->_solver_options.GetParam<std::string>("FEMPreconditioner");
-
-  SetSolverOperator(GetProblem()->_fem_preconditioner, solve_type, A);
-
-  if (!GetProblem()->_fem_preconditioner)
-    std::cout << "Warning: FEM preconditioner type not recognised or not set. Proceeding without "
-                 "preconditioner. If you wish to use a preconditioner, please set "
-                 "FEMPreconditioner field to one of the following values: PCG, GMRES, FGMRES"
-              << std::endl;
-
-  // if (GetProblem()->_fem_preconditioner)
-  //{
-  //   GetProblem()->_fem_preconditioner->SetTol(GetProblem()->_solver_options.GetParam<float>("Tolerance"));
-  //   GetProblem()->_fem_preconditioner->SetAbsTol(GetProblem()->_solver_options.GetParam<float>("AbsTolerance"));
-  //   GetProblem()->_fem_preconditioner->SetMaxIter(GetProblem()->_solver_options.GetParam<int>("MaxIter"));
-  //   GetProblem()->_fem_preconditioner->SetPrintLevel(GetProblem()->_solver_options.GetParam<int>("PrintLevel"));
-  // }
-}
-
-void
-ProblemBuilder::SetFEMSolver(mfem::HypreParMatrix & A)
-{
-
-  auto solve_type = GetProblem()->_solver_options.GetParam<std::string>("FEMSolver");
-
-  SetSolverOperator(GetProblem()->_fem_solver, solve_type, A);
-
-  if (!GetProblem()->_fem_solver)
-    mfem::mfem_error("FEM solver type not recognised! Please set FEMSolver field "
-                     "to one of the following values: PCG, GMRES, FGMRES");
-
-  // GetProblem()->_fem_solver->SetTol(GetProblem()->_solver_options.GetParam<float>("Tolerance"));
-  // GetProblem()->_fem_solver->SetAbsTol(GetProblem()->_solver_options.GetParam<float>("AbsTolerance"));
-  // GetProblem()->_fem_solver->SetMaxIter(GetProblem()->_solver_options.GetParam<int>("MaxIter"));
-  // GetProblem()->_fem_solver->SetPrintLevel(GetProblem()->_solver_options.GetParam<int>("PrintLevel"));
-  // if (GetProblem()->_fem_preconditioner)
-  //   GetProblem()->_fem_solver->SetPreconditioner(GetProblem()->_fem_preconditioner);
+  GetProblem()->_solvers.SetSolverOptions(solver_options);
 }
 
 void
@@ -306,6 +199,141 @@ void
 ProblemBuilder::InitializeOutputs()
 {
   GetProblem()->_outputs.Init(GetProblem()->_gridfunctions);
+}
+
+void
+ProblemSolvers::SetSolver(std::unique_ptr<mfem::Solver> & solver,
+                          std::string solve_type,
+                          mfem::Operator & A)
+{
+
+  if (!_comm_set)
+  {
+    mfem::mfem_error("MPI comm must be set in the solvers class before setting up solver!");
+  }
+
+  if (solve_type == "PCG")
+  {
+    solver = std::make_unique<mfem::HyprePCG>(_comm);
+  }
+  else if (solve_type == "GMRES")
+  {
+    solver = std::make_unique<mfem::HypreGMRES>(_comm);
+    // GetProblem()->_jacobian_preconditioner->SetKDim(GetProblem()->_solver_options.GetParam<int>("KDim"));
+  }
+  else if (solve_type == "FGMRES")
+  {
+    solver = std::make_unique<mfem::HypreFGMRES>(_comm);
+    // GetProblem()->_jacobian_preconditioner->SetKDim(GetProblem()->_solver_options.GetParam<int>("KDim"));
+  }
+  // Add others!
+  solver->SetOperator(A);
+}
+
+void
+ProblemSolvers::SetJacobianPreconditioner(mfem::Operator & A)
+{
+
+  auto solve_type = _solver_options.GetParam<std::string>("JacobianPreconditioner");
+
+  SetSolver(_jacobian_preconditioner, solve_type, A);
+
+  if (!_jacobian_preconditioner)
+    std::cout
+        << "Warning: Jacobian preconditioner type not recognised or not set. Proceeding without "
+           "preconditioner. If you wish to use a preconditioner, please set "
+           "JacobianPreconditioner field to one of the following values: PCG, GMRES, FGMRES"
+        << std::endl;
+
+  // if (GetProblem()->_jacobian_preconditioner)
+  //{
+  //   GetProblem()->_jacobian_preconditioner->SetTol(GetProblem()->_solver_options.GetParam<float>("Tolerance"));
+  //   GetProblem()->_jacobian_preconditioner->SetAbsTol(GetProblem()->_solver_options.GetParam<float>("AbsTolerance"));
+  //   GetProblem()->_jacobian_preconditioner->SetMaxIter(GetProblem()->_solver_options.GetParam<int>("MaxIter"));
+  //   GetProblem()->_jacobian_preconditioner->SetPrintLevel(GetProblem()->_solver_options.GetParam<int>("PrintLevel"));
+  // }
+}
+
+void
+ProblemSolvers::SetJacobianSolver(mfem::Operator & A)
+{
+
+  auto solve_type = _solver_options.GetParam<std::string>("JacobianSolver");
+
+  SetSolver(_jacobian_solver, solve_type, A);
+
+  if (!_jacobian_solver)
+    mfem::mfem_error("Jacobian solver type not recognised! Please set JacobianSolver field "
+                     "to one of the following values: PCG, GMRES, FGMRES");
+
+  // if (GetProblem()->_jacobian_preconditioner)
+  //   GetProblem()->_jacobian_solver.get()->SetPreconditioner(GetProblem()->_jacobian_preconditioner);
+
+  // GetProblem()->_jacobian_solver->SetTol(GetProblem()->_solver_options.GetParam<float>("Tolerance"));
+  // GetProblem()->_jacobian_solver->SetAbsTol(GetProblem()->_solver_options.GetParam<float>("AbsTolerance"));
+  // GetProblem()->_jacobian_solver->SetMaxIter(GetProblem()->_solver_options.GetParam<int>("MaxIter"));
+  // GetProblem()->_jacobian_solver->SetPrintLevel(GetProblem()->_solver_options.GetParam<int>("PrintLevel"));
+  // if (GetProblem()->_jacobian_preconditioner)
+  //   GetProblem()->_jacobian_solver->SetPreconditioner(GetProblem()->_jacobian_preconditioner);
+}
+
+void
+ProblemSolvers::SetFEMPreconditioner(mfem::Operator & A)
+{
+
+  auto solve_type = _solver_options.GetParam<std::string>("FEMPreconditioner");
+
+  SetSolver(_fem_preconditioner, solve_type, A);
+
+  if (!_fem_preconditioner)
+    std::cout << "Warning: FEM preconditioner type not recognised or not set. Proceeding without "
+                 "preconditioner. If you wish to use a preconditioner, please set "
+                 "FEMPreconditioner field to one of the following values: PCG, GMRES, FGMRES"
+              << std::endl;
+
+  // if (GetProblem()->_fem_preconditioner)
+  //{
+  //   GetProblem()->_fem_preconditioner->SetTol(GetProblem()->_solver_options.GetParam<float>("Tolerance"));
+  //   GetProblem()->_fem_preconditioner->SetAbsTol(GetProblem()->_solver_options.GetParam<float>("AbsTolerance"));
+  //   GetProblem()->_fem_preconditioner->SetMaxIter(GetProblem()->_solver_options.GetParam<int>("MaxIter"));
+  //   GetProblem()->_fem_preconditioner->SetPrintLevel(GetProblem()->_solver_options.GetParam<int>("PrintLevel"));
+  // }
+}
+
+void
+ProblemSolvers::SetFEMSolver(mfem::Operator & A)
+{
+
+  auto solve_type = _solver_options.GetParam<std::string>("FEMSolver");
+
+  SetSolver(_fem_solver, solve_type, A);
+
+  if (!_fem_solver)
+    mfem::mfem_error("FEM solver type not recognised! Please set FEMSolver field "
+                     "to one of the following values: PCG, GMRES, FGMRES");
+
+  // if (GetProblem()->_fem_preconditioner)
+  //   GetProblem()->_fem_solver.get()->SetPreconditioner(GetProblem()->_fem_preconditioner);
+
+  // GetProblem()->_fem_solver->SetTol(GetProblem()->_solver_options.GetParam<float>("Tolerance"));
+  // GetProblem()->_fem_solver->SetAbsTol(GetProblem()->_solver_options.GetParam<float>("AbsTolerance"));
+  // GetProblem()->_fem_solver->SetMaxIter(GetProblem()->_solver_options.GetParam<int>("MaxIter"));
+  // GetProblem()->_fem_solver->SetPrintLevel(GetProblem()->_solver_options.GetParam<int>("PrintLevel"));
+  // if (GetProblem()->_fem_preconditioner)
+  //   GetProblem()->_fem_solver->SetPreconditioner(GetProblem()->_fem_preconditioner);
+}
+
+void
+ProblemSolvers::SetComm(MPI_Comm comm)
+{
+  _comm = comm;
+  _comm_set = true;
+}
+
+void
+ProblemSolvers::SetSolverOptions(hephaestus::InputParameters solver_options)
+{
+  _solver_options = solver_options;
 }
 
 } // namespace hephaestus
