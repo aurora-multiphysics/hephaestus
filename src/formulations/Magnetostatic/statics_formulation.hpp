@@ -34,7 +34,8 @@ public:
                   hephaestus::BCMap & bc_map,
                   hephaestus::Coefficients & coefficients,
                   hephaestus::Sources & sources,
-                  hephaestus::InputParameters & solver_options);
+                  hephaestus::InputParameters & solver_options,
+                  hephaestus::ProblemSolvers & solvers);
 
   ~StaticsOperator() override = default;
 
@@ -44,6 +45,7 @@ public:
 
 private:
   std::string _h_curl_var_name, _stiffness_coef_name;
+  ProblemSolvers * _solvers;
 
   mfem::Coefficient * _stiff_coef; // Stiffness Material Coefficient
 };

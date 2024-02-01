@@ -32,12 +32,12 @@ public:
   void SetComm(MPI_Comm comm);
   void SetSolverOptions(hephaestus::InputParameters solver_options);
 
-private:
   std::unique_ptr<mfem::Solver> _fem_solver{nullptr};
   std::unique_ptr<mfem::Solver> _fem_preconditioner{nullptr};
   std::unique_ptr<mfem::Solver> _jacobian_solver{nullptr};
   std::unique_ptr<mfem::Solver> _jacobian_preconditioner{nullptr};
 
+private:
   MPI_Comm _comm;
   bool _comm_set{false};
   hephaestus::InputParameters _solver_options;

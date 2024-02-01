@@ -56,7 +56,8 @@ StaticsFormulation::ConstructOperator()
                                                     _problem->_bc_map,
                                                     _problem->_coefficients,
                                                     _problem->_sources,
-                                                    _problem->_solver_options);
+                                                    _problem->_solver_options,
+                                                    _problem->_solvers);
   _problem->GetOperator()->SetGridFunctions();
 };
 
@@ -96,11 +97,13 @@ StaticsOperator::StaticsOperator(mfem::ParMesh & pmesh,
                                  hephaestus::BCMap & bc_map,
                                  hephaestus::Coefficients & coefficients,
                                  hephaestus::Sources & sources,
-                                 hephaestus::InputParameters & solver_options)
+                                 hephaestus::InputParameters & solver_options,
+                                 hephaestus::ProblemSolvers & solvers)
   : EquationSystemOperator(
         pmesh, fespaces, gridfunctions, bc_map, coefficients, sources, solver_options),
     _h_curl_var_name(solver_options.GetParam<std::string>("HCurlVarName")),
-    _stiffness_coef_name(solver_options.GetParam<std::string>("StiffnessCoefName"))
+    _stiffness_coef_name(solver_options.GetParam<std::string>("StiffnessCoefName")),
+    _solvers(&solvers)
 {
 }
 
@@ -151,9 +154,9 @@ StaticsOperator::Solve(mfem::Vector & X)
 
   // Define and apply a parallel solver for AX=B with the AMS
   // preconditioner from hypre.
-  // SetFEMPreconditioner(curl_mu_inv_curl);
-  // SetFEMSolver(curl_mu_inv_curl);
-  //_fem_solver->Mult(rhs_tdofs, sol_tdofs);
+  _solvers->SetFEMPreconditioner(curl_mu_inv_curl);
+  _solvers->SetFEMSolver(curl_mu_inv_curl);
+  _solvers->_fem_solver->Mult(rhs_tdofs, sol_tdofs);
   // hephaestus::DefaultHCurlFGMRESSolver a1_solver(
   //    _solver_options, curl_mu_inv_curl, gf.ParFESpace());
 
