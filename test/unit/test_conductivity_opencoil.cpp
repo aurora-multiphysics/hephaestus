@@ -54,8 +54,9 @@ TEST_CASE("ConductivityOpenCoil", "[CheckData]")
   mfem::ParLinearForm dummy(&h_curl_fe_space);
   opencoil.Apply(&dummy);
 
-  double flux1 = hephaestus::calcFlux(&e, 4, conductivity);
-  double flux2 = hephaestus::calcFlux(&e, 5, conductivity);
+  //- sign comes from the direction of the outward facing normal relative to elec_attrs order
+  double flux1 = -hephaestus::calcFlux(&e, 4, conductivity);
+  double flux2 = -hephaestus::calcFlux(&e, 5, conductivity);
 
   REQUIRE_THAT(flux1 + flux2, Catch::Matchers::WithinAbs(ival, eps));
   REQUIRE_THAT(flux1 / flux2, Catch::Matchers::WithinAbs(r, eps));

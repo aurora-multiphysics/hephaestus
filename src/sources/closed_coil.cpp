@@ -383,6 +383,8 @@ ClosedCoilSolver::SolveTransition()
   opencoil.Init(gridfunctions, fespaces, bc_maps, coefs);
   opencoil.Apply(_final_lf.get());
 
+  v_parent *= -1.0;
+  *_grad_phi_parent *= -1.0;
   _mesh_coil->Transfer(v_parent, *_v_coil);
 }
 

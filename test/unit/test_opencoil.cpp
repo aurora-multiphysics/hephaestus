@@ -51,7 +51,8 @@ TEST_CASE("OpenCoilTest", "[CheckData]")
   mfem::ParLinearForm dummy(&h_curl_fe_space);
   opencoil.Apply(&dummy);
 
-  double flux = hephaestus::calcFlux(&e, elec_attrs.first, conductivity);
+  //- sign comes from the direction of the outward facing normal relative to elec_attrs order
+  double flux = -hephaestus::calcFlux(&e, elec_attrs.first, conductivity);
 
   REQUIRE_THAT(flux, Catch::Matchers::WithinAbs(ival, eps));
 }

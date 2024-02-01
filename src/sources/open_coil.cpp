@@ -314,7 +314,7 @@ OpenCoilSolver::Apply(mfem::ParLinearForm * lf)
   if (_grad_phi_transfer)
   {
     *_source_electric_field = 0.0;
-    _source_electric_field->Add(i, *_grad_phi_t_parent);
+    _source_electric_field->Add(-i, *_grad_phi_t_parent);
   }
 
   if (_phi_parent != nullptr)
@@ -333,7 +333,7 @@ OpenCoilSolver::Apply(mfem::ParLinearForm * lf)
     aux_coef._scalars.Register("electrical_conductivity", _sigma, false);
 
     hephaestus::ScaledVectorGridFunctionAux current_density_auxsolver(
-        "source_electric_field", "source_current_density", "electrical_conductivity", -1.0);
+        "source_electric_field", "source_current_density", "electrical_conductivity", 1.0);
     current_density_auxsolver.Init(aux_gf, aux_coef);
     current_density_auxsolver.Solve();
   }
@@ -440,7 +440,7 @@ OpenCoilSolver::SPSCurrent()
 
   _final_lf = std::make_unique<mfem::ParLinearForm>(_grad_phi_t_parent->ParFESpace());
   *_final_lf = 0.0;
-  _m1->AddMult(*_grad_phi_t_parent, *_final_lf, 1.0);
+  _m1->AddMult(*_grad_phi_t_parent, *_final_lf, -1.0);
 }
 
 void

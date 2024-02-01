@@ -34,7 +34,7 @@ class OpenCoilSolver : public hephaestus::Source
 
 public:
   OpenCoilSolver(std::string source_efield_gf_name,
-                 std::string phi_gf_name,
+                 std::string electric_potential_name,
                  std::string i_coef_name,
                  std::string cond_coef_name,
                  mfem::Array<int> coil_dom,
