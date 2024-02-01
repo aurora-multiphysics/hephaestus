@@ -62,8 +62,6 @@ public:
 
   mfem::OperatorHandle _block_a;
   mfem::BlockVector _true_x, _true_rhs;
-
-  std::unique_ptr<mfem::HypreSolver> _solver{nullptr};
 };
 
 } // namespace hephaestus

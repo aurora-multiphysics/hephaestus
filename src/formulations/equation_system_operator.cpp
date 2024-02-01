@@ -42,37 +42,6 @@ EquationSystemOperator::SetGridFunctions()
 };
 
 void
-EquationSystemOperator::SetSolver(const mfem::HypreParMatrix & M)
-{
-  auto solve_type = _solver_options.GetParam<std::string>("Solver");
-
-  if (solve_type == "PCG")
-    _solver = std::make_unique<DefaultH1PCGSolver>(_solver_options, M);
-  else if (solve_type == "GMRES")
-    _solver = std::make_unique<DefaultGMRESSolver>(_solver_options, M);
-  else if (solve_type == "Jacobi")
-    _solver = std::make_unique<DefaultJacobiPCGSolver>(_solver_options, M);
-  else
-    mfem::mfem_error("H1 Solver type not recognised! Please set Solver field in solver_options "
-                     "to one of the following values: PCG, GMRES, Jacobi");
-}
-
-void
-EquationSystemOperator::SetSolver(const mfem::HypreParMatrix & M,
-                                  mfem::ParFiniteElementSpace * edge_fespace)
-{
-  auto solve_type = _solver_options.GetParam<std::string>("Solver");
-
-  if (solve_type == "HCurl_PCG")
-    _solver = std::make_unique<DefaultHCurlPCGSolver>(_solver_options, M, edge_fespace);
-  else if (solve_type == "HCurl_FGMRES")
-    _solver = std::make_unique<DefaultHCurlFGMRESSolver>(_solver_options, M, edge_fespace);
-  else
-    mfem::mfem_error("HCurl Solver type not recognised! Please set Solver field in "
-                     "solver_options to one of the following values: HCurl_PCG, HCurl_FGMRES");
-}
-
-void
 EquationSystemOperator::Init(mfem::Vector & X)
 {
   // Define material property coefficients

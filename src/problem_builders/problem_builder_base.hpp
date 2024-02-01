@@ -29,6 +29,11 @@ public:
   std::unique_ptr<mfem::ODESolver> _ode_solver{nullptr};
   std::unique_ptr<mfem::BlockVector> _f{nullptr};
 
+  std::unique_ptr<mfem::Solver> _fem_solver{nullptr};
+  std::unique_ptr<mfem::Solver> _fem_preconditioner{nullptr};
+  std::unique_ptr<mfem::Solver> _jacobian_solver{nullptr};
+  std::unique_ptr<mfem::Solver> _jacobian_preconditioner{nullptr};
+
   hephaestus::FECollections _fecs;
   hephaestus::FESpaces _fespaces;
   hephaestus::GridFunctions _gridfunctions;
@@ -61,6 +66,13 @@ public:
   void SetOutputs(hephaestus::Outputs & outputs);
   void SetSolverOptions(hephaestus::InputParameters & solver_options);
   void SetCoefficients(hephaestus::Coefficients & coefficients);
+  void SetSolverOperator(std::unique_ptr<mfem::Solver> & solver,
+                         std::string solve_type,
+                         mfem::HypreParMatrix & A);
+  void SetFEMPreconditioner(mfem::HypreParMatrix & A);
+  void SetFEMSolver(mfem::HypreParMatrix & A);
+  void SetJacobianPreconditioner(mfem::HypreParMatrix & A);
+  void SetJacobianSolver(mfem::HypreParMatrix & A);
 
   void AddFESpace(std::string fespace_name,
                   std::string fec_name,

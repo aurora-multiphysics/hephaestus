@@ -44,9 +44,9 @@ StaticsFormulation::ConstructOperator()
   solver_options.SetParam("HCurlVarName", _h_curl_var_name);
   solver_options.SetParam("StiffnessCoefName", _alpha_coef_name);
 
-  if (!solver_options.HasParam("Solver"))
+  if (!solver_options.HasParam("FEMSolver"))
   {
-    solver_options.SetParam("Solver", std::string("HCurl_FGMRES"));
+    solver_options.SetParam("FEMSolver", std::string("HCurl_FGMRES"));
   }
 
   _problem->_eq_sys_operator =
@@ -151,9 +151,10 @@ StaticsOperator::Solve(mfem::Vector & X)
 
   // Define and apply a parallel solver for AX=B with the AMS
   // preconditioner from hypre.
-  SetSolver(curl_mu_inv_curl, gf.ParFESpace());
+  hephaestus::DefaultHCurlFGMRESSolver a1_solver(
+      _solver_options, curl_mu_inv_curl, gf.ParFESpace());
 
-  _solver->Mult(rhs_tdofs, sol_tdofs);
+  a1_solver.Mult(rhs_tdofs, sol_tdofs);
   blf.RecoverFEMSolution(sol_tdofs, lf, gf);
 }
 
