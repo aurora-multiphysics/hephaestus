@@ -40,7 +40,7 @@ public:
   // Enable auxiliary calculation of P ∈ L2
   void RegisterJouleHeatingDensityAux(const std::string & p_field_name,
                                       const std::string & e_field_name,
-                                      const std::string & conductivity_coef_name) override;
+                                      const std::string & j_field_name) override;
 
   void RegisterCoefficients() override;
 

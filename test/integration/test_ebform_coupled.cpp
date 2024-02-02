@@ -105,14 +105,6 @@ protected:
         "ParaViewDataCollection", new mfem::ParaViewDataCollection("EBFormParaView"), true);
 
     hephaestus::AuxSolvers postprocessors;
-    postprocessors.Register(
-        "JouleHeatingAux",
-        new hephaestus::VectorGridFunctionDotProductAux("joule_heating_load",
-                                                        "JouleHeating",
-                                                        "electrical_conductivity",
-                                                        "electric_field",
-                                                        "electric_field"),
-        true);
 
     hephaestus::Sources sources;
 
@@ -175,10 +167,16 @@ TEST_CASE_METHOD(TestEBFormCoupled, "TestEBFormCoupled", "[CheckRun]")
   problem_builder->SetMesh(pmesh);
   problem_builder->AddFESpace(std::string("L2"), std::string("L2_3D_P1"));
   problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P1"));
+  problem_builder->AddFESpace(std::string("HDiv"), std::string("RT_3D_P0"));
+  problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P1"));
   problem_builder->AddFESpace(std::string("H1Source"), std::string("H1_3D_P2"));
   problem_builder->AddFESpace(std::string("HCurlSource"), std::string("ND_3D_P2"));
+  problem_builder->AddGridFunction(std::string("current_density"), std::string("L2"));
   problem_builder->AddGridFunction(std::string("joule_heating_load"), std::string("L2"));
   problem_builder->AddGridFunction(std::string("temperature"), std::string("H1"));
+  problem_builder->RegisterCurrentDensityAux("current_density");
+  problem_builder->RegisterJouleHeatingDensityAux(
+      "joule_heating_load", "electric_field", "current_density");
   problem_builder->SetBoundaryConditions(bc_map);
   problem_builder->SetAuxSolvers(preprocessors);
   problem_builder->SetCoefficients(coefficients);
