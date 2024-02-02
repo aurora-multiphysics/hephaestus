@@ -41,16 +41,22 @@ public:
   // Enable auxiliary calculation of J ∈ H(div)
   //* Induced electric current, Jind = σE
   void RegisterCurrentDensityAux(const std::string & j_field_real_name,
-                                 const std::string & j_field_imag_name) override;
+                                 const std::string & j_field_imag_name,
+                                 const std::string & external_j_field_real_name = "",
+                                 const std::string & external_j_field_imag_name = "") override;
 
   //* Magnetic flux density B = (i/ω) curl E
   //* (∇×E = -dB/dt = -iωB)
   void RegisterMagneticFluxDensityAux(const std::string & b_field_real_name,
-                                      const std::string & b_field_imag_name) override;
+                                      const std::string & b_field_imag_name,
+                                      const std::string & external_b_field_real_name = "",
+                                      const std::string & external_b_field_imag_name = "") override;
 
   //* Electric field is already a state variable solved for
   void RegisterElectricFieldAux(const std::string & e_field_real_name,
-                                const std::string & e_field_imag_name) override
+                                const std::string & e_field_imag_name,
+                                const std::string & external_e_field_real_name = "",
+                                const std::string & external_e_field_imag_name = "") override
   {
   }
 

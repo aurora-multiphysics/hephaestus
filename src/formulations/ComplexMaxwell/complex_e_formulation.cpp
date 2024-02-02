@@ -23,7 +23,9 @@ ComplexEFormulation::ComplexEFormulation(const std::string & magnetic_reluctivit
 // Enable auxiliary calculation of J ∈ H(div)
 void
 ComplexEFormulation::RegisterCurrentDensityAux(const std::string & j_field_real_name,
-                                               const std::string & j_field_imag_name)
+                                               const std::string & j_field_imag_name,
+                                               const std::string & external_j_field_real_name,
+                                               const std::string & external_j_field_imag_name)
 {
   //* Current density J = Jᵉ + σE
   //* Induced electric current, Jind = σE
@@ -31,32 +33,46 @@ ComplexEFormulation::RegisterCurrentDensityAux(const std::string & j_field_real_
   auxsolvers.Register(j_field_real_name,
                       new hephaestus::ScaledVectorGridFunctionAux(_electric_field_real_name,
                                                                   j_field_real_name,
-                                                                  _electric_conductivity_name),
+                                                                  _electric_conductivity_name,
+                                                                  1.0,
+                                                                  1.0,
+                                                                  external_j_field_real_name),
                       true);
   auxsolvers.Register(j_field_imag_name,
                       new hephaestus::ScaledVectorGridFunctionAux(_electric_field_imag_name,
                                                                   j_field_imag_name,
-                                                                  _electric_conductivity_name),
+                                                                  _electric_conductivity_name,
+                                                                  1.0,
+                                                                  1.0,
+                                                                  external_j_field_imag_name),
                       true);
 };
 
 void
 ComplexEFormulation::RegisterMagneticFluxDensityAux(const std::string & b_field_real_name,
-                                                    const std::string & b_field_imag_name)
+                                                    const std::string & b_field_imag_name,
+                                                    const std::string & external_b_field_real_name,
+                                                    const std::string & external_b_field_imag_name)
 {
   //* Magnetic flux density B = (i/ω) curl E
   //* (∇×E = -dB/dt = -iωB)
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
-  auxsolvers.Register(
-      b_field_imag_name,
-      new hephaestus::ScaledCurlVectorGridFunctionAux(
-          _electric_field_real_name, b_field_imag_name, "_inv_angular_frequency", 1.0),
-      true);
-  auxsolvers.Register(
-      b_field_real_name,
-      new hephaestus::ScaledCurlVectorGridFunctionAux(
-          _electric_field_imag_name, b_field_real_name, "_inv_angular_frequency", -1.0),
-      true);
+  auxsolvers.Register(b_field_imag_name,
+                      new hephaestus::ScaledCurlVectorGridFunctionAux(_electric_field_real_name,
+                                                                      b_field_imag_name,
+                                                                      "_inv_angular_frequency",
+                                                                      1.0,
+                                                                      1.0,
+                                                                      external_b_field_imag_name),
+                      true);
+  auxsolvers.Register(b_field_real_name,
+                      new hephaestus::ScaledCurlVectorGridFunctionAux(_electric_field_imag_name,
+                                                                      b_field_real_name,
+                                                                      "_inv_angular_frequency",
+                                                                      -1.0,
+                                                                      1.0,
+                                                                      external_b_field_real_name),
+                      true);
 }
 
 // Enable auxiliary calculation of P ∈ L2

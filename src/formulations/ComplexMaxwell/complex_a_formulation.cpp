@@ -23,26 +23,38 @@ ComplexAFormulation::ComplexAFormulation(const std::string & magnetic_reluctivit
 // Enable auxiliary calculation of J ∈ H(div)
 void
 ComplexAFormulation::RegisterCurrentDensityAux(const std::string & j_field_real_name,
-                                               const std::string & j_field_imag_name)
+                                               const std::string & j_field_imag_name,
+                                               const std::string & external_j_field_real_name,
+                                               const std::string & external_j_field_imag_name)
 {
   //* Current density J = Jᵉ + σE
   //* Induced current density Jind = σE = -iωσA
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(
       j_field_imag_name,
-      new hephaestus::ScaledVectorGridFunctionAux(
-          _magnetic_vector_potential_real_name, j_field_imag_name, _loss_coef_name, -1.0),
+      new hephaestus::ScaledVectorGridFunctionAux(_magnetic_vector_potential_real_name,
+                                                  j_field_imag_name,
+                                                  _loss_coef_name,
+                                                  -1.0,
+                                                  1.0,
+                                                  external_j_field_imag_name),
       true);
   auxsolvers.Register(
       j_field_real_name,
-      new hephaestus::ScaledVectorGridFunctionAux(
-          _magnetic_vector_potential_imag_name, j_field_real_name, _loss_coef_name, 1.0),
+      new hephaestus::ScaledVectorGridFunctionAux(_magnetic_vector_potential_imag_name,
+                                                  j_field_real_name,
+                                                  _loss_coef_name,
+                                                  1.0,
+                                                  1.0,
+                                                  external_j_field_real_name),
       true);
 };
 
 void
 ComplexAFormulation::RegisterMagneticFluxDensityAux(const std::string & b_field_real_name,
-                                                    const std::string & b_field_imag_name)
+                                                    const std::string & b_field_imag_name,
+                                                    const std::string & external_b_field_real_name,
+                                                    const std::string & external_b_field_imag_name)
 {
   //* Magnetic flux density B = curl A
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
@@ -58,19 +70,29 @@ ComplexAFormulation::RegisterMagneticFluxDensityAux(const std::string & b_field_
 
 void
 ComplexAFormulation::RegisterElectricFieldAux(const std::string & e_field_real_name,
-                                              const std::string & e_field_imag_name)
+                                              const std::string & e_field_imag_name,
+                                              const std::string & external_e_field_real_name,
+                                              const std::string & external_e_field_imag_name)
 {
   //* Electric field E =-dA/dt=-iωA
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(
       e_field_imag_name,
-      new hephaestus::ScaledVectorGridFunctionAux(
-          _magnetic_vector_potential_real_name, e_field_imag_name, "_angular_frequency", -1.0),
+      new hephaestus::ScaledVectorGridFunctionAux(_magnetic_vector_potential_real_name,
+                                                  e_field_imag_name,
+                                                  "_angular_frequency",
+                                                  -1.0,
+                                                  1.0,
+                                                  external_e_field_imag_name),
       true);
   auxsolvers.Register(
       e_field_real_name,
-      new hephaestus::ScaledVectorGridFunctionAux(
-          _magnetic_vector_potential_imag_name, e_field_real_name, "_angular_frequency", 1.0),
+      new hephaestus::ScaledVectorGridFunctionAux(_magnetic_vector_potential_imag_name,
+                                                  e_field_real_name,
+                                                  "_angular_frequency",
+                                                  1.0,
+                                                  1.0,
+                                                  external_e_field_real_name),
       true);
 }
 
