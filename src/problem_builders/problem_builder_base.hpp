@@ -23,19 +23,15 @@ public:
   ~ProblemSolvers() = default;
 
   void
-  SetSolver(std::unique_ptr<mfem::Solver> & solver, std::string solve_type, mfem::Operator & A);
-  void SetFEMPreconditioner(mfem::Operator & A);
-  void SetFEMSolver(mfem::Operator & A);
-  void SetJacobianPreconditioner(mfem::Operator & A);
-  void SetJacobianSolver(mfem::Operator & A);
+  SetSolver(std::shared_ptr<mfem::Solver> & solver, std::string solve_type, mfem::Operator & A);
+  void SetLinearPreconditioner(mfem::Operator & A);
+  void SetLinearSolver(mfem::Operator & A);
 
   void SetComm(MPI_Comm comm);
   void SetSolverOptions(hephaestus::InputParameters solver_options);
 
-  std::unique_ptr<mfem::Solver> _fem_solver{nullptr};
-  std::unique_ptr<mfem::Solver> _fem_preconditioner{nullptr};
-  std::unique_ptr<mfem::Solver> _jacobian_solver{nullptr};
-  std::unique_ptr<mfem::Solver> _jacobian_preconditioner{nullptr};
+  std::shared_ptr<mfem::Solver> _linear_solver{nullptr};
+  std::shared_ptr<mfem::Solver> _linear_preconditioner{nullptr};
 
 private:
   MPI_Comm _comm;

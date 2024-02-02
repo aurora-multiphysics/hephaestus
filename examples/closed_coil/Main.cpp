@@ -99,11 +99,12 @@ main(int argc, char * argv[])
   problem_builder->SetOutputs(outputs);
 
   hephaestus::InputParameters solver_options;
-  solver_options.SetParam("Tolerance", float(1.0e-13));
+  solver_options.SetParam("Tolerance", float(1.0e-2));
   solver_options.SetParam("AbsTolerance", float(1.0e-16));
   solver_options.SetParam("MaxIter", (unsigned int)500);
   solver_options.SetParam("PrintLevel", 2);
-  solver_options.SetParam("LinearSolver", std::string("PCG"));
+  solver_options.SetParam("LinearPreconditioner", std::string("PCG"));
+  solver_options.SetParam("LinearSolver", std::string("FGMRES"));
   problem_builder->SetSolverOptions(solver_options);
 
   hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
