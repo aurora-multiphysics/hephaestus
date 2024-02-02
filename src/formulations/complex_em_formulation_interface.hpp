@@ -42,7 +42,8 @@ public:
   virtual void RegisterJouleHeatingDensityAux(const std::string & p_field_name,
                                               const std::string & e_field_real_name,
                                               const std::string & e_field_imag_name,
-                                              const std::string & conductivity_coef_name)
+                                              const std::string & j_field_real_name,
+                                              const std::string & j_field_imag_name)
   {
     MFEM_ABORT("Joule heating auxsolver not available for this formulation");
   }

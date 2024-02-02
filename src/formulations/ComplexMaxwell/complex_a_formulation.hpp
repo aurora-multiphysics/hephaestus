@@ -57,7 +57,8 @@ public:
   void RegisterJouleHeatingDensityAux(const std::string & p_field_name,
                                       const std::string & e_field_real_name,
                                       const std::string & e_field_imag_name,
-                                      const std::string & conductivity_coef_name) override;
+                                      const std::string & j_field_real_name,
+                                      const std::string & j_field_imag_name) override;
 
 protected:
   const std::string & _magnetic_reluctivity_name =

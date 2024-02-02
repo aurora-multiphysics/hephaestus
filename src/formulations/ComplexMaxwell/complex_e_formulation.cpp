@@ -64,18 +64,19 @@ void
 ComplexEFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_name,
                                                     const std::string & e_field_real_name,
                                                     const std::string & e_field_imag_name,
-                                                    const std::string & conductivity_coef_name)
+                                                    const std::string & j_field_real_name,
+                                                    const std::string & j_field_imag_name)
 {
   //* Time averaged Joule heating density = E.J
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(p_field_name,
                       new hephaestus::VectorGridFunctionDotProductAux(p_field_name,
                                                                       p_field_name,
-                                                                      _electric_conductivity_name,
+                                                                      "",
                                                                       _electric_field_real_name,
                                                                       _electric_field_real_name,
-                                                                      _electric_field_imag_name,
-                                                                      _electric_field_imag_name,
+                                                                      j_field_real_name,
+                                                                      j_field_imag_name,
                                                                       true),
                       true);
   auxsolvers.Get(p_field_name)->SetPriority(2);

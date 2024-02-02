@@ -179,7 +179,8 @@ main(int argc, char * argv[])
   problem_builder->RegisterJouleHeatingDensityAux("joule_heating_density",
                                                   "electric_field_real",
                                                   "electric_field_imag",
-                                                  "electrical_conductivity");
+                                                  "current_density_real",
+                                                  "current_density_imag");
 
   hephaestus::Coefficients coefficients = defineCoefficients();
   problem_builder->SetCoefficients(coefficients);

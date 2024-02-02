@@ -175,7 +175,8 @@ TEST_CASE_METHOD(TestComplexAFormRod, "TestComplexAFormRod", "[CheckRun]")
   problem_builder->RegisterJouleHeatingDensityAux("joule_heating_density",
                                                   "electric_field_real",
                                                   "electric_field_imag",
-                                                  "electrical_conductivity");
+                                                  "current_density_real",
+                                                  "current_density_imag");
 
   problem_builder->SetSources(sources);
   problem_builder->SetOutputs(outputs);

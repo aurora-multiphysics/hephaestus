@@ -80,7 +80,8 @@ void
 ComplexAFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_name,
                                                     const std::string & e_field_real_name,
                                                     const std::string & e_field_imag_name,
-                                                    const std::string & conductivity_coef_name)
+                                                    const std::string & j_field_real_name,
+                                                    const std::string & j_field_imag_name)
 {
   //* Time averaged Joule heating density = E.J
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
@@ -91,8 +92,8 @@ ComplexAFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_
                                                       _loss_coef_name,
                                                       _magnetic_vector_potential_real_name,
                                                       _magnetic_vector_potential_real_name,
-                                                      _magnetic_vector_potential_imag_name,
-                                                      _magnetic_vector_potential_imag_name,
+                                                      j_field_real_name,
+                                                      j_field_imag_name,
                                                       true),
       true);
   auxsolvers.Get(p_field_name)->SetPriority(2);
