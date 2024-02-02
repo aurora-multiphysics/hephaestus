@@ -256,6 +256,18 @@ ProblemSolvers::SetSolver(std::shared_ptr<mfem::Solver> & solver,
 
     solver = solver_buffer;
   }
+  else if (solve_type == "AMS")
+  {
+    if (!_edge_fespace)
+      mfem::mfem_error("_edge_fespace must be set within ProblemSolvers class before calling AMS!");
+
+    std::shared_ptr<mfem::HypreAMS> solver_buffer{std::make_shared<mfem::HypreAMS>(_edge_fespace)};
+
+    solver_buffer->SetSingularProblem();
+    solver_buffer->SetPrintLevel(_solver_options.GetParam<int>("PrintLevel"));
+
+    solver = solver_buffer;
+  }
 
   // Add others!
 
@@ -301,16 +313,22 @@ ProblemSolvers::SetLinearSolver(mfem::Operator & A)
 }
 
 void
-ProblemSolvers::SetComm(MPI_Comm comm)
+ProblemSolvers::SetComm(const MPI_Comm comm)
 {
   _comm = comm;
   _comm_set = true;
 }
 
 void
-ProblemSolvers::SetSolverOptions(hephaestus::InputParameters solver_options)
+ProblemSolvers::SetSolverOptions(const hephaestus::InputParameters solver_options)
 {
   _solver_options = solver_options;
+}
+
+void
+ProblemSolvers::SetEdgeFESpace(mfem::ParFiniteElementSpace * edge_fes)
+{
+  _edge_fespace = edge_fes;
 }
 
 } // namespace hephaestus

@@ -27,11 +27,14 @@ public:
   void SetLinearPreconditioner(mfem::Operator & A);
   void SetLinearSolver(mfem::Operator & A);
 
-  void SetComm(MPI_Comm comm);
-  void SetSolverOptions(hephaestus::InputParameters solver_options);
+  void SetComm(const MPI_Comm comm);
+  void SetSolverOptions(const hephaestus::InputParameters solver_options);
+  void SetEdgeFESpace(mfem::ParFiniteElementSpace * edge_fes);
 
   std::shared_ptr<mfem::Solver> _linear_solver{nullptr};
   std::shared_ptr<mfem::Solver> _linear_preconditioner{nullptr};
+
+  mfem::ParFiniteElementSpace * _edge_fespace{nullptr};
 
 private:
   MPI_Comm _comm;

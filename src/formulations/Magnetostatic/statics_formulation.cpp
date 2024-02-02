@@ -154,6 +154,7 @@ StaticsOperator::Solve(mfem::Vector & X)
 
   // Define and apply a parallel solver for AX=B with the AMS
   // preconditioner from hypre.
+  _solvers->SetEdgeFESpace(gf.ParFESpace());
   _solvers->SetLinearPreconditioner(curl_mu_inv_curl);
   _solvers->SetLinearSolver(curl_mu_inv_curl);
   _solvers->_linear_solver->Mult(rhs_tdofs, sol_tdofs);
