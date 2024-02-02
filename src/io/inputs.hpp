@@ -60,6 +60,13 @@ public:
     else
       return true;
   };
+
+  template <typename T>
+  void SetParamIfEmpty(std::string param_name, T param)
+  {
+    if (!HasParam(param_name))
+      SetParam(param_name, param);
+  }
 };
 
 } // namespace hephaestus

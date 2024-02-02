@@ -44,10 +44,14 @@ StaticsFormulation::ConstructOperator()
   solver_options.SetParam("HCurlVarName", _h_curl_var_name);
   solver_options.SetParam("StiffnessCoefName", _alpha_coef_name);
 
-  if (!solver_options.HasParam("FEMSolver"))
-  {
-    solver_options.SetParam("FEMSolver", std::string("HCurl_FGMRES"));
-  }
+  // Default solver options for the statics formulation
+  solver_options.SetParamIfEmpty("LinearSolver", std::string("FGMRES"));
+  solver_options.SetParamIfEmpty("LinearPreconditioner", std::string("AMS"));
+  solver_options.SetParamIfEmpty("Tolerance", float(1.0e-13));
+  solver_options.SetParamIfEmpty("AbsTolerance", float(1.0e-20));
+  solver_options.SetParamIfEmpty("MaxIter", (unsigned int)500);
+  solver_options.SetParamIfEmpty("PrintLevel", 1);
+  _problem->_solvers.SetSolverOptions(solver_options);
 
   _problem->_eq_sys_operator =
       std::make_unique<hephaestus::StaticsOperator>(*(_problem->_pmesh),
