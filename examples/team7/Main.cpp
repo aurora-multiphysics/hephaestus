@@ -200,7 +200,7 @@ main(int argc, char * argv[])
 
   auto executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
 
-  mfem::out << "Created executioner";
+  mfem::out << "Created executioner\n";
   executioner->Execute();
 
   MPI_Finalize();

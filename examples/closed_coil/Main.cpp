@@ -103,7 +103,7 @@ main(int argc, char * argv[])
   solver_options.SetParam("AbsTolerance", float(1.0e-16));
   solver_options.SetParam("MaxIter", (unsigned int)500);
   solver_options.SetParam("PrintLevel", 2);
-  solver_options.SetParam("Solver", std::string("HCurl_FGMRES"));
+  solver_options.SetParam("LinearSolver", std::string("PCG"));
   problem_builder->SetSolverOptions(solver_options);
 
   hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
@@ -116,7 +116,7 @@ main(int argc, char * argv[])
 
   auto executioner = std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
 
-  mfem::out << "Created executioner";
+  mfem::out << "Created executioner\n";
   executioner->Execute();
 
   MPI_Finalize();
