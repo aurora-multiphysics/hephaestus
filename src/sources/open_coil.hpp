@@ -90,6 +90,7 @@ private:
 
   int _order_h1;
   int _order_hcurl;
+  int _order_hdiv;
   int _ref_face;
   bool _electric_field_transfer;
 
@@ -116,6 +117,9 @@ private:
   mfem::ParGridFunction * _phi_parent{nullptr};
   std::unique_ptr<mfem::ParGridFunction> _phi_t_parent{nullptr};
 
+  mfem::ParGridFunction * _j_parent{nullptr};
+  std::unique_ptr<mfem::ParGridFunction> _j_t_parent{nullptr};
+
   mfem::ParGridFunction * _source_electric_field{nullptr};
   mfem::ParGridFunction * _source_current_density{nullptr};
 
@@ -128,9 +132,13 @@ private:
   std::unique_ptr<mfem::ParFiniteElementSpace> _h_curl_fe_space_child{nullptr};
   std::unique_ptr<mfem::ND_FECollection> _h_curl_fe_space_fec_child{nullptr};
 
+  std::unique_ptr<mfem::ParFiniteElementSpace> _h_div_fe_space_child{nullptr};
+  std::unique_ptr<mfem::RT_FECollection> _h_div_fe_space_fec_child{nullptr};
+
   // Child GridFunctions
   std::unique_ptr<mfem::ParGridFunction> _grad_phi_child{nullptr};
   std::unique_ptr<mfem::ParGridFunction> _phi_child{nullptr};
+  std::unique_ptr<mfem::ParGridFunction> _j_child{nullptr};
 
   // Child boundary condition objects
   mfem::FunctionCoefficient _high_src;

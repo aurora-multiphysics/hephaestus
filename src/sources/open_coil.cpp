@@ -267,6 +267,7 @@ OpenCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     {
       mfem::mfem_error("Current density GridFunction must be of HDiv type.");
     }
+    _order_hdiv = _source_current_density->ParFESpace()->FEColl()->GetOrder();
   }
 
   _order_hcurl = _source_electric_field->ParFESpace()->FEColl()->GetOrder();
@@ -325,17 +326,8 @@ OpenCoilSolver::Apply(mfem::ParLinearForm * lf)
 
   if (_source_current_density)
   {
-    hephaestus::GridFunctions aux_gf;
-    aux_gf.Register("source_electric_field", _source_electric_field, false);
-    aux_gf.Register("source_current_density", _source_current_density, false);
-
-    hephaestus::Coefficients aux_coef;
-    aux_coef._scalars.Register("electrical_conductivity", _sigma, false);
-
-    hephaestus::ScaledVectorGridFunctionAux current_density_auxsolver(
-        "source_electric_field", "source_current_density", "electrical_conductivity", 1.0);
-    current_density_auxsolver.Init(aux_gf, aux_coef);
-    current_density_auxsolver.Solve();
+    *_source_current_density = 0.0;
+    _source_current_density->Add(i, *_j_t_parent);
   }
 
   lf->Add(i, *_final_lf);
@@ -367,6 +359,14 @@ OpenCoilSolver::MakeFESpaces()
     _h_curl_fe_space_child = std::make_unique<mfem::ParFiniteElementSpace>(
         _mesh_child.get(), _h_curl_fe_space_fec_child.get());
   }
+
+  if (_source_current_density && _h_div_fe_space_child == nullptr)
+  {
+    _h_div_fe_space_fec_child =
+        std::make_unique<mfem::RT_FECollection>(_order_hdiv - 1, _mesh_child->Dimension());
+    _h_div_fe_space_child = std::make_unique<mfem::ParFiniteElementSpace>(
+        _mesh_child.get(), _h_div_fe_space_fec_child.get());
+  }
 }
 
 void
@@ -381,6 +381,17 @@ OpenCoilSolver::MakeGridFunctions()
 
   if (_grad_phi_t_parent == nullptr)
     _grad_phi_t_parent = std::make_unique<mfem::ParGridFunction>(*_source_electric_field);
+
+  if (_source_current_density)
+  {
+    if (_j_child == nullptr)
+      _j_child = std::make_unique<mfem::ParGridFunction>(_h_div_fe_space_child.get());
+
+    if (_j_t_parent == nullptr)
+      _j_t_parent = std::make_unique<mfem::ParGridFunction>(*_source_current_density);
+    *_j_child = 0.0;
+    *_j_t_parent = 0.0;
+  }
 
   *_phi_child = 0.0;
   *_grad_phi_child = 0.0;
@@ -435,6 +446,23 @@ OpenCoilSolver::SPSCurrent()
   _mesh_child->Transfer(*_grad_phi_child, *_grad_phi_t_parent);
   if (_phi_parent)
     _mesh_child->Transfer(*_phi_child, *_phi_t_parent);
+
+  if (_source_current_density)
+  {
+    hephaestus::GridFunctions aux_gf;
+    aux_gf.Register("grad_phi_child", _grad_phi_child.get(), false);
+    aux_gf.Register("source_current_density", _j_child.get(), false);
+
+    hephaestus::Coefficients aux_coef;
+    aux_coef._scalars.Register("electrical_conductivity", _sigma, false);
+
+    hephaestus::ScaledVectorGridFunctionAux current_density_auxsolver(
+        "grad_phi_child", "source_current_density", "electrical_conductivity", -1.0);
+    current_density_auxsolver.Init(aux_gf, aux_coef);
+    current_density_auxsolver.Solve();
+
+    _mesh_child->Transfer(*_j_child, *_j_t_parent);
+  }
 
   BuildM1();
 
