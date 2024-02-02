@@ -53,11 +53,15 @@ public:
                 hephaestus::BCMap & bc_map,
                 hephaestus::Coefficients & coefficients,
                 hephaestus::Sources & sources,
-                hephaestus::InputParameters & solver_options);
+                hephaestus::InputParameters & solver_options,
+                hephaestus::ProblemSolvers & solvers);
 
   ~HCurlOperator() override = default;
 
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
+
+private:
+  ProblemSolvers * _solvers;
 };
 
 } // namespace hephaestus

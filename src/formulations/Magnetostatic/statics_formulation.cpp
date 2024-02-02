@@ -156,16 +156,12 @@ StaticsOperator::Solve(mfem::Vector & X)
   mfem::HypreParVector rhs_tdofs(gf.ParFESpace());
   blf.FormLinearSystem(ess_bdr_tdofs, gf, lf, curl_mu_inv_curl, sol_tdofs, rhs_tdofs);
 
-  // Define and apply a parallel solver for AX=B with the AMS
-  // preconditioner from hypre.
+  // Define and apply a parallel solver for AX=B.
   _solvers->SetEdgeFESpace(gf.ParFESpace());
   _solvers->SetLinearPreconditioner(curl_mu_inv_curl);
   _solvers->SetLinearSolver(curl_mu_inv_curl);
   _solvers->_linear_solver->Mult(rhs_tdofs, sol_tdofs);
-  // hephaestus::DefaultHCurlFGMRESSolver a1_solver(
-  //    _solver_options, curl_mu_inv_curl, gf.ParFESpace());
 
-  // a1_solver.Mult(rhs_tdofs, sol_tdofs);
   blf.RecoverFEMSolution(sol_tdofs, lf, gf);
 }
 
