@@ -95,6 +95,7 @@ protected:
                                                            "HCurl",
                                                            "H1",
                                                            "electrical_conductivity",
+                                                           -1,
                                                            current_solver_options),
                      true);
 

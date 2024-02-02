@@ -11,12 +11,14 @@ ScalarPotentialSource::ScalarPotentialSource(std::string grad_phi_gf_name,
                                              std::string hcurl_fespace_name,
                                              std::string h1_fespace_name,
                                              std::string coef_name,
+                                             int source_sign,
                                              hephaestus::InputParameters solver_options)
   : _grad_phi_gf_name(std::move(grad_phi_gf_name)),
     _phi_gf_name(std::move(phi_gf_name)),
     _hcurl_fespace_name(std::move(hcurl_fespace_name)),
     _h1_fespace_name(std::move(h1_fespace_name)),
     _coef_name(std::move(coef_name)),
+    _source_sign(std::move(source_sign)),
     _solver_options(std::move(solver_options))
 {
 }
@@ -135,13 +137,13 @@ ScalarPotentialSource::Apply(mfem::ParLinearForm * lf)
 
   _m1->Update();
   _m1->Assemble();
-  _m1->AddMult(*_grad_phi, *lf, 1.0);
+  _m1->AddMult(*_grad_phi, *lf, _source_sign);
 }
 
 void
 ScalarPotentialSource::SubtractSource(mfem::ParGridFunction * gf)
 {
-  _grad->AddMult(*_phi, *gf, -1.0);
+  _grad->AddMult(*_phi, *gf, -_source_sign);
 }
 
 } // namespace hephaestus

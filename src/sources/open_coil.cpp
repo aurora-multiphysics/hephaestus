@@ -420,7 +420,7 @@ OpenCoilSolver::SPSCurrent()
   coefs._scalars.Register("electric_conductivity", _sigma, false);
 
   hephaestus::ScalarPotentialSource sps(
-      "GradPhi", "V", "HCurl", "H1", "electric_conductivity", _solver_options);
+      "GradPhi", "V", "HCurl", "H1", "electric_conductivity", 1, _solver_options);
   sps.Init(gridfunctions, fespaces, _bc_maps, coefs);
 
   mfem::ParLinearForm dummy(_h_curl_fe_space_child.get());

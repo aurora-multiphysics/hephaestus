@@ -100,6 +100,7 @@ protected:
                                                            "_HCurlFESpace",
                                                            "H1",
                                                            "magnetic_permeability",
+                                                           1,
                                                            current_solver_options),
                      true);
 

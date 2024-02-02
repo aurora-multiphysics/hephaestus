@@ -12,6 +12,7 @@ public:
                         std::string hcurl_fespace_name,
                         std::string h1_fespace_name,
                         std::string coef_name,
+                        int source_sign = -1,
                         hephaestus::InputParameters solver_options = hephaestus::InputParameters());
 
   // Override virtual Source destructor to prevent leaks.
@@ -34,7 +35,7 @@ public:
   std::string _hcurl_fespace_name;
   std::string _h1_fespace_name;
   std::string _coef_name;
-
+  int _source_sign;
   const hephaestus::InputParameters _solver_options;
 
   mfem::ParFiniteElementSpace * _h1_fe_space;
