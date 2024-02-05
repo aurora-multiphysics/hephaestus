@@ -46,14 +46,20 @@ protected:
     //     true);
 
     hephaestus::BCMap bc_map;
+
     auto hdot_vec_coef = std::make_shared<mfem::VectorFunctionCoefficient>(3, HdotBc);
+    coefficients._vectors.Register("surface_tangential_dHdt", hdot_vec_coef);
+
     bc_map.Register(
         "tangential_dHdt",
         std::make_shared<hephaestus::VectorDirichletBC>(
-            std::string("dmagnetic_field_dt"), mfem::Array<int>({1, 2, 3}), hdot_vec_coef));
-    coefficients._vectors.Register("surface_tangential_dHdt", hdot_vec_coef);
+            std::string("dmagnetic_field_dt"), mfem::Array<int>({1, 2, 3}), hdot_vec_coef.get()));
+
     coefficients._scalars.Register("magnetic_permeability",
                                    std::make_shared<mfem::ConstantCoefficient>(1.0));
+
+    coefficients._scalars.Register("high_potential",
+                                   std::make_shared<mfem::FunctionCoefficient>(PotentialHigh));
 
     mfem::Array<int> high_terminal(1);
     high_terminal[0] = 1;
@@ -61,7 +67,10 @@ protected:
                     std::make_shared<hephaestus::ScalarDirichletBC>(
                         std::string("magnetic_potential"),
                         high_terminal,
-                        std::make_shared<mfem::FunctionCoefficient>(PotentialHigh)));
+                        coefficients._scalars.GetPtr("high_potential", false)));
+
+    coefficients._scalars.Register("ground_potential",
+                                   std::make_shared<mfem::FunctionCoefficient>(PotentialGround));
 
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 2;
@@ -69,7 +78,7 @@ protected:
                     std::make_shared<hephaestus::ScalarDirichletBC>(
                         std::string("magnetic_potential"),
                         ground_terminal,
-                        std::make_shared<mfem::FunctionCoefficient>(PotentialGround)));
+                        coefficients._scalars.GetPtr("ground_potential", false)));
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./cylinder-hex-q2.gen")).c_str(), 1, 1);
 

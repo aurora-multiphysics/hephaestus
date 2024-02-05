@@ -14,6 +14,6 @@ public:
   ~FrequencyDomainEMFormulation() override = default;
 
 protected:
-  std::shared_ptr<mfem::ConstantCoefficient> _freq_coef{nullptr};
+  mfem::ConstantCoefficient * _freq_coef{nullptr};
 };
 } // namespace hephaestus

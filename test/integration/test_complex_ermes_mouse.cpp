@@ -55,12 +55,19 @@ protected:
 
     hephaestus::BCMap bc_map;
     mfem::Array<int> dirichlet_attr({2, 3, 4});
+
+    coefficients._vectors.Register("EBcR",
+                                   std::make_shared<mfem::VectorFunctionCoefficient>(3, EBcR));
+
+    coefficients._vectors.Register("BBcI",
+                                   std::make_shared<mfem::VectorFunctionCoefficient>(3, EBcI));
+
     bc_map.Register("tangential_E",
                     std::make_shared<hephaestus::VectorDirichletBC>(
                         std::string("electric_field"),
                         dirichlet_attr,
-                        std::make_shared<mfem::VectorFunctionCoefficient>(3, EBcR),
-                        std::make_shared<mfem::VectorFunctionCoefficient>(3, EBcI)));
+                        coefficients._vectors.GetPtr("EBcR", false),
+                        coefficients._vectors.GetPtr("BBcI", false)));
 
     mfem::Array<int> wgi_in_attr(1);
     wgi_in_attr[0] = 5;

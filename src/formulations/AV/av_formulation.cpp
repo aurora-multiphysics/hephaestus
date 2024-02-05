@@ -124,7 +124,7 @@ AVFormulation::RegisterCoefficients()
   coefficients._scalars.Register(
       _alpha_coef_name,
       std::make_shared<mfem::TransformedCoefficient>(
-          &_one_coef, coefficients._scalars.Get(_inv_alpha_coef_name).get(), fracFunc));
+          &_one_coef, coefficients._scalars.GetPtr(_inv_alpha_coef_name), fracFunc));
 }
 
 AVEquationSystem::AVEquationSystem(const hephaestus::InputParameters & params)
@@ -148,12 +148,12 @@ AVEquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
   coefficients._scalars.Register(
       _dtalpha_coef_name,
       std::make_shared<mfem::TransformedCoefficient>(
-          &_dt_coef, coefficients._scalars.Get(_alpha_coef_name).get(), prodFunc));
+          &_dt_coef, coefficients._scalars.GetPtr(_alpha_coef_name), prodFunc));
 
   coefficients._scalars.Register(
       _neg_beta_coef_name,
       std::make_shared<mfem::TransformedCoefficient>(
-          &_neg_coef, coefficients._scalars.Get(_beta_coef_name).get(), prodFunc));
+          &_neg_coef, coefficients._scalars.GetPtr(_beta_coef_name), prodFunc));
 
   TimeDependentEquationSystem::Init(gridfunctions, fespaces, bc_map, coefficients);
 }

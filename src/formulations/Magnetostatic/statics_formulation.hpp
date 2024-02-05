@@ -45,7 +45,7 @@ public:
 private:
   std::string _h_curl_var_name, _stiffness_coef_name;
 
-  std::shared_ptr<mfem::Coefficient> _stiff_coef{nullptr}; // Stiffness Material Coefficient
+  mfem::Coefficient * _stiff_coef{nullptr}; // Stiffness Material Coefficient
 };
 
 } // namespace hephaestus

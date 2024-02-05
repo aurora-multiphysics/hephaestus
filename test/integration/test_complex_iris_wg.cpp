@@ -52,6 +52,11 @@ protected:
     coefficients._scalars.Register("electrical_conductivity",
                                    std::make_shared<mfem::ConstantCoefficient>(0.0));
 
+    coefficients._vectors.Register("EBCR",
+                                   std::make_shared<mfem::VectorFunctionCoefficient>(3, EBCR));
+    coefficients._vectors.Register("EBCI",
+                                   std::make_shared<mfem::VectorFunctionCoefficient>(3, EBCI));
+
     hephaestus::BCMap bc_map;
     mfem::Array<int> dirichlet_attr(1);
     dirichlet_attr[0] = 1;
@@ -59,8 +64,8 @@ protected:
                     std::make_shared<hephaestus::VectorDirichletBC>(
                         std::string("electric_field"),
                         dirichlet_attr,
-                        std::make_shared<mfem::VectorFunctionCoefficient>(3, EBCR),
-                        std::make_shared<mfem::VectorFunctionCoefficient>(3, EBCI)));
+                        coefficients._vectors.GetPtr("EBCR", false),
+                        coefficients._vectors.GetPtr("EBCI", false)));
 
     mfem::Array<int> wgi_in_attr(1);
     wgi_in_attr[0] = 2;

@@ -59,13 +59,16 @@ protected:
                                    std::make_shared<mfem::FunctionCoefficient>(MuExpr));
 
     hephaestus::BCMap bc_map;
+
     auto adot_vec_coef = std::make_shared<mfem::VectorFunctionCoefficient>(3, AdotBC);
+    coefficients._vectors.Register("surface_tangential_dAdt", adot_vec_coef);
+
     bc_map.Register("tangential_dAdt",
                     std::make_shared<hephaestus::VectorDirichletBC>(
                         std::string("dmagnetic_vector_potential_dt"),
                         mfem::Array<int>({1, 2, 3}),
-                        adot_vec_coef));
-    coefficients._vectors.Register("surface_tangential_dAdt", adot_vec_coef);
+                        adot_vec_coef.get()));
+
     coefficients._scalars.Register("electrical_conductivity",
                                    std::make_shared<mfem::ConstantCoefficient>(1.0));
 
@@ -73,12 +76,12 @@ protected:
     ground_terminal[0] = 1;
 
     auto ground_coeff = std::make_shared<mfem::FunctionCoefficient>(PotentialGround);
+    coefficients._scalars.Register("ground_potential", ground_coeff);
 
     bc_map.Register(
         "ground_potential",
         std::make_shared<hephaestus::ScalarDirichletBC>(
-            std::string("electric_potential"), mfem::Array<int>({1, 2, 3}), ground_coeff));
-    coefficients._scalars.Register("ground_potential", ground_coeff);
+            std::string("electric_potential"), mfem::Array<int>({1, 2, 3}), ground_coeff.get()));
 
     auto a_exact = std::make_shared<mfem::VectorFunctionCoefficient>(3, AExactExpr);
     coefficients._vectors.Register("a_exact_coeff", a_exact);

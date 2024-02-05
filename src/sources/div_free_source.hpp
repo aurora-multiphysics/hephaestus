@@ -28,8 +28,8 @@ public:
   const hephaestus::InputParameters _solver_options;
   bool _perform_helmholtz_projection;
 
-  std::shared_ptr<mfem::ParFiniteElementSpace> _h1_fe_space{nullptr};
-  std::shared_ptr<mfem::ParFiniteElementSpace> _h_curl_fe_space{nullptr};
+  mfem::ParFiniteElementSpace * _h1_fe_space{nullptr};
+  mfem::ParFiniteElementSpace * _h_curl_fe_space{nullptr};
 
   std::shared_ptr<mfem::ParGridFunction> _q; // Potential
 
@@ -39,7 +39,7 @@ public:
 
   std::unique_ptr<mfem::ParBilinearForm> _h_curl_mass;
 
-  std::shared_ptr<mfem::VectorCoefficient> _source_vec_coef{nullptr};
+  mfem::VectorCoefficient * _source_vec_coef{nullptr};
 
   // H(Curl) projection of user specified source
   std::shared_ptr<mfem::ParGridFunction> _g;

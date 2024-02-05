@@ -20,7 +20,7 @@ public:
             hephaestus::Coefficients & coefficients) override;
   void Apply(mfem::ParMixedBilinearForm * mblf) override;
   std::string _coef_name;
-  std::shared_ptr<mfem::Coefficient> _coef{nullptr};
+  mfem::Coefficient * _coef{nullptr};
 };
 
 } // namespace hephaestus

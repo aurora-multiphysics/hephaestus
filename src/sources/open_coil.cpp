@@ -360,13 +360,14 @@ OpenCoilSolver::SetBCs()
 void
 OpenCoilSolver::SPSCurrent()
 {
-  _bc_maps.Register(
-      "high_potential",
-      std::make_shared<hephaestus::ScalarDirichletBC>(std::string("V"), _high_terminal, _high_src));
+  // NB: - not great.
+  _bc_maps.Register("high_potential",
+                    std::make_shared<hephaestus::ScalarDirichletBC>(
+                        std::string("V"), _high_terminal, _high_src.get()));
 
-  _bc_maps.Register(
-      "low_potential",
-      std::make_shared<hephaestus::ScalarDirichletBC>(std::string("V"), _low_terminal, _low_src));
+  _bc_maps.Register("low_potential",
+                    std::make_shared<hephaestus::ScalarDirichletBC>(
+                        std::string("V"), _low_terminal, _low_src.get()));
 
   hephaestus::FESpaces fespaces;
   fespaces.Register(std::string("HCurl"), _h_curl_fe_space);

@@ -47,10 +47,11 @@ EquationSystem::AddKernel(const std::string & test_var_name,
     auto kernels = std::make_shared<std::vector<std::shared_ptr<ParBilinearFormKernel>>>();
 
     // 2. Register with map to prevent leaks.
-    _blf_kernels_map.Register(test_var_name, kernels);
+    _blf_kernels_map.Register(test_var_name, std::move(kernels));
   }
 
-  _blf_kernels_map.Get(test_var_name)->push_back(std::move(blf_kernel));
+  // NB: GetRef ensures that we don't have a nullptr.
+  _blf_kernels_map.GetRef(test_var_name).push_back(std::move(blf_kernel));
 }
 
 void
@@ -66,7 +67,7 @@ EquationSystem::AddKernel(const std::string & test_var_name,
     _lf_kernels_map.Register(test_var_name, std::move(kernels));
   }
 
-  _lf_kernels_map.Get(test_var_name)->push_back(std::move(lf_kernel));
+  _lf_kernels_map.GetRef(test_var_name).push_back(std::move(lf_kernel));
 }
 
 void
@@ -82,7 +83,7 @@ EquationSystem::AddKernel(const std::string & test_var_name,
     _nlf_kernels_map.Register(test_var_name, std::move(kernels));
   }
 
-  _nlf_kernels_map.Get(test_var_name)->push_back(std::move(nlf_kernel));
+  _nlf_kernels_map.GetRef(test_var_name).push_back(std::move(nlf_kernel));
 }
 
 void
@@ -110,7 +111,10 @@ EquationSystem::AddKernel(const std::string & trial_var_name,
     _mblf_kernels_map_map.Get(test_var_name)->Register(trial_var_name, std::move(kernels));
   }
 
-  _mblf_kernels_map_map.Get(test_var_name)->Get(trial_var_name)->push_back(std::move(mblf_kernel));
+  // TODO: - cleanup.
+  _mblf_kernels_map_map.GetRef(test_var_name)
+      .GetRef(trial_var_name)
+      .push_back(std::move(mblf_kernel));
 }
 
 void
@@ -163,9 +167,9 @@ EquationSystem::FormLinearSystem(mfem::OperatorHandle & op,
       mfem::Vector aux_x, aux_rhs;
       mfem::ParLinearForm aux_lf(_test_pfespaces.at(i));
       aux_lf = 0.0;
-      if (_mblfs.Has(test_var_name) && _mblfs.Get(test_var_name)->Has(trial_var_name))
+      if (_mblfs.Has(test_var_name) && _mblfs.GetPtr(test_var_name)->Has(trial_var_name))
       {
-        auto mblf = _mblfs.Get(test_var_name)->Get(trial_var_name);
+        auto mblf = _mblfs.GetPtr(test_var_name)->GetPtr(trial_var_name);
         _h_blocks(i, j) = new mfem::HypreParMatrix;
         mblf->FormRectangularLinearSystem(_ess_tdof_lists.at(j),
                                           _ess_tdof_lists.at(i),
@@ -197,7 +201,7 @@ EquationSystem::RecoverFEMSolution(mfem::BlockVector & trueX,
   {
     auto & test_var_name = _test_var_names.at(i);
     trueX.GetBlock(i).SyncAliasMemory(trueX);
-    gridfunctions.Get(test_var_name)->Distribute(&(trueX.GetBlock(i)));
+    gridfunctions.GetPtr(test_var_name, false)->Distribute(&(trueX.GetBlock(i)));
   }
 }
 
@@ -272,7 +276,7 @@ EquationSystem::BuildLinearForms(hephaestus::BCMap & bc_map, hephaestus::Sources
   {
     auto test_var_name = _test_var_names.at(i);
     _lfs.Register(test_var_name, std::make_shared<mfem::ParLinearForm>(_test_pfespaces.at(i)));
-    *(_lfs.Get(test_var_name)) = 0.0;
+    _lfs.GetRef(test_var_name) = 0.0;
   }
   // Apply boundary conditions
   ApplyBoundaryConditions(bc_map);
@@ -280,21 +284,21 @@ EquationSystem::BuildLinearForms(hephaestus::BCMap & bc_map, hephaestus::Sources
   for (auto & test_var_name : _test_var_names)
   {
     // Apply kernels
-    auto lf = _lfs.Get(test_var_name);
+    auto lf = _lfs.GetPtr(test_var_name, false);
     // Assemble. Must be done before applying kernels that add to lf.
     lf->Assemble();
 
-    auto lf_kernels = _lf_kernels_map.Get(test_var_name);
+    auto lf_kernels = _lf_kernels_map.GetPtr(test_var_name);
     if (lf_kernels != nullptr)
     {
       for (auto & lf_kernel : *lf_kernels)
       {
-        lf_kernel->Apply(lf.get());
+        lf_kernel->Apply(lf);
       }
     }
     if (test_var_name == _test_var_names.at(0))
     {
-      sources.Apply(lf.get());
+      sources.Apply(lf);
     }
   }
 }
@@ -309,13 +313,13 @@ EquationSystem::BuildBilinearForms()
     _blfs.Register(test_var_name, std::make_shared<mfem::ParBilinearForm>(_test_pfespaces.at(i)));
 
     // Apply kernels
-    auto blf = _blfs.Get(test_var_name);
-    auto blf_kernels = _blf_kernels_map.Get(test_var_name);
+    auto blf = _blfs.GetPtr(test_var_name, false);
+    auto blf_kernels = _blf_kernels_map.GetPtr(test_var_name);
     if (blf_kernels != nullptr)
     {
       for (auto & blf_kernel : *blf_kernels)
       {
-        blf_kernel->Apply(blf.get());
+        blf_kernel->Apply(blf);
       }
     }
     // Assemble
@@ -343,11 +347,11 @@ EquationSystem::BuildMixedBilinearForms()
       if (_mblf_kernels_map_map.Has(test_var_name) &&
           _mblf_kernels_map_map.Get(test_var_name)->Has(trial_var_name))
       {
-        auto mblf_kernels = _mblf_kernels_map_map.Get(test_var_name)->Get(trial_var_name);
+        auto mblf_kernels = _mblf_kernels_map_map.GetRef(test_var_name).GetRef(trial_var_name);
         auto mblf = std::make_shared<mfem::ParMixedBilinearForm>(_test_pfespaces.at(j),
                                                                  _test_pfespaces.at(i));
         // Apply all mixed kernels with this test/trial pair
-        for (auto & mblf_kernel : *mblf_kernels)
+        for (auto & mblf_kernel : mblf_kernels)
         {
           mblf_kernel->Apply(mblf.get());
         }
@@ -398,7 +402,7 @@ TimeDependentEquationSystem::SetTimeStep(double dt)
     _dt_coef.constant = dt;
     for (auto test_var_name : _test_var_names)
     {
-      auto blf = _blfs.Get(test_var_name);
+      auto blf = _blfs.GetPtr(test_var_name, false);
       blf->Update();
       blf->Assemble();
     }

@@ -23,21 +23,8 @@ ScalarPotentialSource::Init(hephaestus::GridFunctions & gridfunctions,
                             hephaestus::BCMap & bc_map,
                             hephaestus::Coefficients & coefficients)
 {
-  _h1_fe_space = fespaces.Get(_h1_fespace_name);
-  if (_h1_fe_space == nullptr)
-  {
-    const std::string error_message = _h1_fespace_name + " not found in fespaces when "
-                                                         "creating ScalarPotentialSource\n";
-    mfem::mfem_error(error_message.c_str());
-  }
-
-  _h_curl_fe_space = fespaces.Get(_hcurl_fespace_name);
-  if (_h_curl_fe_space == nullptr)
-  {
-    const std::string error_message = _hcurl_fespace_name + " not found in fespaces when "
-                                                            "creating ScalarPotentialSource\n";
-    mfem::mfem_error(error_message.c_str());
-  }
+  _h1_fe_space = fespaces.GetPtr(_h1_fespace_name, false);
+  _h_curl_fe_space = fespaces.GetPtr(_hcurl_fespace_name, false);
 
   _p = gridfunctions.Get(_potential_gf_name);
   if (_p == nullptr)
@@ -45,30 +32,30 @@ ScalarPotentialSource::Init(hephaestus::GridFunctions & gridfunctions,
     std::cout << _potential_gf_name + " not found in gridfunctions when "
                                       "creating ScalarPotentialSource. "
                                       "Creating new ParGridFunction\n";
-    _p = std::make_shared<mfem::ParGridFunction>(_h1_fe_space.get());
+    _p = std::make_shared<mfem::ParGridFunction>(_h1_fe_space);
     gridfunctions.Register(_potential_gf_name, _p);
   }
 
   _grad_p = gridfunctions.Get(_grad_phi_name);
   if (_grad_p == nullptr)
   {
-    _grad_p = std::make_shared<mfem::ParGridFunction>(_h_curl_fe_space.get());
+    _grad_p = std::make_shared<mfem::ParGridFunction>(_h_curl_fe_space);
     gridfunctions.Register(_grad_phi_name, _grad_p);
   }
 
   _bc_map = &bc_map;
 
-  _beta_coef = coefficients._scalars.Get(_beta_coef_name);
+  _beta_coef = coefficients._scalars.GetPtr(_beta_coef_name, false);
 
-  _a0 = std::make_unique<mfem::ParBilinearForm>(_h1_fe_space.get());
+  _a0 = std::make_unique<mfem::ParBilinearForm>(_h1_fe_space);
   _a0->AddDomainIntegrator(new mfem::DiffusionIntegrator(*_beta_coef));
   _a0->Assemble();
 
   BuildGrad();
-  BuildM1(_beta_coef.get());
+  BuildM1(_beta_coef);
   // a0(p, p') = (β ∇ p, ∇ p')
 
-  _b0 = std::make_unique<mfem::ParLinearForm>(_h1_fe_space.get());
+  _b0 = std::make_unique<mfem::ParLinearForm>(_h1_fe_space);
   _diffusion_mat = std::make_unique<mfem::HypreParMatrix>();
   _p_tdofs = std::make_unique<mfem::Vector>();
   _b0_tdofs = std::make_unique<mfem::Vector>();
@@ -79,7 +66,7 @@ ScalarPotentialSource::~ScalarPotentialSource() = default;
 void
 ScalarPotentialSource::BuildM1(mfem::Coefficient * Sigma)
 {
-  _m1 = std::make_unique<mfem::ParBilinearForm>(_h_curl_fe_space.get());
+  _m1 = std::make_unique<mfem::ParBilinearForm>(_h_curl_fe_space);
   _m1->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*Sigma));
   _m1->Assemble();
 
@@ -89,8 +76,7 @@ ScalarPotentialSource::BuildM1(mfem::Coefficient * Sigma)
 void
 ScalarPotentialSource::BuildGrad()
 {
-  _grad =
-      std::make_unique<mfem::ParDiscreteLinearOperator>(_h1_fe_space.get(), _h_curl_fe_space.get());
+  _grad = std::make_unique<mfem::ParDiscreteLinearOperator>(_h1_fe_space, _h_curl_fe_space);
   _grad->AddDomainInterpolator(new mfem::GradientInterpolator());
   _grad->Assemble();
 
@@ -104,7 +90,7 @@ ScalarPotentialSource::Apply(mfem::ParLinearForm * lf)
   // a0(p_{n+1}, p') = b0(p')
   // a0(p, p') = (β ∇ p, ∇ p')
   // b0(p') = <n.s0, p'>
-  mfem::ParGridFunction phi_gf(_h1_fe_space.get());
+  mfem::ParGridFunction phi_gf(_h1_fe_space);
   mfem::Array<int> poisson_ess_tdof_list;
   phi_gf = 0.0;
   *_b0 = 0.0;

@@ -71,6 +71,14 @@ public:
     return owned_ptr ? owned_ptr.get() : nullptr;
   }
 
+  template <typename TDerived>
+  [[nodiscard]] inline TDerived * GetPtr(const std::string & field_name, bool nullable = true) const
+  {
+    auto ptr = GetPtr(field_name, nullable);
+
+    return ptr ? dynamic_cast<TDerived *>(ptr) : nullptr;
+  }
+
   /// Get a reference to a field.
   [[nodiscard]] inline T & GetRef(const std::string & field_name) const
   {

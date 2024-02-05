@@ -16,8 +16,8 @@ WeakCurlCurlKernel::Init(hephaestus::GridFunctions & gridfunctions,
                          hephaestus::BCMap & bc_map,
                          hephaestus::Coefficients & coefficients)
 {
-  _u = gridfunctions.Get(_coupled_gf_name);
-  _coef = coefficients._scalars.Get(_coef_name);
+  _u = gridfunctions.GetPtr(_coupled_gf_name, false);
+  _coef = coefficients._scalars.GetPtr(_coef_name, false);
 
   _curl_curl = std::make_unique<mfem::ParBilinearForm>(_u->ParFESpace());
   _curl_curl->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*_coef));

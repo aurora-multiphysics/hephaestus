@@ -59,12 +59,6 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
   // Retrieving the parent FE space and mesh
 
   _h_curl_fe_space_parent = fespaces.Get(_hcurl_fespace_name);
-  if (_h_curl_fe_space_parent == nullptr)
-  {
-    const std::string error_message = _hcurl_fespace_name + " not found in fespaces when "
-                                                            "creating ClosedCoilSolver\n";
-    mfem::mfem_error(error_message.c_str());
-  }
 
   _mesh_parent = _h_curl_fe_space_parent->GetParMesh();
   _order_hcurl = _h_curl_fe_space_parent->FEColl()->GetOrder();

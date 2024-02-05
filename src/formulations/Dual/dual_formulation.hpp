@@ -64,13 +64,14 @@ public:
 
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
   void SetGridFunctions() override;
-  mfem::ParFiniteElementSpace * _h_curl_fe_space;
-  mfem::ParFiniteElementSpace * _h_div_fe_space;
+
+  mfem::ParFiniteElementSpace * _h_curl_fe_space{nullptr};
+  mfem::ParFiniteElementSpace * _h_div_fe_space{nullptr};
 
   std::string _h_curl_var_name, _h_div_var_name;
 
-  std::shared_ptr<mfem::ParGridFunction> _u{nullptr};  // HCurl vector field
-  std::shared_ptr<mfem::ParGridFunction> _dv{nullptr}; // HDiv vector field
+  mfem::ParGridFunction * _u{nullptr};  // HCurl vector field
+  mfem::ParGridFunction * _dv{nullptr}; // HDiv vector field
 
 protected:
   std::unique_ptr<mfem::ParDiscreteLinearOperator> _curl;

@@ -71,31 +71,36 @@ protected:
     preprocessors.Register("CoupledCoefficient", wire_conductivity);
 
     hephaestus::BCMap bc_map;
+
     auto edot_vec_coef = std::make_shared<mfem::VectorFunctionCoefficient>(3, EdotBc);
+    coefficients._vectors.Register("surface_tangential_dEdt", edot_vec_coef);
+
     bc_map.Register("tangential_dEdt",
-                    std::make_shared<hephaestus::VectorDirichletBC>(
-                        std::string("electric_field"), mfem::Array<int>({1, 2, 3}), edot_vec_coef));
+                    std::make_shared<hephaestus::VectorDirichletBC>(std::string("electric_field"),
+                                                                    mfem::Array<int>({1, 2, 3}),
+                                                                    edot_vec_coef.get()));
     coefficients._scalars.Register("magnetic_permeability",
                                    std::make_shared<mfem::ConstantCoefficient>(1.0));
-    coefficients._vectors.Register("surface_tangential_dEdt", edot_vec_coef);
 
     mfem::Array<int> high_terminal(1);
     high_terminal[0] = 1;
 
     auto potential_src = std::make_shared<mfem::FunctionCoefficient>(PotentialHigh);
+    coefficients._scalars.Register("source_potential", potential_src);
 
     bc_map.Register("high_potential",
                     std::make_shared<hephaestus::ScalarDirichletBC>(
-                        std::string("electric_potential"), high_terminal, potential_src));
-    coefficients._scalars.Register("source_potential", potential_src);
+                        std::string("electric_potential"), high_terminal, potential_src.get()));
+
+    auto potential_ground = std::make_shared<mfem::FunctionCoefficient>(PotentialGround);
+    coefficients._scalars.Register("ground_potential", potential_src);
 
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 2;
-    bc_map.Register("ground_potential",
-                    std::make_shared<hephaestus::ScalarDirichletBC>(
-                        std::string("electric_potential"),
-                        ground_terminal,
-                        std::make_shared<mfem::FunctionCoefficient>(PotentialGround)));
+    bc_map.Register(
+        "ground_potential",
+        std::make_shared<hephaestus::ScalarDirichletBC>(
+            std::string("electric_potential"), ground_terminal, potential_ground.get()));
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./cylinder-hex-q2.gen")).c_str(), 1, 1);
 
