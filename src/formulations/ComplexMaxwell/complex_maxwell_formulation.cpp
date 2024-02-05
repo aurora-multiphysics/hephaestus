@@ -11,7 +11,8 @@ ComplexMaxwellOperator::ComplexMaxwellOperator(mfem::ParMesh & pmesh,
                                                hephaestus::BCMap & bc_map,
                                                hephaestus::Coefficients & coefficients,
                                                hephaestus::Sources & sources,
-                                               hephaestus::InputParameters & solver_options)
+                                               hephaestus::InputParameters & solver_options,
+                                               hephaestus::ProblemSolvers & solvers)
   : EquationSystemOperator(
         pmesh, fespaces, gridfunctions, bc_map, coefficients, sources, solver_options),
     _h_curl_var_complex_name(solver_options.GetParam<std::string>("HCurlVarComplexName")),
@@ -19,7 +20,8 @@ ComplexMaxwellOperator::ComplexMaxwellOperator(mfem::ParMesh & pmesh,
     _h_curl_var_imag_name(solver_options.GetParam<std::string>("HCurlVarImagName")),
     _stiffness_coef_name(solver_options.GetParam<std::string>("StiffnessCoefName")),
     _mass_coef_name(solver_options.GetParam<std::string>("MassCoefName")),
-    _loss_coef_name(solver_options.GetParam<std::string>("LossCoefName"))
+    _loss_coef_name(solver_options.GetParam<std::string>("LossCoefName")),
+    _solvers(&solvers)
 {
 }
 
@@ -89,12 +91,10 @@ ComplexMaxwellOperator::Solve(mfem::Vector & X)
   sqlf.FormLinearSystem(_ess_bdr_tdofs, *_u, lf, jac, u, rhs);
 
   auto * jac_z = jac.As<mfem::ComplexHypreParMatrix>();
-  auto jac_c = std::unique_ptr<mfem::HypreParMatrix>(jac_z->GetSystemMatrix());
+  // auto jac_c = std::unique_ptr<mfem::HypreParMatrix>(jac_z->GetSystemMatrix());
 
-  mfem::SuperLURowLocMatrix a_super_lu(*jac_c);
-  mfem::SuperLUSolver solver(MPI_COMM_WORLD);
-  solver.SetOperator(a_super_lu);
-  solver.Mult(rhs, u);
+  _solvers->SetLinearSolver(*(jac_z->GetSystemMatrix()));
+  _solvers->_linear_solver->Mult(rhs, u);
 
   sqlf.RecoverFEMSolution(u, lf, *_u);
 
@@ -131,6 +131,14 @@ ComplexMaxwellFormulation::ConstructOperator()
   solver_options.SetParam("StiffnessCoefName", _alpha_coef_name);
   solver_options.SetParam("MassCoefName", _mass_coef_name);
   solver_options.SetParam("LossCoefName", _loss_coef_name);
+
+  solver_options.SetParamIfEmpty("LinearSolver", std::string("SuperLU"));
+  solver_options.SetParamIfEmpty("Tolerance", float(1.0e-13));
+  solver_options.SetParamIfEmpty("AbsTolerance", float(1.0e-20));
+  solver_options.SetParamIfEmpty("MaxIter", (unsigned int)500);
+  solver_options.SetParamIfEmpty("PrintLevel", 1);
+  _problem->_solvers.SetSolverOptions(solver_options);
+
   _problem->_eq_sys_operator =
       std::make_unique<hephaestus::ComplexMaxwellOperator>(*(_problem->_pmesh),
                                                            _problem->_fespaces,
@@ -138,7 +146,8 @@ ComplexMaxwellFormulation::ConstructOperator()
                                                            _problem->_bc_map,
                                                            _problem->_coefficients,
                                                            _problem->_sources,
-                                                           _problem->_solver_options);
+                                                           _problem->_solver_options,
+                                                           _problem->_solvers);
   _problem->GetOperator()->SetGridFunctions();
 }
 

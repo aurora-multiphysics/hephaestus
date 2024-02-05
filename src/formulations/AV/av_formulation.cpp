@@ -61,13 +61,25 @@ AVFormulation::ConstructEquationSystem()
 void
 AVFormulation::ConstructOperator()
 {
+
+  // Default solver options for the AV formulation
+  hephaestus::InputParameters & solver_options = GetProblem()->_solver_options;
+  solver_options.SetParamIfEmpty("LinearSolver", std::string("GMRES"));
+  solver_options.SetParamIfEmpty("LinearPreconditioner", std::string("AMG"));
+  solver_options.SetParamIfEmpty("Tolerance", float(1.0e-12));
+  solver_options.SetParamIfEmpty("AbsTolerance", float(1.0e-16));
+  solver_options.SetParamIfEmpty("MaxIter", (unsigned int)1000);
+  solver_options.SetParamIfEmpty("PrintLevel", 1);
+  _problem->_solvers.SetSolverOptions(solver_options);
+
   _problem->_td_operator = std::make_unique<hephaestus::AVOperator>(*(_problem->_pmesh),
                                                                     _problem->_fespaces,
                                                                     _problem->_gridfunctions,
                                                                     _problem->_bc_map,
                                                                     _problem->_coefficients,
                                                                     _problem->_sources,
-                                                                    _problem->_solver_options);
+                                                                    _problem->_solver_options,
+                                                                    _problem->_solvers);
   _problem->_td_operator->SetEquationSystem(_problem->_td_equation_system.get());
   _problem->_td_operator->SetGridFunctions();
 };
@@ -212,9 +224,11 @@ AVOperator::AVOperator(mfem::ParMesh & pmesh,
                        hephaestus::BCMap & bc_map,
                        hephaestus::Coefficients & coefficients,
                        hephaestus::Sources & sources,
-                       hephaestus::InputParameters & solver_options)
+                       hephaestus::InputParameters & solver_options,
+                       hephaestus::ProblemSolvers & solvers)
   : TimeDomainEquationSystemOperator(
-        pmesh, fespaces, gridfunctions, bc_map, coefficients, sources, solver_options)
+        pmesh, fespaces, gridfunctions, bc_map, coefficients, sources, solver_options),
+    _solvers(&solvers)
 {
   // Initialize MPI gridfunctions
   MPI_Comm_size(pmesh.GetComm(), &_num_procs);
@@ -257,12 +271,10 @@ AVOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector 
 
   _equation_system->FormLinearSystem(_block_a, _true_x, _true_rhs);
 
-  _solver = std::make_unique<hephaestus::DefaultGMRESSolver>(_solver_options,
-                                                             *_block_a.As<mfem::HypreParMatrix>());
-  // solver = new hephaestus::DefaultGMRESSolver(_solver_options, *blockA,
-  //                                             pmesh_->GetComm());
+  _solvers->SetLinearPreconditioner(*_block_a.As<mfem::HypreParMatrix>());
+  _solvers->SetLinearSolver(*_block_a.As<mfem::HypreParMatrix>());
+  _solvers->_linear_solver->Mult(_true_rhs, _true_x);
 
-  _solver->Mult(_true_rhs, _true_x);
   _equation_system->RecoverFEMSolution(_true_x, _gridfunctions);
 }
 } // namespace hephaestus

@@ -34,7 +34,8 @@ public:
                          hephaestus::BCMap & bc_map,
                          hephaestus::Coefficients & coefficients,
                          hephaestus::Sources & sources,
-                         hephaestus::InputParameters & solver_options);
+                         hephaestus::InputParameters & solver_options,
+                         hephaestus::ProblemSolvers & solvers);
 
   ~ComplexMaxwellOperator() override = default;
 
@@ -53,6 +54,9 @@ public:
   mfem::Coefficient * _loss_coef{nullptr};  // omega sigma
 
   mfem::Array<int> _ess_bdr_tdofs;
+
+private:
+  ProblemSolvers * _solvers;
 };
 
 //

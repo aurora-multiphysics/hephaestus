@@ -220,6 +220,7 @@ ProblemSolvers::SetSolver(std::shared_ptr<mfem::Solver> & solver,
     solver_buffer->SetAbsTol(_solver_options.GetParam<float>("AbsTolerance"));
     solver_buffer->SetMaxIter(_solver_options.GetParam<unsigned int>("MaxIter"));
     solver_buffer->SetPrintLevel(_solver_options.GetParam<int>("PrintLevel"));
+    solver_buffer->SetOperator(A);
 
     if (_linear_preconditioner)
       solver_buffer->SetPreconditioner(
@@ -235,6 +236,7 @@ ProblemSolvers::SetSolver(std::shared_ptr<mfem::Solver> & solver,
     solver_buffer->SetAbsTol(_solver_options.GetParam<float>("AbsTolerance"));
     solver_buffer->SetMaxIter(_solver_options.GetParam<unsigned int>("MaxIter"));
     solver_buffer->SetPrintLevel(_solver_options.GetParam<int>("PrintLevel"));
+    solver_buffer->SetOperator(A);
 
     if (_linear_preconditioner)
       solver_buffer->SetPreconditioner(
@@ -249,6 +251,7 @@ ProblemSolvers::SetSolver(std::shared_ptr<mfem::Solver> & solver,
     solver_buffer->SetTol(_solver_options.GetParam<float>("Tolerance"));
     solver_buffer->SetMaxIter(_solver_options.GetParam<unsigned int>("MaxIter"));
     solver_buffer->SetPrintLevel(_solver_options.GetParam<int>("PrintLevel"));
+    solver_buffer->SetOperator(A);
 
     if (_linear_preconditioner)
       solver_buffer->SetPreconditioner(
@@ -265,51 +268,71 @@ ProblemSolvers::SetSolver(std::shared_ptr<mfem::Solver> & solver,
 
     solver_buffer->SetSingularProblem();
     solver_buffer->SetPrintLevel(_solver_options.GetParam<int>("PrintLevel"));
+    solver_buffer->SetOperator(A);
 
     solver = solver_buffer;
   }
+  else if (solve_type == "AMG")
+  {
+    std::shared_ptr<mfem::HypreBoomerAMG> solver_buffer{std::make_shared<mfem::HypreBoomerAMG>()};
+
+    // solver_buffer->SetTol(_solver_options.GetParam<float>("Tolerance"));
+    // solver_buffer->SetMaxIter(_solver_options.GetParam<unsigned int>("MaxIter"));
+    solver_buffer->SetPrintLevel(_solver_options.GetParam<int>("PrintLevel"));
+    solver_buffer->SetOperator(A);
+
+    solver = solver_buffer;
+  }
+  else if (solve_type == "SuperLU")
+  {
+    std::shared_ptr<mfem::SuperLUSolver> solver_buffer{
+        std::make_shared<mfem::SuperLUSolver>(MPI_COMM_WORLD)};
+
+    mfem::SuperLURowLocMatrix a_super_lu(A);
+    solver_buffer->SetOperator(a_super_lu);
+
+    solver = solver_buffer;
+  }
+  else
+  {
+    mfem::mfem_error(("Solver or Preconditioner type " + solve_type +
+                      " not recognised. Please set to one of the following options: PCG, GMRES, "
+                      "FGMRES, AMS, AMG, SuperLU.")
+                         .c_str());
+  }
 
   // Add others!
-
-  solver->SetOperator(A);
 }
 
 void
 ProblemSolvers::SetLinearPreconditioner(mfem::Operator & A)
 {
-  auto solve_type = _solver_options.GetParam<std::string>("LinearPreconditioner");
-
-  SetSolver(_linear_preconditioner, solve_type, A);
-
-  if (!_linear_preconditioner)
+  if (!_solver_options.HasParam("LinearPreconditioner"))
+  {
     std::cout
-        << "Warning: Linear preconditioner type not recognised or not set. Proceeding without "
-           "preconditioner. If you wish to use a preconditioner, please set "
-           "LinearPreconditioner field to one of the following values: PCG, GMRES, FGMRES"
-        << std::endl;
+        << "Warning: LinearPreconditioner field not set. Proceeding without a preconditioner\n";
+  }
+  else
+  {
+    auto solve_type = _solver_options.GetParam<std::string>("LinearPreconditioner");
+    SetSolver(_linear_preconditioner, solve_type, A);
+  }
 }
 
 void
 ProblemSolvers::SetLinearSolver(mfem::Operator & A)
 {
 
-  auto solve_type = _solver_options.GetParam<std::string>("LinearSolver");
-
-  SetSolver(_linear_solver, solve_type, A);
-
-  if (!_linear_solver)
-    mfem::mfem_error("Linear solver type not recognised! Please set LinearSolver field "
-                     "to one of the following values: PCG, GMRES, FGMRES");
-
-  // if (GetProblem()->_linear_preconditioner)
-  //   GetProblem()->_jacobian_solver.get()->SetPreconditioner(GetProblem()->_linear_preconditioner);
-
-  // GetProblem()->_jacobian_solver->SetTol(GetProblem()->_solver_options.GetParam<float>("Tolerance"));
-  // GetProblem()->_jacobian_solver->SetAbsTol(GetProblem()->_solver_options.GetParam<float>("AbsTolerance"));
-  // GetProblem()->_jacobian_solver->SetMaxIter(GetProblem()->_solver_options.GetParam<int>("MaxIter"));
-  // GetProblem()->_jacobian_solver->SetPrintLevel(GetProblem()->_solver_options.GetParam<int>("PrintLevel"));
-  // if (GetProblem()->_linear_preconditioner)
-  //   GetProblem()->_jacobian_solver->SetPreconditioner(GetProblem()->_linear_preconditioner);
+  if (!_solver_options.HasParam("LinearSolver"))
+  {
+    mfem::mfem_error("LinearSolver field not set. Please set to one of the following options: PCG, "
+                     "GMRES, FGMRES, AMS, AMG, SuperLU.");
+  }
+  else
+  {
+    auto solve_type = _solver_options.GetParam<std::string>("LinearSolver");
+    SetSolver(_linear_solver, solve_type, A);
+  }
 }
 
 void

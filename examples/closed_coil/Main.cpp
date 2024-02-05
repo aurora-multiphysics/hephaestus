@@ -2,6 +2,12 @@
 
 const char * DATA_DIR = "../../data/";
 
+static void
+constVec(const mfem::Vector & x, mfem::Vector & V)
+{
+  V = 1.0;
+}
+
 hephaestus::Coefficients
 defineCoefficients()
 {
@@ -97,6 +103,19 @@ main(int argc, char * argv[])
 
   hephaestus::Outputs outputs = defineOutputs();
   problem_builder->SetOutputs(outputs);
+
+  mfem::Array<int> a_dbc_bdr(6);
+  a_dbc_bdr[0] = 1;
+  a_dbc_bdr[1] = 2;
+  a_dbc_bdr[2] = 3;
+  a_dbc_bdr[3] = 4;
+  a_dbc_bdr[4] = 5;
+  a_dbc_bdr[5] = 6;
+  std::shared_ptr<hephaestus::VectorDirichletBC> a_dbc =
+      std::make_shared<hephaestus::VectorDirichletBC>(
+          "magnetic_vector_potential", a_dbc_bdr, new mfem::VectorFunctionCoefficient(3, constVec));
+
+  problem_builder->AddBoundaryCondition("A_DBC", a_dbc);
 
   hephaestus::InputParameters solver_options;
   solver_options.SetParam("Tolerance", float(1.0e-14));

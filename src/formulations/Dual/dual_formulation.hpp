@@ -56,7 +56,8 @@ public:
                hephaestus::BCMap & bc_map,
                hephaestus::Coefficients & coefficients,
                hephaestus::Sources & sources,
-               hephaestus::InputParameters & solver_options);
+               hephaestus::InputParameters & solver_options,
+               hephaestus::ProblemSolvers & solvers);
 
   ~DualOperator() override = default;
 
@@ -71,6 +72,9 @@ public:
 
   mfem::ParGridFunction * _u;  // HCurl vector field
   mfem::ParGridFunction * _dv; // HDiv vector field
+
+private:
+  ProblemSolvers * _solvers;
 
 protected:
   std::unique_ptr<mfem::ParDiscreteLinearOperator> _curl;

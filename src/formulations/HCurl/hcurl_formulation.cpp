@@ -68,7 +68,7 @@ HCurlFormulation::ConstructOperator()
 {
   // Default solver options for the HCurl formulation
   hephaestus::InputParameters & solver_options = GetProblem()->_solver_options;
-  solver_options.SetParamIfEmpty("LinearSolver", std::string("FGMRES"));
+  solver_options.SetParamIfEmpty("LinearSolver", std::string("GMRES"));
   solver_options.SetParamIfEmpty("LinearPreconditioner", std::string("AMS"));
   solver_options.SetParamIfEmpty("Tolerance", float(1.0e-13));
   solver_options.SetParamIfEmpty("AbsTolerance", float(1.0e-20));
