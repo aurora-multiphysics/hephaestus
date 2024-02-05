@@ -233,15 +233,10 @@ OpenCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     _grad_phi_transfer = false;
   }
 
-  _grad_phi_parent = gridfunctions.Get(_grad_phi_name);
-  if (_grad_phi_parent == nullptr)
-  {
-    const std::string error_message = _grad_phi_name + " not found in gridfunctions when "
-                                                       "creating OpenCoilSolver\n";
-    mfem::mfem_error(error_message.c_str());
-  }
-  else if (_grad_phi_parent->ParFESpace()->FEColl()->GetContType() !=
-           mfem::FiniteElementCollection::TANGENTIAL)
+  _grad_phi_parent = gridfunctions.GetPtr(_grad_phi_name, false);
+
+  if (_grad_phi_parent->ParFESpace()->FEColl()->GetContType() !=
+      mfem::FiniteElementCollection::TANGENTIAL)
   {
     mfem::mfem_error("GradPhi GridFunction must be of HCurl type.");
   }
@@ -360,7 +355,6 @@ OpenCoilSolver::SetBCs()
 void
 OpenCoilSolver::SPSCurrent()
 {
-  // NB: - not great.
   _bc_maps.Register("high_potential",
                     std::make_shared<hephaestus::ScalarDirichletBC>(
                         std::string("V"), _high_terminal, _high_src.get()));

@@ -34,15 +34,9 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
 {
 
   // Retrieving vector GridFunction. This is the only mandatory one
-  _div_free_src_gf = gridfunctions.Get(_gf_grad_name);
-  if (_div_free_src_gf == nullptr)
-  {
-    const std::string error_message = _gf_grad_name + " not found in gridfunctions when "
-                                                      "creating HelmholtzProjector\n";
-    mfem::mfem_error(error_message.c_str());
-  }
+  _div_free_src_gf = gridfunctions.GetPtr(_gf_grad_name, false);
 
-  _h_curl_fe_space = fespaces.Get(_hcurl_fespace_name).get(); // NB: needs to be a pointer.
+  _h_curl_fe_space = fespaces.GetPtr(_hcurl_fespace_name);
   if (_h_curl_fe_space == nullptr)
   {
     std::cout << _hcurl_fespace_name + " not found in fespaces when "
@@ -99,7 +93,6 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
 void
 HelmholtzProjector::SetForms()
 {
-
   if (_g_div == nullptr)
     _g_div = std::make_unique<mfem::ParLinearForm>(_h1_fe_space.get());
 
@@ -123,7 +116,6 @@ HelmholtzProjector::SetForms()
 void
 HelmholtzProjector::SetGrad()
 {
-
   if (_grad == nullptr)
   {
     _grad = std::make_unique<mfem::ParDiscreteLinearOperator>(_h1_fe_space.get(), _h_curl_fe_space);
@@ -136,7 +128,6 @@ HelmholtzProjector::SetGrad()
 void
 HelmholtzProjector::SetBCs()
 {
-
   // Begin Divergence-free projection
   // (g, ∇q) - (∇Q, ∇q) - <P(g).n, q> = 0
   int myid = _h1_fe_space->GetMyRank();
@@ -161,7 +152,6 @@ HelmholtzProjector::SetBCs()
 void
 HelmholtzProjector::SolveLinearSystem()
 {
-
   _g_div->Assemble();
 
   // Compute the divergence of g

@@ -104,11 +104,12 @@ EquationSystem::AddKernel(const std::string & trial_var_name,
 
   // Register new mblf kernels map if not present for the test/trial variable
   // pair
-  if (!_mblf_kernels_map_map.Get(test_var_name)->Has(trial_var_name))
+  if (!_mblf_kernels_map_map.GetPtr(test_var_name, false)->Has(trial_var_name))
   {
     auto kernels = std::make_shared<std::vector<std::shared_ptr<ParMixedBilinearFormKernel>>>();
 
-    _mblf_kernels_map_map.Get(test_var_name)->Register(trial_var_name, std::move(kernels));
+    _mblf_kernels_map_map.GetPtr(test_var_name, false)
+        ->Register(trial_var_name, std::move(kernels));
   }
 
   // TODO: - cleanup.
@@ -146,8 +147,8 @@ EquationSystem::FormLinearSystem(mfem::OperatorHandle & op,
   for (int i = 0; i < _test_var_names.size(); i++)
   {
     auto & test_var_name = _test_var_names.at(i);
-    auto blf = _blfs.Get(test_var_name);
-    auto lf = _lfs.Get(test_var_name);
+    auto blf = _blfs.GetPtr(test_var_name, false);
+    auto lf = _lfs.GetPtr(test_var_name, false);
     mfem::Vector aux_x, aux_rhs;
     _h_blocks(i, i) = new mfem::HypreParMatrix;
     blf->FormLinearSystem(

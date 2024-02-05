@@ -33,7 +33,7 @@ private:
   std::unique_ptr<mfem::ParGridFunction> _g;
 
   // Divergence free projected source.
-  std::shared_ptr<mfem::ParGridFunction> _div_free_src_gf{nullptr};
+  mfem::ParGridFunction * _div_free_src_gf{nullptr};
 
   std::unique_ptr<mfem::ParLinearForm> _g_div;
   std::unique_ptr<mfem::ParBilinearForm> _a0;
