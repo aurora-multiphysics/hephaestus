@@ -36,7 +36,7 @@ ScalarPotentialSource::Init(hephaestus::GridFunctions & gridfunctions,
   }
   else
   {
-    _p = gridfunctions.Get(_potential_gf_name);
+    _p = gridfunctions.GetShared(_potential_gf_name);
   }
 
   if (!gridfunctions.Has(_grad_phi_name))
@@ -46,7 +46,7 @@ ScalarPotentialSource::Init(hephaestus::GridFunctions & gridfunctions,
   }
   else
   {
-    _grad_p = gridfunctions.Get(_grad_phi_name);
+    _grad_p = gridfunctions.GetShared(_grad_phi_name);
   }
 
   _bc_map = &bc_map;

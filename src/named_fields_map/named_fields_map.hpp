@@ -51,8 +51,8 @@ public:
   }
 
   /// Get a shared pointer to the field associated with name @a field_name.
-  [[nodiscard]] inline std::shared_ptr<T> Get(const std::string & field_name,
-                                              bool nullable = true) const
+  [[nodiscard]] inline std::shared_ptr<T> GetShared(const std::string & field_name,
+                                                    bool nullable = true) const
   {
     if (!nullable)
     {
@@ -66,7 +66,7 @@ public:
   /// Get a non-owning pointer to the field associated with name @a field_name.
   [[nodiscard]] inline T * GetPtr(const std::string & field_name, bool nullable = true) const
   {
-    auto owned_ptr = Get(field_name, nullable);
+    auto owned_ptr = GetShared(field_name, nullable);
 
     return owned_ptr ? owned_ptr.get() : nullptr;
   }
@@ -82,14 +82,14 @@ public:
   /// Get a reference to a field.
   [[nodiscard]] inline T & GetRef(const std::string & field_name) const
   {
-    return *Get(field_name, false);
+    return *GetShared(field_name, false);
   }
 
   /// Get a shared pointer to the field and cast to subclass TDerived.
   template <typename TDerived>
-  [[nodiscard]] inline std::shared_ptr<TDerived> Get(const std::string & field_name) const
+  [[nodiscard]] inline std::shared_ptr<TDerived> GetShared(const std::string & field_name) const
   {
-    auto owned_ptr = Get(field_name);
+    auto owned_ptr = GetShared(field_name);
 
     return owned_ptr ? std::dynamic_pointer_cast<TDerived>(owned_ptr) : nullptr;
   }
@@ -162,13 +162,6 @@ protected:
     {
       MFEM_ABORT("No field with name '" << field_name << "' has been registered.");
     }
-  }
-
-  /// Returns a valid shared pointer to the field with name field_name.
-  [[nodiscard]] inline std::shared_ptr<T> GetValid(const std::string & field_name) const
-  {
-    CheckForFieldRegistration(field_name);
-    return Get(field_name);
   }
 
   /// Clear all associations between names and fields.

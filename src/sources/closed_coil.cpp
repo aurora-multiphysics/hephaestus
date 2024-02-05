@@ -78,7 +78,7 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
   }
   else
   {
-    _h1_fe_space_parent = fespaces.Get(_h1_fespace_name);
+    _h1_fe_space_parent = fespaces.GetShared(_h1_fespace_name);
   }
 
   if (!gridfunctions.Has(_grad_phi_name))
@@ -89,7 +89,7 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
   }
   else
   {
-    _grad_phi_parent = gridfunctions.Get(_grad_phi_name);
+    _grad_phi_parent = gridfunctions.GetShared(_grad_phi_name);
   }
 
   if (_grad_phi_parent->ParFESpace()->FEColl()->GetContType() !=
@@ -108,7 +108,7 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
   }
   else
   {
-    _itotal = coefficients._scalars.Get(_i_coef_name);
+    _itotal = coefficients._scalars.GetShared(_i_coef_name);
   }
 
   if (!coefficients._scalars.Has(_cond_coef_name))
@@ -125,7 +125,7 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
   }
   else
   {
-    _sigma = coefficients._scalars.Get(_cond_coef_name);
+    _sigma = coefficients._scalars.GetShared(_cond_coef_name);
   }
 
   if (_final_lf == nullptr)

@@ -66,7 +66,7 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
   }
   else
   {
-    _h1_fe_space = fespaces.Get(_h1_fespace_name);
+    _h1_fe_space = fespaces.GetShared(_h1_fespace_name);
   }
 
   if (!gridfunctions.Has(_gf_name))
@@ -78,7 +78,7 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
   }
   else
   {
-    _q = gridfunctions.Get(_gf_name);
+    _q = gridfunctions.GetShared(_gf_name);
   }
 
   _g = std::make_unique<mfem::ParGridFunction>(_h_curl_fe_space);

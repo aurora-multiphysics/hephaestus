@@ -219,7 +219,7 @@ OpenCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
   }
   else
   {
-    _itotal = coefficients._scalars.Get(_i_coef_name);
+    _itotal = coefficients._scalars.GetShared(_i_coef_name);
   }
 
   if (!coefficients._scalars.Has(_cond_coef_name))
@@ -236,7 +236,7 @@ OpenCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
   }
   else
   {
-    _sigma = coefficients._scalars.Get(_cond_coef_name);
+    _sigma = coefficients._scalars.GetShared(_cond_coef_name);
   }
 
   _grad_phi_parent = gridfunctions.GetPtr(_grad_phi_name, false);
@@ -257,7 +257,7 @@ OpenCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
   }
   else
   {
-    _v_parent = gridfunctions.Get(_v_gf_name);
+    _v_parent = gridfunctions.GetShared(_v_gf_name);
 
     if (_v_parent->ParFESpace()->FEColl()->GetContType() !=
         mfem::FiniteElementCollection::CONTINUOUS)
