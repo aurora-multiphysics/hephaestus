@@ -242,16 +242,9 @@ DualOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vecto
 
   _equation_system->FormLinearSystem(_block_a, _true_x, _true_rhs);
 
-  //_jacobian_solver =
-  //    std::make_unique<hephaestus::DefaultHCurlPCGSolver>(_solver_options,
-  //                                                        *_block_a.As<mfem::HypreParMatrix>(),
-  //                                                        _equation_system->_test_pfespaces.at(0));
-  //
-  //_jacobian_solver->Mult(_true_rhs, _true_x);
-
   _solvers->SetEdgeFESpace(_equation_system->_test_pfespaces.at(0));
-  _solvers->SetLinearPreconditioner(*_block_a.As<mfem::HypreParMatrix>());
-  _solvers->SetLinearSolver(*_block_a.As<mfem::HypreParMatrix>());
+  _solvers->SetLinearPreconditioner(_block_a.As<mfem::HypreParMatrix>());
+  _solvers->SetLinearSolver(_block_a.As<mfem::HypreParMatrix>());
   _solvers->_linear_solver->Mult(_true_rhs, _true_x);
 
   _equation_system->RecoverFEMSolution(_true_x, _gridfunctions);

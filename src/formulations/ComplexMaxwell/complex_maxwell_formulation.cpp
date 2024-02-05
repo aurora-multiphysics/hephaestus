@@ -47,6 +47,15 @@ ComplexMaxwellOperator::Init(mfem::Vector & X)
   _loss_coef = _coefficients._scalars.Get(_loss_coef_name);
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////
+// mfem::SuperLUSolver testfunction(mfem::HypreParMatrix * mat){
+//
+//   mfem::SuperLURowLocMatrix a_super_lu(*mat);
+//   mfem::SuperLUSolver solver(a_super_lu);
+//   return solver;
+// }
+/////////////////////////////////////////////////////////////////////////////////////////////
+
 void
 ComplexMaxwellOperator::Solve(mfem::Vector & X)
 {
@@ -90,10 +99,10 @@ ComplexMaxwellOperator::Solve(mfem::Vector & X)
 
   sqlf.FormLinearSystem(_ess_bdr_tdofs, *_u, lf, jac, u, rhs);
 
-  auto * jac_z = jac.As<mfem::ComplexHypreParMatrix>();
-  // auto jac_c = std::unique_ptr<mfem::HypreParMatrix>(jac_z->GetSystemMatrix());
+  auto jac_z = std::unique_ptr<mfem::HypreParMatrix>(
+      jac.As<mfem::ComplexHypreParMatrix>()->GetSystemMatrix());
 
-  _solvers->SetLinearSolver(*(jac_z->GetSystemMatrix()));
+  _solvers->SetLinearSolver(jac_z.get());
   _solvers->_linear_solver->Mult(rhs, u);
 
   sqlf.RecoverFEMSolution(u, lf, *_u);

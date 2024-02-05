@@ -271,8 +271,8 @@ AVOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector 
 
   _equation_system->FormLinearSystem(_block_a, _true_x, _true_rhs);
 
-  _solvers->SetLinearPreconditioner(*_block_a.As<mfem::HypreParMatrix>());
-  _solvers->SetLinearSolver(*_block_a.As<mfem::HypreParMatrix>());
+  _solvers->SetLinearPreconditioner(_block_a.As<mfem::HypreParMatrix>());
+  _solvers->SetLinearSolver(_block_a.As<mfem::HypreParMatrix>());
   _solvers->_linear_solver->Mult(_true_rhs, _true_x);
 
   _equation_system->RecoverFEMSolution(_true_x, _gridfunctions);

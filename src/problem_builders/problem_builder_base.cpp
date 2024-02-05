@@ -204,7 +204,7 @@ ProblemBuilder::InitializeOutputs()
 void
 ProblemSolvers::SetSolver(std::shared_ptr<mfem::Solver> & solver,
                           std::string solve_type,
-                          mfem::Operator & A)
+                          mfem::Operator * A)
 {
 
   if (!_comm_set)
@@ -220,7 +220,7 @@ ProblemSolvers::SetSolver(std::shared_ptr<mfem::Solver> & solver,
     solver_buffer->SetAbsTol(_solver_options.GetParam<float>("AbsTolerance"));
     solver_buffer->SetMaxIter(_solver_options.GetParam<unsigned int>("MaxIter"));
     solver_buffer->SetPrintLevel(_solver_options.GetParam<int>("PrintLevel"));
-    solver_buffer->SetOperator(A);
+    solver_buffer->SetOperator(*A);
 
     if (_linear_preconditioner)
       solver_buffer->SetPreconditioner(
@@ -236,7 +236,7 @@ ProblemSolvers::SetSolver(std::shared_ptr<mfem::Solver> & solver,
     solver_buffer->SetAbsTol(_solver_options.GetParam<float>("AbsTolerance"));
     solver_buffer->SetMaxIter(_solver_options.GetParam<unsigned int>("MaxIter"));
     solver_buffer->SetPrintLevel(_solver_options.GetParam<int>("PrintLevel"));
-    solver_buffer->SetOperator(A);
+    solver_buffer->SetOperator(*A);
 
     if (_linear_preconditioner)
       solver_buffer->SetPreconditioner(
@@ -251,7 +251,7 @@ ProblemSolvers::SetSolver(std::shared_ptr<mfem::Solver> & solver,
     solver_buffer->SetTol(_solver_options.GetParam<float>("Tolerance"));
     solver_buffer->SetMaxIter(_solver_options.GetParam<unsigned int>("MaxIter"));
     solver_buffer->SetPrintLevel(_solver_options.GetParam<int>("PrintLevel"));
-    solver_buffer->SetOperator(A);
+    solver_buffer->SetOperator(*A);
 
     if (_linear_preconditioner)
       solver_buffer->SetPreconditioner(
@@ -268,7 +268,7 @@ ProblemSolvers::SetSolver(std::shared_ptr<mfem::Solver> & solver,
 
     solver_buffer->SetSingularProblem();
     solver_buffer->SetPrintLevel(_solver_options.GetParam<int>("PrintLevel"));
-    solver_buffer->SetOperator(A);
+    solver_buffer->SetOperator(*A);
 
     solver = solver_buffer;
   }
@@ -279,17 +279,16 @@ ProblemSolvers::SetSolver(std::shared_ptr<mfem::Solver> & solver,
     // solver_buffer->SetTol(_solver_options.GetParam<float>("Tolerance"));
     // solver_buffer->SetMaxIter(_solver_options.GetParam<unsigned int>("MaxIter"));
     solver_buffer->SetPrintLevel(_solver_options.GetParam<int>("PrintLevel"));
-    solver_buffer->SetOperator(A);
+    solver_buffer->SetOperator(*A);
 
     solver = solver_buffer;
   }
   else if (solve_type == "SuperLU")
   {
-    std::shared_ptr<mfem::SuperLUSolver> solver_buffer{
-        std::make_shared<mfem::SuperLUSolver>(MPI_COMM_WORLD)};
+    _a_super_lu = std::make_shared<mfem::SuperLURowLocMatrix>(*A);
 
-    mfem::SuperLURowLocMatrix a_super_lu(A);
-    solver_buffer->SetOperator(a_super_lu);
+    std::shared_ptr<mfem::SuperLUSolver> solver_buffer{
+        std::make_shared<mfem::SuperLUSolver>(*_a_super_lu)};
 
     solver = solver_buffer;
   }
@@ -305,7 +304,7 @@ ProblemSolvers::SetSolver(std::shared_ptr<mfem::Solver> & solver,
 }
 
 void
-ProblemSolvers::SetLinearPreconditioner(mfem::Operator & A)
+ProblemSolvers::SetLinearPreconditioner(mfem::Operator * A)
 {
   if (!_solver_options.HasParam("LinearPreconditioner"))
   {
@@ -320,7 +319,7 @@ ProblemSolvers::SetLinearPreconditioner(mfem::Operator & A)
 }
 
 void
-ProblemSolvers::SetLinearSolver(mfem::Operator & A)
+ProblemSolvers::SetLinearSolver(mfem::Operator * A)
 {
 
   if (!_solver_options.HasParam("LinearSolver"))

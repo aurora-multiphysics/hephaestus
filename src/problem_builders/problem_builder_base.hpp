@@ -23,9 +23,9 @@ public:
   ~ProblemSolvers() = default;
 
   void
-  SetSolver(std::shared_ptr<mfem::Solver> & solver, std::string solve_type, mfem::Operator & A);
-  void SetLinearPreconditioner(mfem::Operator & A);
-  void SetLinearSolver(mfem::Operator & A);
+  SetSolver(std::shared_ptr<mfem::Solver> & solver, std::string solve_type, mfem::Operator * A);
+  void SetLinearPreconditioner(mfem::Operator * A);
+  void SetLinearSolver(mfem::Operator * A);
 
   void SetComm(const MPI_Comm comm);
   void SetSolverOptions(const hephaestus::InputParameters solver_options);
@@ -33,6 +33,9 @@ public:
 
   std::shared_ptr<mfem::Solver> _linear_solver{nullptr};
   std::shared_ptr<mfem::Solver> _linear_preconditioner{nullptr};
+
+  // In case the user chooses SuperLU
+  std::shared_ptr<mfem::SuperLURowLocMatrix> _a_super_lu{nullptr};
 
   mfem::ParFiniteElementSpace * _edge_fespace{nullptr};
 
