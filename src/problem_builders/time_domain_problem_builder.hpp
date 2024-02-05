@@ -38,7 +38,7 @@ public:
     return std::move(_problem);
   };
 
-  static std::vector<std::shared_ptr<mfem::ParGridFunction>>
+  static std::vector<mfem::ParGridFunction *>
   RegisterTimeDerivatives(std::vector<std::string> gridfunction_names,
                           hephaestus::GridFunctions & gridfunctions);
 

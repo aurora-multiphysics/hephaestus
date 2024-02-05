@@ -9,19 +9,20 @@ TimeDomainProblem::~TimeDomainProblem()
   _td_operator.reset();
 }
 
-std::vector<std::shared_ptr<mfem::ParGridFunction>>
+std::vector<mfem::ParGridFunction *>
 TimeDomainProblemBuilder::RegisterTimeDerivatives(std::vector<std::string> gridfunction_names,
                                                   hephaestus::GridFunctions & gridfunctions)
 {
-  std::vector<std::shared_ptr<mfem::ParGridFunction>> time_derivatives;
+  std::vector<mfem::ParGridFunction *> time_derivatives;
 
   for (auto & gridfunction_name : gridfunction_names)
   {
     gridfunctions.Register(GetTimeDerivativeName(gridfunction_name),
                            std::make_shared<mfem::ParGridFunction>(
-                               gridfunctions.Get(gridfunction_name)->ParFESpace()));
+                               gridfunctions.GetPtr(gridfunction_name, false)->ParFESpace()));
 
-    time_derivatives.push_back(gridfunctions.Get(GetTimeDerivativeName(gridfunction_name)));
+    time_derivatives.push_back(
+        gridfunctions.GetPtr(GetTimeDerivativeName(gridfunction_name), false));
   }
 
   return time_derivatives;

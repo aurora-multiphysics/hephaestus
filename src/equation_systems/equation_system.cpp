@@ -346,7 +346,7 @@ EquationSystem::BuildMixedBilinearForms()
       // Register MixedBilinearForm if kernels exist for it, and assemble
       // kernels
       if (_mblf_kernels_map_map.Has(test_var_name) &&
-          _mblf_kernels_map_map.Get(test_var_name)->Has(trial_var_name))
+          _mblf_kernels_map_map.GetPtr(test_var_name, false)->Has(trial_var_name))
       {
         auto mblf_kernels = _mblf_kernels_map_map.GetRef(test_var_name).GetRef(trial_var_name);
         auto mblf = std::make_shared<mfem::ParMixedBilinearForm>(_test_pfespaces.at(j),

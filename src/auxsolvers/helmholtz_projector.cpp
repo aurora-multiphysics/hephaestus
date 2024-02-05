@@ -36,19 +36,21 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
   // Retrieving vector GridFunction. This is the only mandatory one
   _div_free_src_gf = gridfunctions.GetPtr(_gf_grad_name, false);
 
-  _h_curl_fe_space = fespaces.GetPtr(_hcurl_fespace_name);
-  if (_h_curl_fe_space == nullptr)
+  if (!fespaces.Has(_hcurl_fespace_name))
   {
     std::cout << _hcurl_fespace_name + " not found in fespaces when "
                                        "creating HelmholtzProjector. "
                                        "Obtaining from vector GridFunction.\n";
     _h_curl_fe_space = _div_free_src_gf->ParFESpace();
   }
+  else
+  {
+    _h_curl_fe_space = fespaces.GetPtr(_hcurl_fespace_name, false);
+  }
 
   std::unique_ptr<mfem::H1_FECollection> h1_fec{nullptr};
 
-  _h1_fe_space = fespaces.Get(_h1_fespace_name);
-  if (_h1_fe_space == nullptr)
+  if (!fespaces.Has(_h1_fespace_name))
   {
     std::cout << _h1_fespace_name + " not found in fespaces when "
                                     "creating HelmholtzProjector. "
@@ -62,14 +64,21 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
     _h1_fe_space =
         std::make_shared<mfem::ParFiniteElementSpace>(_h_curl_fe_space->GetParMesh(), h1_fec.get());
   }
+  else
+  {
+    _h1_fe_space = fespaces.Get(_h1_fespace_name);
+  }
 
-  _q = gridfunctions.Get(_gf_name);
-  if (_q == nullptr)
+  if (!gridfunctions.Has(_gf_name))
   {
     std::cout << _gf_name + " not found in gridfunctions when "
                             "creating HelmholtzProjector. "
                             "Creating new GridFunction\n";
     _q = std::make_shared<mfem::ParGridFunction>(_h1_fe_space.get());
+  }
+  else
+  {
+    _q = gridfunctions.Get(_gf_name);
   }
 
   _g = std::make_unique<mfem::ParGridFunction>(_h_curl_fe_space);

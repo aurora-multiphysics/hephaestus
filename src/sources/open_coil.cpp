@@ -210,17 +210,19 @@ OpenCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
                      hephaestus::BCMap & bc_map,
                      hephaestus::Coefficients & coefficients)
 {
-  _itotal = coefficients._scalars.Get(_i_coef_name);
-  if (_itotal == nullptr)
+  if (!coefficients._scalars.Has(_i_coef_name))
   {
     std::cout << _i_coef_name + " not found in coefficients when "
                                 "creating OpenCoilSolver. "
                                 "Assuming unit current.\n";
     _itotal = std::make_shared<mfem::ConstantCoefficient>(1.0);
   }
+  else
+  {
+    _itotal = coefficients._scalars.Get(_i_coef_name);
+  }
 
-  _sigma = coefficients._scalars.Get(_cond_coef_name);
-  if (_sigma == nullptr)
+  if (!coefficients._scalars.Has(_cond_coef_name))
   {
     std::cout << _cond_coef_name + " not found in coefficients when "
                                    "creating OpenCoilSolver. "
@@ -231,6 +233,10 @@ OpenCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     _sigma = std::make_shared<mfem::ConstantCoefficient>(1.0);
 
     _grad_phi_transfer = false;
+  }
+  else
+  {
+    _sigma = coefficients._scalars.Get(_cond_coef_name);
   }
 
   _grad_phi_parent = gridfunctions.GetPtr(_grad_phi_name, false);
@@ -243,22 +249,26 @@ OpenCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
 
   _order_hcurl = _grad_phi_parent->ParFESpace()->FEColl()->GetOrder();
 
-  _v_parent = gridfunctions.Get(_v_gf_name);
-  if (_v_parent == nullptr)
+  if (!gridfunctions.Has(_v_gf_name))
   {
     std::cout << _v_gf_name + " not found in gridfunctions when "
                               "creating OpenCoilSolver.\n";
     _order_h1 = _order_hcurl;
   }
-  else if (_v_parent->ParFESpace()->FEColl()->GetContType() !=
-           mfem::FiniteElementCollection::CONTINUOUS)
-  {
-    mfem::mfem_error("V GridFunction must be of H1 type.");
-  }
   else
   {
-    _order_h1 = _v_parent->ParFESpace()->FEColl()->GetOrder();
-    _vt_parent = std::make_unique<mfem::ParGridFunction>(*_v_parent);
+    _v_parent = gridfunctions.Get(_v_gf_name);
+
+    if (_v_parent->ParFESpace()->FEColl()->GetContType() !=
+        mfem::FiniteElementCollection::CONTINUOUS)
+    {
+      mfem::mfem_error("V GridFunction must be of H1 type.");
+    }
+    else
+    {
+      _order_h1 = _v_parent->ParFESpace()->FEColl()->GetOrder();
+      _vt_parent = std::make_unique<mfem::ParGridFunction>(*_v_parent);
+    }
   }
 
   _mesh_parent = _grad_phi_parent->ParFESpace()->GetParMesh();

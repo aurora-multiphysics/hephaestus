@@ -89,7 +89,7 @@ private:
   // Parent mesh, FE space, and current
   mfem::ParMesh * _mesh_parent{nullptr};
   std::shared_ptr<mfem::ParGridFunction> _grad_phi_parent{nullptr};
-  std::shared_ptr<mfem::ParFiniteElementSpace> _h_curl_fe_space_parent{nullptr};
+  mfem::ParFiniteElementSpace * _h_curl_fe_space_parent{nullptr};
   std::shared_ptr<mfem::ParFiniteElementSpace> _h1_fe_space_parent{nullptr};
 
   // Finite element collections

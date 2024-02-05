@@ -95,7 +95,7 @@ ProblemBuilder::AddFESpace(std::string fespace_name, std::string fec_name, int v
       MFEM_ABORT("ParMesh not found when trying to add " << fespace_name << " to fespaces.");
     }
     auto pfes = std::make_shared<mfem::ParFiniteElementSpace>(
-        GetProblem()->_pmesh.get(), GetProblem()->_fecs.Get(fec_name).get(), vdim, ordering);
+        GetProblem()->_pmesh.get(), GetProblem()->_fecs.GetPtr(fec_name, false), vdim, ordering);
 
     GetProblem()->_fespaces.Register(fespace_name, std::move(pfes));
   }
@@ -110,15 +110,18 @@ ProblemBuilder::AddGridFunction(std::string gridfunction_name, std::string fespa
                                       " has already been added to the problem gridfunctions.";
     mfem::mfem_error(error_message.c_str());
   }
-  auto fespace = GetProblem()->_fespaces.Get(fespace_name);
-  if (fespace == nullptr)
+
+  if (!GetProblem()->_fespaces.Has(fespace_name))
   {
     MFEM_ABORT("FESpace " << fespace_name << " not found in fespaces when trying to add "
                           << gridfunction_name
                           << " associated with it into gridfunctions. Please add " << fespace_name
                           << " to fespaces before adding this gridfunction.");
   }
-  auto gridfunc = std::make_shared<mfem::ParGridFunction>(fespace.get());
+
+  auto fespace = GetProblem()->_fespaces.GetPtr(fespace_name, false);
+
+  auto gridfunc = std::make_shared<mfem::ParGridFunction>(fespace);
   *gridfunc = 0.0;
 
   GetProblem()->_gridfunctions.Register(gridfunction_name, std::move(gridfunc));

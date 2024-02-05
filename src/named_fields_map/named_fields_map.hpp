@@ -149,7 +149,7 @@ protected:
   /// result in undefined behavior.
   void CheckForDoubleRegistration(const std::string & field_name, T * field) const
   {
-    if (Has(field_name) && Get(field_name).get() == field)
+    if (Has(field_name) && GetPtr(field_name) == field)
     {
       MFEM_ABORT("The field '" << field_name << "' is already registered.");
     }

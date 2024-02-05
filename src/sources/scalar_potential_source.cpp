@@ -26,8 +26,7 @@ ScalarPotentialSource::Init(hephaestus::GridFunctions & gridfunctions,
   _h1_fe_space = fespaces.GetPtr(_h1_fespace_name, false);
   _h_curl_fe_space = fespaces.GetPtr(_hcurl_fespace_name, false);
 
-  _p = gridfunctions.Get(_potential_gf_name);
-  if (_p == nullptr)
+  if (!gridfunctions.Has(_potential_gf_name))
   {
     std::cout << _potential_gf_name + " not found in gridfunctions when "
                                       "creating ScalarPotentialSource. "
@@ -35,12 +34,19 @@ ScalarPotentialSource::Init(hephaestus::GridFunctions & gridfunctions,
     _p = std::make_shared<mfem::ParGridFunction>(_h1_fe_space);
     gridfunctions.Register(_potential_gf_name, _p);
   }
+  else
+  {
+    _p = gridfunctions.Get(_potential_gf_name);
+  }
 
-  _grad_p = gridfunctions.Get(_grad_phi_name);
-  if (_grad_p == nullptr)
+  if (!gridfunctions.Has(_grad_phi_name))
   {
     _grad_p = std::make_shared<mfem::ParGridFunction>(_h_curl_fe_space);
     gridfunctions.Register(_grad_phi_name, _grad_p);
+  }
+  else
+  {
+    _grad_p = gridfunctions.Get(_grad_phi_name);
   }
 
   _bc_map = &bc_map;
