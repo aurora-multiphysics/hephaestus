@@ -95,19 +95,13 @@ public:
   }
 
   /// Returns a vector containing all values for supplied keys.
-  [[nodiscard]] std::vector<std::shared_ptr<T>> Get(const std::vector<std::string> keys) const
+  [[nodiscard]] std::vector<T *> Get(const std::vector<std::string> keys) const
   {
-    std::vector<std::shared_ptr<T>> values;
+    std::vector<T *> values;
 
     for (const auto & key : keys)
     {
-      if (Has(key))
-        values.push_back(Get(key));
-      else
-      {
-        std::string key_not_found_msg("Key " + key + " not found in NamedFieldsMap.");
-        MFEM_ABORT(key_not_found_msg);
-      }
+      values.push_back(GetPtr(key, false));
     }
 
     values.shrink_to_fit();

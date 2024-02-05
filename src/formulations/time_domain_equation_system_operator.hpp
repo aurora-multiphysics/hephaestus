@@ -52,7 +52,7 @@ public:
   // in formulation,
   std::vector<std::string> _active_aux_var_names;
 
-  std::vector<std::shared_ptr<mfem::ParGridFunction>> _local_trial_vars, _local_test_vars;
+  std::vector<mfem::ParGridFunction *> _local_trial_vars, _local_test_vars;
 
   hephaestus::TimeDependentEquationSystem * _equation_system;
 

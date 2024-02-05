@@ -131,7 +131,7 @@ EquationSystem::ApplyBoundaryConditions(hephaestus::BCMap & bc_map)
     bc_map.ApplyEssentialBCs(
         test_var_name, _ess_tdof_lists.at(i), *(_xs.at(i)), _test_pfespaces.at(i)->GetParMesh());
     bc_map.ApplyIntegratedBCs(
-        test_var_name, *(_lfs.Get(test_var_name)), _test_pfespaces.at(i)->GetParMesh());
+        test_var_name, _lfs.GetRef(test_var_name), _test_pfespaces.at(i)->GetParMesh());
   }
 }
 void
@@ -225,10 +225,10 @@ EquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
                                      "not found in gridfunctions");
     }
     // Store pointers to variable FESpaces
-    _test_pfespaces.push_back(gridfunctions.Get(test_var_name)->ParFESpace());
+    _test_pfespaces.push_back(gridfunctions.GetPtr(test_var_name, false)->ParFESpace());
     // Create auxiliary gridfunctions for applying Dirichlet conditions
-    _xs.emplace_back(
-        std::make_unique<mfem::ParGridFunction>(gridfunctions.Get(test_var_name)->ParFESpace()));
+    _xs.emplace_back(std::make_unique<mfem::ParGridFunction>(
+        gridfunctions.GetPtr(test_var_name, false)->ParFESpace()));
   }
 
   // Initialise bilinear forms
