@@ -19,16 +19,16 @@ public:
   VectorDirichletBC(const std::string & name_, mfem::Array<int> bdr_attributes_);
   VectorDirichletBC(const std::string & name_,
                     mfem::Array<int> bdr_attributes_,
-                    std::shared_ptr<mfem::VectorCoefficient> vec_coeff_,
-                    std::shared_ptr<mfem::VectorCoefficient> vec_coeff_im_ = nullptr,
+                    mfem::VectorCoefficient * vec_coeff_,
+                    mfem::VectorCoefficient * vec_coeff_im_ = nullptr,
                     APPLY_TYPE boundary_apply_type = TANGENTIAL);
 
   void ApplyBC(mfem::GridFunction & gridfunc, mfem::Mesh * mesh_) override;
 
   void ApplyBC(mfem::ParComplexGridFunction & gridfunc, mfem::Mesh * mesh_) override;
 
-  std::shared_ptr<mfem::VectorCoefficient> _vec_coeff{nullptr};
-  std::shared_ptr<mfem::VectorCoefficient> _vec_coeff_im{nullptr};
+  mfem::VectorCoefficient * _vec_coeff{nullptr};
+  mfem::VectorCoefficient * _vec_coeff_im{nullptr};
   APPLY_TYPE _boundary_apply_type;
 };
 

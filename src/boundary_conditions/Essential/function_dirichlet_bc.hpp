@@ -10,13 +10,13 @@ public:
   ScalarDirichletBC(const std::string & name_, mfem::Array<int> bdr_attributes_);
   ScalarDirichletBC(const std::string & name_,
                     mfem::Array<int> bdr_attributes_,
-                    std::shared_ptr<mfem::Coefficient> coeff_,
-                    std::shared_ptr<mfem::Coefficient> coeff_im_ = nullptr);
+                    mfem::Coefficient * coeff_,
+                    mfem::Coefficient * coeff_im_ = nullptr);
 
   void ApplyBC(mfem::GridFunction & gridfunc, mfem::Mesh * mesh_) override;
 
-  std::shared_ptr<mfem::Coefficient> _coeff{nullptr};
-  std::shared_ptr<mfem::Coefficient> _coeff_im{nullptr};
+  mfem::Coefficient * _coeff{nullptr};
+  mfem::Coefficient * _coeff_im{nullptr};
 };
 
 } // namespace hephaestus
