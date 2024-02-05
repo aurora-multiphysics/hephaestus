@@ -56,53 +56,19 @@ VectorGridFunctionDotProductAux::Init(const hephaestus::GridFunctions & gridfunc
                                       hephaestus::Coefficients & coefficients)
 {
 
-  _scaling_coef = coefficients._scalars.Get(_scaling_coef_name);
-  if (_scaling_coef == nullptr)
-  {
-    MFEM_ABORT("Conductivity coefficient not found for Joule heating");
-  }
+  _scaling_coef = coefficients._scalars.GetPtr(_scaling_coef_name, false);
 
   if (_complex_average)
   {
-    _u_gf_re = gridfunctions.Get(_u_gf_real_name);
-    if (_u_gf_re == nullptr)
-    {
-      MFEM_ABORT("GridFunction " << _u_gf_real_name
-                                 << " not found when initializing VectorGridFunctionDotProductAux");
-    }
-    _v_gf_re = gridfunctions.Get(_v_gf_real_name);
-    if (_v_gf_re == nullptr)
-    {
-      MFEM_ABORT("GridFunction " << _v_gf_real_name
-                                 << " not found when initializing VectorGridFunctionDotProductAux");
-    }
-    _u_gf_im = gridfunctions.Get(_u_gf_imag_name);
-    if (_u_gf_im == nullptr)
-    {
-      MFEM_ABORT("GridFunction " << _u_gf_imag_name
-                                 << " not found when initializing VectorGridFunctionDotProductAux");
-    }
-    _v_gf_im = gridfunctions.Get(_v_gf_imag_name);
-    if (_v_gf_im == nullptr)
-    {
-      MFEM_ABORT("GridFunction " << _v_gf_imag_name
-                                 << " not found when initializing VectorGridFunctionDotProductAux");
-    }
+    _u_gf_re = gridfunctions.GetPtr(_u_gf_real_name, false);
+    _v_gf_re = gridfunctions.GetPtr(_v_gf_real_name, false);
+    _u_gf_im = gridfunctions.GetPtr(_u_gf_imag_name, false);
+    _v_gf_im = gridfunctions.GetPtr(_v_gf_imag_name, false);
   }
   else
   {
-    _u_gf_re = gridfunctions.Get(_u_gf_real_name);
-    if (_u_gf_re == nullptr)
-    {
-      MFEM_ABORT("GridFunction " << _u_gf_real_name
-                                 << " not found when initializing VectorGridFunctionDotProductAux");
-    }
-    _v_gf_re = gridfunctions.Get(_v_gf_real_name);
-    if (_v_gf_re == nullptr)
-    {
-      MFEM_ABORT("GridFunction " << _v_gf_real_name
-                                 << " not found when initializing VectorGridFunctionDotProductAux");
-    }
+    _u_gf_re = gridfunctions.GetPtr(_u_gf_real_name, false);
+    _v_gf_re = gridfunctions.GetPtr(_v_gf_real_name, false);
   }
 
   coefficients._scalars.Register(_coef_name,

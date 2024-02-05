@@ -12,16 +12,8 @@ void
 CoupledCoefficient::Init(const hephaestus::GridFunctions & gridfunctions,
                          hephaestus::Coefficients & coefficients)
 {
-  if (gridfunctions.Has(_coupled_var_name))
-  {
-    _gf = gridfunctions.Get(_coupled_var_name);
-  }
-  else
-  {
-    const std::string error_message = _coupled_var_name + " not found in gridfunctions when "
-                                                          "creating CoupledCoefficient\n";
-    mfem::mfem_error(error_message.c_str());
-  }
+  // NB: set "nullable = false" to ensure pointer is valid.
+  _gf = gridfunctions.GetPtr(_coupled_var_name, false);
 }
 
 double

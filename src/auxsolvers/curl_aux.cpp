@@ -14,16 +14,10 @@ void
 CurlAuxSolver::Init(const hephaestus::GridFunctions & gridfunctions,
                     hephaestus::Coefficients & coefficients)
 {
-  _u = gridfunctions.Get(_input_gf_name);
-  if (_u == nullptr)
-  {
-    MFEM_ABORT("GridFunction " << _input_gf_name << " not found when initializing CurlAuxSolver");
-  }
-  _curl_u = gridfunctions.Get(_curl_gf_name);
-  if (_curl_u == nullptr)
-  {
-    MFEM_ABORT("GridFunction " << _curl_gf_name << " not found when initializing CurlAuxSolver");
-  }
+  // NB: set "nullable = false" to ensure pointers are valid.
+  _u = gridfunctions.GetPtr(_input_gf_name, false);
+  _curl_u = gridfunctions.GetPtr(_curl_gf_name, false);
+
   _curl =
       std::make_unique<mfem::ParDiscreteLinearOperator>(_u->ParFESpace(), _curl_u->ParFESpace());
   _curl->AddDomainInterpolator(new mfem::CurlInterpolator());

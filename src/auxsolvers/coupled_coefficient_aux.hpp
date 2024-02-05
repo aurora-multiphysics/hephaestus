@@ -12,8 +12,7 @@ namespace hephaestus
 class CoupledCoefficient : public mfem::Coefficient, public AuxSolver
 {
 protected:
-  // pointer to coupled variable (could just be to vars?)
-  std::shared_ptr<mfem::ParGridFunction> _gf{nullptr};
+  mfem::ParGridFunction * _gf{nullptr};
   double _scalar_val;
 
 public:

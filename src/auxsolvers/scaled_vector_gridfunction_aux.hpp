@@ -35,7 +35,7 @@ protected:
   std::unique_ptr<mfem::ParMixedBilinearForm> _a_mixed{nullptr};
 
   // Coefficient to scale input gridfunction by
-  std::shared_ptr<mfem::Coefficient> _coef{nullptr};
+  mfem::Coefficient * _coef{nullptr};
   // Optional constant to scale input gridfunction by
 
 private:
@@ -46,10 +46,10 @@ private:
   const hephaestus::InputParameters _solver_options;
 
   // Input gridfunction to be scaled by a scalar coefficient
-  std::shared_ptr<mfem::ParGridFunction> _input_gf{nullptr};
+  mfem::ParGridFunction * _input_gf{nullptr};
 
   // Gridfunction in which to store result
-  std::shared_ptr<mfem::ParGridFunction> _scaled_gf{nullptr};
+  mfem::ParGridFunction * _scaled_gf{nullptr};
 
   // Operator matrices
   std::unique_ptr<mfem::HypreParMatrix> _a_mat{nullptr};

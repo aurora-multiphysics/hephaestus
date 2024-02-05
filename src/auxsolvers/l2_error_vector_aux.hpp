@@ -28,8 +28,8 @@ public:
   mfem::Array<HYPRE_BigInt> _ndofs;
   mfem::Array<double> _l2_errs;
 
-  std::shared_ptr<mfem::ParGridFunction> _gf{nullptr};
-  std::shared_ptr<mfem::VectorCoefficient> _vec_coeff{nullptr};
+  mfem::ParGridFunction * _gf{nullptr};
+  mfem::VectorCoefficient * _vec_coeff{nullptr};
 };
 
 } // namespace hephaestus

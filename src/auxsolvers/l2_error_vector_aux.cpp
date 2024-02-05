@@ -13,8 +13,9 @@ void
 L2ErrorVectorPostprocessor::Init(const hephaestus::GridFunctions & gridfunctions,
                                  hephaestus::Coefficients & coefficients)
 {
-  _gf = gridfunctions.Get(_var_name);
-  _vec_coeff = coefficients._vectors.Get(_vec_coef_name);
+  // NB: set "nullable = false" to ensure pointers are valid.
+  _gf = gridfunctions.GetPtr(_var_name, false);
+  _vec_coeff = coefficients._vectors.GetPtr(_vec_coef_name, false);
 }
 
 void

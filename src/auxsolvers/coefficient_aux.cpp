@@ -14,16 +14,9 @@ void
 CoefficientAux::Init(const hephaestus::GridFunctions & gridfunctions,
                      hephaestus::Coefficients & coefficients)
 {
-  _gf = gridfunctions.Get(_gf_name);
-  if (_gf == nullptr)
-  {
-    MFEM_ABORT("GridFunction " << _gf_name << " not found when initializing CoefficientAux");
-  }
-  _coef = coefficients._scalars.Get(_coef_name);
-  if (_coef == nullptr)
-  {
-    MFEM_ABORT("Coefficient " << _coef_name << " not found when initializing CoefficientAux");
-  }
+  // NB: ensure pointers are not NULL with "nullable = false".
+  _gf = gridfunctions.GetPtr(_gf_name, false);
+  _coef = coefficients._scalars.GetPtr(_coef_name, false);
 }
 
 void
