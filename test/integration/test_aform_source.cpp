@@ -94,17 +94,20 @@ protected:
     hephaestus::Sources sources;
     auto * j_src_coef = new mfem::VectorFunctionCoefficient(3, SourceField);
     coefficients._vectors.Register("source", j_src_coef, true);
-    hephaestus::InputParameters div_free_source_params;
-    div_free_source_params.SetParam("SourceName", std::string("source"));
-    div_free_source_params.SetParam("HCurlFESpaceName", std::string("_HCurlFESpace"));
-    div_free_source_params.SetParam("H1FESpaceName", std::string("H1"));
     hephaestus::InputParameters current_solver_options;
     current_solver_options.SetParam("Tolerance", float(1.0e-12));
     current_solver_options.SetParam("MaxIter", (unsigned int)200);
     current_solver_options.SetParam("PrintLevel", 0);
-    div_free_source_params.SetParam("SolverOptions", current_solver_options);
-    div_free_source_params.SetParam("HelmholtzProjection", false);
-    sources.Register("source", new hephaestus::DivFreeSource(div_free_source_params), true);
+
+    sources.Register("source",
+                     new hephaestus::DivFreeSource("source",
+                                                   "source",
+                                                   "_HCurlFESpace",
+                                                   "H1",
+                                                   "_source_potential",
+                                                   current_solver_options,
+                                                   false),
+                     true);
 
     hephaestus::InputParameters solver_options;
     solver_options.SetParam("Tolerance", float(1.0e-16));

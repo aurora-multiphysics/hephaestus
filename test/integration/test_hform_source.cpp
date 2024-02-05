@@ -102,19 +102,20 @@ protected:
         true);
 
     hephaestus::Sources sources;
-    hephaestus::InputParameters div_free_source_params;
-    div_free_source_params.SetParam("SourceName", std::string("source"));
-    div_free_source_params.SetParam("PotentialName", std::string("magnetic_potential"));
-    div_free_source_params.SetParam("HCurlFESpaceName", std::string("_HCurlFESpace"));
-    div_free_source_params.SetParam("ConductivityCoefName", std::string("electrical_conductivity"));
-    div_free_source_params.SetParam("H1FESpaceName", std::string("H1"));
     hephaestus::InputParameters current_solver_options;
     current_solver_options.SetParam("Tolerance", float(1.0e-12));
     current_solver_options.SetParam("MaxIter", (unsigned int)200);
     current_solver_options.SetParam("PrintLevel", 0);
-    div_free_source_params.SetParam("SolverOptions", current_solver_options);
-    div_free_source_params.SetParam("HelmholtzProjection", false);
-    sources.Register("source", new hephaestus::DivFreeSource(div_free_source_params), true);
+
+    sources.Register("source",
+                     new hephaestus::DivFreeSource("source",
+                                                   "source",
+                                                   "_HCurlFESpace",
+                                                   "H1",
+                                                   "magnetic_potential",
+                                                   current_solver_options,
+                                                   false),
+                     true);
 
     hephaestus::InputParameters solver_options;
     solver_options.SetParam("Tolerance", float(1.0e-16));

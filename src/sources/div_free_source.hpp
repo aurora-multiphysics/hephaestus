@@ -7,7 +7,13 @@ namespace hephaestus
 class DivFreeSource : public hephaestus::Source
 {
 public:
-  DivFreeSource(const hephaestus::InputParameters & params);
+  DivFreeSource(std::string src_coef_name,
+                std::string src_gf_name,
+                std::string hcurl_fespace_name,
+                std::string h1_fespace_name,
+                std::string potential_gf_name = "_source_potential",
+                hephaestus::InputParameters solver_options = hephaestus::InputParameters(),
+                bool perform_helmholtz_projection = true);
 
   // Override virtual Source destructor to avoid leaks.
   ~DivFreeSource() override = default;

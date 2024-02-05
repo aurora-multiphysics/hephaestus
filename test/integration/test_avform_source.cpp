@@ -105,12 +105,16 @@ protected:
     hephaestus::Sources sources;
     auto * j_src_coef = new mfem::VectorFunctionCoefficient(3, SourceField);
     coefficients._vectors.Register("source", j_src_coef, true);
-    hephaestus::InputParameters div_free_source_params;
-    div_free_source_params.SetParam("SourceName", std::string("source"));
-    div_free_source_params.SetParam("HCurlFESpaceName", std::string("_HCurlFESpace"));
-    div_free_source_params.SetParam("H1FESpaceName", std::string("_H1FESpace"));
-    div_free_source_params.SetParam("HelmholtzProjection", false);
-    sources.Register("source", new hephaestus::DivFreeSource(div_free_source_params), true);
+
+    sources.Register("source",
+                     new hephaestus::DivFreeSource("source",
+                                                   "source",
+                                                   "_HCurlFESpace",
+                                                   "_H1FESpace",
+                                                   "_source_potential",
+                                                   hephaestus::InputParameters(),
+                                                   false),
+                     true);
 
     hephaestus::InputParameters params;
     params.SetParam("TimeStep", float(0.05));
