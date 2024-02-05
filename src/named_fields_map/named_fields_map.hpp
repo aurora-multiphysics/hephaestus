@@ -51,10 +51,30 @@ public:
   }
 
   /// Get a shared pointer to the field associated with name @a field_name.
-  [[nodiscard]] inline std::shared_ptr<T> Get(const std::string & field_name) const
+  [[nodiscard]] inline std::shared_ptr<T> Get(const std::string & field_name,
+                                              bool nullable = true) const
   {
+    if (!nullable)
+    {
+      CheckForFieldRegistration(field_name);
+    }
+
     auto it = find(field_name);
     return it != end() ? it->second : nullptr;
+  }
+
+  /// Get a non-owning pointer to the field associated with name @a field_name.
+  [[nodiscard]] inline T * GetPtr(const std::string & field_name, bool nullable = true) const
+  {
+    auto owned_ptr = Get(field_name, nullable);
+
+    return owned_ptr ? owned_ptr.get() : nullptr;
+  }
+
+  /// Get a reference to a field.
+  [[nodiscard]] inline T & GetRef(const std::string & field_name) const
+  {
+    return *Get(field_name, false);
   }
 
   /// Get a shared pointer to the field and cast to subclass TDerived.
@@ -131,6 +151,22 @@ protected:
     {
       MFEM_ABORT("The field '" << field_name << "' is already registered.");
     }
+  }
+
+  /// Checks that field has been registered.
+  void CheckForFieldRegistration(const std::string & field_name) const
+  {
+    if (!Has(field_name))
+    {
+      MFEM_ABORT("No field with name '" << field_name << "' has been registered.");
+    }
+  }
+
+  /// Returns a valid shared pointer to the field with name field_name.
+  [[nodiscard]] inline std::shared_ptr<T> GetValid(const std::string & field_name) const
+  {
+    CheckForFieldRegistration(field_name);
+    return Get(field_name);
   }
 
   /// Clear all associations between names and fields.
