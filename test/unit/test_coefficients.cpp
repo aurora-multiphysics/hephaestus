@@ -25,13 +25,13 @@ TEST_CASE("CoefficientsTest", "[CheckData]")
   mfem::IsoparametricTransformation t;
   mfem::IntegrationPoint ip;
 
-  mfem::Coefficient * pw = coefficients._scalars.GetPtr("property_one", false);
+  mfem::Coefficient * pw = coefficients._scalars.GetPtr("property_one");
   t.Attribute = 1;
   REQUIRE_THAT(pw->Eval(t, ip), Catch::Matchers::WithinAbs(1.0, eps));
   t.Attribute = 2;
   REQUIRE_THAT(pw->Eval(t, ip), Catch::Matchers::WithinAbs(26.0, eps));
 
-  pw = coefficients._scalars.GetPtr("property_two", false);
+  pw = coefficients._scalars.GetPtr("property_two");
   t.Attribute = 1;
   REQUIRE_THAT(pw->Eval(t, ip), Catch::Matchers::WithinAbs(150.0, eps));
   t.Attribute = 2;

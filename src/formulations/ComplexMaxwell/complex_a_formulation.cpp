@@ -89,8 +89,7 @@ ComplexAFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_
                           _magnetic_vector_potential_imag_name,
                           true));
 
-  // NB: set "nullable = false" to ensure pointer non-null.
-  auxsolvers.GetPtr(p_field_name, false)->SetPriority(2);
+  auxsolvers.GetPtr(p_field_name)->SetPriority(2);
 }
 
 } // namespace hephaestus

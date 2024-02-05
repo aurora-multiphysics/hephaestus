@@ -14,9 +14,8 @@ void
 CoefficientAux::Init(const hephaestus::GridFunctions & gridfunctions,
                      hephaestus::Coefficients & coefficients)
 {
-  // NB: ensure pointers are not NULL with "nullable = false".
-  _gf = gridfunctions.GetPtr(_gf_name, false);
-  _coef = coefficients._scalars.GetPtr(_coef_name, false);
+  _gf = gridfunctions.GetPtr(_gf_name);
+  _coef = coefficients._scalars.GetPtr(_coef_name);
 }
 
 void

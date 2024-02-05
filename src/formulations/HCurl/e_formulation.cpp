@@ -69,7 +69,7 @@ EFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_name,
       std::make_shared<hephaestus::VectorGridFunctionDotProductAux>(
           p_field_name, p_field_name, _electric_conductivity_name, e_field_name, e_field_name));
 
-  auxsolvers.GetPtr(p_field_name, false)->SetPriority(2);
+  auxsolvers.GetPtr(p_field_name)->SetPriority(2);
 }
 
 } // namespace hephaestus

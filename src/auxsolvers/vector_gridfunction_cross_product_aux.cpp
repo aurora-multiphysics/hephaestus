@@ -41,8 +41,8 @@ void
 VectorGridFunctionCrossProductAux::Init(const hephaestus::GridFunctions & gridfunctions,
                                         hephaestus::Coefficients & coefficients)
 {
-  _u_gf = gridfunctions.GetPtr(_u_gf_name, false);
-  _v_gf = gridfunctions.GetPtr(_v_gf_name, false);
+  _u_gf = gridfunctions.GetPtr(_u_gf_name);
+  _v_gf = gridfunctions.GetPtr(_v_gf_name);
 
   coefficients._vectors.Register(
       _vec_coef_name,

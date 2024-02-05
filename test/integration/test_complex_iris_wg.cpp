@@ -60,12 +60,12 @@ protected:
     hephaestus::BCMap bc_map;
     mfem::Array<int> dirichlet_attr(1);
     dirichlet_attr[0] = 1;
-    bc_map.Register("tangential_E",
-                    std::make_shared<hephaestus::VectorDirichletBC>(
-                        std::string("electric_field"),
-                        dirichlet_attr,
-                        coefficients._vectors.GetPtr("EBCR", false),
-                        coefficients._vectors.GetPtr("EBCI", false)));
+    bc_map.Register(
+        "tangential_E",
+        std::make_shared<hephaestus::VectorDirichletBC>(std::string("electric_field"),
+                                                        dirichlet_attr,
+                                                        coefficients._vectors.GetPtr("EBCR"),
+                                                        coefficients._vectors.GetPtr("EBCI")));
 
     mfem::Array<int> wgi_in_attr(1);
     wgi_in_attr[0] = 2;
@@ -189,9 +189,9 @@ TEST_CASE_METHOD(TestComplexIrisWaveguide, "TestComplexIrisWaveguide", "[CheckRu
   zero_vec = 0.0;
   mfem::VectorConstantCoefficient zero_coef(zero_vec);
 
-  double norm_r = executioner->_problem->_gridfunctions.GetPtr("electric_field_real", false)
+  double norm_r = executioner->_problem->_gridfunctions.GetPtr("electric_field_real")
                       ->ComputeMaxError(zero_coef);
-  double norm_i = executioner->_problem->_gridfunctions.GetPtr("electric_field_imag", false)
+  double norm_i = executioner->_problem->_gridfunctions.GetPtr("electric_field_imag")
                       ->ComputeMaxError(zero_coef);
   REQUIRE_THAT(norm_r, Catch::Matchers::WithinAbs(4896.771, 0.001));
   REQUIRE_THAT(norm_i, Catch::Matchers::WithinAbs(5357.650, 0.001));

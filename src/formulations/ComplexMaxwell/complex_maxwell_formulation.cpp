@@ -40,9 +40,12 @@ ComplexMaxwellOperator::Init(mfem::Vector & X)
 {
   EquationSystemOperator::Init(X);
 
-  _stiff_coef = _coefficients._scalars.GetPtr(_stiffness_coef_name, false);
-  _mass_coef = _coefficients._scalars.GetPtr(_mass_coef_name);
-  _loss_coef = _coefficients._scalars.GetPtr(_loss_coef_name);
+  _stiff_coef = _coefficients._scalars.GetPtr(_stiffness_coef_name);
+
+  if (_coefficients._scalars.Has(_mass_coef_name))
+    _mass_coef = _coefficients._scalars.GetPtr(_mass_coef_name);
+  if (_coefficients._scalars.Has(_loss_coef_name))
+    _loss_coef = _coefficients._scalars.GetPtr(_loss_coef_name);
 }
 
 void
@@ -185,7 +188,7 @@ ComplexMaxwellFormulation::RegisterCoefficients()
     MFEM_ABORT(_zeta_coef_name + " coefficient not found.");
   }
 
-  _freq_coef = coefficients._scalars.GetPtr<mfem::ConstantCoefficient>(_frequency_coef_name, false);
+  _freq_coef = coefficients._scalars.GetPtr<mfem::ConstantCoefficient>(_frequency_coef_name);
 
   // define transformed
   coefficients._scalars.Register(

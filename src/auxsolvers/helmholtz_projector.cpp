@@ -34,7 +34,7 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
 {
 
   // Retrieving vector GridFunction. This is the only mandatory one
-  _div_free_src_gf = gridfunctions.GetPtr(_gf_grad_name, false);
+  _div_free_src_gf = gridfunctions.GetPtr(_gf_grad_name);
 
   if (!fespaces.Has(_hcurl_fespace_name))
   {
@@ -45,7 +45,7 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
   }
   else
   {
-    _h_curl_fe_space = fespaces.GetPtr(_hcurl_fespace_name, false);
+    _h_curl_fe_space = fespaces.GetPtr(_hcurl_fespace_name);
   }
 
   std::unique_ptr<mfem::H1_FECollection> h1_fec{nullptr};

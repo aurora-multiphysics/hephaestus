@@ -19,10 +19,9 @@ TimeDomainProblemBuilder::RegisterTimeDerivatives(std::vector<std::string> gridf
   {
     gridfunctions.Register(GetTimeDerivativeName(gridfunction_name),
                            std::make_shared<mfem::ParGridFunction>(
-                               gridfunctions.GetPtr(gridfunction_name, false)->ParFESpace()));
+                               gridfunctions.GetPtr(gridfunction_name)->ParFESpace()));
 
-    time_derivatives.push_back(
-        gridfunctions.GetPtr(GetTimeDerivativeName(gridfunction_name), false));
+    time_derivatives.push_back(gridfunctions.GetPtr(GetTimeDerivativeName(gridfunction_name)));
   }
 
   return time_derivatives;

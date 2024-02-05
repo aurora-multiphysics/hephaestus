@@ -203,9 +203,8 @@ DualOperator::Init(mfem::Vector & X)
   _h_curl_var_name = eqs->_h_curl_var_name;
   _h_div_var_name = eqs->_h_div_var_name;
 
-  // NB: ensure pointers are non-null!
-  _u = _gridfunctions.GetPtr(_h_curl_var_name, false);
-  _dv = _gridfunctions.GetPtr(GetTimeDerivativeName(_h_div_var_name), false);
+  _u = _gridfunctions.GetPtr(_h_curl_var_name);
+  _dv = _gridfunctions.GetPtr(GetTimeDerivativeName(_h_div_var_name));
 
   _h_curl_fe_space = _u->ParFESpace();
   _h_div_fe_space = _dv->ParFESpace();

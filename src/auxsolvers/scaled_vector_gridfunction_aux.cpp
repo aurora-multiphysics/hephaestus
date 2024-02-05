@@ -28,10 +28,9 @@ void
 ScaledVectorGridFunctionAux::Init(const hephaestus::GridFunctions & gridfunctions,
                                   hephaestus::Coefficients & coefficients)
 {
-  // NB: set "nullable = false" to ensure pointers valid.
-  _input_gf = gridfunctions.GetPtr(_input_gf_name, false);
-  _scaled_gf = gridfunctions.GetPtr(_scaled_gf_name, false);
-  _coef = coefficients._scalars.GetPtr(_coef_name, false);
+  _input_gf = gridfunctions.GetPtr(_input_gf_name);
+  _scaled_gf = gridfunctions.GetPtr(_scaled_gf_name);
+  _coef = coefficients._scalars.GetPtr(_coef_name);
 
   _test_fes = _scaled_gf->ParFESpace();
   _trial_fes = _input_gf->ParFESpace();

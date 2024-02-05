@@ -15,7 +15,7 @@ VectorFEWeakDivergenceKernel::Init(hephaestus::GridFunctions & gridfunctions,
                                    hephaestus::BCMap & bc_map,
                                    hephaestus::Coefficients & coefficients)
 {
-  _coef = coefficients._scalars.GetPtr(_coef_name, false);
+  _coef = coefficients._scalars.GetPtr(_coef_name);
 }
 
 void

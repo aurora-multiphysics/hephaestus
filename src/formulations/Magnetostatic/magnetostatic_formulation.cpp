@@ -58,7 +58,7 @@ MagnetostaticFormulation::RegisterLorentzForceDensityAux(const std::string & f_f
                       std::make_shared<hephaestus::VectorGridFunctionCrossProductAux>(
                           f_field_name, f_field_name, j_field_name, b_field_name));
 
-  auxsolvers.GetPtr(f_field_name, false)->SetPriority(2);
+  auxsolvers.GetPtr(f_field_name)->SetPriority(2);
 }
 
 void

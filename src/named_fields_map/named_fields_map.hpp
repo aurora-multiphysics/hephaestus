@@ -24,16 +24,17 @@ public:
   /// Destructor.
   ~NamedFieldsMap() { DeregisterAll(); }
 
-  /// Construct new field with name @field_name and register.
+  /// Construct new field with name field_name and register.
   template <class FieldType, class... FieldArgs>
   void Register(const std::string & field_name, FieldArgs &&... args)
   {
     Register(field_name, std::make_shared<FieldType>(std::forward<FieldArgs>(args)...));
   }
 
-  /// Register association between field @a field and name @a field_name.
+  /// Register association between field and field_name.
   void Register(const std::string & field_name, std::shared_ptr<T> field)
   {
+    CheckForNonNullField(field_name, field.get());
     CheckForDoubleRegistration(field_name, field.get());
 
     Deregister(field_name);
@@ -41,57 +42,42 @@ public:
     _field_map[field_name] = std::move(field);
   }
 
-  /// Unregister association between field @a field and name @a field_name.
+  /// Unregister association between a field and the field name.
   void Deregister(const std::string & field_name) { _field_map.erase(field_name); }
 
-  /// Predicate to check if a field is associated with name @a field_name.
+  /// Predicate to check if a field is associated with name field_name.
   [[nodiscard]] inline bool Has(const std::string & field_name) const
   {
     return find(field_name) != end();
   }
 
-  /// Get a shared pointer to the field associated with name @a field_name.
-  [[nodiscard]] inline std::shared_ptr<T> GetShared(const std::string & field_name,
-                                                    bool nullable = true) const
+  /// Returns a shared pointer to the field associated with name field_name.
+  [[nodiscard]] inline std::shared_ptr<T> GetShared(const std::string & field_name) const
   {
-    if (!nullable)
-    {
-      CheckForFieldRegistration(field_name);
-    }
+    CheckForRegistration(field_name);
 
-    auto it = find(field_name);
-    return it != end() ? it->second : nullptr;
+    return find(field_name)->second;
   }
 
-  /// Get a non-owning pointer to the field associated with name @a field_name.
-  [[nodiscard]] inline T * GetPtr(const std::string & field_name, bool nullable = true) const
-  {
-    auto owned_ptr = GetShared(field_name, nullable);
-
-    return owned_ptr ? owned_ptr.get() : nullptr;
-  }
-
-  template <typename TDerived>
-  [[nodiscard]] inline TDerived * GetPtr(const std::string & field_name, bool nullable = true) const
-  {
-    auto ptr = GetPtr(field_name, nullable);
-
-    return ptr ? dynamic_cast<TDerived *>(ptr) : nullptr;
-  }
-
-  /// Get a reference to a field.
+  /// Returns a reference to a field.
   [[nodiscard]] inline T & GetRef(const std::string & field_name) const
   {
-    return *GetShared(field_name, false);
+    return *GetShared(field_name);
   }
 
-  /// Get a shared pointer to the field and cast to subclass TDerived.
-  template <typename TDerived>
-  [[nodiscard]] inline std::shared_ptr<TDerived> GetShared(const std::string & field_name) const
+  /// Returns a non-owning pointer to the field associated with name field_name.
+  [[nodiscard]] inline T * GetPtr(const std::string & field_name) const
   {
-    auto owned_ptr = GetShared(field_name);
+    return GetShared(field_name).get();
+  }
 
-    return owned_ptr ? std::dynamic_pointer_cast<TDerived>(owned_ptr) : nullptr;
+  /// Returns a non-owning pointer to the field where TDerived is a derived class of class T.
+  template <typename TDerived>
+  [[nodiscard]] inline TDerived * GetPtr(const std::string & field_name) const
+  {
+    auto ptr = GetPtr(field_name);
+
+    return dynamic_cast<TDerived *>(ptr);
   }
 
   /// Returns a vector containing all values for supplied keys.
@@ -101,7 +87,7 @@ public:
 
     for (const auto & key : keys)
     {
-      values.push_back(GetPtr(key, false));
+      values.push_back(GetPtr(key));
     }
 
     values.shrink_to_fit();
@@ -155,12 +141,21 @@ protected:
     }
   }
 
-  /// Checks that field has been registered.
-  void CheckForFieldRegistration(const std::string & field_name) const
+  /// Check that a field with that name exists in the map.
+  void CheckForRegistration(const std::string & field_name) const
   {
     if (!Has(field_name))
     {
-      MFEM_ABORT("No field with name '" << field_name << "' has been registered.");
+      MFEM_ABORT("The field '" << field_name << "' has not been registered.");
+    }
+  }
+
+  /// Check that the field to be registered is non-null.
+  void CheckForNonNullField(const std::string & field_name, T * field) const
+  {
+    if (!field)
+    {
+      MFEM_ABORT("Cannot register NULL field with name '" << field_name << "'.");
     }
   }
 

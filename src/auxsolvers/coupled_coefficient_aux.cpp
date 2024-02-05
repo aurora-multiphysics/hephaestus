@@ -12,8 +12,7 @@ void
 CoupledCoefficient::Init(const hephaestus::GridFunctions & gridfunctions,
                          hephaestus::Coefficients & coefficients)
 {
-  // NB: set "nullable = false" to ensure pointer is valid.
-  _gf = gridfunctions.GetPtr(_coupled_var_name, false);
+  _gf = gridfunctions.GetPtr(_coupled_var_name);
 }
 
 double

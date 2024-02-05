@@ -109,7 +109,7 @@ void
 StaticsOperator::Init(mfem::Vector & X)
 {
   EquationSystemOperator::Init(X);
-  _stiff_coef = _coefficients._scalars.GetPtr(_stiffness_coef_name, false);
+  _stiff_coef = _coefficients._scalars.GetPtr(_stiffness_coef_name);
 }
 
 /*

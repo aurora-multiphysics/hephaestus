@@ -62,12 +62,12 @@ protected:
     coefficients._vectors.Register("BBcI",
                                    std::make_shared<mfem::VectorFunctionCoefficient>(3, EBcI));
 
-    bc_map.Register("tangential_E",
-                    std::make_shared<hephaestus::VectorDirichletBC>(
-                        std::string("electric_field"),
-                        dirichlet_attr,
-                        coefficients._vectors.GetPtr("EBcR", false),
-                        coefficients._vectors.GetPtr("BBcI", false)));
+    bc_map.Register(
+        "tangential_E",
+        std::make_shared<hephaestus::VectorDirichletBC>(std::string("electric_field"),
+                                                        dirichlet_attr,
+                                                        coefficients._vectors.GetPtr("EBcR"),
+                                                        coefficients._vectors.GetPtr("BBcI")));
 
     mfem::Array<int> wgi_in_attr(1);
     wgi_in_attr[0] = 5;
@@ -172,9 +172,9 @@ TEST_CASE_METHOD(TestComplexERMESMouse, "TestComplexERMESMouse", "[CheckRun]")
   zero_vec = 0.0;
   mfem::VectorConstantCoefficient zero_coef(zero_vec);
 
-  double norm_r = executioner->_problem->_gridfunctions.GetPtr("electric_field_real", false)
+  double norm_r = executioner->_problem->_gridfunctions.GetPtr("electric_field_real")
                       ->ComputeMaxError(zero_coef);
-  double norm_i = executioner->_problem->_gridfunctions.GetPtr("electric_field_imag", false)
+  double norm_i = executioner->_problem->_gridfunctions.GetPtr("electric_field_imag")
                       ->ComputeMaxError(zero_coef);
   REQUIRE_THAT(norm_r, Catch::Matchers::WithinAbs(480, 15));
   REQUIRE_THAT(norm_i, Catch::Matchers::WithinAbs(180, 5));
