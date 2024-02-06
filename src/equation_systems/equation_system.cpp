@@ -232,7 +232,7 @@ EquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
 
   // Initialise bilinear forms
 
-  for (const auto & [test_var_name, blf_kernels] : _blf_kernels_map.GetMap())
+  for (const auto & [test_var_name, blf_kernels] : _blf_kernels_map)
   {
     for (auto & i : *blf_kernels)
     {
@@ -240,7 +240,7 @@ EquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
     }
   }
   // Initialise linear form kernels
-  for (const auto & [test_var_name, lf_kernels] : _lf_kernels_map.GetMap())
+  for (const auto & [test_var_name, lf_kernels] : _lf_kernels_map)
   {
     for (auto & i : *lf_kernels)
     {
@@ -248,7 +248,7 @@ EquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
     }
   }
   // Initialise nonlinear form kernels
-  for (const auto & [test_var_name, nlf_kernels] : _nlf_kernels_map.GetMap())
+  for (const auto & [test_var_name, nlf_kernels] : _nlf_kernels_map)
   {
     for (auto & i : *nlf_kernels)
     {
@@ -256,9 +256,9 @@ EquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
     }
   }
   // Initialise mixed bilinear form kernels
-  for (const auto & [test_var_name, mblf_kernels_map] : _mblf_kernels_map_map.GetMap())
+  for (const auto & [test_var_name, mblf_kernels_map] : _mblf_kernels_map_map)
   {
-    for (const auto & [trial_var_name, mblf_kernels] : mblf_kernels_map->GetMap())
+    for (const auto & [trial_var_name, mblf_kernels] : *mblf_kernels_map)
     {
       for (auto & i : *mblf_kernels)
       {

@@ -95,9 +95,6 @@ public:
     return values;
   }
 
-  /// Returns const-reference to field map.
-  [[nodiscard]] inline const MapType & GetMap() const { return _field_map; }
-
   /// Returns a begin const iterator to the registered fields.
   // NOLINTNEXTLINE(readability-identifier-naming)
   [[nodiscard]] inline const_iterator begin() const { return _field_map.begin(); }
