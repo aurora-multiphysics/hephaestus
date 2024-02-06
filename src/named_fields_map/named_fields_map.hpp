@@ -113,9 +113,6 @@ public:
     return _field_map.find(field_name);
   }
 
-  /// Returns the number of registered fields.
-  [[nodiscard]] inline int NumFields() const { return _field_map.size(); }
-
 protected:
   /// Checks that the field has not already been registered and that the pointer is valid.
   void CheckFieldIsRegistrable(const std::string & field_name, T * field) const
