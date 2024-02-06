@@ -30,22 +30,30 @@ ComplexEFormulation::RegisterCurrentDensityAux(const std::string & j_field_real_
   //* Current density J = Jᵉ + σE
   //* Induced electric current, Jind = σE
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
-  auxsolvers.Register(j_field_real_name,
-                      new hephaestus::ScaledVectorGridFunctionAux(_electric_field_real_name,
-                                                                  j_field_real_name,
-                                                                  _electric_conductivity_name,
-                                                                  1.0,
-                                                                  1.0,
-                                                                  external_j_field_real_name),
-                      true);
-  auxsolvers.Register(j_field_imag_name,
-                      new hephaestus::ScaledVectorGridFunctionAux(_electric_field_imag_name,
-                                                                  j_field_imag_name,
-                                                                  _electric_conductivity_name,
-                                                                  1.0,
-                                                                  1.0,
-                                                                  external_j_field_imag_name),
-                      true);
+  auxsolvers.Register(
+      j_field_real_name,
+      new hephaestus::ScaledVectorGridFunctionAux(
+          _electric_field_real_name,
+          j_field_real_name,
+          _electric_conductivity_name,
+          1.0,
+          1.0,
+          external_j_field_real_name,
+          hephaestus::InputParameters(
+              {{"Tolerance", float(1.0e-12)}, {"MaxIter", (unsigned int)200}, {"PrintLevel", 1}})),
+      true);
+  auxsolvers.Register(
+      j_field_imag_name,
+      new hephaestus::ScaledVectorGridFunctionAux(
+          _electric_field_imag_name,
+          j_field_imag_name,
+          _electric_conductivity_name,
+          1.0,
+          1.0,
+          external_j_field_imag_name,
+          hephaestus::InputParameters(
+              {{"Tolerance", float(1.0e-12)}, {"MaxIter", (unsigned int)200}, {"PrintLevel", 1}})),
+      true);
 };
 
 void
@@ -90,8 +98,8 @@ ComplexEFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_
                                                                       p_field_name,
                                                                       "",
                                                                       _electric_field_real_name,
-                                                                      _electric_field_real_name,
                                                                       j_field_real_name,
+                                                                      _electric_field_imag_name,
                                                                       j_field_imag_name,
                                                                       true),
                       true);

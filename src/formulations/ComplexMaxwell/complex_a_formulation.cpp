@@ -113,8 +113,8 @@ ComplexAFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_
                                                       p_field_name,
                                                       _loss_coef_name,
                                                       _magnetic_vector_potential_real_name,
-                                                      _magnetic_vector_potential_real_name,
                                                       j_field_real_name,
+                                                      _magnetic_vector_potential_imag_name,
                                                       j_field_imag_name,
                                                       true),
       true);
