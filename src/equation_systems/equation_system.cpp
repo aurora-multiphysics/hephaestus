@@ -50,7 +50,6 @@ EquationSystem::AddKernel(const std::string & test_var_name,
     _blf_kernels_map.Register(test_var_name, std::move(kernels));
   }
 
-  // NB: GetRef ensures that we don't have a nullptr.
   _blf_kernels_map.GetRef(test_var_name).push_back(std::move(blf_kernel));
 }
 
@@ -111,10 +110,9 @@ EquationSystem::AddKernel(const std::string & trial_var_name,
     _mblf_kernels_map_map.Get(test_var_name)->Register(trial_var_name, std::move(kernels));
   }
 
-  // TODO: - cleanup.
   _mblf_kernels_map_map.GetRef(test_var_name)
-      .GetRef(trial_var_name)
-      .push_back(std::move(mblf_kernel));
+      .Get(trial_var_name)
+      ->push_back(std::move(mblf_kernel));
 }
 
 void

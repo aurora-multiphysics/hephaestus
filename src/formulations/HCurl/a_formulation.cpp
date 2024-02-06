@@ -86,7 +86,6 @@ AFormulation::RegisterLorentzForceDensityAux(const std::string & f_field_name,
                       std::make_shared<hephaestus::VectorGridFunctionCrossProductAux>(
                           f_field_name, f_field_name, j_field_name, b_field_name));
 
-  // NB: ensure pointer is non-null.
   auxsolvers.Get(f_field_name)->SetPriority(2);
 }
 
