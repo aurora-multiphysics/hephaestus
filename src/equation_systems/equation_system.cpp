@@ -288,14 +288,16 @@ EquationSystem::BuildLinearForms(hephaestus::BCMap & bc_map, hephaestus::Sources
     // Assemble. Must be done before applying kernels that add to lf.
     lf->Assemble();
 
-    auto lf_kernels = _lf_kernels_map.Get(test_var_name);
-    if (lf_kernels != nullptr)
+    if (_lf_kernels_map.Has(test_var_name))
     {
-      for (auto & lf_kernel : *lf_kernels)
+      auto lf_kernels = _lf_kernels_map.GetRef(test_var_name);
+
+      for (auto & lf_kernel : lf_kernels)
       {
         lf_kernel->Apply(lf);
       }
     }
+
     if (test_var_name == _test_var_names.at(0))
     {
       sources.Apply(lf);
@@ -316,9 +318,9 @@ EquationSystem::BuildBilinearForms()
     auto blf = _blfs.Get(test_var_name);
     if (_blf_kernels_map.Has(test_var_name))
     {
-      auto blf_kernels = _blf_kernels_map.Get(test_var_name);
+      auto blf_kernels = _blf_kernels_map.GetRef(test_var_name);
 
-      for (auto & blf_kernel : *blf_kernels)
+      for (auto & blf_kernel : blf_kernels)
       {
         blf_kernel->Apply(blf);
       }
