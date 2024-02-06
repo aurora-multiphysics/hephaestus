@@ -34,8 +34,7 @@ public:
   /// Register association between field and field_name.
   void Register(const std::string & field_name, std::shared_ptr<T> field)
   {
-    CheckForNonNullField(field_name, field.get());
-    CheckForDoubleRegistration(field_name, field.get());
+    CheckFieldIsRegistrable(field_name, field.get());
 
     Deregister(field_name);
 
@@ -54,9 +53,11 @@ public:
   /// Returns a shared pointer to the field associated with name field_name.
   [[nodiscard]] inline std::shared_ptr<T> GetShared(const std::string & field_name) const
   {
-    CheckForRegistration(field_name);
+    CheckFieldIsRegistered(field_name);
 
-    return find(field_name)->second;
+    auto it = find(field_name);
+
+    return EnsureFieldPointerIsNonNull(it);
   }
 
   /// Returns a reference to a field.
@@ -131,6 +132,17 @@ public:
   [[nodiscard]] inline int NumFields() const { return _field_map.size(); }
 
 protected:
+  /// Checks that the field has not already been registered and that the pointer is valid.
+  void CheckFieldIsRegistrable(const std::string & field_name, T * field) const
+  {
+    if (!field)
+    {
+      MFEM_ABORT("Cannot register NULL field with name '" << field_name << "'.");
+    }
+
+    CheckForDoubleRegistration(field_name, field);
+  }
+
   /// Check for double-registration of a field. A double-registered field may
   /// result in undefined behavior.
   void CheckForDoubleRegistration(const std::string & field_name, T * field) const
@@ -142,7 +154,7 @@ protected:
   }
 
   /// Check that a field with that name exists in the map.
-  void CheckForRegistration(const std::string & field_name) const
+  void CheckFieldIsRegistered(const std::string & field_name) const
   {
     if (!Has(field_name))
     {
@@ -150,13 +162,17 @@ protected:
     }
   }
 
-  /// Check that the field to be registered is non-null.
-  void CheckForNonNullField(const std::string & field_name, T * field) const
+  /// Wrapper method to call in GetShared to ensure that a shared pointer is valid.
+  inline std::shared_ptr<T> EnsureFieldPointerIsNonNull(const_iterator & iterator) const
   {
-    if (!field)
+    auto owned_ptr = iterator->second;
+
+    if (!owned_ptr)
     {
-      MFEM_ABORT("Cannot register NULL field with name '" << field_name << "'.");
+      MFEM_ABORT("The field '" << iterator->first << "' is NULL.");
     }
+
+    return owned_ptr;
   }
 
   /// Clear all associations between names and fields.
