@@ -47,7 +47,7 @@ public:
   /// Predicate to check if a field is associated with name field_name.
   [[nodiscard]] inline bool Has(const std::string & field_name) const
   {
-    return find(field_name) != end();
+    return FindField(field_name) != end();
   }
 
   /// Returns a shared pointer to the field associated with name field_name.
@@ -55,7 +55,7 @@ public:
   {
     CheckFieldIsRegistered(field_name);
 
-    auto it = find(field_name);
+    auto it = FindField(field_name);
 
     return EnsureFieldPointerIsNonNull(it);
   }
@@ -106,14 +106,14 @@ public:
   // NOLINTNEXTLINE(readability-identifier-naming)
   [[nodiscard]] inline const_iterator end() const { return _field_map.end(); }
 
+protected:
   /// Returns a const iterator to the field @a field_name.
   // NOLINTNEXTLINE(readability-identifier-naming)
-  [[nodiscard]] inline const_iterator find(const std::string & field_name) const
+  [[nodiscard]] inline const_iterator FindField(const std::string & field_name) const
   {
     return _field_map.find(field_name);
   }
 
-protected:
   /// Checks that the field has not already been registered and that the pointer is valid.
   void CheckFieldIsRegistrable(const std::string & field_name, T * field) const
   {
