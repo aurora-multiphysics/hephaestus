@@ -81,7 +81,7 @@ public:
   }
 
   /// Returns a vector containing all values for supplied keys.
-  [[nodiscard]] std::vector<T *> Get(const std::vector<std::string> keys) const
+  [[nodiscard]] std::vector<T *> Get(const std::vector<std::string> & keys) const
   {
     std::vector<T *> values;
 
@@ -103,7 +103,7 @@ public:
   [[nodiscard]] inline const_iterator end() const { return _field_map.end(); }
 
 protected:
-  /// Returns a const iterator to the field @a field_name.
+  /// Returns a const iterator to the field.
   [[nodiscard]] inline const_iterator FindField(const std::string & field_name) const
   {
     return _field_map.find(field_name);
