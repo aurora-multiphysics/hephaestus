@@ -108,7 +108,6 @@ public:
 
 protected:
   /// Returns a const iterator to the field @a field_name.
-  // NOLINTNEXTLINE(readability-identifier-naming)
   [[nodiscard]] inline const_iterator FindField(const std::string & field_name) const
   {
     return _field_map.find(field_name);
