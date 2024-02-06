@@ -93,7 +93,7 @@ protected:
                         std::string("electric_potential"), high_terminal, potential_src.get()));
 
     auto potential_ground = std::make_shared<mfem::FunctionCoefficient>(PotentialGround);
-    coefficients._scalars.Register("ground_potential", potential_src);
+    coefficients._scalars.Register("ground_potential", potential_ground);
 
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 2;
