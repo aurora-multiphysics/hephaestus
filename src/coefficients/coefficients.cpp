@@ -78,7 +78,7 @@ Coefficients::AddGlobalCoefficientsFromSubdomains()
     mfem::Array<mfem::Coefficient *> subdomain_coefs;
     for (auto & subdomain : _subdomains)
     {
-      subdomain_coefs.Append(subdomain._scalar_coefficients.GetPtr(scalar_property_name));
+      subdomain_coefs.Append(subdomain._scalar_coefficients.Get(scalar_property_name));
     }
     if (!_scalars.Has(scalar_property_name))
     {

@@ -23,8 +23,8 @@ ScalarPotentialSource::Init(hephaestus::GridFunctions & gridfunctions,
                             hephaestus::BCMap & bc_map,
                             hephaestus::Coefficients & coefficients)
 {
-  _h1_fe_space = fespaces.GetPtr(_h1_fespace_name);
-  _h_curl_fe_space = fespaces.GetPtr(_hcurl_fespace_name);
+  _h1_fe_space = fespaces.Get(_h1_fespace_name);
+  _h_curl_fe_space = fespaces.Get(_hcurl_fespace_name);
 
   if (!gridfunctions.Has(_potential_gf_name))
   {
@@ -51,7 +51,7 @@ ScalarPotentialSource::Init(hephaestus::GridFunctions & gridfunctions,
 
   _bc_map = &bc_map;
 
-  _beta_coef = coefficients._scalars.GetPtr(_beta_coef_name);
+  _beta_coef = coefficients._scalars.Get(_beta_coef_name);
 
   _a0 = std::make_unique<mfem::ParBilinearForm>(_h1_fe_space);
   _a0->AddDomainIntegrator(new mfem::DiffusionIntegrator(*_beta_coef));

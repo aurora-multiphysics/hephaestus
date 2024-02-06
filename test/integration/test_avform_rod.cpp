@@ -57,7 +57,7 @@ protected:
                     std::make_shared<hephaestus::ScalarDirichletBC>(
                         std::string("electric_potential"),
                         high_terminal,
-                        coefficients._scalars.GetPtr("high_potential_func")));
+                        coefficients._scalars.Get("high_potential_func")));
 
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 2;
@@ -69,7 +69,7 @@ protected:
                     std::make_shared<hephaestus::ScalarDirichletBC>(
                         std::string("electric_potential"),
                         ground_terminal,
-                        coefficients._scalars.GetPtr("ground_potential_func")));
+                        coefficients._scalars.Get("ground_potential_func")));
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./cylinder-hex-q2.gen")).c_str(), 1, 1);
 

@@ -66,16 +66,16 @@ public:
   }
 
   /// Returns a non-owning pointer to the field associated with name field_name.
-  [[nodiscard]] inline T * GetPtr(const std::string & field_name) const
+  [[nodiscard]] inline T * Get(const std::string & field_name) const
   {
     return GetShared(field_name).get();
   }
 
   /// Returns a non-owning pointer to the field where TDerived is a derived class of class T.
   template <typename TDerived>
-  [[nodiscard]] inline TDerived * GetPtr(const std::string & field_name) const
+  [[nodiscard]] inline TDerived * Get(const std::string & field_name) const
   {
-    auto ptr = GetPtr(field_name);
+    auto ptr = Get(field_name);
 
     return dynamic_cast<TDerived *>(ptr);
   }
@@ -87,7 +87,7 @@ public:
 
     for (const auto & key : keys)
     {
-      values.push_back(GetPtr(key));
+      values.push_back(Get(key));
     }
 
     values.shrink_to_fit();
@@ -135,7 +135,7 @@ protected:
   /// result in undefined behavior.
   void CheckForDoubleRegistration(const std::string & field_name, T * field) const
   {
-    if (Has(field_name) && GetPtr(field_name) == field)
+    if (Has(field_name) && Get(field_name) == field)
     {
       MFEM_ABORT("The field '" << field_name << "' is already registered.");
     }

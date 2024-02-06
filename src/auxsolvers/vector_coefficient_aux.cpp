@@ -15,8 +15,8 @@ VectorCoefficientAux::Init(const hephaestus::GridFunctions & gridfunctions,
                            hephaestus::Coefficients & coefficients)
 {
   // NB: set "nullable = false" to ensure pointers valid.
-  _gf = gridfunctions.GetPtr(_gf_name);
-  _vec_coef = coefficients._vectors.GetPtr(_vec_coef_name);
+  _gf = gridfunctions.Get(_gf_name);
+  _vec_coef = coefficients._vectors.Get(_vec_coef_name);
 }
 
 void

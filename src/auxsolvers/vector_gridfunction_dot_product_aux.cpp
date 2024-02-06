@@ -56,19 +56,19 @@ VectorGridFunctionDotProductAux::Init(const hephaestus::GridFunctions & gridfunc
                                       hephaestus::Coefficients & coefficients)
 {
 
-  _scaling_coef = coefficients._scalars.GetPtr(_scaling_coef_name);
+  _scaling_coef = coefficients._scalars.Get(_scaling_coef_name);
 
   if (_complex_average)
   {
-    _u_gf_re = gridfunctions.GetPtr(_u_gf_real_name);
-    _v_gf_re = gridfunctions.GetPtr(_v_gf_real_name);
-    _u_gf_im = gridfunctions.GetPtr(_u_gf_imag_name);
-    _v_gf_im = gridfunctions.GetPtr(_v_gf_imag_name);
+    _u_gf_re = gridfunctions.Get(_u_gf_real_name);
+    _v_gf_re = gridfunctions.Get(_v_gf_real_name);
+    _u_gf_im = gridfunctions.Get(_u_gf_imag_name);
+    _v_gf_im = gridfunctions.Get(_v_gf_imag_name);
   }
   else
   {
-    _u_gf_re = gridfunctions.GetPtr(_u_gf_real_name);
-    _v_gf_re = gridfunctions.GetPtr(_v_gf_real_name);
+    _u_gf_re = gridfunctions.Get(_u_gf_real_name);
+    _v_gf_re = gridfunctions.Get(_v_gf_real_name);
   }
 
   coefficients._scalars.Register(_coef_name,

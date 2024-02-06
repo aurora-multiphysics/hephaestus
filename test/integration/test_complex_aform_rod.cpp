@@ -60,8 +60,8 @@ protected:
         "tangential_A",
         std::make_shared<hephaestus::VectorDirichletBC>(std::string("magnetic_vector_potential"),
                                                         mfem::Array<int>({1, 2, 3}),
-                                                        coefficients._vectors.GetPtr("ABcR"),
-                                                        coefficients._vectors.GetPtr("ABcI")));
+                                                        coefficients._vectors.Get("ABcR"),
+                                                        coefficients._vectors.Get("ABcI")));
 
     mfem::Array<int> high_terminal(1);
     high_terminal[0] = 1;

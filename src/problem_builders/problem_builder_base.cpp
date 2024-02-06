@@ -95,7 +95,7 @@ ProblemBuilder::AddFESpace(std::string fespace_name, std::string fec_name, int v
       MFEM_ABORT("ParMesh not found when trying to add " << fespace_name << " to fespaces.");
     }
     auto pfes = std::make_shared<mfem::ParFiniteElementSpace>(
-        GetProblem()->_pmesh.get(), GetProblem()->_fecs.GetPtr(fec_name), vdim, ordering);
+        GetProblem()->_pmesh.get(), GetProblem()->_fecs.Get(fec_name), vdim, ordering);
 
     GetProblem()->_fespaces.Register(fespace_name, std::move(pfes));
   }
@@ -119,7 +119,7 @@ ProblemBuilder::AddGridFunction(std::string gridfunction_name, std::string fespa
                           << " to fespaces before adding this gridfunction.");
   }
 
-  auto fespace = GetProblem()->_fespaces.GetPtr(fespace_name);
+  auto fespace = GetProblem()->_fespaces.Get(fespace_name);
 
   auto gridfunc = std::make_shared<mfem::ParGridFunction>(fespace);
   *gridfunc = 0.0;

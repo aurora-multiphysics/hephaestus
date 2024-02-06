@@ -14,8 +14,8 @@ void
 CurlAuxSolver::Init(const hephaestus::GridFunctions & gridfunctions,
                     hephaestus::Coefficients & coefficients)
 {
-  _u = gridfunctions.GetPtr(_input_gf_name);
-  _curl_u = gridfunctions.GetPtr(_curl_gf_name);
+  _u = gridfunctions.Get(_input_gf_name);
+  _curl_u = gridfunctions.Get(_curl_gf_name);
 
   _curl =
       std::make_unique<mfem::ParDiscreteLinearOperator>(_u->ParFESpace(), _curl_u->ParFESpace());

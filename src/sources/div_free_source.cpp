@@ -35,9 +35,9 @@ DivFreeSource::Init(hephaestus::GridFunctions & gridfunctions,
                     hephaestus::BCMap & bc_map,
                     hephaestus::Coefficients & coefficients)
 {
-  _h1_fe_space = fespaces.GetPtr(_h1_fespace_name);
-  _h_curl_fe_space = fespaces.GetPtr(_hcurl_fespace_name);
-  _source_vec_coef = coefficients._vectors.GetPtr(_src_coef_name);
+  _h1_fe_space = fespaces.Get(_h1_fespace_name);
+  _h_curl_fe_space = fespaces.Get(_hcurl_fespace_name);
+  _source_vec_coef = coefficients._vectors.Get(_src_coef_name);
 
   _div_free_src_gf = std::make_shared<mfem::ParGridFunction>(_h_curl_fe_space);
   gridfunctions.Register(_src_gf_name, _div_free_src_gf);

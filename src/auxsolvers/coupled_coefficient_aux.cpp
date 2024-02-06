@@ -12,7 +12,7 @@ void
 CoupledCoefficient::Init(const hephaestus::GridFunctions & gridfunctions,
                          hephaestus::Coefficients & coefficients)
 {
-  _gf = gridfunctions.GetPtr(_coupled_var_name);
+  _gf = gridfunctions.Get(_coupled_var_name);
 }
 
 double

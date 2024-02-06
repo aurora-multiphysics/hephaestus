@@ -239,7 +239,7 @@ OpenCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     _sigma = coefficients._scalars.GetShared(_cond_coef_name);
   }
 
-  _grad_phi_parent = gridfunctions.GetPtr(_grad_phi_name);
+  _grad_phi_parent = gridfunctions.Get(_grad_phi_name);
 
   if (_grad_phi_parent->ParFESpace()->FEColl()->GetContType() !=
       mfem::FiniteElementCollection::TANGENTIAL)

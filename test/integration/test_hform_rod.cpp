@@ -67,7 +67,7 @@ protected:
                     std::make_shared<hephaestus::ScalarDirichletBC>(
                         std::string("magnetic_potential"),
                         high_terminal,
-                        coefficients._scalars.GetPtr("high_potential")));
+                        coefficients._scalars.Get("high_potential")));
 
     coefficients._scalars.Register("ground_potential",
                                    std::make_shared<mfem::FunctionCoefficient>(PotentialGround));
@@ -78,7 +78,7 @@ protected:
                     std::make_shared<hephaestus::ScalarDirichletBC>(
                         std::string("magnetic_potential"),
                         ground_terminal,
-                        coefficients._scalars.GetPtr("ground_potential")));
+                        coefficients._scalars.Get("ground_potential")));
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./cylinder-hex-q2.gen")).c_str(), 1, 1);
 

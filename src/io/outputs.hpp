@@ -113,7 +113,7 @@ private:
       {
         for (auto field_name : _output_field_names)
         {
-          dc->RegisterField(field_name, _gridfunctions->GetPtr(field_name));
+          dc->RegisterField(field_name, _gridfunctions->Get(field_name));
         }
       }
     }

@@ -58,7 +58,7 @@ MagnetostaticFormulation::RegisterLorentzForceDensityAux(const std::string & f_f
                       std::make_shared<hephaestus::VectorGridFunctionCrossProductAux>(
                           f_field_name, f_field_name, j_field_name, b_field_name));
 
-  auxsolvers.GetPtr(f_field_name)->SetPriority(2);
+  auxsolvers.Get(f_field_name)->SetPriority(2);
 }
 
 void
@@ -72,6 +72,6 @@ MagnetostaticFormulation::RegisterCoefficients()
   coefficients._scalars.Register(
       _magnetic_reluctivity_name,
       std::make_shared<mfem::TransformedCoefficient>(
-          &_one_coef, coefficients._scalars.GetPtr(_magnetic_permeability_name), fracFunc));
+          &_one_coef, coefficients._scalars.Get(_magnetic_permeability_name), fracFunc));
 }
 } // namespace hephaestus
