@@ -95,31 +95,16 @@ public:
     return values;
   }
 
-  /// Returns reference to field map.
-  inline MapType & GetMap() { return _field_map; }
-
   /// Returns const-reference to field map.
   [[nodiscard]] inline const MapType & GetMap() const { return _field_map; }
-
-  /// Returns a begin iterator to the registered fields.
-  // NOLINTNEXTLINE(readability-identifier-naming)
-  inline iterator begin() { return _field_map.begin(); }
 
   /// Returns a begin const iterator to the registered fields.
   // NOLINTNEXTLINE(readability-identifier-naming)
   [[nodiscard]] inline const_iterator begin() const { return _field_map.begin(); }
 
-  /// Returns an end iterator to the registered fields.
-  // NOLINTNEXTLINE(readability-identifier-naming)
-  inline iterator end() { return _field_map.end(); }
-
   /// Returns an end const iterator to the registered fields.
   // NOLINTNEXTLINE(readability-identifier-naming)
   [[nodiscard]] inline const_iterator end() const { return _field_map.end(); }
-
-  /// Returns an iterator to the field @a field_name.
-  // NOLINTNEXTLINE(readability-identifier-naming)
-  inline iterator find(const std::string & field_name) { return _field_map.find(field_name); }
 
   /// Returns a const iterator to the field @a field_name.
   // NOLINTNEXTLINE(readability-identifier-naming)
