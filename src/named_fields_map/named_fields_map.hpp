@@ -15,7 +15,6 @@ class NamedFieldsMap
 {
 public:
   using MapType = std::map<std::string, std::shared_ptr<T>>;
-  using iterator = typename MapType::iterator;
   using const_iterator = typename MapType::const_iterator;
 
   /// Default initializer.
@@ -41,16 +40,16 @@ public:
     _field_map[field_name] = std::move(field);
   }
 
-  /// Unregister association between a field and the field name.
+  /// Unregister association between a field and the field_name.
   void Deregister(const std::string & field_name) { _field_map.erase(field_name); }
 
-  /// Predicate to check if a field is associated with name field_name.
+  /// Predicate to check if a field is registered with name field_name.
   [[nodiscard]] inline bool Has(const std::string & field_name) const
   {
     return FindField(field_name) != end();
   }
 
-  /// Returns a shared pointer to the field associated with name field_name.
+  /// Returns a shared pointer to the field. This is guaranteed to return a non-null shared pointer.
   [[nodiscard]] inline std::shared_ptr<T> GetShared(const std::string & field_name) const
   {
     CheckFieldIsRegistered(field_name);
@@ -66,7 +65,7 @@ public:
     return *GetShared(field_name);
   }
 
-  /// Returns a non-owning pointer to the field associated with name field_name.
+  /// Returns a non-owning pointer to the field. This is guaranteed to return a non-null pointer.
   [[nodiscard]] inline T * Get(const std::string & field_name) const
   {
     return GetShared(field_name).get();
@@ -78,7 +77,7 @@ public:
   {
     auto ptr = Get(field_name);
 
-    return dynamic_cast<TDerived *>(ptr);
+    return EnsurePointerCastIsNonNull<TDerived>(ptr);
   }
 
   /// Returns a vector containing all values for supplied keys.
@@ -110,7 +109,7 @@ protected:
     return _field_map.find(field_name);
   }
 
-  /// Checks that the field has not already been registered and that the pointer is valid.
+  /// Check that the field pointer is valid and the field has not already been registered.
   void CheckFieldIsRegistrable(const std::string & field_name, T * field) const
   {
     if (!field)
@@ -131,7 +130,7 @@ protected:
     }
   }
 
-  /// Check that a field with that name exists in the map.
+  /// Check that a field exists in the map.
   void CheckFieldIsRegistered(const std::string & field_name) const
   {
     if (!Has(field_name))
@@ -140,7 +139,7 @@ protected:
     }
   }
 
-  /// Wrapper method to call in GetShared to ensure that a shared pointer is valid.
+  /// Ensure that a returned shared pointer is valid.
   inline std::shared_ptr<T> EnsureFieldPointerIsNonNull(const_iterator & iterator) const
   {
     auto owned_ptr = iterator->second;
@@ -151,6 +150,20 @@ protected:
     }
 
     return owned_ptr;
+  }
+
+  /// Ensure that a dynamic cast is successful.
+  template <typename TDerived>
+  inline TDerived * EnsurePointerCastIsNonNull(T * ptr) const
+  {
+    auto derived_ptr = dynamic_cast<TDerived *>(ptr);
+
+    if (!derived_ptr)
+    {
+      MFEM_ABORT("The dynamic cast performed on the field pointer failed.");
+    }
+
+    return derived_ptr;
   }
 
   /// Clear all associations between names and fields.
