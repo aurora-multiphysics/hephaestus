@@ -25,4 +25,10 @@ public:
   virtual void Apply(T * form) = 0;
 };
 
+// Typedefs.
+using ParBilinearFormKernel = hephaestus::Kernel<mfem::ParBilinearForm>;
+using ParLinearFormKernel = hephaestus::Kernel<mfem::ParLinearForm>;
+using ParNonlinearFormKernel = hephaestus::Kernel<mfem::ParNonlinearForm>;
+using ParMixedBilinearFormKernel = hephaestus::Kernel<mfem::ParMixedBilinearForm>;
+
 } // namespace hephaestus

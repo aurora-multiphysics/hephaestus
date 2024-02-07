@@ -15,11 +15,6 @@ mixed and nonlinear forms) and build methods
 class EquationSystem
 {
 public:
-  using ParBilinearFormKernel = hephaestus::Kernel<mfem::ParBilinearForm>;
-  using ParLinearFormKernel = hephaestus::Kernel<mfem::ParLinearForm>;
-  using ParNonlinearFormKernel = hephaestus::Kernel<mfem::ParNonlinearForm>;
-  using ParMixedBilinearFormKernel = hephaestus::Kernel<mfem::ParMixedBilinearForm>;
-
   EquationSystem() = default;
   EquationSystem(const hephaestus::InputParameters & params);
 
