@@ -101,11 +101,12 @@ private:
       mfem::ParMesh * pmesh(_gridfunctions->begin()->second->ParFESpace()->GetParMesh());
       dc->SetMesh(pmesh);
 
+      // NB: data collections must NOT own pointers otherwise we will have a double-free.
       if (_output_field_names.empty())
       {
         for (auto & gridfunction : *_gridfunctions)
         {
-          dc->RegisterField(gridfunction.first, gridfunction.second);
+          dc->RegisterField(gridfunction.first, gridfunction.second.get());
         }
       }
       else

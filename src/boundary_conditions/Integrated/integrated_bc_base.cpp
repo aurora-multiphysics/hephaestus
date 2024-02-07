@@ -10,11 +10,11 @@ IntegratedBC::IntegratedBC(const std::string & name_, mfem::Array<int> bdr_attri
 
 IntegratedBC::IntegratedBC(const std::string & name_,
                            mfem::Array<int> bdr_attributes_,
-                           mfem::LinearFormIntegrator * lfi_re_,
-                           mfem::LinearFormIntegrator * lfi_im_)
+                           std::unique_ptr<mfem::LinearFormIntegrator> lfi_re_,
+                           std::unique_ptr<mfem::LinearFormIntegrator> lfi_im_)
   : BoundaryCondition(name_, bdr_attributes_),
-    _lfi_re(std::unique_ptr<mfem::LinearFormIntegrator>(lfi_re_)),
-    _lfi_im(std::unique_ptr<mfem::LinearFormIntegrator>(lfi_im_))
+    _lfi_re{std::move(lfi_re_)},
+    _lfi_im{std::move(lfi_im_)}
 {
 }
 

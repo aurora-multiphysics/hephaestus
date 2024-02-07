@@ -16,16 +16,17 @@ namespace hephaestus
 class Factory
 {
 public:
-  static hephaestus::ProblemBuilder * CreateProblemBuilder(std::string & formulation_name);
+  static std::shared_ptr<hephaestus::ProblemBuilder>
+  CreateProblemBuilder(std::string & formulation_name);
 
-  static hephaestus::TimeDomainEMFormulation *
+  static std::shared_ptr<hephaestus::TimeDomainEMFormulation>
   CreateTimeDomainEmFormulation(std::string & formulation);
 
-  static hephaestus::FrequencyDomainEMFormulation *
+  static std::shared_ptr<hephaestus::FrequencyDomainEMFormulation>
   CreateFrequencyDomainEmFormulation(std::string & formulation);
 
-  static mfem::ParFiniteElementSpace * CreateParFESpace(const hephaestus::InputParameters params,
-                                                        mfem::ParMesh & pmesh);
+  static std::shared_ptr<mfem::ParFiniteElementSpace>
+  CreateParFESpace(const hephaestus::InputParameters params, mfem::ParMesh & pmesh);
 };
 
 } // namespace hephaestus

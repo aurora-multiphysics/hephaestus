@@ -22,7 +22,7 @@ public:
                                           const mfem::ParGridFunction * v_gf_re,
                                           const mfem::ParGridFunction * u_gf_im = nullptr,
                                           const mfem::ParGridFunction * v_gf_im = nullptr)
-    : _u_gf_re(u_gf_re), _u_gf_im(u_gf_im), _v_gf_re(v_gf_re), _v_gf_im(v_gf_im), _coef(coef)
+    : _u_gf_re{u_gf_re}, _u_gf_im{u_gf_im}, _v_gf_re{v_gf_re}, _v_gf_im{v_gf_im}, _coef(coef)
   {
   }
 

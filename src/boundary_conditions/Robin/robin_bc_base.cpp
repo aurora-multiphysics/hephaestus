@@ -5,13 +5,13 @@ namespace hephaestus
 
 RobinBC::RobinBC(const std::string & name_,
                  mfem::Array<int> bdr_attributes_,
-                 mfem::BilinearFormIntegrator * blfi_re_,
-                 mfem::LinearFormIntegrator * lfi_re_,
-                 mfem::BilinearFormIntegrator * blfi_im_,
-                 mfem::LinearFormIntegrator * lfi_im_)
-  : IntegratedBC(name_, bdr_attributes_, lfi_re_, lfi_im_),
-    _blfi_re(std::unique_ptr<mfem::BilinearFormIntegrator>(blfi_re_)),
-    _blfi_im(std::unique_ptr<mfem::BilinearFormIntegrator>(blfi_im_))
+                 std::unique_ptr<mfem::BilinearFormIntegrator> blfi_re_,
+                 std::unique_ptr<mfem::LinearFormIntegrator> lfi_re_,
+                 std::unique_ptr<mfem::BilinearFormIntegrator> blfi_im_,
+                 std::unique_ptr<mfem::LinearFormIntegrator> lfi_im_)
+  : IntegratedBC(name_, bdr_attributes_, std::move(lfi_re_), std::move(lfi_im_)),
+    _blfi_re{std::move(blfi_re_)},
+    _blfi_im{std::move(blfi_im_)}
 {
 }
 

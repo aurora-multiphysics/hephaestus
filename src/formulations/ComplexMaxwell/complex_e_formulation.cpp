@@ -28,16 +28,14 @@ ComplexEFormulation::RegisterCurrentDensityAux(const std::string & j_field_real_
   //* Current density J = Jᵉ + σE
   //* Induced electric current, Jind = σE
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
-  auxsolvers.Register(j_field_real_name,
-                      new hephaestus::ScaledVectorGridFunctionAux(_electric_field_real_name,
-                                                                  j_field_real_name,
-                                                                  _electric_conductivity_name),
-                      true);
-  auxsolvers.Register(j_field_imag_name,
-                      new hephaestus::ScaledVectorGridFunctionAux(_electric_field_imag_name,
-                                                                  j_field_imag_name,
-                                                                  _electric_conductivity_name),
-                      true);
+  auxsolvers.Register(
+      j_field_real_name,
+      std::make_shared<hephaestus::ScaledVectorGridFunctionAux>(
+          _electric_field_real_name, j_field_real_name, _electric_conductivity_name));
+  auxsolvers.Register(
+      j_field_imag_name,
+      std::make_shared<hephaestus::ScaledVectorGridFunctionAux>(
+          _electric_field_imag_name, j_field_imag_name, _electric_conductivity_name));
 };
 
 void
@@ -49,14 +47,12 @@ ComplexEFormulation::RegisterMagneticFluxDensityAux(const std::string & b_field_
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(
       b_field_imag_name,
-      new hephaestus::ScaledCurlVectorGridFunctionAux(
-          _electric_field_real_name, b_field_imag_name, "_inv_angular_frequency", 1.0),
-      true);
+      std::make_shared<hephaestus::ScaledCurlVectorGridFunctionAux>(
+          _electric_field_real_name, b_field_imag_name, "_inv_angular_frequency", 1.0));
   auxsolvers.Register(
       b_field_real_name,
-      new hephaestus::ScaledCurlVectorGridFunctionAux(
-          _electric_field_imag_name, b_field_real_name, "_inv_angular_frequency", -1.0),
-      true);
+      std::make_shared<hephaestus::ScaledCurlVectorGridFunctionAux>(
+          _electric_field_imag_name, b_field_real_name, "_inv_angular_frequency", -1.0));
 }
 
 // Enable auxiliary calculation of P ∈ L2
@@ -68,16 +64,16 @@ ComplexEFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_
 {
   //* Time averaged Joule heating density = E.J
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
-  auxsolvers.Register(p_field_name,
-                      new hephaestus::VectorGridFunctionDotProductAux(p_field_name,
-                                                                      p_field_name,
-                                                                      _electric_conductivity_name,
-                                                                      _electric_field_real_name,
-                                                                      _electric_field_real_name,
-                                                                      _electric_field_imag_name,
-                                                                      _electric_field_imag_name,
-                                                                      true),
-                      true);
+  auxsolvers.Register(
+      p_field_name,
+      std::make_shared<hephaestus::VectorGridFunctionDotProductAux>(p_field_name,
+                                                                    p_field_name,
+                                                                    _electric_conductivity_name,
+                                                                    _electric_field_real_name,
+                                                                    _electric_field_real_name,
+                                                                    _electric_field_imag_name,
+                                                                    _electric_field_imag_name,
+                                                                    true));
   auxsolvers.Get(p_field_name)->SetPriority(2);
 }
 

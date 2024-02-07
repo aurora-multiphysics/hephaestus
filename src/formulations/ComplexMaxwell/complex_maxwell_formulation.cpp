@@ -31,7 +31,7 @@ ComplexMaxwellOperator::SetGridFunctions()
 
   EquationSystemOperator::SetGridFunctions();
 
-  _u = new mfem::ParComplexGridFunction(_local_test_vars.at(0)->ParFESpace());
+  _u = std::make_unique<mfem::ParComplexGridFunction>(_local_test_vars.at(0)->ParFESpace());
   *_u = std::complex(0.0, 0.0);
 };
 
@@ -41,8 +41,11 @@ ComplexMaxwellOperator::Init(mfem::Vector & X)
   EquationSystemOperator::Init(X);
 
   _stiff_coef = _coefficients._scalars.Get(_stiffness_coef_name);
-  _mass_coef = _coefficients._scalars.Get(_mass_coef_name);
-  _loss_coef = _coefficients._scalars.Get(_loss_coef_name);
+
+  if (_coefficients._scalars.Has(_mass_coef_name))
+    _mass_coef = _coefficients._scalars.Get(_mass_coef_name);
+  if (_coefficients._scalars.Has(_loss_coef_name))
+    _loss_coef = _coefficients._scalars.Get(_loss_coef_name);
 }
 
 void
@@ -98,8 +101,8 @@ ComplexMaxwellOperator::Solve(mfem::Vector & X)
 
   sqlf.RecoverFEMSolution(u, lf, *_u);
 
-  *_gridfunctions.Get(_state_var_names.at(0)) = _u->real();
-  *_gridfunctions.Get(_state_var_names.at(1)) = _u->imag();
+  _gridfunctions.GetRef(_state_var_names.at(0)) = _u->real();
+  _gridfunctions.GetRef(_state_var_names.at(1)) = _u->imag();
 }
 
 ComplexMaxwellFormulation::ComplexMaxwellFormulation(std::string alpha_coef_name,
@@ -160,7 +163,7 @@ ComplexMaxwellFormulation::RegisterGridFunctions()
     AddFESpace(std::string("_HCurlFESpace"), std::string("ND_3D_P1"));
     AddGridFunction(_h_curl_var_real_name, std::string("_HCurlFESpace"));
     AddGridFunction(_h_curl_var_imag_name, std::string("_HCurlFESpace"));
-  };
+  }
 }
 
 void
@@ -185,48 +188,42 @@ ComplexMaxwellFormulation::RegisterCoefficients()
     MFEM_ABORT(_zeta_coef_name + " coefficient not found.");
   }
 
-  _freq_coef =
-      dynamic_cast<mfem::ConstantCoefficient *>(coefficients._scalars.Get(_frequency_coef_name));
+  _freq_coef = coefficients._scalars.Get<mfem::ConstantCoefficient>(_frequency_coef_name);
 
   // define transformed
   coefficients._scalars.Register(
-      "_angular_frequency", new mfem::ConstantCoefficient(2.0 * M_PI * _freq_coef->constant), true);
-  coefficients._scalars.Register("_neg_angular_frequency",
-                                 new mfem::ConstantCoefficient(-2.0 * M_PI * _freq_coef->constant),
-                                 true);
+      "_angular_frequency",
+      std::make_shared<mfem::ConstantCoefficient>(2.0 * M_PI * _freq_coef->constant));
+  coefficients._scalars.Register(
+      "_neg_angular_frequency",
+      std::make_shared<mfem::ConstantCoefficient>(-2.0 * M_PI * _freq_coef->constant));
   coefficients._scalars.Register(
       "_angular_frequency_sq",
-      new mfem::ConstantCoefficient(pow(2.0 * M_PI * _freq_coef->constant, 2)),
-      true);
+      std::make_shared<mfem::ConstantCoefficient>(pow(2.0 * M_PI * _freq_coef->constant, 2)));
   coefficients._scalars.Register(
       "_neg_angular_frequency_sq",
-      new mfem::ConstantCoefficient(-pow(2.0 * M_PI * _freq_coef->constant, 2)),
-      true);
+      std::make_shared<mfem::ConstantCoefficient>(-pow(2.0 * M_PI * _freq_coef->constant, 2)));
 
-  coefficients._scalars.Register(
-      "_inv_angular_frequency",
-      new mfem::RatioCoefficient(1.0, *coefficients._scalars.Get("_angular_frequency")),
-      true);
+  coefficients._scalars.Register("_inv_angular_frequency",
+                                 std::make_shared<mfem::RatioCoefficient>(
+                                     1.0, coefficients._scalars.GetRef("_angular_frequency")));
 
-  coefficients._scalars.Register(
-      _mass_coef_name,
-      new mfem::TransformedCoefficient(coefficients._scalars.Get("_neg_angular_frequency_sq"),
-                                       coefficients._scalars.Get(_zeta_coef_name),
-                                       prodFunc),
-      true);
+  coefficients._scalars.Register(_mass_coef_name,
+                                 std::make_shared<mfem::TransformedCoefficient>(
+                                     coefficients._scalars.Get("_neg_angular_frequency_sq"),
+                                     coefficients._scalars.Get(_zeta_coef_name),
+                                     prodFunc));
 
-  coefficients._scalars.Register(
-      _loss_coef_name,
-      new mfem::TransformedCoefficient(coefficients._scalars.Get("_angular_frequency"),
-                                       coefficients._scalars.Get(_beta_coef_name),
-                                       prodFunc),
-      true);
+  coefficients._scalars.Register(_loss_coef_name,
+                                 std::make_shared<mfem::TransformedCoefficient>(
+                                     coefficients._scalars.Get("_angular_frequency"),
+                                     coefficients._scalars.Get(_beta_coef_name),
+                                     prodFunc));
 
   coefficients._scalars.Register(
       _alpha_coef_name,
-      new mfem::TransformedCoefficient(
-          &_one_coef, coefficients._scalars.Get("magnetic_permeability"), fracFunc),
-      true);
+      std::make_shared<mfem::TransformedCoefficient>(
+          &_one_coef, coefficients._scalars.Get("magnetic_permeability"), fracFunc));
 }
 
 } // namespace hephaestus

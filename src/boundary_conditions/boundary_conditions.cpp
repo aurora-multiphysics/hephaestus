@@ -10,12 +10,12 @@ BCMap::GetEssentialBdrMarkers(const std::string & name_, mfem::Mesh * mesh_)
   global_ess_markers = 0;
   mfem::Array<int> ess_bdrs(mesh_->bdr_attributes.Max());
   ess_bdrs = 0;
-  hephaestus::EssentialBC * bc;
+
   for (auto const & [name, bc_] : *this)
   {
     if (bc_->_name == name_)
     {
-      bc = dynamic_cast<hephaestus::EssentialBC *>(bc_);
+      auto bc = std::dynamic_pointer_cast<hephaestus::EssentialBC>(bc_);
       if (bc != nullptr)
       {
         ess_bdrs = bc->GetMarkers(*mesh_);
@@ -35,12 +35,11 @@ BCMap::ApplyEssentialBCs(const std::string & name_,
                          mfem::GridFunction & gridfunc,
                          mfem::Mesh * mesh_)
 {
-
   for (auto const & [name, bc_] : *this)
   {
     if (bc_->_name == name_)
     {
-      auto * bc = dynamic_cast<hephaestus::EssentialBC *>(bc_);
+      auto bc = std::dynamic_pointer_cast<hephaestus::EssentialBC>(bc_);
       if (bc != nullptr)
       {
         bc->ApplyBC(gridfunc, mesh_);
@@ -57,12 +56,11 @@ BCMap::ApplyEssentialBCs(const std::string & name_,
                          mfem::ParComplexGridFunction & gridfunc,
                          mfem::Mesh * mesh_)
 {
-
   for (auto const & [name, bc_] : *this)
   {
     if (bc_->_name == name_)
     {
-      auto * bc = dynamic_cast<hephaestus::EssentialBC *>(bc_);
+      auto bc = std::dynamic_pointer_cast<hephaestus::EssentialBC>(bc_);
       if (bc != nullptr)
       {
         bc->ApplyBC(gridfunc, mesh_);
@@ -81,7 +79,7 @@ BCMap::ApplyIntegratedBCs(const std::string & name_, mfem::LinearForm & lf, mfem
   {
     if (bc_->_name == name_)
     {
-      auto * bc = dynamic_cast<hephaestus::IntegratedBC *>(bc_);
+      auto bc = std::dynamic_pointer_cast<hephaestus::IntegratedBC>(bc_);
       if (bc != nullptr)
       {
         bc->GetMarkers(*mesh_);
@@ -101,7 +99,7 @@ BCMap::ApplyIntegratedBCs(const std::string & name_,
   {
     if (bc_->_name == name_)
     {
-      auto * bc = dynamic_cast<hephaestus::IntegratedBC *>(bc_);
+      auto bc = std::dynamic_pointer_cast<hephaestus::IntegratedBC>(bc_);
       if (bc != nullptr)
       {
         bc->GetMarkers(*mesh_);
@@ -116,12 +114,11 @@ BCMap::ApplyIntegratedBCs(const std::string & name_,
                           mfem::ParSesquilinearForm & slf,
                           mfem::Mesh * mesh_)
 {
-
   for (auto const & [name, bc_] : *this)
   {
     if (bc_->_name == name_)
     {
-      auto * bc = dynamic_cast<hephaestus::RobinBC *>(bc_);
+      auto bc = std::dynamic_pointer_cast<hephaestus::RobinBC>(bc_);
       if (bc != nullptr)
       {
         bc->GetMarkers(*mesh_);

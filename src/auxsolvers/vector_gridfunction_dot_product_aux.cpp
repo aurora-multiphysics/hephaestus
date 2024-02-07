@@ -57,58 +57,23 @@ VectorGridFunctionDotProductAux::Init(const hephaestus::GridFunctions & gridfunc
 {
 
   _scaling_coef = coefficients._scalars.Get(_scaling_coef_name);
-  if (_scaling_coef == nullptr)
-  {
-    MFEM_ABORT("Conductivity coefficient not found for Joule heating");
-  }
 
   if (_complex_average)
   {
     _u_gf_re = gridfunctions.Get(_u_gf_real_name);
-    if (_u_gf_re == nullptr)
-    {
-      MFEM_ABORT("GridFunction " << _u_gf_real_name
-                                 << " not found when initializing VectorGridFunctionDotProductAux");
-    }
     _v_gf_re = gridfunctions.Get(_v_gf_real_name);
-    if (_v_gf_re == nullptr)
-    {
-      MFEM_ABORT("GridFunction " << _v_gf_real_name
-                                 << " not found when initializing VectorGridFunctionDotProductAux");
-    }
     _u_gf_im = gridfunctions.Get(_u_gf_imag_name);
-    if (_u_gf_im == nullptr)
-    {
-      MFEM_ABORT("GridFunction " << _u_gf_imag_name
-                                 << " not found when initializing VectorGridFunctionDotProductAux");
-    }
     _v_gf_im = gridfunctions.Get(_v_gf_imag_name);
-    if (_v_gf_im == nullptr)
-    {
-      MFEM_ABORT("GridFunction " << _v_gf_imag_name
-                                 << " not found when initializing VectorGridFunctionDotProductAux");
-    }
   }
   else
   {
     _u_gf_re = gridfunctions.Get(_u_gf_real_name);
-    if (_u_gf_re == nullptr)
-    {
-      MFEM_ABORT("GridFunction " << _u_gf_real_name
-                                 << " not found when initializing VectorGridFunctionDotProductAux");
-    }
     _v_gf_re = gridfunctions.Get(_v_gf_real_name);
-    if (_v_gf_re == nullptr)
-    {
-      MFEM_ABORT("GridFunction " << _v_gf_real_name
-                                 << " not found when initializing VectorGridFunctionDotProductAux");
-    }
   }
 
   coefficients._scalars.Register(_coef_name,
-                                 new VectorGridFunctionDotProductCoefficient(
-                                     *_scaling_coef, _u_gf_re, _v_gf_re, _u_gf_im, _v_gf_im),
-                                 true);
+                                 std::make_shared<VectorGridFunctionDotProductCoefficient>(
+                                     *_scaling_coef, _u_gf_re, _v_gf_re, _u_gf_im, _v_gf_im));
 
   CoefficientAux::Init(gridfunctions, coefficients);
 }

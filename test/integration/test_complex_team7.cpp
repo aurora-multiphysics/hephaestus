@@ -67,61 +67,67 @@ protected:
   hephaestus::InputParameters TestParams()
   {
     hephaestus::Subdomain air("air", 1);
-    air._scalar_coefficients.Register(
-        "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
+    air._scalar_coefficients.Register("electrical_conductivity",
+                                      std::make_shared<mfem::ConstantCoefficient>(1.0));
     hephaestus::Subdomain plate("plate", 2);
-    plate._scalar_coefficients.Register(
-        "electrical_conductivity", new mfem::ConstantCoefficient(3.526e7), true);
+    plate._scalar_coefficients.Register("electrical_conductivity",
+                                        std::make_shared<mfem::ConstantCoefficient>(3.526e7));
     hephaestus::Subdomain coil1("coil1", 3);
-    coil1._scalar_coefficients.Register(
-        "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
+    coil1._scalar_coefficients.Register("electrical_conductivity",
+                                        std::make_shared<mfem::ConstantCoefficient>(1.0));
     hephaestus::Subdomain coil2("coil2", 4);
-    coil2._scalar_coefficients.Register(
-        "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
+    coil2._scalar_coefficients.Register("electrical_conductivity",
+                                        std::make_shared<mfem::ConstantCoefficient>(1.0));
     hephaestus::Subdomain coil3("coil3", 5);
-    coil3._scalar_coefficients.Register(
-        "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
+    coil3._scalar_coefficients.Register("electrical_conductivity",
+                                        std::make_shared<mfem::ConstantCoefficient>(1.0));
     hephaestus::Subdomain coil4("coil4", 6);
-    coil4._scalar_coefficients.Register(
-        "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
+    coil4._scalar_coefficients.Register("electrical_conductivity",
+                                        std::make_shared<mfem::ConstantCoefficient>(1.0));
 
     hephaestus::Coefficients coefficients(
         std::vector<hephaestus::Subdomain>({air, plate, coil1, coil2, coil3, coil4}));
 
-    coefficients._scalars.Register("frequency", new mfem::ConstantCoefficient(200.0), true);
-    coefficients._scalars.Register(
-        "magnetic_permeability", new mfem::ConstantCoefficient(M_PI * 4.0e-7), true);
-    coefficients._scalars.Register(
-        "dielectric_permittivity", new mfem::ConstantCoefficient(0.0), true);
+    coefficients._scalars.Register("frequency", std::make_shared<mfem::ConstantCoefficient>(200.0));
+    coefficients._scalars.Register("magnetic_permeability",
+                                   std::make_shared<mfem::ConstantCoefficient>(M_PI * 4.0e-7));
+    coefficients._scalars.Register("dielectric_permittivity",
+                                   std::make_shared<mfem::ConstantCoefficient>(0.0));
 
     hephaestus::BCMap bc_map;
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team7.g")).c_str(), 1, 1);
 
     hephaestus::Outputs outputs;
-    outputs.Register(
-        "VisItDataCollection", new mfem::VisItDataCollection("ComplexMaxwellTeam7VisIt"), true);
+    outputs.Register("VisItDataCollection",
+                     std::make_shared<mfem::VisItDataCollection>("ComplexMaxwellTeam7VisIt"));
     outputs.Register("ParaViewDataCollection",
-                     new mfem::ParaViewDataCollection("ComplexMaxwellTeam7ParaView"),
-                     true);
+                     std::make_shared<mfem::ParaViewDataCollection>("ComplexMaxwellTeam7ParaView"));
 
     hephaestus::AuxSolvers postprocessors;
     hephaestus::AuxSolvers preprocessors;
 
     hephaestus::Sources sources;
-    auto * j_src_coef = new mfem::VectorFunctionCoefficient(3, SourceCurrent);
+
+    // NB: needs to live to end of program so register to keep non-zero reference count.
+    auto j_src_coef = std::make_shared<mfem::VectorFunctionCoefficient>(3, SourceCurrent);
+    coefficients._vectors.Register("source_coefficient", j_src_coef);
+
     mfem::Array<mfem::VectorCoefficient *> sourcecoefs(4);
-    sourcecoefs[0] = j_src_coef;
-    sourcecoefs[1] = j_src_coef;
-    sourcecoefs[2] = j_src_coef;
-    sourcecoefs[3] = j_src_coef;
+    sourcecoefs[0] = j_src_coef.get();
+    sourcecoefs[1] = j_src_coef.get();
+    sourcecoefs[2] = j_src_coef.get();
+    sourcecoefs[3] = j_src_coef.get();
+
     mfem::Array<int> coilsegments(4);
     coilsegments[0] = 3;
     coilsegments[1] = 4;
     coilsegments[2] = 5;
     coilsegments[3] = 6;
-    auto * j_src_restricted = new mfem::PWVectorCoefficient(3, coilsegments, sourcecoefs);
-    coefficients._vectors.Register("source", j_src_restricted, true);
+
+    auto j_src_restricted =
+        std::make_shared<mfem::PWVectorCoefficient>(3, coilsegments, sourcecoefs);
+    coefficients._vectors.Register("source", j_src_restricted);
 
     hephaestus::InputParameters div_free_source_params;
     div_free_source_params.SetParam("SourceName", std::string("source"));
@@ -134,7 +140,7 @@ protected:
     current_solver_options.SetParam("MaxIter", (unsigned int)200);
     current_solver_options.SetParam("PrintLevel", 1);
     div_free_source_params.SetParam("SolverOptions", current_solver_options);
-    sources.Register("source", new hephaestus::DivFreeSource(div_free_source_params), true);
+    sources.Register("source", std::make_shared<hephaestus::DivFreeSource>(div_free_source_params));
 
     hephaestus::InputParameters solver_options;
     solver_options.SetParam("Tolerance", float(1.0e-16));

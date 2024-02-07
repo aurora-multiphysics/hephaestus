@@ -36,37 +36,17 @@ DivFreeSource::Init(hephaestus::GridFunctions & gridfunctions,
                     hephaestus::Coefficients & coefficients)
 {
   _h1_fe_space = fespaces.Get(_h1_fespace_name);
-  if (_h1_fe_space == nullptr)
-  {
-    const std::string error_message = _h1_fespace_name + " not found in fespaces when "
-                                                         "creating DivFreeSource\n";
-    mfem::mfem_error(error_message.c_str());
-  }
   _h_curl_fe_space = fespaces.Get(_hcurl_fespace_name);
-  if (_h_curl_fe_space == nullptr)
-  {
-    const std::string error_message = _hcurl_fespace_name + " not found in fespaces when "
-                                                            "creating DivFreeSource\n";
-    mfem::mfem_error(error_message.c_str());
-  }
-  if (coefficients._vectors.Has(_src_coef_name))
-  {
-    _source_vec_coef = coefficients._vectors.Get(_src_coef_name);
-  }
-  else
-  {
-    MFEM_ABORT("SOURCE NOT FOUND");
-  }
+  _source_vec_coef = coefficients._vectors.Get(_src_coef_name);
 
-  // NB: Register must be false to avoid double-free.
-  _div_free_src_gf = std::make_unique<mfem::ParGridFunction>(_h_curl_fe_space);
-  gridfunctions.Register(_src_gf_name, _div_free_src_gf.get(), false);
+  _div_free_src_gf = std::make_shared<mfem::ParGridFunction>(_h_curl_fe_space);
+  gridfunctions.Register(_src_gf_name, _div_free_src_gf);
 
-  _g = std::make_unique<mfem::ParGridFunction>(_h_curl_fe_space);
-  gridfunctions.Register("_user_source", _g.get(), false);
+  _g = std::make_shared<mfem::ParGridFunction>(_h_curl_fe_space);
+  gridfunctions.Register("_user_source", _g);
 
-  _q = std::make_unique<mfem::ParGridFunction>(_h1_fe_space);
-  gridfunctions.Register(_potential_gf_name, _q.get(), false);
+  _q = std::make_shared<mfem::ParGridFunction>(_h1_fe_space);
+  gridfunctions.Register(_potential_gf_name, _q);
 
   _bc_map = &bc_map;
   _gridfunctions = &gridfunctions;

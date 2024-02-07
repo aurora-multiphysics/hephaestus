@@ -82,8 +82,9 @@ ProblemBuilder::AddFESpace(std::string fespace_name, std::string fec_name, int v
   }
   if (!GetProblem()->_fecs.Has(fec_name))
   {
-    mfem::FiniteElementCollection * fec = mfem::FiniteElementCollection::New(fec_name.c_str());
-    GetProblem()->_fecs.Register(fec_name, fec, true);
+    auto fec = std::shared_ptr<mfem::FiniteElementCollection>(
+        mfem::FiniteElementCollection::New(fec_name.c_str()));
+    GetProblem()->_fecs.Register(fec_name, fec);
   }
 
   if (!GetProblem()->_fespaces.Has(fespace_name))
@@ -109,14 +110,17 @@ ProblemBuilder::AddGridFunction(std::string gridfunction_name, std::string fespa
                                       " has already been added to the problem gridfunctions.";
     mfem::mfem_error(error_message.c_str());
   }
-  mfem::ParFiniteElementSpace * fespace(GetProblem()->_fespaces.Get(fespace_name));
-  if (fespace == nullptr)
+
+  if (!GetProblem()->_fespaces.Has(fespace_name))
   {
     MFEM_ABORT("FESpace " << fespace_name << " not found in fespaces when trying to add "
                           << gridfunction_name
                           << " associated with it into gridfunctions. Please add " << fespace_name
                           << " to fespaces before adding this gridfunction.");
   }
+
+  auto fespace = GetProblem()->_fespaces.Get(fespace_name);
+
   auto gridfunc = std::make_shared<mfem::ParGridFunction>(fespace);
   *gridfunc = 0.0;
 
@@ -134,18 +138,6 @@ ProblemBuilder::AddBoundaryCondition(std::string bc_name,
     mfem::mfem_error(error_message.c_str());
   }
   GetProblem()->_bc_map.Register(bc_name, std::move(bc));
-}
-
-void
-ProblemBuilder::AddAuxSolver(std::string auxsolver_name, hephaestus::AuxSolver * aux, bool own_data)
-{
-  if (GetProblem()->_preprocessors.Has(auxsolver_name))
-  {
-    const std::string error_message = "An auxsolver with the name " + auxsolver_name +
-                                      " has already been added to the problem preprocessors.";
-    mfem::mfem_error(error_message.c_str());
-  }
-  GetProblem()->_preprocessors.Register(auxsolver_name, aux, own_data);
 }
 
 void

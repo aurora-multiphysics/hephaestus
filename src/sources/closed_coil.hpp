@@ -19,7 +19,7 @@ public:
                    const int electrode_face);
 
   // Override virtual Source destructor to avoid leaks.
-  ~ClosedCoilSolver() override;
+  ~ClosedCoilSolver() override = default;
 
   void Init(hephaestus::GridFunctions & gridfunctions,
             const hephaestus::FESpaces & fespaces,
@@ -66,15 +66,10 @@ private:
   mfem::Array<int> _coil_markers;
   mfem::Array<int> _transition_domain;
   mfem::Array<int> _transition_markers;
-  mfem::Coefficient * _sigma{nullptr};
-  mfem::Coefficient * _itotal{nullptr};
+  std::shared_ptr<mfem::Coefficient> _sigma{nullptr};
+  std::shared_ptr<mfem::Coefficient> _itotal{nullptr};
   std::vector<int> _old_dom_attrs;
   hephaestus::InputParameters _solver_options;
-
-  bool _owns_sigma{false};
-  bool _owns_itotal{false};
-  bool _owns_grad_phi_parent{false};
-  bool _owns_h1_fe_space_parent{false};
 
   // Here, we are solving for -(σ∇Va,∇ψ) = (σ∇Vt,∇ψ), where ∇Vt is grad_phi_t (within its relevant
   // mesh), ∇Va is grad_phi_aux, and their sum ∇Vt+∇Va is the full grad_phi, which is, up to an
@@ -93,9 +88,9 @@ private:
 
   // Parent mesh, FE space, and current
   mfem::ParMesh * _mesh_parent{nullptr};
-  mfem::ParGridFunction * _grad_phi_parent{nullptr};
+  std::shared_ptr<mfem::ParGridFunction> _grad_phi_parent{nullptr};
   mfem::ParFiniteElementSpace * _h_curl_fe_space_parent{nullptr};
-  mfem::ParFiniteElementSpace * _h1_fe_space_parent{nullptr};
+  std::shared_ptr<mfem::ParFiniteElementSpace> _h1_fe_space_parent{nullptr};
 
   // Finite element collections
   std::unique_ptr<mfem::H1_FECollection> _h1_fe_space_parent_fec{nullptr};

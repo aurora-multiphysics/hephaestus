@@ -19,7 +19,7 @@ class AuxSolvers : public hephaestus::NamedFieldsMap<hephaestus::AuxSolver>
 {
 private:
 public:
-  std::vector<hephaestus::AuxSolver *> _aux_queue;
+  std::vector<std::shared_ptr<hephaestus::AuxSolver>> _aux_queue;
   void Init(const hephaestus::GridFunctions & gridfunctions,
             hephaestus::Coefficients & coefficients);
   void Solve(double t = 0.0);

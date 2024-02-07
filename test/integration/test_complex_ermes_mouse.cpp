@@ -35,75 +35,71 @@ protected:
     hephaestus::Subdomain mouse("mouse", 1);
     hephaestus::Subdomain air("air", 2);
 
-    air._scalar_coefficients.Register(
-        "electrical_conductivity", new mfem::ConstantCoefficient(0.0), true);
-    air._scalar_coefficients.Register(
-        "dielectric_permittivity", new mfem::ConstantCoefficient(epsilon0_), true);
-    air._scalar_coefficients.Register(
-        "magnetic_permeability", new mfem::ConstantCoefficient(mu0_), true);
+    air._scalar_coefficients.Register("electrical_conductivity",
+                                      std::make_shared<mfem::ConstantCoefficient>(0.0));
+    air._scalar_coefficients.Register("dielectric_permittivity",
+                                      std::make_shared<mfem::ConstantCoefficient>(epsilon0_));
+    air._scalar_coefficients.Register("magnetic_permeability",
+                                      std::make_shared<mfem::ConstantCoefficient>(mu0_));
 
+    mouse._scalar_coefficients.Register("electrical_conductivity",
+                                        std::make_shared<mfem::ConstantCoefficient>(0.97));
     mouse._scalar_coefficients.Register(
-        "electrical_conductivity", new mfem::ConstantCoefficient(0.97), true);
-    mouse._scalar_coefficients.Register(
-        "dielectric_permittivity", new mfem::ConstantCoefficient(43 * epsilon0_), true);
-    mouse._scalar_coefficients.Register(
-        "magnetic_permeability", new mfem::ConstantCoefficient(mu0_), true);
+        "dielectric_permittivity", std::make_shared<mfem::ConstantCoefficient>(43 * epsilon0_));
+    mouse._scalar_coefficients.Register("magnetic_permeability",
+                                        std::make_shared<mfem::ConstantCoefficient>(mu0_));
 
     hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({air, mouse}));
 
-    coefficients._scalars.Register("frequency", new mfem::ConstantCoefficient(freq_), true);
+    coefficients._scalars.Register("frequency", std::make_shared<mfem::ConstantCoefficient>(freq_));
 
     hephaestus::BCMap bc_map;
     mfem::Array<int> dirichlet_attr({2, 3, 4});
-    bc_map.Register("tangential_E",
-                    new hephaestus::VectorDirichletBC(std::string("electric_field"),
-                                                      dirichlet_attr,
-                                                      new mfem::VectorFunctionCoefficient(3, EBcR),
-                                                      new mfem::VectorFunctionCoefficient(3, EBcI)),
-                    true);
+
+    coefficients._vectors.Register("EBcR",
+                                   std::make_shared<mfem::VectorFunctionCoefficient>(3, EBcR));
+
+    coefficients._vectors.Register("BBcI",
+                                   std::make_shared<mfem::VectorFunctionCoefficient>(3, EBcI));
+
+    bc_map.Register(
+        "tangential_E",
+        std::make_shared<hephaestus::VectorDirichletBC>(std::string("electric_field"),
+                                                        dirichlet_attr,
+                                                        coefficients._vectors.Get("EBcR"),
+                                                        coefficients._vectors.Get("BBcI")));
 
     mfem::Array<int> wgi_in_attr(1);
     wgi_in_attr[0] = 5;
     bc_map.Register("WaveguidePortIn",
-                    new hephaestus::RWTE10PortRBC(std::string("electric_field"),
-                                                  wgi_in_attr,
-                                                  freq_,
-                                                  _port_length_vector,
-                                                  _port_width_vector,
-                                                  true),
-                    true);
+                    std::make_shared<hephaestus::RWTE10PortRBC>(std::string("electric_field"),
+                                                                wgi_in_attr,
+                                                                freq_,
+                                                                _port_length_vector,
+                                                                _port_width_vector,
+                                                                true));
 
     mfem::Array<int> wgi_out_attr(1);
     wgi_out_attr[0] = 6;
     bc_map.Register("WaveguidePortOut",
-                    new hephaestus::RWTE10PortRBC(std::string("electric_field"),
-                                                  wgi_out_attr,
-                                                  freq_,
-                                                  _port_length_vector,
-                                                  _port_width_vector,
-                                                  false),
-                    true);
+                    std::make_shared<hephaestus::RWTE10PortRBC>(std::string("electric_field"),
+                                                                wgi_out_attr,
+                                                                freq_,
+                                                                _port_length_vector,
+                                                                _port_width_vector,
+                                                                false));
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./ermes_mouse_coarse.g")).c_str(), 1, 1);
 
     hephaestus::Outputs outputs;
-    outputs.Register(
-        "VisItDataCollection", new mfem::VisItDataCollection("ComplexMaxwellERMESMouse"), true);
+    outputs.Register("VisItDataCollection",
+                     std::make_shared<mfem::VisItDataCollection>("ComplexMaxwellERMESMouse"));
 
     hephaestus::FESpaces fespaces;
     hephaestus::GridFunctions gridfunctions;
     hephaestus::AuxSolvers postprocessors;
     hephaestus::AuxSolvers preprocessors;
     hephaestus::Sources sources;
-
-    hephaestus::FrequencyDomainEMFormulation * formulation =
-        new hephaestus::ComplexEFormulation("magnetic_reluctivity",
-                                            "electrical_conductivity",
-                                            "dielectric_permittivity",
-                                            "frequency",
-                                            "electric_field",
-                                            "electric_field_real",
-                                            "electric_field_imag");
 
     hephaestus::InputParameters solver_options;
     solver_options.SetParam("Tolerance", float(1.0e-16));

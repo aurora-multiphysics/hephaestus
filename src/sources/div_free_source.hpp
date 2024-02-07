@@ -31,7 +31,7 @@ public:
   mfem::ParFiniteElementSpace * _h1_fe_space{nullptr};
   mfem::ParFiniteElementSpace * _h_curl_fe_space{nullptr};
 
-  std::unique_ptr<mfem::ParGridFunction> _q; // Potential
+  std::shared_ptr<mfem::ParGridFunction> _q; // Potential
 
   hephaestus::BCMap * _bc_map{nullptr};
   hephaestus::GridFunctions * _gridfunctions{nullptr};
@@ -42,10 +42,10 @@ public:
   mfem::VectorCoefficient * _source_vec_coef{nullptr};
 
   // H(Curl) projection of user specified source
-  std::unique_ptr<mfem::ParGridFunction> _g;
+  std::shared_ptr<mfem::ParGridFunction> _g;
 
   // Divergence free projected source
-  std::unique_ptr<mfem::ParGridFunction> _div_free_src_gf;
+  std::shared_ptr<mfem::ParGridFunction> _div_free_src_gf;
 
   mfem::Solver * _solver{nullptr};
 };

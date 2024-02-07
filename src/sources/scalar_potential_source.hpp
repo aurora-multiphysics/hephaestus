@@ -33,18 +33,17 @@ public:
 
   const hephaestus::InputParameters _solver_options;
 
-  mfem::ParFiniteElementSpace * _h1_fe_space;
-  mfem::ParFiniteElementSpace * _h_curl_fe_space;
-  mfem::ParGridFunction * _p; // Potential
-  hephaestus::BCMap * _bc_map;
-  mfem::Coefficient * _beta_coef;
+  mfem::ParFiniteElementSpace * _h1_fe_space{nullptr};
+  mfem::ParFiniteElementSpace * _h_curl_fe_space{nullptr};
+  std::shared_ptr<mfem::ParGridFunction> _p{nullptr}; // Potential
+  hephaestus::BCMap * _bc_map{nullptr};
+  mfem::Coefficient * _beta_coef{nullptr};
 
   std::unique_ptr<mfem::ParBilinearForm> _a0{nullptr};
-
   std::unique_ptr<mfem::ParBilinearForm> _m1{nullptr};
 
   mfem::ParBilinearForm * _h_curl_mass;
-  mfem::ParMixedBilinearForm * _weak_div;
+  mfem::ParMixedBilinearForm * _weak_div{nullptr};
 
   std::unique_ptr<mfem::ParDiscreteLinearOperator> _grad{nullptr};
 
@@ -52,16 +51,16 @@ public:
   std::unique_ptr<mfem::Vector> _p_tdofs{nullptr};
   std::unique_ptr<mfem::Vector> _b0_tdofs{nullptr};
 
-  mutable mfem::HypreSolver * _amg_a0;
+  mutable mfem::HypreSolver * _amg_a0{nullptr};
   mutable std::unique_ptr<hephaestus::DefaultH1PCGSolver> _a0_solver{nullptr};
 
   std::unique_ptr<mfem::ParLinearForm> _b0{nullptr};
-  mfem::ParGridFunction *_grad_p, *_x_div;
+  std::shared_ptr<mfem::ParGridFunction> _grad_p{nullptr};
+  mfem::ParGridFunction * _x_div{nullptr};
+  mfem::VectorCoefficient * _source_vec_coef{nullptr};
+  mfem::ParGridFunction * _div_free_src_gf{nullptr}; // Source field
 
-  mfem::VectorCoefficient * _source_vec_coef;
-  mfem::ParGridFunction * _div_free_src_gf; // Source field
-
-  mfem::Solver * _solver;
+  mfem::Solver * _solver{nullptr};
   int _ir_order, _geom;
 };
 

@@ -52,54 +52,55 @@ protected:
   hephaestus::InputParameters TestParams()
   {
     hephaestus::Subdomain wire("wire", 1);
-    wire._scalar_coefficients.Register(
-        "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
+    wire._scalar_coefficients.Register("electrical_conductivity",
+                                       std::make_shared<mfem::ConstantCoefficient>(1.0));
     hephaestus::Subdomain air("air", 2);
-    air._scalar_coefficients.Register(
-        "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
+    air._scalar_coefficients.Register("electrical_conductivity",
+                                      std::make_shared<mfem::ConstantCoefficient>(1.0));
 
     hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({wire, air}));
 
-    coefficients._scalars.Register(
-        "electrical_conductivity", new mfem::FunctionCoefficient(SigmaExpr), true);
+    coefficients._scalars.Register("electrical_conductivity",
+                                   std::make_shared<mfem::FunctionCoefficient>(SigmaExpr));
 
     hephaestus::BCMap bc_map;
-    auto * hdot_vec_coef = new mfem::VectorFunctionCoefficient(3, HdotBc);
-    bc_map.Register("tangential_dHdt",
-                    new hephaestus::VectorDirichletBC(std::string("dmagnetic_field_dt"),
-                                                      mfem::Array<int>({1, 2, 3}),
-                                                      hdot_vec_coef),
-                    true);
-    coefficients._vectors.Register("surface_tangential_dHdt", hdot_vec_coef, true);
-    coefficients._scalars.Register(
-        "magnetic_permeability", new mfem::ConstantCoefficient(1.0), true);
 
-    auto * d_bdt_src_coef = new mfem::VectorFunctionCoefficient(3, SourceField);
-    coefficients._vectors.Register("source", d_bdt_src_coef, true);
+    auto hdot_vec_coef = std::make_shared<mfem::VectorFunctionCoefficient>(3, HdotBc);
+    coefficients._vectors.Register("surface_tangential_dHdt", hdot_vec_coef);
 
-    auto * h_exact = new mfem::VectorFunctionCoefficient(3, HExactExpr);
-    coefficients._vectors.Register("h_exact_coeff", h_exact, true);
+    bc_map.Register(
+        "tangential_dHdt",
+        std::make_shared<hephaestus::VectorDirichletBC>(
+            std::string("dmagnetic_field_dt"), mfem::Array<int>({1, 2, 3}), hdot_vec_coef.get()));
+    coefficients._scalars.Register("magnetic_permeability",
+                                   std::make_shared<mfem::ConstantCoefficient>(1.0));
+
+    auto d_bdt_src_coef = std::make_shared<mfem::VectorFunctionCoefficient>(3, SourceField);
+    coefficients._vectors.Register("source", d_bdt_src_coef);
+
+    auto h_exact = std::make_shared<mfem::VectorFunctionCoefficient>(3, HExactExpr);
+    coefficients._vectors.Register("h_exact_coeff", h_exact);
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./beam-tet.mesh")).c_str(), 1, 1);
 
     hephaestus::Outputs outputs;
-    outputs.Register("VisItDataCollection", new mfem::VisItDataCollection("HFormVisIt"), true);
-    outputs.Register(
-        "ParaViewDataCollection", new mfem::ParaViewDataCollection("HFormParaView"), true);
+    outputs.Register("VisItDataCollection",
+                     std::make_shared<mfem::VisItDataCollection>("HFormVisIt"));
+    outputs.Register("ParaViewDataCollection",
+                     std::make_shared<mfem::ParaViewDataCollection>("HFormParaView"));
 
     hephaestus::InputParameters l2errpostprocparams;
     l2errpostprocparams.SetParam("VariableName", std::string("magnetic_field"));
     l2errpostprocparams.SetParam("VectorCoefficientName", std::string("h_exact_coeff"));
     hephaestus::AuxSolvers postprocessors;
-    postprocessors.Register("L2ErrorPostprocessor",
-                            new hephaestus::L2ErrorVectorPostprocessor(l2errpostprocparams),
-                            true);
+    postprocessors.Register(
+        "L2ErrorPostprocessor",
+        std::make_shared<hephaestus::L2ErrorVectorPostprocessor>(l2errpostprocparams));
 
     hephaestus::AuxSolvers preprocessors;
-    preprocessors.Register(
-        "VectorCoefficientAux",
-        new hephaestus::VectorCoefficientAux("analytic_magnetic_field", "h_exact_coeff"),
-        true);
+    preprocessors.Register("VectorCoefficientAux",
+                           std::make_shared<hephaestus::VectorCoefficientAux>(
+                               "analytic_magnetic_field", "h_exact_coeff"));
 
     hephaestus::Sources sources;
     hephaestus::InputParameters div_free_source_params;
@@ -114,7 +115,7 @@ protected:
     current_solver_options.SetParam("PrintLevel", 0);
     div_free_source_params.SetParam("SolverOptions", current_solver_options);
     div_free_source_params.SetParam("HelmholtzProjection", false);
-    sources.Register("source", new hephaestus::DivFreeSource(div_free_source_params), true);
+    sources.Register("source", std::make_shared<hephaestus::DivFreeSource>(div_free_source_params));
 
     hephaestus::InputParameters solver_options;
     solver_options.SetParam("Tolerance", float(1.0e-16));
@@ -203,17 +204,17 @@ TEST_CASE_METHOD(TestHFormSource, "TestHFormSource", "[CheckRun]")
     executioner->Execute();
   }
 
-  hephaestus::L2ErrorVectorPostprocessor l2errpostprocessor =
-      *(dynamic_cast<hephaestus::L2ErrorVectorPostprocessor *>(
-          params.GetParam<hephaestus::AuxSolvers>("PostProcessors").Get("L2ErrorPostprocessor")));
+  auto l2errpostprocessor =
+      params.GetParam<hephaestus::AuxSolvers>("PostProcessors")
+          .Get<hephaestus::L2ErrorVectorPostprocessor>("L2ErrorPostprocessor");
 
   double r;
-  for (std::size_t i = 1; i < l2errpostprocessor._ndofs.Size(); ++i)
+  for (std::size_t i = 1; i < l2errpostprocessor->_ndofs.Size(); ++i)
   {
-    r = EstimateConvergenceRate(l2errpostprocessor._ndofs[i],
-                                l2errpostprocessor._ndofs[i - 1],
-                                l2errpostprocessor._l2_errs[i],
-                                l2errpostprocessor._l2_errs[i - 1],
+    r = EstimateConvergenceRate(l2errpostprocessor->_ndofs[i],
+                                l2errpostprocessor->_ndofs[i - 1],
+                                l2errpostprocessor->_l2_errs[i],
+                                l2errpostprocessor->_l2_errs[i - 1],
                                 3);
     std::cout << r << std::endl;
     REQUIRE(r > _var_order - 0.15);

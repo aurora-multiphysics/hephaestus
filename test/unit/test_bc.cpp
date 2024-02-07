@@ -5,9 +5,9 @@ TEST_CASE("BoundaryConditionTest", "[CheckData]")
 {
   hephaestus::BCMap bc_map;
   mfem::Array<int> bdr_attrs({1, 2, 3});
-  bc_map.Register("tangential_dEdt",
-                  new hephaestus::BoundaryCondition(std::string("boundary_1"), bdr_attrs),
-                  true);
+  bc_map.Register(
+      "tangential_dEdt",
+      std::make_shared<hephaestus::BoundaryCondition>(std::string("boundary_1"), bdr_attrs));
 
   mfem::Array<int> ess_bdr = bc_map.Get("tangential_dEdt")->_bdr_attributes;
 

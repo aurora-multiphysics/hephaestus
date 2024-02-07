@@ -14,9 +14,9 @@ VectorDirichletBC::VectorDirichletBC(const std::string & name_,
                                      mfem::VectorCoefficient * vec_coeff_im_,
                                      APPLY_TYPE boundary_apply_type_)
   : EssentialBC(name_, bdr_attributes_),
-    _vec_coeff(vec_coeff_),
-    _vec_coeff_im(vec_coeff_im_),
-    _boundary_apply_type(boundary_apply_type_)
+    _vec_coeff{vec_coeff_},
+    _vec_coeff_im{vec_coeff_im_},
+    _boundary_apply_type{boundary_apply_type_}
 {
 }
 
