@@ -46,14 +46,35 @@ private:
 class MeshDelegate
 {
 public:
-  /// Delete default constructor.
-  MeshDelegate() = delete;
-
   /// Default initializer will now ensure that we register ourselves to a mesh delegator.
-  MeshDelegate(MeshDelegator & delegator) : _delegator{delegator} { _delegator.AddDelegate(this); }
+  MeshDelegate(MeshDelegator * delegator = nullptr) : _delegator{delegator}
+  {
+    if (_delegator)
+      _delegator->AddDelegate(this);
+  }
+
+  /// Update the delegate.
+  void SetDelegator(MeshDelegator * newDelegator)
+  {
+    if (_delegator)
+    {
+      _delegator->RemoveDelegate(this);
+      _delegator = nullptr;
+    }
+
+    if (newDelegator)
+    {
+      _delegator = newDelegator;
+      _delegator->AddDelegate(this);
+    }
+  }
 
   /// Destructor ensures that we are removed from the delegator.
-  virtual ~MeshDelegate() { _delegator.RemoveDelegate(this); }
+  virtual ~MeshDelegate()
+  {
+    if (_delegator)
+      _delegator->RemoveDelegate(this);
+  }
 
   virtual void OnMeshDidUpdate() { MFEM_ABORT("Not implemented."); }
 
@@ -61,7 +82,7 @@ private:
   /// Hold a pointer to our delegator. For now, assume that the delegator will have
   /// a lifetime at least equal to that of the longest-living delegate. We may need to
   /// implement a shared pointer to ensure that the member variable is always valid.
-  MeshDelegator & _delegator;
+  MeshDelegator * _delegator{nullptr};
 };
 
 /**
@@ -71,10 +92,9 @@ private:
 template <class T>
 class MeshDelegateTemplate : public MeshDelegate, public T
 {
-  /// Constructor for template class.
+  /// Constructor for template class. NB: the mesh delegate must be specified later.
   template <class... TArgs>
-  MeshDelegateTemplate(MeshDelegator & delegator, TArgs &&... args)
-    : MeshDelegate(delegator), T(std::forward<TArgs>(args)...)
+  MeshDelegateTemplate(TArgs &&... args) : MeshDelegate(nullptr), T(std::forward<TArgs>(args)...)
   {
   }
 };
