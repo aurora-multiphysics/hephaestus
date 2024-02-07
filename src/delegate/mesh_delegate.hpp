@@ -63,4 +63,25 @@ private:
   /// implement a shared pointer to ensure that the member variable is always valid.
   MeshDelegator & _delegator;
 };
+
+/**
+ * Delegate template class for wrapping around existing MFEM/Hephaestus classes. Inherits from
+ * MeshDelegate.
+ */
+template <class T>
+class MeshDelegateTemplate : public MeshDelegate, public T
+{
+  /// Constructor for template class.
+  template <class... TArgs>
+  MeshDelegateTemplate(MeshDelegator & delegator, TArgs &&... args)
+    : MeshDelegate(delegator), T(std::forward<TArgs>(args)...)
+  {
+  }
+};
+
+// Templates.
+using ParBilinearFormDelegate = MeshDelegateTemplate<mfem::ParBilinearForm>;
+using ParLinearFormDelegate = MeshDelegateTemplate<mfem::ParLinearForm>;
+using ParNonlinearFormDelegate = MeshDelegateTemplate<mfem::ParNonlinearForm>;
+using ParMixedBilinearFormDelegate = MeshDelegateTemplate<mfem::ParMixedBilinearForm>;
 }
