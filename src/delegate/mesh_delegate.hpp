@@ -1,7 +1,7 @@
 #pragma once
 #include <set>
 #include <memory>
-#include "mfem"
+#include <mfem.hpp>
 
 namespace hephaestus
 {
