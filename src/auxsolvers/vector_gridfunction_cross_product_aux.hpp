@@ -34,8 +34,8 @@ public:
 class VectorGridFunctionCrossProductAux : public VectorCoefficientAux
 {
 private:
-  mfem::ParGridFunction * _u_gf{nullptr};
   mfem::ParGridFunction * _v_gf{nullptr};
+  mfem::ParGridFunction * _u_gf{nullptr};
 
   const std::string _u_gf_name;
   const std::string _v_gf_name;

@@ -48,18 +48,6 @@ ClosedCoilSolver::ClosedCoilSolver(std::string source_efield_gf_name,
   _elec_attrs.first = electrode_face;
 }
 
-ClosedCoilSolver::~ClosedCoilSolver()
-{
-  if (_owns_sigma)
-    delete _sigma;
-  if (_owns_itotal)
-    delete _itotal;
-  if (_owns_source_electric_field)
-    delete _source_electric_field;
-  if (_owns_h1_fe_space_parent)
-    delete _h1_fe_space_parent;
-}
-
 void
 ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
                        const hephaestus::FESpaces & fespaces,
@@ -67,22 +55,14 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
                        hephaestus::Coefficients & coefficients)
 {
   // Retrieving the parent FE space and mesh
-
   _h_curl_fe_space_parent = fespaces.Get(_hcurl_fespace_name);
-  if (_h_curl_fe_space_parent == nullptr)
-  {
-    const std::string error_message = _hcurl_fespace_name + " not found in fespaces when "
-                                                            "creating ClosedCoilSolver\n";
-    mfem::mfem_error(error_message.c_str());
-  }
 
   _mesh_parent = _h_curl_fe_space_parent->GetParMesh();
   _order_hcurl = _h_curl_fe_space_parent->FEColl()->GetOrder();
   _order_h1 = _order_hcurl;
 
   // Optional FE Spaces and parameters
-  _h1_fe_space_parent = fespaces.Get(_h1_fespace_name);
-  if (_h1_fe_space_parent == nullptr)
+  if (!fespaces.Has(_h1_fespace_name))
   {
     std::cout << _h1_fespace_name + " not found in fespaces when "
                                     "creating ClosedCoilSolver. Creating from mesh.\n";
@@ -92,28 +72,34 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
         std::make_unique<mfem::H1_FECollection>(_order_h1, _mesh_parent->Dimension());
 
     _h1_fe_space_parent =
-        new mfem::ParFiniteElementSpace(_mesh_parent, _h1_fe_space_parent_fec.get());
-    _owns_h1_fe_space_parent = true;
+        std::make_shared<mfem::ParFiniteElementSpace>(_mesh_parent, _h1_fe_space_parent_fec.get());
+  }
+  else
+  {
+    _h1_fe_space_parent = fespaces.GetShared(_h1_fespace_name);
   }
 
-  _source_electric_field = gridfunctions.Get(_source_electric_field_name);
-  if (_source_electric_field == nullptr)
+  if (!gridfunctions.Has(_source_electric_field_name))
   {
     std::cout << _source_electric_field_name +
                      " not found in gridfunctions when "
                      "creating OpenCoilSolver. Creating new GridFunction.\n";
-    _source_electric_field = new mfem::ParGridFunction(_h_curl_fe_space_parent);
-    _owns_source_electric_field = true;
+    _source_electric_field = std::make_shared<mfem::ParGridFunction>(_h_curl_fe_space_parent);
   }
-  else if (_source_electric_field->ParFESpace()->FEColl()->GetContType() !=
-           mfem::FiniteElementCollection::TANGENTIAL)
+  else
+  {
+    _source_electric_field = gridfunctions.GetShared(_source_electric_field_name);
+  }
+
+  if (_source_electric_field->ParFESpace()->FEColl()->GetContType() !=
+      mfem::FiniteElementCollection::TANGENTIAL)
   {
     mfem::mfem_error("Electric field GridFunction must be of HCurl type.");
   }
 
   if (!_source_current_density_name.empty())
   {
-    _source_current_density = gridfunctions.Get(_source_current_density_name);
+    _source_current_density = gridfunctions.GetShared(_source_current_density_name);
     if (_source_current_density == nullptr)
     {
       const std::string error_message = _source_current_density_name +
@@ -128,19 +114,20 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     }
   }
 
-  _itotal = coefficients._scalars.Get(_i_coef_name);
-  if (_itotal == nullptr)
+  if (!coefficients._scalars.Has(_i_coef_name))
   {
     std::cout << _i_coef_name + " not found in coefficients when "
                                 "creating ClosedCoilSolver. "
                                 "Assuming unit current. ";
 
-    _itotal = new mfem::ConstantCoefficient(1.0);
-    _owns_itotal = true; // Responsible for deleting this.
+    _itotal = std::make_shared<mfem::ConstantCoefficient>(1.0);
+  }
+  else
+  {
+    _itotal = coefficients._scalars.GetShared(_i_coef_name);
   }
 
-  _sigma = coefficients._scalars.Get(_cond_coef_name);
-  if (_sigma == nullptr)
+  if (!coefficients._scalars.Has(_cond_coef_name))
   {
     std::cout << _cond_coef_name + " not found in coefficients when "
                                    "creating ClosedCoilSolver. "
@@ -148,10 +135,13 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     std::cout << "Warning: GradPhi field undefined. The GridFunction "
                  "associated with it will be set to zero.\n";
 
-    _sigma = new mfem::ConstantCoefficient(1.0);
-    _owns_sigma = true;
+    _sigma = std::make_shared<mfem::ConstantCoefficient>(1.0);
 
     _electric_field_transfer = false;
+  }
+  else
+  {
+    _sigma = coefficients._scalars.GetShared(_cond_coef_name);
   }
 
   if (_final_lf == nullptr)
@@ -188,11 +178,11 @@ ClosedCoilSolver::Apply(mfem::ParLinearForm * lf)
   if (_source_current_density)
   {
     hephaestus::GridFunctions aux_gf;
-    aux_gf.Register("source_electric_field", _source_electric_field, false);
-    aux_gf.Register("source_current_density", _source_current_density, false);
+    aux_gf.Register("source_electric_field", _source_electric_field);
+    aux_gf.Register("source_current_density", _source_current_density);
 
     hephaestus::Coefficients aux_coef;
-    aux_coef._scalars.Register("electrical_conductivity", _sigma, false);
+    aux_coef._scalars.Register("electrical_conductivity", _sigma);
 
     hephaestus::ScaledVectorGridFunctionAux current_density_auxsolver(
         "source_electric_field", "source_current_density", "electrical_conductivity", 1.0);
@@ -392,18 +382,18 @@ ClosedCoilSolver::PrepareCoilSubmesh()
 void
 ClosedCoilSolver::SolveTransition()
 {
-  mfem::ParGridFunction v_parent(_h1_fe_space_parent);
-  v_parent = 0.0;
+  auto v_parent = std::make_shared<mfem::ParGridFunction>(_h1_fe_space_parent.get());
+  *v_parent = 0.0;
 
   hephaestus::FESpaces fespaces;
   hephaestus::BCMap bc_maps;
 
   hephaestus::Coefficients coefs;
-  coefs._scalars.Register("electrical_conductivity", _sigma, false);
+  coefs._scalars.Register("electrical_conductivity", _sigma);
 
   hephaestus::GridFunctions gridfunctions;
-  gridfunctions.Register("ElectricField_parent", _source_electric_field, false);
-  gridfunctions.Register("V_parent", &v_parent, false);
+  gridfunctions.Register("ElectricField_parent", _source_electric_field);
+  gridfunctions.Register("V_parent", v_parent);
 
   hephaestus::OpenCoilSolver opencoil("ElectricField_parent",
                                       "V_parent",
@@ -418,9 +408,9 @@ ClosedCoilSolver::SolveTransition()
   opencoil.Init(gridfunctions, fespaces, bc_maps, coefs);
   opencoil.Apply(_final_lf.get());
 
-  v_parent *= -1.0;
+  *v_parent *= -1.0;
   *_source_electric_field *= -1.0;
-  _mesh_coil->Transfer(v_parent, *_v_coil);
+  _mesh_coil->Transfer(*v_parent, *_v_coil);
 }
 
 void
@@ -500,7 +490,7 @@ ClosedCoilSolver::SolveCoil()
   mfem::ParBilinearForm m1(_h_curl_fe_space_parent);
   hephaestus::attrToMarker(_coil_domains, _coil_markers, _mesh_parent->attributes.Max());
 
-  m1.AddDomainIntegrator(new mfem::VectorFEMassIntegrator(_sigma), _coil_markers);
+  m1.AddDomainIntegrator(new mfem::VectorFEMassIntegrator(_sigma.get()), _coil_markers);
   m1.Assemble();
   m1.AddMult(*_source_electric_field, *_final_lf, 1.0);
 

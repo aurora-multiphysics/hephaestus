@@ -47,7 +47,7 @@ public:
 
   mfem::ComplexOperator::Convention _conv{mfem::ComplexOperator::HERMITIAN};
 
-  mfem::ParComplexGridFunction * _u{nullptr};
+  std::unique_ptr<mfem::ParComplexGridFunction> _u{nullptr};
   mfem::Coefficient * _stiff_coef{nullptr}; // Dia/Paramagnetic Material Coefficient
   mfem::Coefficient * _mass_coef{nullptr};  // -omega^2 epsilon
   mfem::Coefficient * _loss_coef{nullptr};  // omega sigma

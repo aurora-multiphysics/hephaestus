@@ -13,15 +13,15 @@ defineCoefficients(double Itotal)
 {
 
   hephaestus::Coefficients coefficients;
-  coefficients._scalars.Register(
-      "magnetic_permeability", new mfem::ConstantCoefficient(M_PI * 4.0e-7), true);
+  coefficients._scalars.Register("magnetic_permeability",
+                                 std::make_shared<mfem::ConstantCoefficient>(M_PI * 4.0e-7));
 
   // Electrical conductivity
-  coefficients._scalars.Register(
-      "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
+  coefficients._scalars.Register("electrical_conductivity",
+                                 std::make_shared<mfem::ConstantCoefficient>(1.0));
 
   // Time-dependent current
-  coefficients._scalars.Register("I", new mfem::ConstantCoefficient(Itotal), true);
+  coefficients._scalars.Register("I", std::make_shared<mfem::ConstantCoefficient>(Itotal));
 
   return coefficients;
 }
@@ -32,9 +32,8 @@ defineSources(std::pair<int, int> elec, mfem::Array<int> coil_domains)
   hephaestus::Sources sources;
   sources.Register(
       "source",
-      new hephaestus::OpenCoilSolver(
-          "grad_phi", "auxiliary_potential", "I", "electrical_conductivity", coil_domains, elec),
-      true);
+      std::make_shared<hephaestus::OpenCoilSolver>(
+          "grad_phi", "auxiliary_potential", "I", "electrical_conductivity", coil_domains, elec));
   return sources;
 }
 
@@ -42,8 +41,8 @@ hephaestus::Outputs
 defineOutputs()
 {
   hephaestus::Outputs outputs;
-  outputs.Register(
-      "ParaViewDataCollection", new mfem::ParaViewDataCollection("OpenCoilParaView"), true);
+  outputs.Register("ParaViewDataCollection",
+                   std::make_shared<mfem::ParaViewDataCollection>("OpenCoilParaView"));
   return outputs;
 }
 
@@ -143,8 +142,12 @@ main(int argc, char * argv[])
   a_dbc_bdr[1] = 2;
   a_dbc_bdr[2] = 4;
 
+  auto magnetic_vector_func_coefficient =
+      std::make_shared<mfem::VectorFunctionCoefficient>(3, constVec);
+  coefficients._vectors.Register("magnetic_vector_func", magnetic_vector_func_coefficient);
+
   auto a_dbc = std::make_shared<hephaestus::VectorDirichletBC>(
-      "magnetic_vector_potential", a_dbc_bdr, new mfem::VectorFunctionCoefficient(3, constVec));
+      "magnetic_vector_potential", a_dbc_bdr, magnetic_vector_func_coefficient.get());
 
   problem_builder->AddBoundaryCondition("a_dbc", a_dbc);
 

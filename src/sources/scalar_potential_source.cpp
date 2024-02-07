@@ -30,36 +30,29 @@ ScalarPotentialSource::Init(hephaestus::GridFunctions & gridfunctions,
                             hephaestus::Coefficients & coefficients)
 {
   _h1_fe_space = fespaces.Get(_h1_fespace_name);
-  if (_h1_fe_space == nullptr)
-  {
-    const std::string error_message = _h1_fespace_name + " not found in fespaces when "
-                                                         "creating ScalarPotentialSource\n";
-    mfem::mfem_error(error_message.c_str());
-  }
-
   _h_curl_fe_space = fespaces.Get(_hcurl_fespace_name);
-  if (_h_curl_fe_space == nullptr)
-  {
-    const std::string error_message = _hcurl_fespace_name + " not found in fespaces when "
-                                                            "creating ScalarPotentialSource\n";
-    mfem::mfem_error(error_message.c_str());
-  }
 
-  _phi = gridfunctions.Get(_phi_gf_name);
-  if (_phi == nullptr)
+  if (!gridfunctions.Has(_phi_gf_name))
   {
     std::cout << _phi_gf_name + " not found in gridfunctions when "
                                 "creating ScalarPotentialSource. "
                                 "Creating new ParGridFunction\n";
-    _phi = new mfem::ParGridFunction(_h1_fe_space);
-    gridfunctions.Register(_phi_gf_name, _phi, true);
+    _phi = std::make_shared<mfem::ParGridFunction>(_h1_fe_space);
+    gridfunctions.Register(_phi_gf_name, _phi);
+  }
+  else
+  {
+    _phi = gridfunctions.GetShared(_phi_gf_name);
   }
 
-  _grad_phi = gridfunctions.Get(_grad_phi_gf_name);
-  if (_grad_phi == nullptr)
+  if (!gridfunctions.Has(_grad_phi_gf_name))
   {
-    _grad_phi = new mfem::ParGridFunction(_h_curl_fe_space);
-    gridfunctions.Register(_grad_phi_gf_name, _grad_phi, true);
+    _grad_phi = std::make_shared<mfem::ParGridFunction>(_h_curl_fe_space);
+    gridfunctions.Register(_grad_phi_gf_name, _grad_phi);
+  }
+  else
+  {
+    _grad_phi = gridfunctions.GetShared(_grad_phi_gf_name);
   }
 
   _bc_map = &bc_map;

@@ -34,8 +34,8 @@ MagnetostaticFormulation::RegisterMagneticFluxDensityAux(const std::string & b_f
 {
   //* Magnetic flux density, B = ∇×A
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
-  auxsolvers.Register(
-      b_field_name, new hephaestus::CurlAuxSolver(_h_curl_var_name, b_field_name), true);
+  auxsolvers.Register(b_field_name,
+                      std::make_shared<hephaestus::CurlAuxSolver>(_h_curl_var_name, b_field_name));
 }
 
 void
@@ -44,14 +44,14 @@ MagnetostaticFormulation::RegisterMagneticFieldAux(const std::string & h_field_n
 {
   //* Magnetic field H = ν∇×A
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
-  auxsolvers.Register(h_field_name,
-                      new hephaestus::ScaledCurlVectorGridFunctionAux(_h_curl_var_name,
-                                                                      h_field_name,
-                                                                      _magnetic_reluctivity_name,
-                                                                      1.0,
-                                                                      1.0,
-                                                                      external_h_field_name),
-                      true);
+  auxsolvers.Register(
+      h_field_name,
+      std::make_shared<hephaestus::ScaledCurlVectorGridFunctionAux>(_h_curl_var_name,
+                                                                    h_field_name,
+                                                                    _magnetic_reluctivity_name,
+                                                                    1.0,
+                                                                    1.0,
+                                                                    external_h_field_name));
 }
 
 void
@@ -62,9 +62,9 @@ MagnetostaticFormulation::RegisterLorentzForceDensityAux(const std::string & f_f
   //* Lorentz force density = J x B
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(f_field_name,
-                      new hephaestus::VectorGridFunctionCrossProductAux(
-                          f_field_name, f_field_name, j_field_name, b_field_name),
-                      true);
+                      std::make_shared<hephaestus::VectorGridFunctionCrossProductAux>(
+                          f_field_name, f_field_name, j_field_name, b_field_name));
+
   auxsolvers.Get(f_field_name)->SetPriority(2);
 }
 
@@ -78,8 +78,7 @@ MagnetostaticFormulation::RegisterCoefficients()
   }
   coefficients._scalars.Register(
       _magnetic_reluctivity_name,
-      new mfem::TransformedCoefficient(
-          &_one_coef, coefficients._scalars.Get(_magnetic_permeability_name), fracFunc),
-      true);
+      std::make_shared<mfem::TransformedCoefficient>(
+          &_one_coef, coefficients._scalars.Get(_magnetic_permeability_name), fracFunc));
 }
 } // namespace hephaestus

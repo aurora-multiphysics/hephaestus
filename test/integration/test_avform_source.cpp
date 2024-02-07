@@ -47,74 +47,78 @@ protected:
   hephaestus::InputParameters TestParams()
   {
     hephaestus::Subdomain wire("wire", 1);
-    wire._scalar_coefficients.Register(
-        "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
+    wire._scalar_coefficients.Register("electrical_conductivity",
+                                       std::make_shared<mfem::ConstantCoefficient>(1.0));
     hephaestus::Subdomain air("air", 2);
-    air._scalar_coefficients.Register(
-        "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
+    air._scalar_coefficients.Register("electrical_conductivity",
+                                      std::make_shared<mfem::ConstantCoefficient>(1.0));
 
     hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({wire, air}));
 
-    coefficients._scalars.Register(
-        "magnetic_permeability", new mfem::FunctionCoefficient(MuExpr), true);
+    coefficients._scalars.Register("magnetic_permeability",
+                                   std::make_shared<mfem::FunctionCoefficient>(MuExpr));
 
     hephaestus::BCMap bc_map;
-    auto * adot_vec_coef = new mfem::VectorFunctionCoefficient(3, AdotBC);
+
+    auto adot_vec_coef = std::make_shared<mfem::VectorFunctionCoefficient>(3, AdotBC);
+    coefficients._vectors.Register("surface_tangential_dAdt", adot_vec_coef);
+
     bc_map.Register("tangential_dAdt",
-                    new hephaestus::VectorDirichletBC(std::string("dmagnetic_vector_potential_dt"),
-                                                      mfem::Array<int>({1, 2, 3}),
-                                                      adot_vec_coef),
-                    true);
-    coefficients._vectors.Register("surface_tangential_dAdt", adot_vec_coef, true);
-    coefficients._scalars.Register(
-        "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
+                    std::make_shared<hephaestus::VectorDirichletBC>(
+                        std::string("dmagnetic_vector_potential_dt"),
+                        mfem::Array<int>({1, 2, 3}),
+                        adot_vec_coef.get()));
+
+    coefficients._scalars.Register("electrical_conductivity",
+                                   std::make_shared<mfem::ConstantCoefficient>(1.0));
 
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 1;
-    auto * ground_coeff = new mfem::FunctionCoefficient(PotentialGround);
-    bc_map.Register("ground_potential",
-                    new hephaestus::ScalarDirichletBC(std::string("electric_potential"),
-                                                      mfem::Array<int>({1, 2, 3}),
-                                                      ground_coeff),
-                    true);
-    coefficients._scalars.Register("ground_potential", ground_coeff, true);
 
-    auto * a_exact = new mfem::VectorFunctionCoefficient(3, AExactExpr);
-    coefficients._vectors.Register("a_exact_coeff", a_exact, true);
+    auto ground_coeff = std::make_shared<mfem::FunctionCoefficient>(PotentialGround);
+    coefficients._scalars.Register("ground_potential", ground_coeff);
+
+    bc_map.Register(
+        "ground_potential",
+        std::make_shared<hephaestus::ScalarDirichletBC>(
+            std::string("electric_potential"), mfem::Array<int>({1, 2, 3}), ground_coeff.get()));
+
+    auto a_exact = std::make_shared<mfem::VectorFunctionCoefficient>(3, AExactExpr);
+    coefficients._vectors.Register("a_exact_coeff", a_exact);
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./beam-tet.mesh")).c_str(), 1, 1);
 
     hephaestus::Outputs outputs;
-    outputs.Register("VisItDataCollection", new mfem::VisItDataCollection("AVFormVisIt"), true);
+    outputs.Register("VisItDataCollection",
+                     std::make_shared<mfem::VisItDataCollection>("AVFormVisIt"));
 
     hephaestus::InputParameters l2errpostprocparams;
     l2errpostprocparams.SetParam("VariableName", std::string("magnetic_vector_potential"));
     l2errpostprocparams.SetParam("VectorCoefficientName", std::string("a_exact_coeff"));
     hephaestus::AuxSolvers postprocessors;
-    postprocessors.Register("L2ErrorPostprocessor",
-                            new hephaestus::L2ErrorVectorPostprocessor(l2errpostprocparams),
-                            true);
+    postprocessors.Register(
+        "L2ErrorPostprocessor",
+        std::make_shared<hephaestus::L2ErrorVectorPostprocessor>(l2errpostprocparams));
 
-    auto * vec_coef_aux =
-        new hephaestus::VectorCoefficientAux("analytic_vector_potential", "a_exact_coeff");
+    auto vec_coef_aux = std::make_shared<hephaestus::VectorCoefficientAux>(
+        "analytic_vector_potential", "a_exact_coeff");
     vec_coef_aux->SetPriority(-1);
-    postprocessors.Register("VectorCoefficientAux", vec_coef_aux, true);
+    postprocessors.Register("VectorCoefficientAux", vec_coef_aux);
 
     hephaestus::AuxSolvers preprocessors;
 
     hephaestus::Sources sources;
-    auto * j_src_coef = new mfem::VectorFunctionCoefficient(3, SourceField);
-    coefficients._vectors.Register("source", j_src_coef, true);
+    auto j_src_coef = std::make_shared<mfem::VectorFunctionCoefficient>(3, SourceField);
+    coefficients._vectors.Register("source", j_src_coef);
 
     sources.Register("source",
-                     new hephaestus::DivFreeSource("source",
-                                                   "source",
-                                                   "_HCurlFESpace",
-                                                   "_H1FESpace",
-                                                   "_source_potential",
-                                                   hephaestus::InputParameters(),
-                                                   false),
-                     true);
+                     std::make_shared<hephaestus::DivFreeSource>("source",
+                                                                 "source",
+                                                                 "_HCurlFESpace",
+                                                                 "_H1FESpace",
+                                                                 "_source_potential",
+                                                                 hephaestus::InputParameters(),
+                                                                 false));
 
     hephaestus::InputParameters params;
     params.SetParam("TimeStep", float(0.05));
@@ -199,17 +203,17 @@ TEST_CASE_METHOD(TestAVFormSource, "TestAVFormSource", "[CheckRun]")
     executioner->Execute();
   }
 
-  hephaestus::L2ErrorVectorPostprocessor l2errpostprocessor =
-      *(dynamic_cast<hephaestus::L2ErrorVectorPostprocessor *>(
-          params.GetParam<hephaestus::AuxSolvers>("PostProcessors").Get("L2ErrorPostprocessor")));
+  auto l2errpostprocessor =
+      params.GetParam<hephaestus::AuxSolvers>("PostProcessors")
+          .Get<hephaestus::L2ErrorVectorPostprocessor>("L2ErrorPostprocessor");
 
   double r;
-  for (std::size_t i = 1; i < l2errpostprocessor._ndofs.Size(); ++i)
+  for (std::size_t i = 1; i < l2errpostprocessor->_ndofs.Size(); ++i)
   {
-    r = EstimateConvergenceRate(l2errpostprocessor._ndofs[i],
-                                l2errpostprocessor._ndofs[i - 1],
-                                l2errpostprocessor._l2_errs[i],
-                                l2errpostprocessor._l2_errs[i - 1],
+    r = EstimateConvergenceRate(l2errpostprocessor->_ndofs[i],
+                                l2errpostprocessor->_ndofs[i - 1],
+                                l2errpostprocessor->_l2_errs[i],
+                                l2errpostprocessor->_l2_errs[i - 1],
                                 3);
     std::cout << r << std::endl;
     REQUIRE(r > _var_order - 0.15);

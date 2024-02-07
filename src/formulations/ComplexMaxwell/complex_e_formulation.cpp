@@ -32,7 +32,7 @@ ComplexEFormulation::RegisterCurrentDensityAux(const std::string & j_field_real_
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(
       j_field_real_name,
-      new hephaestus::ScaledVectorGridFunctionAux(
+      std::make_shared<hephaestus::ScaledVectorGridFunctionAux>(
           _electric_field_real_name,
           j_field_real_name,
           _electric_conductivity_name,
@@ -40,11 +40,10 @@ ComplexEFormulation::RegisterCurrentDensityAux(const std::string & j_field_real_
           1.0,
           external_j_field_real_name,
           hephaestus::InputParameters(
-              {{"Tolerance", float(1.0e-12)}, {"MaxIter", (unsigned int)200}, {"PrintLevel", 1}})),
-      true);
+              {{"Tolerance", float(1.0e-12)}, {"MaxIter", (unsigned int)200}, {"PrintLevel", 1}})));
   auxsolvers.Register(
       j_field_imag_name,
-      new hephaestus::ScaledVectorGridFunctionAux(
+      std::make_shared<hephaestus::ScaledVectorGridFunctionAux>(
           _electric_field_imag_name,
           j_field_imag_name,
           _electric_conductivity_name,
@@ -52,8 +51,7 @@ ComplexEFormulation::RegisterCurrentDensityAux(const std::string & j_field_real_
           1.0,
           external_j_field_imag_name,
           hephaestus::InputParameters(
-              {{"Tolerance", float(1.0e-12)}, {"MaxIter", (unsigned int)200}, {"PrintLevel", 1}})),
-      true);
+              {{"Tolerance", float(1.0e-12)}, {"MaxIter", (unsigned int)200}, {"PrintLevel", 1}})));
 };
 
 void
@@ -65,22 +63,22 @@ ComplexEFormulation::RegisterMagneticFluxDensityAux(const std::string & b_field_
   //* Magnetic flux density B = (i/ω) curl E
   //* (∇×E = -dB/dt = -iωB)
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
-  auxsolvers.Register(b_field_imag_name,
-                      new hephaestus::ScaledCurlVectorGridFunctionAux(_electric_field_real_name,
-                                                                      b_field_imag_name,
-                                                                      "_inv_angular_frequency",
-                                                                      1.0,
-                                                                      1.0,
-                                                                      external_b_field_imag_name),
-                      true);
-  auxsolvers.Register(b_field_real_name,
-                      new hephaestus::ScaledCurlVectorGridFunctionAux(_electric_field_imag_name,
-                                                                      b_field_real_name,
-                                                                      "_inv_angular_frequency",
-                                                                      -1.0,
-                                                                      1.0,
-                                                                      external_b_field_real_name),
-                      true);
+  auxsolvers.Register(
+      b_field_imag_name,
+      std::make_shared<hephaestus::ScaledCurlVectorGridFunctionAux>(_electric_field_real_name,
+                                                                    b_field_imag_name,
+                                                                    "_inv_angular_frequency",
+                                                                    1.0,
+                                                                    1.0,
+                                                                    external_b_field_imag_name));
+  auxsolvers.Register(
+      b_field_real_name,
+      std::make_shared<hephaestus::ScaledCurlVectorGridFunctionAux>(_electric_field_imag_name,
+                                                                    b_field_real_name,
+                                                                    "_inv_angular_frequency",
+                                                                    -1.0,
+                                                                    1.0,
+                                                                    external_b_field_real_name));
 }
 
 // Enable auxiliary calculation of P ∈ L2
@@ -93,16 +91,16 @@ ComplexEFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_
 {
   //* Time averaged Joule heating density = E.J
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
-  auxsolvers.Register(p_field_name,
-                      new hephaestus::VectorGridFunctionDotProductAux(p_field_name,
-                                                                      p_field_name,
-                                                                      "",
-                                                                      _electric_field_real_name,
-                                                                      j_field_real_name,
-                                                                      _electric_field_imag_name,
-                                                                      j_field_imag_name,
-                                                                      true),
-                      true);
+  auxsolvers.Register(
+      p_field_name,
+      std::make_shared<hephaestus::VectorGridFunctionDotProductAux>(p_field_name,
+                                                                    p_field_name,
+                                                                    "",
+                                                                    _electric_field_real_name,
+                                                                    j_field_real_name,
+                                                                    _electric_field_imag_name,
+                                                                    j_field_imag_name,
+                                                                    true));
   auxsolvers.Get(p_field_name)->SetPriority(2);
 }
 

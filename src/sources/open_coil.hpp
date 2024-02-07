@@ -18,7 +18,8 @@ void inheritBdrAttributes(const mfem::ParMesh * parent_mesh, mfem::ParSubMesh * 
 
 // Applies the HelmholtzProjector onto the J GridFunction to clean it of any
 // divergences. This is for the simplest case with no BCs
-void cleanDivergence(mfem::ParGridFunction & Vec_GF, hephaestus::InputParameters solve_pars);
+void cleanDivergence(std::shared_ptr<mfem::ParGridFunction> Vec_GF,
+                     hephaestus::InputParameters solve_pars);
 
 // The more complicated case where BCs are needed
 void cleanDivergence(const hephaestus::GridFunctions & gfs,
@@ -47,7 +48,7 @@ public:
                                                   {"MaxIter", (unsigned int)1000},
                                                   {"PrintLevel", 1}}));
 
-  ~OpenCoilSolver() override;
+  ~OpenCoilSolver() override = default;
 
   void Init(hephaestus::GridFunctions & gridfunctions,
             const hephaestus::FESpaces & fespaces,
@@ -94,11 +95,8 @@ private:
   int _ref_face;
   bool _electric_field_transfer;
 
-  mfem::Coefficient * _sigma{nullptr};
-  mfem::Coefficient * _itotal{nullptr};
-
-  bool _owns_sigma{false};
-  bool _owns_itotal{false};
+  std::shared_ptr<mfem::Coefficient> _sigma{nullptr};
+  std::shared_ptr<mfem::Coefficient> _itotal{nullptr};
 
   // Names
   std::string _grad_phi_name;
@@ -114,35 +112,35 @@ private:
   mfem::ParGridFunction * _grad_phi_parent{nullptr};
   std::unique_ptr<mfem::ParGridFunction> _grad_phi_t_parent{nullptr};
 
-  mfem::ParGridFunction * _phi_parent{nullptr};
+  std::shared_ptr<mfem::ParGridFunction> _phi_parent{nullptr};
   std::unique_ptr<mfem::ParGridFunction> _phi_t_parent{nullptr};
 
-  mfem::ParGridFunction * _j_parent{nullptr};
+  std::shared_ptr<mfem::ParGridFunction> _j_parent{nullptr};
   std::unique_ptr<mfem::ParGridFunction> _j_t_parent{nullptr};
 
-  mfem::ParGridFunction * _source_electric_field{nullptr};
-  mfem::ParGridFunction * _source_current_density{nullptr};
+  std::shared_ptr<mfem::ParGridFunction> _source_electric_field{nullptr};
+  std::shared_ptr<mfem::ParGridFunction> _source_current_density{nullptr};
 
   // Child mesh and FE spaces
   std::unique_ptr<mfem::ParSubMesh> _mesh_child{nullptr};
 
-  std::unique_ptr<mfem::ParFiniteElementSpace> _h1_fe_space_child{nullptr};
+  std::shared_ptr<mfem::ParFiniteElementSpace> _h1_fe_space_child{nullptr};
   std::unique_ptr<mfem::H1_FECollection> _h1_fe_space_fec_child{nullptr};
 
-  std::unique_ptr<mfem::ParFiniteElementSpace> _h_curl_fe_space_child{nullptr};
+  std::shared_ptr<mfem::ParFiniteElementSpace> _h_curl_fe_space_child{nullptr};
   std::unique_ptr<mfem::ND_FECollection> _h_curl_fe_space_fec_child{nullptr};
 
-  std::unique_ptr<mfem::ParFiniteElementSpace> _h_div_fe_space_child{nullptr};
+  std::shared_ptr<mfem::ParFiniteElementSpace> _h_div_fe_space_child{nullptr};
   std::unique_ptr<mfem::RT_FECollection> _h_div_fe_space_fec_child{nullptr};
 
   // Child GridFunctions
-  std::unique_ptr<mfem::ParGridFunction> _grad_phi_child{nullptr};
-  std::unique_ptr<mfem::ParGridFunction> _phi_child{nullptr};
-  std::unique_ptr<mfem::ParGridFunction> _j_child{nullptr};
+  std::shared_ptr<mfem::ParGridFunction> _grad_phi_child{nullptr};
+  std::shared_ptr<mfem::ParGridFunction> _phi_child{nullptr};
+  std::shared_ptr<mfem::ParGridFunction> _j_child{nullptr};
 
   // Child boundary condition objects
-  mfem::FunctionCoefficient _high_src;
-  mfem::FunctionCoefficient _low_src;
+  std::shared_ptr<mfem::FunctionCoefficient> _high_src{nullptr};
+  std::shared_ptr<mfem::FunctionCoefficient> _low_src{nullptr};
 
   mfem::Array<int> _high_terminal;
   mfem::Array<int> _low_terminal;

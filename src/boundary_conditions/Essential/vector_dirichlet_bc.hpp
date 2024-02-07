@@ -27,8 +27,8 @@ public:
 
   void ApplyBC(mfem::ParComplexGridFunction & gridfunc, mfem::Mesh * mesh_) override;
 
-  mfem::VectorCoefficient * _vec_coeff;
-  mfem::VectorCoefficient * _vec_coeff_im;
+  mfem::VectorCoefficient * _vec_coeff{nullptr};
+  mfem::VectorCoefficient * _vec_coeff_im{nullptr};
   APPLY_TYPE _boundary_apply_type;
 };
 

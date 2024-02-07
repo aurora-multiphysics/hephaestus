@@ -36,32 +36,11 @@ ScaledVectorGridFunctionAux::Init(const hephaestus::GridFunctions & gridfunction
                                   hephaestus::Coefficients & coefficients)
 {
   _input_gf = gridfunctions.Get(_input_gf_name);
-  if (_input_gf == nullptr)
-  {
-    MFEM_ABORT("GridFunction " << _input_gf_name
-                               << " not found when initializing ScaledVectorGridFunctionAux");
-  }
   _scaled_gf = gridfunctions.Get(_scaled_gf_name);
-  if (_scaled_gf == nullptr)
-  {
-    MFEM_ABORT("GridFunction " << _scaled_gf_name
-                               << " not found when initializing ScaledVectorGridFunctionAux");
-  }
-  _coef = dynamic_cast<mfem::Coefficient *>(coefficients._scalars.Get(_coef_name));
-  if (_coef == nullptr)
-  {
-    MFEM_ABORT("Coefficient " << _coef_name
-                              << " not found when initializing ScaledVectorGridFunctionAux");
-  }
   if (!_shift_gf_name.empty())
   {
     _shift_gf = gridfunctions.Get(_shift_gf_name);
     // TODO - add check that shift_gf is on same FESpace as scaled_gf
-    if (_shift_gf == nullptr)
-    {
-      MFEM_ABORT("GridFunction " << _shift_gf_name
-                                 << " not found when initializing ScaledVectorGridFunctionAux");
-    }
   }
   _test_fes = _scaled_gf->ParFESpace();
   _trial_fes = _input_gf->ParFESpace();

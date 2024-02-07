@@ -29,66 +29,69 @@ protected:
   {
     hephaestus::Subdomain air("air", 1);
 
-    air._scalar_coefficients.Register(
-        "real_electrical_conductivity", new mfem::ConstantCoefficient(0.0), true);
-    air._scalar_coefficients.Register(
-        "imag_electrical_conductivity", new mfem::ConstantCoefficient(0.0), true);
-    air._scalar_coefficients.Register(
-        "real_rel_permittivity", new mfem::ConstantCoefficient(1.0), true);
-    air._scalar_coefficients.Register(
-        "imag_rel_permittivity", new mfem::ConstantCoefficient(0.0), true);
-    air._scalar_coefficients.Register(
-        "real_rel_permeability", new mfem::ConstantCoefficient(1.0), true);
-    air._scalar_coefficients.Register(
-        "imag_rel_permeability", new mfem::ConstantCoefficient(0.0), true);
+    air._scalar_coefficients.Register("real_electrical_conductivity",
+                                      std::make_shared<mfem::ConstantCoefficient>(0.0));
+    air._scalar_coefficients.Register("imag_electrical_conductivity",
+                                      std::make_shared<mfem::ConstantCoefficient>(0.0));
+    air._scalar_coefficients.Register("real_rel_permittivity",
+                                      std::make_shared<mfem::ConstantCoefficient>(1.0));
+    air._scalar_coefficients.Register("imag_rel_permittivity",
+                                      std::make_shared<mfem::ConstantCoefficient>(0.0));
+    air._scalar_coefficients.Register("real_rel_permeability",
+                                      std::make_shared<mfem::ConstantCoefficient>(1.0));
+    air._scalar_coefficients.Register("imag_rel_permeability",
+                                      std::make_shared<mfem::ConstantCoefficient>(0.0));
 
     hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({air}));
 
-    coefficients._scalars.Register("frequency", new mfem::ConstantCoefficient(freq_), true);
-    coefficients._scalars.Register(
-        "magnetic_permeability", new mfem::ConstantCoefficient(mu0_), true);
-    coefficients._scalars.Register(
-        "dielectric_permittivity", new mfem::ConstantCoefficient(epsilon0_), true);
-    coefficients._scalars.Register(
-        "electrical_conductivity", new mfem::ConstantCoefficient(0.0), true);
+    coefficients._scalars.Register("frequency", std::make_shared<mfem::ConstantCoefficient>(freq_));
+    coefficients._scalars.Register("magnetic_permeability",
+                                   std::make_shared<mfem::ConstantCoefficient>(mu0_));
+    coefficients._scalars.Register("dielectric_permittivity",
+                                   std::make_shared<mfem::ConstantCoefficient>(epsilon0_));
+    coefficients._scalars.Register("electrical_conductivity",
+                                   std::make_shared<mfem::ConstantCoefficient>(0.0));
+
+    coefficients._vectors.Register("EBCR",
+                                   std::make_shared<mfem::VectorFunctionCoefficient>(3, EBCR));
+    coefficients._vectors.Register("EBCI",
+                                   std::make_shared<mfem::VectorFunctionCoefficient>(3, EBCI));
 
     hephaestus::BCMap bc_map;
     mfem::Array<int> dirichlet_attr(1);
     dirichlet_attr[0] = 1;
-    bc_map.Register("tangential_E",
-                    new hephaestus::VectorDirichletBC(std::string("electric_field"),
-                                                      dirichlet_attr,
-                                                      new mfem::VectorFunctionCoefficient(3, EBCR),
-                                                      new mfem::VectorFunctionCoefficient(3, EBCI)),
-                    true);
+    bc_map.Register(
+        "tangential_E",
+        std::make_shared<hephaestus::VectorDirichletBC>(std::string("electric_field"),
+                                                        dirichlet_attr,
+                                                        coefficients._vectors.Get("EBCR"),
+                                                        coefficients._vectors.Get("EBCI")));
 
     mfem::Array<int> wgi_in_attr(1);
     wgi_in_attr[0] = 2;
     bc_map.Register("WaveguidePortIn",
-                    new hephaestus::RWTE10PortRBC(std::string("electric_field"),
-                                                  wgi_in_attr,
-                                                  freq_,
-                                                  _port_length_vector,
-                                                  _port_width_vector,
-                                                  true),
-                    true);
+                    std::make_shared<hephaestus::RWTE10PortRBC>(std::string("electric_field"),
+                                                                wgi_in_attr,
+                                                                freq_,
+                                                                _port_length_vector,
+                                                                _port_width_vector,
+                                                                true));
 
     mfem::Array<int> wgi_out_attr(1);
     wgi_out_attr[0] = 3;
     bc_map.Register("WaveguidePortOut",
-                    new hephaestus::RWTE10PortRBC(std::string("electric_field"),
-                                                  wgi_out_attr,
-                                                  freq_,
-                                                  _port_length_vector,
-                                                  _port_width_vector,
-                                                  false),
-                    true);
+                    std::make_shared<hephaestus::RWTE10PortRBC>(std::string("electric_field"),
+                                                                wgi_out_attr,
+                                                                freq_,
+                                                                _port_length_vector,
+                                                                _port_width_vector,
+                                                                false));
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./irises.g")).c_str(), 1, 1);
 
     hephaestus::Outputs outputs;
-    outputs.Register(
-        "VisItDataCollection", new mfem::VisItDataCollection("Hertz-AMR-Parallel-VisIt"), true);
+    outputs.Register("VisItDataCollection",
+                     std::make_shared<mfem::VisItDataCollection>("Hertz-AMR-Parallel-VisIt"));
 
     hephaestus::FESpaces fespaces;
     hephaestus::GridFunctions gridfunctions;

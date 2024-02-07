@@ -26,52 +26,58 @@ protected:
     sigma_air = 1.0e-6 * sigma;
 
     hephaestus::Subdomain wire("wire", 1);
-    wire._scalar_coefficients.Register(
-        "electrical_conductivity", new mfem::ConstantCoefficient(sigma), true);
+    wire._scalar_coefficients.Register("electrical_conductivity",
+                                       std::make_shared<mfem::ConstantCoefficient>(sigma));
 
     hephaestus::Subdomain air("air", 2);
-    air._scalar_coefficients.Register(
-        "electrical_conductivity", new mfem::ConstantCoefficient(sigma_air), true);
+    air._scalar_coefficients.Register("electrical_conductivity",
+                                      std::make_shared<mfem::ConstantCoefficient>(sigma_air));
 
     hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({wire, air}));
 
-    coefficients._scalars.Register(
-        "magnetic_permeability", new mfem::ConstantCoefficient(1.0), true);
+    coefficients._scalars.Register("magnetic_permeability",
+                                   std::make_shared<mfem::ConstantCoefficient>(1.0));
 
     hephaestus::BCMap bc_map;
-    auto * adot_vec_coef = new mfem::VectorFunctionCoefficient(3, AdotBc);
+    auto adot_vec_coef = std::make_shared<mfem::VectorFunctionCoefficient>(3, AdotBc);
+    coefficients._vectors.Register("surface_tangential_dAdt", adot_vec_coef);
+
     bc_map.Register("tangential_dAdt",
-                    new hephaestus::VectorDirichletBC(std::string("dmagnetic_vector_potential_dt"),
-                                                      mfem::Array<int>({1, 2, 3}),
-                                                      adot_vec_coef),
-                    true);
-    coefficients._vectors.Register("surface_tangential_dAdt", adot_vec_coef, true);
+                    std::make_shared<hephaestus::VectorDirichletBC>(
+                        std::string("dmagnetic_vector_potential_dt"),
+                        mfem::Array<int>({1, 2, 3}),
+                        adot_vec_coef.get()));
+
+    coefficients._scalars.Register("high_potential_func",
+                                   std::make_shared<mfem::FunctionCoefficient>(PotentialHigh));
 
     mfem::Array<int> high_terminal(1);
     high_terminal[0] = 1;
     bc_map.Register("high_potential",
-                    new hephaestus::ScalarDirichletBC(std::string("electric_potential"),
-                                                      high_terminal,
-                                                      new mfem::FunctionCoefficient(PotentialHigh)),
-                    true);
+                    std::make_shared<hephaestus::ScalarDirichletBC>(
+                        std::string("electric_potential"),
+                        high_terminal,
+                        coefficients._scalars.Get("high_potential_func")));
 
     mfem::Array<int> ground_terminal(1);
     ground_terminal[0] = 2;
-    bc_map.Register(
-        "ground_potential",
-        new hephaestus::ScalarDirichletBC(std::string("electric_potential"),
-                                          ground_terminal,
-                                          new mfem::FunctionCoefficient(PotentialGround)),
-        true);
 
-    auto * j_src_coef = new mfem::VectorFunctionCoefficient(3, SourceCurrent);
+    coefficients._scalars.Register("ground_potential_func",
+                                   std::make_shared<mfem::FunctionCoefficient>(PotentialGround));
+
+    bc_map.Register("ground_potential",
+                    std::make_shared<hephaestus::ScalarDirichletBC>(
+                        std::string("electric_potential"),
+                        ground_terminal,
+                        coefficients._scalars.Get("ground_potential_func")));
 
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./cylinder-hex-q2.gen")).c_str(), 1, 1);
 
     hephaestus::Outputs outputs;
-    outputs.Register("VisItDataCollection", new mfem::VisItDataCollection("AVFormVisIt"), true);
-    outputs.Register(
-        "ParaViewDataCollection", new mfem::ParaViewDataCollection("AVFormParaView"), true);
+    outputs.Register("VisItDataCollection",
+                     std::make_shared<mfem::VisItDataCollection>("AVFormVisIt"));
+    outputs.Register("ParaViewDataCollection",
+                     std::make_shared<mfem::ParaViewDataCollection>("AVFormParaView"));
 
     hephaestus::FESpaces fespaces;
     hephaestus::GridFunctions gridfunctions;

@@ -7,13 +7,13 @@ defineCoefficients()
 {
   hephaestus::Coefficients coefficients;
 
-  coefficients._scalars.Register(
-      "magnetic_permeability", new mfem::ConstantCoefficient(M_PI * 4.0e-7), true);
+  coefficients._scalars.Register("magnetic_permeability",
+                                 std::make_shared<mfem::ConstantCoefficient>(M_PI * 4.0e-7));
 
-  coefficients._scalars.Register(
-      "electrical_conductivity", new mfem::ConstantCoefficient(1.0), true);
+  coefficients._scalars.Register("electrical_conductivity",
+                                 std::make_shared<mfem::ConstantCoefficient>(1.0));
 
-  coefficients._scalars.Register("I", new mfem::ConstantCoefficient(2742), true);
+  coefficients._scalars.Register("I", std::make_shared<mfem::ConstantCoefficient>(2742));
 
   return coefficients;
 }
@@ -37,15 +37,14 @@ defineSources()
 
   hephaestus::Sources sources;
   sources.Register("source",
-                   new hephaestus::ClosedCoilSolver("source_grad_phi",
-                                                    "HCurl",
-                                                    "H1",
-                                                    "I",
-                                                    "electrical_conductivity",
-                                                    coil_domains,
-                                                    electrode_attr,
-                                                    true),
-                   true);
+                   std::make_shared<hephaestus::ClosedCoilSolver>("source_grad_phi",
+                                                                  "HCurl",
+                                                                  "H1",
+                                                                  "I",
+                                                                  "electrical_conductivity",
+                                                                  coil_domains,
+                                                                  electrode_attr,
+                                                                  true));
   return sources;
 }
 
@@ -53,8 +52,8 @@ hephaestus::Outputs
 defineOutputs()
 {
   hephaestus::Outputs outputs;
-  outputs.Register(
-      "ParaViewDataCollection", new mfem::ParaViewDataCollection("ClosedCoilParaView"), true);
+  outputs.Register("ParaViewDataCollection",
+                   std::make_shared<mfem::ParaViewDataCollection>("ClosedCoilParaView"));
   return outputs;
 }
 

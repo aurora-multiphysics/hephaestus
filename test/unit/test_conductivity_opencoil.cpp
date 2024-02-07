@@ -25,24 +25,31 @@ TEST_CASE("ConductivityOpenCoil", "[CheckData]")
       std::make_shared<mfem::ParMesh>(mfem::ParMesh(MPI_COMM_WORLD, mesh));
 
   mfem::ND_FECollection h_curl_collection(order, pmesh.get()->Dimension());
-  mfem::ParFiniteElementSpace h_curl_fe_space(pmesh.get(), &h_curl_collection);
-  mfem::ParGridFunction e(&h_curl_fe_space);
+  auto h_curl_fe_space =
+      std::make_shared<mfem::ParFiniteElementSpace>(pmesh.get(), &h_curl_collection);
+  auto e = std::make_shared<mfem::ParGridFunction>(h_curl_fe_space.get());
+
+  mfem::H1_FECollection h1_collection(order, pmesh.get()->Dimension());
+  auto h1_fe_space = std::make_shared<mfem::ParFiniteElementSpace>(pmesh.get(), &h1_collection);
+  auto v = std::make_shared<mfem::ParGridFunction>(h1_fe_space.get());
 
   double ival = 10.0;
-  mfem::ConstantCoefficient itot(ival);
-  mfem::FunctionCoefficient conductivity(sigma);
+  auto itot = std::make_shared<mfem::ConstantCoefficient>(ival);
+  auto conductivity = std::make_shared<mfem::FunctionCoefficient>(sigma);
 
   hephaestus::BCMap bc_maps;
 
   hephaestus::Coefficients coefficients;
-  coefficients._scalars.Register(std::string("Itotal"), &itot, false);
-  coefficients._scalars.Register(std::string("Conductivity"), &conductivity, false);
+  coefficients._scalars.Register(std::string("Itotal"), itot);
+  coefficients._scalars.Register(std::string("Conductivity"), conductivity);
 
   hephaestus::FESpaces fespaces;
-  fespaces.Register(std::string("HCurl"), &h_curl_fe_space, false);
+  fespaces.Register(std::string("HCurl"), h_curl_fe_space);
+  fespaces.Register(std::string("H1"), h1_fe_space);
 
   hephaestus::GridFunctions gridfunctions;
-  gridfunctions.Register(std::string("E"), &e, false);
+  gridfunctions.Register(std::string("E"), e);
+  gridfunctions.Register(std::string("V"), v);
 
   std::pair<int, int> elec_attrs{2, 3};
   mfem::Array<int> submesh_domains;
@@ -51,12 +58,12 @@ TEST_CASE("ConductivityOpenCoil", "[CheckData]")
   hephaestus::OpenCoilSolver opencoil(
       "E", "V", "Itotal", "Conductivity", submesh_domains, elec_attrs, true);
   opencoil.Init(gridfunctions, fespaces, bc_maps, coefficients);
-  mfem::ParLinearForm dummy(&h_curl_fe_space);
+  mfem::ParLinearForm dummy(h_curl_fe_space.get());
   opencoil.Apply(&dummy);
 
   //- sign comes from the direction of the outward facing normal relative to elec_attrs order
-  double flux1 = -hephaestus::calcFlux(&e, 4, conductivity);
-  double flux2 = -hephaestus::calcFlux(&e, 5, conductivity);
+  double flux1 = -hephaestus::calcFlux(e.get(), 4, *conductivity);
+  double flux2 = -hephaestus::calcFlux(e.get(), 5, *conductivity);
 
   REQUIRE_THAT(flux1 + flux2, Catch::Matchers::WithinAbs(ival, eps));
   REQUIRE_THAT(flux1 / flux2, Catch::Matchers::WithinAbs(r, eps));

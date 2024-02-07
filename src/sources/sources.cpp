@@ -9,7 +9,7 @@ Sources::Init(hephaestus::GridFunctions & gridfunctions,
               hephaestus::BCMap & bc_map,
               hephaestus::Coefficients & coefficients)
 {
-  for (const auto & [name, source] : GetMap())
+  for (const auto & [name, source] : *this)
   {
     source->Init(gridfunctions, fespaces, bc_map, coefficients);
   }
@@ -18,7 +18,7 @@ Sources::Init(hephaestus::GridFunctions & gridfunctions,
 void
 Sources::Apply(mfem::ParLinearForm * lf)
 {
-  for (const auto & [name, source] : GetMap())
+  for (const auto & [name, source] : *this)
   {
     source->Apply(lf);
   }
@@ -27,7 +27,7 @@ Sources::Apply(mfem::ParLinearForm * lf)
 void
 Sources::SubtractSources(mfem::ParGridFunction * gf)
 {
-  for (const auto & [name, source] : GetMap())
+  for (const auto & [name, source] : *this)
   {
     source->SubtractSource(gf);
   }

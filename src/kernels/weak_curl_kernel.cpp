@@ -17,7 +17,6 @@ WeakCurlKernel::Init(hephaestus::GridFunctions & gridfunctions,
                      hephaestus::BCMap & bc_map,
                      hephaestus::Coefficients & coefficients)
 {
-
   _u = gridfunctions.Get(_hcurl_gf_name);
   _v = gridfunctions.Get(_hdiv_gf_name);
 
