@@ -3,11 +3,11 @@
 namespace hephaestus
 {
 void
-MeshDelegator::MeshDidUpdate()
+Broadcaster::BroadcastUpdate()
 {
-  for (const auto & delegate : _delegates)
+  for (const auto & listener : _listeners)
   {
-    delegate->OnMeshDidUpdate();
+    listener->UpdateReceived();
   }
 }
 }
