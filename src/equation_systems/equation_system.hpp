@@ -85,8 +85,8 @@ protected:
 
   mfem::Array2D<mfem::HypreParMatrix *> _h_blocks;
 
-  // Arrays to store kernels to act on each component of weak form. Named
-  // according to test variable
+  // Maps to store kernels to act on each component of weak form. Named
+  // according to test variable.
   hephaestus::NamedFieldsMap<ParBilinearFormKernelStore> _blf_kernels_map;
   hephaestus::NamedFieldsMap<ParLinearFormKernelStore> _lf_kernels_map;
   hephaestus::NamedFieldsMap<ParNonlinearFormKernelStore> _nlf_kernels_map;
