@@ -42,22 +42,29 @@ public:
   // Enable auxiliary calculation of J ∈ H(div)
   //* Induced electric current, Jind = σE = -iωσA
   void RegisterCurrentDensityAux(const std::string & j_field_real_name,
-                                 const std::string & j_field_imag_name) override;
+                                 const std::string & j_field_imag_name,
+                                 const std::string & external_j_field_real_name = "",
+                                 const std::string & external_j_field_imag_name = "") override;
 
   //* Magnetic flux density B = curl A
   void RegisterMagneticFluxDensityAux(const std::string & b_field_real_name,
-                                      const std::string & b_field_imag_name) override;
+                                      const std::string & b_field_imag_name,
+                                      const std::string & external_b_field_real_name = "",
+                                      const std::string & external_b_field_imag_name = "") override;
 
   //* Electric field E =-dA/dt=-iωA
   void RegisterElectricFieldAux(const std::string & e_field_real_name,
-                                const std::string & e_field_imag_name) override;
+                                const std::string & e_field_imag_name,
+                                const std::string & external_e_field_real_name = "",
+                                const std::string & external_e_field_imag_name = "") override;
 
   // Enable auxiliary calculation of P ∈ L2
   // Time averaged Joule heating density E.J
   void RegisterJouleHeatingDensityAux(const std::string & p_field_name,
                                       const std::string & e_field_real_name,
                                       const std::string & e_field_imag_name,
-                                      const std::string & conductivity_coef_name) override;
+                                      const std::string & j_field_real_name,
+                                      const std::string & j_field_imag_name) override;
 
 protected:
   const std::string & _magnetic_reluctivity_name =

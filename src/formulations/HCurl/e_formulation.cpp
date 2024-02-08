@@ -47,28 +47,32 @@ EFormulation::RegisterCoefficients()
 }
 
 void
-EFormulation::RegisterCurrentDensityAux(const std::string & j_field_name)
+EFormulation::RegisterCurrentDensityAux(const std::string & j_field_name,
+                                        const std::string & external_j_field_name)
 {
   //* Current density J = Jᵉ + σE
   //* Induced electric field, Jind = σE
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
-  auxsolvers.Register(j_field_name,
-                      std::make_shared<hephaestus::ScaledVectorGridFunctionAux>(
-                          _h_curl_var_name, j_field_name, _electric_conductivity_name));
+  auxsolvers.Register(
+      j_field_name,
+      std::make_shared<hephaestus::ScaledVectorGridFunctionAux>(_h_curl_var_name,
+                                                                j_field_name,
+                                                                _electric_conductivity_name,
+                                                                1.0,
+                                                                1.0,
+                                                                external_j_field_name));
 }
 
 void
 EFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_name,
                                              const std::string & e_field_name,
-                                             const std::string & conductivity_coef_name)
+                                             const std::string & j_field_name)
 {
   //* Joule heating density = E.J
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
-  auxsolvers.Register(
-      p_field_name,
-      std::make_shared<hephaestus::VectorGridFunctionDotProductAux>(
-          p_field_name, p_field_name, _electric_conductivity_name, e_field_name, e_field_name));
-
+  auxsolvers.Register(p_field_name,
+                      std::make_shared<hephaestus::VectorGridFunctionDotProductAux>(
+                          p_field_name, p_field_name, "", e_field_name, j_field_name));
   auxsolvers.Get(p_field_name)->SetPriority(2);
 }
 

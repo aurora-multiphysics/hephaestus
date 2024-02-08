@@ -111,29 +111,20 @@ protected:
                      std::make_shared<mfem::ParaViewDataCollection>("EBFormParaView"));
 
     hephaestus::AuxSolvers postprocessors;
-    postprocessors.Register(
-        "JouleHeatingAux",
-        std::make_shared<hephaestus::VectorGridFunctionDotProductAux>("joule_heating_load",
-                                                                      "JouleHeating",
-                                                                      "electrical_conductivity",
-                                                                      "electric_field",
-                                                                      "electric_field"));
     hephaestus::Sources sources;
-    hephaestus::InputParameters scalar_potential_source_params;
-    scalar_potential_source_params.SetParam("GradPotentialName", std::string("source"));
-    scalar_potential_source_params.SetParam("PotentialName", std::string("electric_potential"));
-    scalar_potential_source_params.SetParam("HCurlFESpaceName", std::string("HCurlSource"));
-    scalar_potential_source_params.SetParam("H1FESpaceName", std::string("H1Source"));
-    scalar_potential_source_params.SetParam("ConductivityCoefName",
-                                            std::string("electrical_conductivity"));
+
     hephaestus::InputParameters current_solver_options;
     current_solver_options.SetParam("Tolerance", float(1.0e-9));
     current_solver_options.SetParam("MaxIter", (unsigned int)1000);
     current_solver_options.SetParam("PrintLevel", -1);
-    scalar_potential_source_params.SetParam("SolverOptions", current_solver_options);
-    sources.Register(
-        "source",
-        std::make_shared<hephaestus::ScalarPotentialSource>(scalar_potential_source_params));
+    sources.Register("source",
+                     std::make_shared<hephaestus::ScalarPotentialSource>("source",
+                                                                         "electric_potential",
+                                                                         "HCurlSource",
+                                                                         "H1Source",
+                                                                         "electrical_conductivity",
+                                                                         -1,
+                                                                         current_solver_options));
 
     hephaestus::InputParameters solver_options;
     solver_options.SetParam("Tolerance", float(1.0e-9));
@@ -180,10 +171,16 @@ TEST_CASE_METHOD(TestEBFormCoupled, "TestEBFormCoupled", "[CheckRun]")
   problem_builder->SetMesh(pmesh);
   problem_builder->AddFESpace(std::string("L2"), std::string("L2_3D_P1"));
   problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P1"));
+  problem_builder->AddFESpace(std::string("HDiv"), std::string("RT_3D_P0"));
+  problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P1"));
   problem_builder->AddFESpace(std::string("H1Source"), std::string("H1_3D_P2"));
   problem_builder->AddFESpace(std::string("HCurlSource"), std::string("ND_3D_P2"));
+  problem_builder->AddGridFunction(std::string("current_density"), std::string("L2"));
   problem_builder->AddGridFunction(std::string("joule_heating_load"), std::string("L2"));
   problem_builder->AddGridFunction(std::string("temperature"), std::string("H1"));
+  problem_builder->RegisterCurrentDensityAux("current_density");
+  problem_builder->RegisterJouleHeatingDensityAux(
+      "joule_heating_load", "electric_field", "current_density");
   problem_builder->SetBoundaryConditions(bc_map);
   problem_builder->SetAuxSolvers(preprocessors);
   problem_builder->SetCoefficients(coefficients);

@@ -29,15 +29,10 @@ defineCoefficients(double Itotal)
 hephaestus::Sources
 defineSources(std::pair<int, int> elec, mfem::Array<int> coil_domains)
 {
-  hephaestus::InputParameters coilsolver_pars;
-  coilsolver_pars.SetParam("GradPotentialName", std::string("grad_phi"));
-  coilsolver_pars.SetParam("PotentialName", std::string("auxiliary_potential"));
-  coilsolver_pars.SetParam("IFuncCoefName", std::string("I"));
-  coilsolver_pars.SetParam("ConductivityCoefName", std::string("electrical_conductivity"));
-
   hephaestus::Sources sources;
-  sources.Register(
-      "source", std::make_shared<hephaestus::OpenCoilSolver>(coilsolver_pars, coil_domains, elec));
+  sources.Register("source",
+                   std::make_shared<hephaestus::OpenCoilSolver>(
+                       "grad_phi", "phi", "I", "electrical_conductivity", coil_domains, elec));
   return sources;
 }
 
@@ -136,6 +131,7 @@ main(int argc, char * argv[])
   problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P1"));
   problem_builder->AddFESpace(std::string("HDiv"), std::string("RT_3D_P0"));
   problem_builder->AddGridFunction(std::string("magnetic_vector_potential"), std::string("HCurl"));
+  problem_builder->AddGridFunction(std::string("phi"), std::string("H1"));
   problem_builder->AddGridFunction(std::string("grad_phi"), std::string("HCurl"));
   problem_builder->AddGridFunction(std::string("magnetic_flux_density"), std::string("HDiv"));
   problem_builder->RegisterMagneticFluxDensityAux("magnetic_flux_density");

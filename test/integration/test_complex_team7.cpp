@@ -129,18 +129,15 @@ protected:
         std::make_shared<mfem::PWVectorCoefficient>(3, coilsegments, sourcecoefs);
     coefficients._vectors.Register("source", j_src_restricted);
 
-    hephaestus::InputParameters div_free_source_params;
-    div_free_source_params.SetParam("SourceName", std::string("source"));
-    div_free_source_params.SetParam("PotentialName", std::string("electric_potential"));
-    div_free_source_params.SetParam("ConductivityCoefName", std::string("electrical_conductivity"));
-    div_free_source_params.SetParam("HCurlFESpaceName", std::string("HCurl"));
-    div_free_source_params.SetParam("H1FESpaceName", std::string("H1"));
     hephaestus::InputParameters current_solver_options;
     current_solver_options.SetParam("Tolerance", float(1.0e-12));
     current_solver_options.SetParam("MaxIter", (unsigned int)200);
     current_solver_options.SetParam("PrintLevel", 1);
-    div_free_source_params.SetParam("SolverOptions", current_solver_options);
-    sources.Register("source", std::make_shared<hephaestus::DivFreeSource>(div_free_source_params));
+
+    sources.Register(
+        "source",
+        std::make_shared<hephaestus::DivFreeSource>(
+            "source", "source", "HCurl", "H1", "electric_potential", current_solver_options));
 
     hephaestus::InputParameters solver_options;
     solver_options.SetParam("Tolerance", float(1.0e-16));

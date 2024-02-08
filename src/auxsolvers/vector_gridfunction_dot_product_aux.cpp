@@ -55,9 +55,14 @@ void
 VectorGridFunctionDotProductAux::Init(const hephaestus::GridFunctions & gridfunctions,
                                       hephaestus::Coefficients & coefficients)
 {
-
-  _scaling_coef = coefficients._scalars.Get(_scaling_coef_name);
-
+  if (_scaling_coef_name.empty())
+  {
+    _scaling_coef = coefficients._scalars.Get("_one");
+  }
+  else
+  {
+    _scaling_coef = coefficients._scalars.Get(_scaling_coef_name);
+  }
   if (_complex_average)
   {
     _u_gf_re = gridfunctions.Get(_u_gf_real_name);

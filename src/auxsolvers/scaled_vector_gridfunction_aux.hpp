@@ -15,6 +15,8 @@ public:
       std::string scaled_gf_name,
       std::string coef_name,
       const double & aConst = 1.0,
+      const double & bConst = 1.0,
+      std::string shift_gf_name = "",
       hephaestus::InputParameters solver_options = hephaestus::InputParameters());
 
   ~ScaledVectorGridFunctionAux() override = default;
@@ -41,8 +43,10 @@ protected:
 private:
   const std::string _input_gf_name;
   const std::string _scaled_gf_name;
+  const std::string _shift_gf_name;
   const std::string _coef_name;
   const double _a_const;
+  const double _b_const;
   const hephaestus::InputParameters _solver_options;
 
   // Input gridfunction to be scaled by a scalar coefficient
@@ -50,6 +54,9 @@ private:
 
   // Gridfunction in which to store result
   mfem::ParGridFunction * _scaled_gf{nullptr};
+
+  // Optional gridfunction in which to shift result by
+  mfem::ParGridFunction * _shift_gf{nullptr};
 
   // Operator matrices
   std::unique_ptr<mfem::HypreParMatrix> _a_mat{nullptr};

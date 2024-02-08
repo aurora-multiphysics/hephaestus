@@ -90,21 +90,19 @@ protected:
     hephaestus::AuxSolvers preprocessors;
     hephaestus::AuxSolvers postprocessors;
     hephaestus::Sources sources;
-    hephaestus::InputParameters scalar_potential_source_params;
-    scalar_potential_source_params.SetParam("GradPotentialName", std::string("source"));
-    scalar_potential_source_params.SetParam("PotentialName", std::string("electric_potential"));
-    scalar_potential_source_params.SetParam("HCurlFESpaceName", std::string("HCurl"));
-    scalar_potential_source_params.SetParam("H1FESpaceName", std::string("H1"));
-    scalar_potential_source_params.SetParam("ConductivityCoefName",
-                                            std::string("electrical_conductivity"));
+
     hephaestus::InputParameters current_solver_options;
     current_solver_options.SetParam("Tolerance", float(1.0e-9));
     current_solver_options.SetParam("MaxIter", (unsigned int)1000);
     current_solver_options.SetParam("PrintLevel", -1);
-    scalar_potential_source_params.SetParam("SolverOptions", current_solver_options);
-    sources.Register(
-        "source",
-        std::make_shared<hephaestus::ScalarPotentialSource>(scalar_potential_source_params));
+    sources.Register("source",
+                     std::make_shared<hephaestus::ScalarPotentialSource>("source",
+                                                                         "electric_potential",
+                                                                         "HCurl",
+                                                                         "H1",
+                                                                         "electrical_conductivity",
+                                                                         -1,
+                                                                         current_solver_options));
 
     hephaestus::InputParameters solver_options;
     solver_options.SetParam("Tolerance", float(1.0e-9));

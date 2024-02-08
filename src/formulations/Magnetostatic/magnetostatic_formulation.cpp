@@ -29,7 +29,8 @@ MagnetostaticFormulation::MagnetostaticFormulation(
 }
 
 void
-MagnetostaticFormulation::RegisterMagneticFluxDensityAux(const std::string & b_field_name)
+MagnetostaticFormulation::RegisterMagneticFluxDensityAux(const std::string & b_field_name,
+                                                         const std::string & external_b_field_name)
 {
   //* Magnetic flux density, B = ∇×A
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
@@ -38,13 +39,19 @@ MagnetostaticFormulation::RegisterMagneticFluxDensityAux(const std::string & b_f
 }
 
 void
-MagnetostaticFormulation::RegisterMagneticFieldAux(const std::string & h_field_name)
+MagnetostaticFormulation::RegisterMagneticFieldAux(const std::string & h_field_name,
+                                                   const std::string & external_h_field_name)
 {
   //* Magnetic field H = ν∇×A
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
-  auxsolvers.Register(h_field_name,
-                      std::make_shared<hephaestus::ScaledCurlVectorGridFunctionAux>(
-                          _h_curl_var_name, h_field_name, _magnetic_reluctivity_name));
+  auxsolvers.Register(
+      h_field_name,
+      std::make_shared<hephaestus::ScaledCurlVectorGridFunctionAux>(_h_curl_var_name,
+                                                                    h_field_name,
+                                                                    _magnetic_reluctivity_name,
+                                                                    1.0,
+                                                                    1.0,
+                                                                    external_h_field_name));
 }
 
 void
