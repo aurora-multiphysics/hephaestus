@@ -166,7 +166,8 @@ TEST_CASE_METHOD(TestComplexIrisWaveguide, "TestComplexIrisWaveguide", "[CheckRu
   problem_builder->RegisterJouleHeatingDensityAux("joule_heating_density",
                                                   "electric_field_real",
                                                   "electric_field_imag",
-                                                  "electrical_conductivity");
+                                                  "current_density_real",
+                                                  "current_density_imag");
 
   problem_builder->SetCoefficients(coefficients);
   problem_builder->SetPostprocessors(postprocessors);

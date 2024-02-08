@@ -106,20 +106,16 @@ defineCoefficients()
 hephaestus::Sources
 defineSources()
 {
-  hephaestus::InputParameters div_free_source_params;
-  div_free_source_params.SetParam("SourceName", std::string("source"));
-  div_free_source_params.SetParam("HCurlFESpaceName", std::string("HCurl"));
-  div_free_source_params.SetParam("H1FESpaceName", std::string("H1"));
-
   hephaestus::InputParameters current_solver_options;
   current_solver_options.SetParam("Tolerance", float(1.0e-12));
   current_solver_options.SetParam("MaxIter", (unsigned int)200);
   current_solver_options.SetParam("PrintLevel", 0);
-  div_free_source_params.SetParam("SolverOptions", current_solver_options);
 
   hephaestus::Sources sources;
-  sources.Register("source", std::make_shared<hephaestus::DivFreeSource>(div_free_source_params));
-
+  sources.Register(
+      "source",
+      std::make_shared<hephaestus::DivFreeSource>(
+          "source", "source", "HCurl", "H1", "_source_potential", current_solver_options, false));
   return sources;
 }
 

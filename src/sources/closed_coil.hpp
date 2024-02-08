@@ -14,9 +14,20 @@ class ClosedCoilSolver : public hephaestus::Source
 {
 
 public:
-  ClosedCoilSolver(const hephaestus::InputParameters & params,
+  ClosedCoilSolver(std::string source_efield_gf_name,
+                   std::string hcurl_fespace_name,
+                   std::string h1_fespace_name,
+                   std::string i_coef_name,
+                   std::string cond_coef_name,
                    mfem::Array<int> coil_dom,
-                   const int electrode_face);
+                   const int electrode_face,
+                   bool electric_field_transfer = false,
+                   std::string source_jfield_gf_name = "",
+                   hephaestus::InputParameters solver_options =
+                       hephaestus::InputParameters({{"Tolerance", float(1.0e-18)},
+                                                    {"AbsTolerance", float(1.0e-18)},
+                                                    {"MaxIter", (unsigned int)1000},
+                                                    {"PrintLevel", 1}}));
 
   // Override virtual Source destructor to avoid leaks.
   ~ClosedCoilSolver() override = default;
@@ -73,22 +84,24 @@ private:
 
   // Here, we are solving for -(σ∇Va,∇ψ) = (σ∇Vt,∇ψ), where ∇Vt is grad_phi_t (within its relevant
   // mesh), ∇Va is grad_phi_aux, and their sum ∇Vt+∇Va is the full grad_phi, which is, up to an
-  // overall sign, equal to the electric field in the electrostatic case. Seting grad_phi_transfer_
-  // to true will negatively affect performance, but the final grad_phi function will be transferred
-  // to a GridFunction for viewing purposes. Only set to true if you wish to visualise the final
-  // grad_phi.
-  bool _grad_phi_transfer{false};
+  // overall sign, equal to the electric field in the electrostatic case. Setting
+  // _electric_field_transfer to true will negatively affect performance, but the final electric
+  // field function will be transferred to a GridFunction for viewing purposes. Only set to true if
+  // you wish to visualise the final electric field.
+  bool _electric_field_transfer{false};
 
   // Names
   std::string _hcurl_fespace_name;
   std::string _cond_coef_name;
   std::string _h1_fespace_name;
-  std::string _grad_phi_name;
+  std::string _source_electric_field_name;
+  std::string _source_current_density_name;
   std::string _i_coef_name;
 
   // Parent mesh, FE space, and current
   mfem::ParMesh * _mesh_parent{nullptr};
-  std::shared_ptr<mfem::ParGridFunction> _grad_phi_parent{nullptr};
+  std::shared_ptr<mfem::ParGridFunction> _source_electric_field{nullptr};
+  std::shared_ptr<mfem::ParGridFunction> _source_current_density{nullptr};
   mfem::ParFiniteElementSpace * _h_curl_fe_space_parent{nullptr};
   std::shared_ptr<mfem::ParFiniteElementSpace> _h1_fe_space_parent{nullptr};
 
@@ -97,17 +110,17 @@ private:
   std::unique_ptr<mfem::H1_FECollection> _h1_fe_space_coil_fec{nullptr};
 
   // In case J transfer is true
-  std::unique_ptr<mfem::ParGridFunction> _grad_phi_t_parent{nullptr};
+  std::unique_ptr<mfem::ParGridFunction> _electric_field_t_parent{nullptr};
 
   // Coil mesh, FE Space, and current
   std::unique_ptr<mfem::ParSubMesh> _mesh_coil{nullptr};
   std::unique_ptr<mfem::ParSubMesh> _mesh_t{nullptr};
   std::unique_ptr<mfem::ParFiniteElementSpace> _h1_fe_space_coil{nullptr};
-  std::unique_ptr<mfem::ParGridFunction> _grad_phi_aux_coil{nullptr};
+  std::unique_ptr<mfem::ParGridFunction> _electric_field_aux_coil{nullptr};
   std::unique_ptr<mfem::ParGridFunction> _v_coil{nullptr};
 
-  std::unique_ptr<mfem::ND_FECollection> _grad_phi_aux_coil_fec{nullptr};
-  std::unique_ptr<mfem::ParFiniteElementSpace> _grad_phi_aux_coil_fes{nullptr};
+  std::unique_ptr<mfem::ND_FECollection> _electric_field_aux_coil_fec{nullptr};
+  std::unique_ptr<mfem::ParFiniteElementSpace> _electric_field_aux_coil_fes{nullptr};
 
   // Final LinearForm
   std::unique_ptr<mfem::ParLinearForm> _final_lf{nullptr};

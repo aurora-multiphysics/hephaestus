@@ -15,16 +15,20 @@ P(g) = g + β∇p - ∇×M
 via the weak form:
 (g, ∇q) - (∇Q, ∇q) - <P(g).n, q> = 0
 */
-DivFreeSource::DivFreeSource(const hephaestus::InputParameters & params)
-  : _src_coef_name(params.GetParam<std::string>("SourceName")),
-    _src_gf_name(params.GetParam<std::string>("SourceName")),
-    _hcurl_fespace_name(params.GetParam<std::string>("HCurlFESpaceName")),
-    _h1_fespace_name(params.GetParam<std::string>("H1FESpaceName")),
-    _potential_gf_name(
-        params.GetOptionalParam<std::string>("PotentialName", std::string("_source_potential"))),
-    _solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
-        "SolverOptions", hephaestus::InputParameters())),
-    _perform_helmholtz_projection(params.GetOptionalParam<bool>("HelmholtzProjection", true)),
+DivFreeSource::DivFreeSource(std::string src_coef_name,
+                             std::string src_gf_name,
+                             std::string hcurl_fespace_name,
+                             std::string h1_fespace_name,
+                             std::string potential_gf_name,
+                             hephaestus::InputParameters solver_options,
+                             bool perform_helmholtz_projection)
+  : _src_coef_name(std::move(src_coef_name)),
+    _src_gf_name(std::move(src_gf_name)),
+    _hcurl_fespace_name(std::move(hcurl_fespace_name)),
+    _h1_fespace_name(std::move(h1_fespace_name)),
+    _potential_gf_name(std::move(potential_gf_name)),
+    _solver_options(std::move(solver_options)),
+    _perform_helmholtz_projection(std::move(perform_helmholtz_projection)),
     _h_curl_mass(nullptr)
 {
 }

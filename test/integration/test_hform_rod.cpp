@@ -97,21 +97,19 @@ protected:
     hephaestus::AuxSolvers preprocessors;
     hephaestus::AuxSolvers postprocessors;
     hephaestus::Sources sources;
-    hephaestus::InputParameters scalar_potential_source_params;
-    scalar_potential_source_params.SetParam("GradPotentialName", std::string("source"));
-    scalar_potential_source_params.SetParam("PotentialName", std::string("magnetic_potential"));
-    scalar_potential_source_params.SetParam("HCurlFESpaceName", std::string("_HCurlFESpace"));
-    scalar_potential_source_params.SetParam("H1FESpaceName", std::string("H1"));
-    scalar_potential_source_params.SetParam("ConductivityCoefName",
-                                            std::string("magnetic_permeability"));
+
     hephaestus::InputParameters current_solver_options;
     current_solver_options.SetParam("Tolerance", float(1.0e-12));
     current_solver_options.SetParam("MaxIter", (unsigned int)200);
     current_solver_options.SetParam("PrintLevel", 0);
-    scalar_potential_source_params.SetParam("SolverOptions", current_solver_options);
-    sources.Register(
-        "source",
-        std::make_shared<hephaestus::ScalarPotentialSource>(scalar_potential_source_params));
+    sources.Register("source",
+                     std::make_shared<hephaestus::ScalarPotentialSource>("source",
+                                                                         "magnetic_potential",
+                                                                         "_HCurlFESpace",
+                                                                         "H1",
+                                                                         "magnetic_permeability",
+                                                                         1,
+                                                                         current_solver_options));
 
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));

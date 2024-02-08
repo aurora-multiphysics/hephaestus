@@ -15,6 +15,8 @@ public:
       const std::string & scaled_gf_name,
       const std::string & coef_name,
       const double & aConst = 1.0,
+      const double & bConst = 1.0,
+      const std::string & shift_gf_name = "",
       const hephaestus::InputParameters & solver_options = hephaestus::InputParameters());
 
   ~ScaledCurlVectorGridFunctionAux() override = default;

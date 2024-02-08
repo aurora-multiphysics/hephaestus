@@ -29,11 +29,14 @@ TEST_CASE("ConductivityOpenCoil", "[CheckData]")
       std::make_shared<mfem::ParFiniteElementSpace>(pmesh.get(), &h_curl_collection);
   auto e = std::make_shared<mfem::ParGridFunction>(h_curl_fe_space.get());
 
+  mfem::H1_FECollection h1_collection(order, pmesh.get()->Dimension());
+  auto h1_fe_space = std::make_shared<mfem::ParFiniteElementSpace>(pmesh.get(), &h1_collection);
+  auto v = std::make_shared<mfem::ParGridFunction>(h1_fe_space.get());
+
   double ival = 10.0;
   auto itot = std::make_shared<mfem::ConstantCoefficient>(ival);
   auto conductivity = std::make_shared<mfem::FunctionCoefficient>(sigma);
 
-  hephaestus::InputParameters ocs_params;
   hephaestus::BCMap bc_maps;
 
   hephaestus::Coefficients coefficients;
@@ -42,27 +45,25 @@ TEST_CASE("ConductivityOpenCoil", "[CheckData]")
 
   hephaestus::FESpaces fespaces;
   fespaces.Register(std::string("HCurl"), h_curl_fe_space);
+  fespaces.Register(std::string("H1"), h1_fe_space);
 
   hephaestus::GridFunctions gridfunctions;
   gridfunctions.Register(std::string("E"), e);
-
-  ocs_params.SetParam("GradPotentialName", std::string("E"));
-  ocs_params.SetParam("IFuncCoefName", std::string("Itotal"));
-  ocs_params.SetParam("PotentialName", std::string("V"));
-  ocs_params.SetParam("ConductivityCoefName", std::string("Conductivity"));
-  ocs_params.SetParam("GradPhiTransfer", true);
+  gridfunctions.Register(std::string("V"), v);
 
   std::pair<int, int> elec_attrs{2, 3};
   mfem::Array<int> submesh_domains;
   submesh_domains.Append(1);
 
-  hephaestus::OpenCoilSolver opencoil(ocs_params, submesh_domains, elec_attrs);
+  hephaestus::OpenCoilSolver opencoil(
+      "E", "V", "Itotal", "Conductivity", submesh_domains, elec_attrs, true);
   opencoil.Init(gridfunctions, fespaces, bc_maps, coefficients);
   mfem::ParLinearForm dummy(h_curl_fe_space.get());
   opencoil.Apply(&dummy);
 
-  double flux1 = hephaestus::calcFlux(e.get(), 4, *conductivity);
-  double flux2 = hephaestus::calcFlux(e.get(), 5, *conductivity);
+  //- sign comes from the direction of the outward facing normal relative to elec_attrs order
+  double flux1 = -hephaestus::calcFlux(e.get(), 4, *conductivity);
+  double flux2 = -hephaestus::calcFlux(e.get(), 5, *conductivity);
 
   REQUIRE_THAT(flux1 + flux2, Catch::Matchers::WithinAbs(ival, eps));
   REQUIRE_THAT(flux1 / flux2, Catch::Matchers::WithinAbs(r, eps));

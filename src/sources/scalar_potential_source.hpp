@@ -7,7 +7,13 @@ namespace hephaestus
 class ScalarPotentialSource : public hephaestus::Source
 {
 public:
-  ScalarPotentialSource(const hephaestus::InputParameters & params);
+  ScalarPotentialSource(std::string grad_phi_gf_name,
+                        std::string phi_gf_name,
+                        std::string hcurl_fespace_name,
+                        std::string h1_fespace_name,
+                        std::string coef_name,
+                        int source_sign = -1,
+                        hephaestus::InputParameters solver_options = hephaestus::InputParameters());
 
   // Override virtual Source destructor to prevent leaks.
   ~ScalarPotentialSource() override;
@@ -24,18 +30,17 @@ public:
   void BuildWeakDiv();
   void BuildGrad();
 
-  std::string _grad_phi_name;
-  std::string _src_coef_name;
-  std::string _potential_gf_name;
+  std::string _grad_phi_gf_name;
+  std::string _phi_gf_name;
   std::string _hcurl_fespace_name;
   std::string _h1_fespace_name;
-  std::string _beta_coef_name;
-
+  std::string _coef_name;
+  int _source_sign;
   const hephaestus::InputParameters _solver_options;
 
   mfem::ParFiniteElementSpace * _h1_fe_space{nullptr};
   mfem::ParFiniteElementSpace * _h_curl_fe_space{nullptr};
-  std::shared_ptr<mfem::ParGridFunction> _p{nullptr}; // Potential
+  std::shared_ptr<mfem::ParGridFunction> _phi{nullptr}; // Potential
   hephaestus::BCMap * _bc_map{nullptr};
   mfem::Coefficient * _beta_coef{nullptr};
 
@@ -55,7 +60,7 @@ public:
   mutable std::unique_ptr<hephaestus::DefaultH1PCGSolver> _a0_solver{nullptr};
 
   std::unique_ptr<mfem::ParLinearForm> _b0{nullptr};
-  std::shared_ptr<mfem::ParGridFunction> _grad_p{nullptr};
+  std::shared_ptr<mfem::ParGridFunction> _grad_phi{nullptr};
   mfem::ParGridFunction * _x_div{nullptr};
   mfem::VectorCoefficient * _source_vec_coef{nullptr};
   mfem::ParGridFunction * _div_free_src_gf{nullptr}; // Source field
