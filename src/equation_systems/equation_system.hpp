@@ -87,14 +87,10 @@ protected:
 
   // Arrays to store kernels to act on each component of weak form. Named
   // according to test variable
-  hephaestus::NamedFieldsMap<std::vector<std::shared_ptr<ParBilinearFormKernel>>> _blf_kernels_map;
-
-  hephaestus::NamedFieldsMap<std::vector<std::shared_ptr<ParLinearFormKernel>>> _lf_kernels_map;
-
-  hephaestus::NamedFieldsMap<std::vector<std::shared_ptr<ParNonlinearFormKernel>>> _nlf_kernels_map;
-
-  hephaestus::NamedFieldsMap<
-      hephaestus::NamedFieldsMap<std::vector<std::shared_ptr<ParMixedBilinearFormKernel>>>>
+  hephaestus::NamedFieldsMap<ParBilinearFormKernelStore> _blf_kernels_map;
+  hephaestus::NamedFieldsMap<ParLinearFormKernelStore> _lf_kernels_map;
+  hephaestus::NamedFieldsMap<ParNonlinearFormKernelStore> _nlf_kernels_map;
+  hephaestus::NamedFieldsMap<hephaestus::NamedFieldsMap<ParMixedBilinearFormKernelStore>>
       _mblf_kernels_map_map;
 };
 
