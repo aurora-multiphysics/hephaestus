@@ -7,7 +7,7 @@ namespace hephaestus
 /*
 (σ u, ∇ V')
 */
-class VectorFEWeakDivergenceKernel : public Kernel<mfem::ParMixedBilinearForm>
+class VectorFEWeakDivergenceKernel : public ParMixedBilinearFormKernel
 {
 public:
   VectorFEWeakDivergenceKernel(const hephaestus::InputParameters & params);
