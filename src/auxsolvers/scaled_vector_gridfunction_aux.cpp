@@ -37,6 +37,8 @@ ScaledVectorGridFunctionAux::Init(const hephaestus::GridFunctions & gridfunction
 {
   _input_gf = gridfunctions.Get(_input_gf_name);
   _scaled_gf = gridfunctions.Get(_scaled_gf_name);
+  _coef = coefficients._scalars.Get(_coef_name);
+
   if (!_shift_gf_name.empty())
   {
     _shift_gf = gridfunctions.Get(_shift_gf_name);
