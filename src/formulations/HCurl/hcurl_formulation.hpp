@@ -18,7 +18,9 @@ public:
 
   void ConstructEquationSystem() override;
 
-  void ConstructOperator() override;
+  void ConstructJacobianPreconditioner() override;
+
+  void ConstructJacobianSolver() override;
 
   void RegisterGridFunctions() override;
 
@@ -42,22 +44,6 @@ public:
   void AddKernels() override;
 
   std::string _h_curl_var_name, _alpha_coef_name, _beta_coef_name, _dtalpha_coef_name;
-};
-
-class HCurlOperator : public TimeDomainEquationSystemOperator
-{
-public:
-  HCurlOperator(mfem::ParMesh & pmesh,
-                hephaestus::FESpaces & fespaces,
-                hephaestus::GridFunctions & gridfunctions,
-                hephaestus::BCMap & bc_map,
-                hephaestus::Coefficients & coefficients,
-                hephaestus::Sources & sources,
-                hephaestus::InputParameters & solver_options);
-
-  ~HCurlOperator() override = default;
-
-  void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
 };
 
 } // namespace hephaestus

@@ -46,7 +46,7 @@ public:
 
   void ConstructState() override;
 
-  void ConstructSolver() override {}
+  void ConstructTimestepper() override {}
 
 protected:
   std::unique_ptr<hephaestus::SteadyStateProblem> _problem{nullptr};

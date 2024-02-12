@@ -64,18 +64,26 @@ HCurlFormulation::ConstructEquationSystem()
 }
 
 void
-HCurlFormulation::ConstructOperator()
+HCurlFormulation::ConstructJacobianPreconditioner()
 {
-  _problem->_td_operator = std::make_unique<hephaestus::HCurlOperator>(*(_problem->_pmesh),
-                                                                       _problem->_fespaces,
-                                                                       _problem->_gridfunctions,
-                                                                       _problem->_bc_map,
-                                                                       _problem->_coefficients,
-                                                                       _problem->_sources,
-                                                                       _problem->_solver_options);
-  _problem->_td_operator->SetEquationSystem(_problem->_td_equation_system.get());
-  _problem->_td_operator->SetGridFunctions();
-};
+  std::shared_ptr<mfem::HypreAMS> precond{
+      std::make_shared<mfem::HypreAMS>(_problem->GetEquationSystem()->_test_pfespaces.at(0))};
+  precond->SetSingularProblem();
+  precond->SetPrintLevel(-1);
+  _problem->_jacobian_preconditioner = precond;
+}
+
+void
+HCurlFormulation::ConstructJacobianSolver()
+{
+  std::shared_ptr<mfem::HyprePCG> solver{std::make_shared<mfem::HyprePCG>(_problem->_comm)};
+  solver->SetTol(1e-16);
+  solver->SetMaxIter(1000);
+  solver->SetPrintLevel(-1);
+  solver->SetPreconditioner(
+      *std::dynamic_pointer_cast<mfem::HypreSolver>(_problem->_jacobian_preconditioner));
+  _problem->_jacobian_solver = solver;
+}
 
 void
 HCurlFormulation::RegisterGridFunctions()
@@ -158,59 +166,6 @@ HCurlFormulation::RegisterCoefficients()
   {
     MFEM_ABORT(_beta_coef_name + " coefficient not found.");
   }
-}
-
-HCurlOperator::HCurlOperator(mfem::ParMesh & pmesh,
-                             hephaestus::FESpaces & fespaces,
-                             hephaestus::GridFunctions & gridfunctions,
-                             hephaestus::BCMap & bc_map,
-                             hephaestus::Coefficients & coefficients,
-                             hephaestus::Sources & sources,
-                             hephaestus::InputParameters & solver_options)
-  : TimeDomainEquationSystemOperator(
-        pmesh, fespaces, gridfunctions, bc_map, coefficients, sources, solver_options)
-{
-}
-
-/*
-This is the main computational code that computes dX/dt implicitly
-where X is the state vector containing p, u and v.
-
-Unknowns
-s0_{n+1} ∈ H(div) source field, where s0 = -β∇p
-du/dt_{n+1} ∈ H(curl)
-p_{n+1} ∈ H1
-
-Fully discretised equations
--(s0_{n+1}, ∇ p') + <n.s0_{n+1}, p'> = 0
-(α∇×u_{n}, ∇×u') + (αdt∇×du/dt_{n+1}, ∇×u') + (βdu/dt_{n+1}, u')
-- (s0_{n+1}, u') - <(α∇×u_{n+1}) × n, u'> = 0
-using
-u_{n+1} = u_{n} + dt du/dt_{n+1}
-*/
-void
-HCurlOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt)
-{
-  for (unsigned int ind = 0; ind < _local_test_vars.size(); ++ind)
-  {
-    _local_test_vars.at(ind)->MakeRef(
-        _local_test_vars.at(ind)->ParFESpace(), const_cast<mfem::Vector &>(X), _true_offsets[ind]);
-    _local_trial_vars.at(ind)->MakeRef(
-        _local_trial_vars.at(ind)->ParFESpace(), dX_dt, _true_offsets[ind]);
-  }
-  _coefficients.SetTime(GetTime());
-  _equation_system->SetTimeStep(dt);
-  _equation_system->UpdateEquationSystem(_bc_map, _sources);
-
-  _equation_system->FormLinearSystem(_block_a, _true_x, _true_rhs);
-
-  _jacobian_solver =
-      std::make_unique<hephaestus::DefaultHCurlPCGSolver>(_solver_options,
-                                                          *_block_a.As<mfem::HypreParMatrix>(),
-                                                          _equation_system->_test_pfespaces.at(0));
-
-  _jacobian_solver->Mult(_true_rhs, _true_x);
-  _equation_system->RecoverFEMSolution(_true_x, _gridfunctions);
 }
 
 } // namespace hephaestus

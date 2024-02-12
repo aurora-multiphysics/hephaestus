@@ -59,20 +59,6 @@ AVFormulation::ConstructEquationSystem()
 }
 
 void
-AVFormulation::ConstructOperator()
-{
-  _problem->_td_operator = std::make_unique<hephaestus::AVOperator>(*(_problem->_pmesh),
-                                                                    _problem->_fespaces,
-                                                                    _problem->_gridfunctions,
-                                                                    _problem->_bc_map,
-                                                                    _problem->_coefficients,
-                                                                    _problem->_sources,
-                                                                    _problem->_solver_options);
-  _problem->_td_operator->SetEquationSystem(_problem->_td_equation_system.get());
-  _problem->_td_operator->SetGridFunctions();
-};
-
-void
 AVFormulation::RegisterGridFunctions()
 {
   int & myid = GetProblem()->_myid;
@@ -201,65 +187,5 @@ AVEquationSystem::AddKernels()
       da_dt_name,
       _v_name,
       std::make_shared<hephaestus::VectorFEWeakDivergenceKernel>(vector_fe_weak_divergence_params));
-}
-
-AVOperator::AVOperator(mfem::ParMesh & pmesh,
-                       hephaestus::FESpaces & fespaces,
-                       hephaestus::GridFunctions & gridfunctions,
-                       hephaestus::BCMap & bc_map,
-                       hephaestus::Coefficients & coefficients,
-                       hephaestus::Sources & sources,
-                       hephaestus::InputParameters & solver_options)
-  : TimeDomainEquationSystemOperator(
-        pmesh, fespaces, gridfunctions, bc_map, coefficients, sources, solver_options)
-{
-  // Initialize MPI gridfunctions
-  MPI_Comm_size(pmesh.GetComm(), &_num_procs);
-  MPI_Comm_rank(pmesh.GetComm(), &_myid);
-
-  _aux_var_names.resize(2);
-  _aux_var_names.at(0) = "electric_field";
-  _aux_var_names.at(1) = "magnetic_flux_density";
-}
-
-/*
-This is the main computational code that computes dX/dt implicitly
-where X is the state vector containing p, u and v.
-
-Unknowns
-s0_{n+1} ∈ H(div) source field, where s0 = -β∇p
-du/dt_{n+1} ∈ H(curl)
-p_{n+1} ∈ H1
-
-Fully discretised equations
--(s0_{n+1}, ∇ p') + <n.s0_{n+1}, p'> = 0
-(α∇×u_{n}, ∇×u') + (αdt∇×du/dt_{n+1}, ∇×u') + (βdu/dt_{n+1}, u')
-- (s0_{n+1}, u') - <(α∇×u_{n+1}) × n, u'> = 0
-using
-u_{n+1} = u_{n} + dt du/dt_{n+1}
-*/
-void
-AVOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt)
-{
-  for (unsigned int ind = 0; ind < _local_test_vars.size(); ++ind)
-  {
-    _local_test_vars.at(ind)->MakeRef(
-        _local_test_vars.at(ind)->ParFESpace(), const_cast<mfem::Vector &>(X), _true_offsets[ind]);
-    _local_trial_vars.at(ind)->MakeRef(
-        _local_trial_vars.at(ind)->ParFESpace(), dX_dt, _true_offsets[ind]);
-  }
-  _coefficients.SetTime(GetTime());
-  _equation_system->SetTimeStep(dt);
-  _equation_system->UpdateEquationSystem(_bc_map, _sources);
-
-  _equation_system->FormLinearSystem(_block_a, _true_x, _true_rhs);
-
-  _solver = std::make_unique<hephaestus::DefaultGMRESSolver>(_solver_options,
-                                                             *_block_a.As<mfem::HypreParMatrix>());
-  // solver = new hephaestus::DefaultGMRESSolver(_solver_options, *blockA,
-  //                                             pmesh_->GetComm());
-
-  _solver->Mult(_true_rhs, _true_x);
-  _equation_system->RecoverFEMSolution(_true_x, _gridfunctions);
 }
 } // namespace hephaestus

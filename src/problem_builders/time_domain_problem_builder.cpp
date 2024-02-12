@@ -59,14 +59,7 @@ TimeDomainProblemBuilder::InitializeKernels()
 void
 TimeDomainProblemBuilder::ConstructOperator()
 {
-  _problem->_td_operator =
-      std::make_unique<hephaestus::TimeDomainEquationSystemOperator>(*(_problem->_pmesh),
-                                                                     _problem->_fespaces,
-                                                                     _problem->_gridfunctions,
-                                                                     _problem->_bc_map,
-                                                                     _problem->_coefficients,
-                                                                     _problem->_sources,
-                                                                     _problem->_solver_options);
+  _problem->_td_operator = std::make_unique<hephaestus::TimeDomainProblemOperator>(*_problem);
   _problem->_td_operator->SetEquationSystem(_problem->_td_equation_system.get());
   _problem->_td_operator->SetGridFunctions();
 }
@@ -82,7 +75,7 @@ TimeDomainProblemBuilder::ConstructState()
 }
 
 void
-TimeDomainProblemBuilder::ConstructSolver()
+TimeDomainProblemBuilder::ConstructTimestepper()
 {
   _problem->_ode_solver = std::make_unique<mfem::BackwardEulerSolver>();
   _problem->_ode_solver->Init(*(_problem->_td_operator));

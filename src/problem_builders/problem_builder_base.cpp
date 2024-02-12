@@ -212,6 +212,18 @@ ProblemBuilder::ConstructJacobianSolver()
 }
 
 void
+ProblemBuilder::ConstructNonlinearSolver()
+{
+  std::shared_ptr<mfem::NewtonSolver> nl_solver{
+      std::make_shared<mfem::NewtonSolver>(GetProblem()->_comm)};
+  // Defaults to one iteration, without further nonlinear iterations
+  nl_solver->SetRelTol(0.0);
+  nl_solver->SetAbsTol(0.0);
+  nl_solver->SetMaxIter(1);
+  GetProblem()->_nonlinear_solver = nl_solver;
+}
+
+void
 ProblemBuilder::InitializeAuxSolvers()
 {
   GetProblem()->_preprocessors.Init(GetProblem()->_gridfunctions, GetProblem()->_coefficients);
