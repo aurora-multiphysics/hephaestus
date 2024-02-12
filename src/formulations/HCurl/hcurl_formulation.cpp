@@ -124,7 +124,7 @@ CurlCurlEquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
 void
 CurlCurlEquationSystem::AddKernels()
 {
-  AddVariableNameIfMissing(_h_curl_var_name);
+  AddTrialVariableNameIfMissing(_h_curl_var_name);
   std::string dh_curl_var_dt = GetTimeDerivativeName(_h_curl_var_name);
 
   // (α∇×u_{n}, ∇×u')

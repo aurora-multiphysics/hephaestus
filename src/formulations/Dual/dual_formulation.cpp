@@ -159,8 +159,8 @@ WeakCurlEquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
 void
 WeakCurlEquationSystem::AddKernels()
 {
-  AddVariableNameIfMissing(_h_curl_var_name);
-  AddVariableNameIfMissing(_h_div_var_name);
+  AddTrialVariableNameIfMissing(_h_curl_var_name);
+  AddTrialVariableNameIfMissing(_h_div_var_name);
   std::string dh_curl_var_dt = GetTimeDerivativeName(_h_curl_var_name);
 
   // (αv_{n}, ∇×u')

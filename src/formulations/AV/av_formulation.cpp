@@ -161,23 +161,23 @@ AVEquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
 void
 AVEquationSystem::AddKernels()
 {
-  AddVariableNameIfMissing(_a_name);
+  AddTrialVariableNameIfMissing(_a_name);
   std::string da_dt_name = GetTimeDerivativeName(_a_name);
-  AddVariableNameIfMissing(_v_name);
+  AddTrialVariableNameIfMissing(_v_name);
   std::string dv_dt_name = GetTimeDerivativeName(_v_name);
 
-  // (α∇×A_{n}, ∇×A')
+  // (α∇×A_{n}, ∇×dA'/dt)
   hephaestus::InputParameters weak_curl_curl_params;
   weak_curl_curl_params.SetParam("CoupledVariableName", _a_name);
   weak_curl_curl_params.SetParam("CoefficientName", _alpha_coef_name);
   AddKernel(da_dt_name, std::make_shared<hephaestus::WeakCurlCurlKernel>(weak_curl_curl_params));
 
-  // (αdt∇×dA/dt_{n+1}, ∇×A')
+  // (αdt∇×dA/dt_{n+1}, ∇×dA'/dt)
   hephaestus::InputParameters curl_curl_params;
   curl_curl_params.SetParam("CoefficientName", _dtalpha_coef_name);
   AddKernel(da_dt_name, std::make_shared<hephaestus::CurlCurlKernel>(curl_curl_params));
 
-  // (βdA/dt_{n+1}, A')
+  // (βdA/dt_{n+1}, dA'/dt)
   hephaestus::InputParameters vector_fe_mass_params;
   vector_fe_mass_params.SetParam("CoefficientName", _beta_coef_name);
   AddKernel(da_dt_name, std::make_shared<hephaestus::VectorFEMassKernel>(vector_fe_mass_params));

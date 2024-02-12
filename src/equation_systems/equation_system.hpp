@@ -12,7 +12,7 @@ namespace hephaestus
 Class to store weak form components (bilinear and linear forms, and optionally
 mixed and nonlinear forms) and build methods
 */
-class EquationSystem
+class EquationSystem : public mfem::Operator
 {
 public:
   using ParBilinearFormKernel = hephaestus::Kernel<mfem::ParBilinearForm>;
@@ -23,12 +23,16 @@ public:
   EquationSystem() = default;
   EquationSystem(const hephaestus::InputParameters & params);
 
-  virtual ~EquationSystem();
+  ~EquationSystem() override;
 
-  // Names of all gridfunctions corresponding to gridfunctions. This may differ
-  // from test_var_names when test gridfunctions include time derivatives.
-  std::vector<std::string> _var_names;
-  // Names of all test gridfunctions with kernels in this equation system.
+  // Test variables are associated with LinearForms,
+  // whereas trial variables are associated with gridfunctions.
+
+  // Names of all variables corresponding to gridfunctions. This may differ
+  // from test_var_names when time derivatives are present.
+  std::vector<std::string> _trial_var_names;
+  // Names of all test variables corresponding to linear forms in this equation
+  // system
   std::vector<std::string> _test_var_names;
   std::vector<mfem::ParFiniteElementSpace *> _test_pfespaces;
 
@@ -41,7 +45,7 @@ public:
 
   // add test variable to EquationSystem;
   virtual void AddTestVariableNameIfMissing(const std::string & test_var_name);
-  virtual void AddVariableNameIfMissing(const std::string & var_name);
+  virtual void AddTrialVariableNameIfMissing(const std::string & trial_var_name);
 
   // Add kernels.
   void AddKernel(const std::string & test_var_name,
@@ -76,6 +80,15 @@ public:
                                 mfem::BlockVector & trueX,
                                 mfem::BlockVector & trueRHS);
 
+  // Build linear system, with essential boundary conditions accounted for
+  virtual void BuildJacobian(mfem::BlockVector & trueX, mfem::BlockVector & trueRHS);
+
+  /// Compute residual y = Mu
+  void Mult(const mfem::Vector & u, mfem::Vector & residual) const override;
+
+  /// Compute J = M + grad_H(u)
+  mfem::Operator & GetGradient(const mfem::Vector & u) const override;
+
   // Update variable from solution vector after solve
   virtual void RecoverFEMSolution(mfem::BlockVector & trueX,
                                   hephaestus::GridFunctions & gridfunctions);
@@ -101,6 +114,8 @@ protected:
   hephaestus::NamedFieldsMap<
       hephaestus::NamedFieldsMap<std::vector<std::shared_ptr<ParMixedBilinearFormKernel>>>>
       _mblf_kernels_map_map;
+
+  mutable mfem::OperatorHandle _jacobian;
 };
 
 /*
@@ -116,12 +131,13 @@ public:
   {
     return std::string("d") + name + std::string("_dt");
   }
-  void AddVariableNameIfMissing(const std::string & var_name) override;
+
+  void AddTrialVariableNameIfMissing(const std::string & trial_var_name) override;
 
   virtual void SetTimeStep(double dt);
   virtual void UpdateEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);
   mfem::ConstantCoefficient _dt_coef; // Coefficient for timestep scaling
-  std::vector<std::string> _var_time_derivative_names;
+  std::vector<std::string> _trial_var_time_derivative_names;
 };
 
 } // namespace hephaestus

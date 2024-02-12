@@ -23,9 +23,9 @@ GetTimeDerivativeNames(std::vector<std::string> gridfunction_names)
 void
 TimeDomainEquationSystemOperator::SetGridFunctions()
 {
-  _state_var_names = _equation_system->_var_names;
-  _local_test_vars = _gridfunctions.Get(_equation_system->_var_names);
-  _local_trial_vars = _gridfunctions.Get(_equation_system->_var_time_derivative_names);
+  _state_var_names = _equation_system->_trial_var_names;
+  _local_test_vars = _gridfunctions.Get(_equation_system->_trial_var_names);
+  _local_trial_vars = _gridfunctions.Get(_equation_system->_trial_var_time_derivative_names);
 
   // Set operator size and block structure
   _block_true_offsets.SetSize(_local_test_vars.size() + 1);

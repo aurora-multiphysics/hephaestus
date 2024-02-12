@@ -71,7 +71,7 @@ public:
   template <class T>
   void AddKernel(std::string var_name, std::shared_ptr<hephaestus::Kernel<T>> kernel)
   {
-    GetProblem()->GetEquationSystem()->AddVariableNameIfMissing(var_name);
+    GetProblem()->GetEquationSystem()->AddTrialVariableNameIfMissing(var_name);
     GetProblem()->GetEquationSystem()->AddKernel(var_name, std::move(kernel));
   }
 
