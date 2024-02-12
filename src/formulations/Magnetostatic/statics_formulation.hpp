@@ -14,6 +14,10 @@ public:
 
   ~StaticsFormulation() override = default;
 
+  void ConstructJacobianPreconditioner() override;
+
+  void ConstructJacobianSolver() override;
+
   void ConstructOperator() override;
 
   void RegisterGridFunctions() override;
@@ -25,16 +29,12 @@ protected:
   const std::string _h_curl_var_name;
 };
 
-class StaticsOperator : public EquationSystemOperator
+class StaticsOperator : public ProblemOperator
 {
 public:
-  StaticsOperator(mfem::ParMesh & pmesh,
-                  hephaestus::FESpaces & fespaces,
-                  hephaestus::GridFunctions & gridfunctions,
-                  hephaestus::BCMap & bc_map,
-                  hephaestus::Coefficients & coefficients,
-                  hephaestus::Sources & sources,
-                  hephaestus::InputParameters & solver_options);
+  StaticsOperator(hephaestus::Problem & problem,
+                  std::string h_curl_var_name,
+                  std::string stiffness_coef_name);
 
   ~StaticsOperator() override = default;
 

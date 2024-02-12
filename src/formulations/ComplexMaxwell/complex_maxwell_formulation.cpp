@@ -5,106 +5,6 @@
 namespace hephaestus
 {
 
-ComplexMaxwellOperator::ComplexMaxwellOperator(mfem::ParMesh & pmesh,
-                                               hephaestus::FESpaces & fespaces,
-                                               hephaestus::GridFunctions & gridfunctions,
-                                               hephaestus::BCMap & bc_map,
-                                               hephaestus::Coefficients & coefficients,
-                                               hephaestus::Sources & sources,
-                                               hephaestus::InputParameters & solver_options)
-  : EquationSystemOperator(
-        pmesh, fespaces, gridfunctions, bc_map, coefficients, sources, solver_options),
-    _h_curl_var_complex_name(solver_options.GetParam<std::string>("HCurlVarComplexName")),
-    _h_curl_var_real_name(solver_options.GetParam<std::string>("HCurlVarRealName")),
-    _h_curl_var_imag_name(solver_options.GetParam<std::string>("HCurlVarImagName")),
-    _stiffness_coef_name(solver_options.GetParam<std::string>("StiffnessCoefName")),
-    _mass_coef_name(solver_options.GetParam<std::string>("MassCoefName")),
-    _loss_coef_name(solver_options.GetParam<std::string>("LossCoefName"))
-{
-}
-
-void
-ComplexMaxwellOperator::SetGridFunctions()
-{
-  _state_var_names.push_back(_h_curl_var_real_name);
-  _state_var_names.push_back(_h_curl_var_imag_name);
-
-  EquationSystemOperator::SetGridFunctions();
-
-  _u = std::make_unique<mfem::ParComplexGridFunction>(_local_test_vars.at(0)->ParFESpace());
-  *_u = std::complex(0.0, 0.0);
-};
-
-void
-ComplexMaxwellOperator::Init(mfem::Vector & X)
-{
-  EquationSystemOperator::Init(X);
-
-  _stiff_coef = _coefficients._scalars.Get(_stiffness_coef_name);
-
-  if (_coefficients._scalars.Has(_mass_coef_name))
-    _mass_coef = _coefficients._scalars.Get(_mass_coef_name);
-  if (_coefficients._scalars.Has(_loss_coef_name))
-    _loss_coef = _coefficients._scalars.Get(_loss_coef_name);
-}
-
-void
-ComplexMaxwellOperator::Solve(mfem::Vector & X)
-{
-  mfem::OperatorHandle jac;
-  mfem::Vector u, rhs;
-  mfem::OperatorHandle pc_op;
-
-  mfem::Vector zero_vec(3);
-  zero_vec = 0.0;
-  mfem::VectorConstantCoefficient zero_coef(zero_vec);
-
-  mfem::ParSesquilinearForm sqlf(_u->ParFESpace(), _conv);
-  sqlf.AddDomainIntegrator(new mfem::CurlCurlIntegrator(*_stiff_coef), nullptr);
-  if (_mass_coef)
-  {
-    sqlf.AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*_mass_coef), nullptr);
-  }
-  if (_loss_coef)
-  {
-    sqlf.AddDomainIntegrator(nullptr, new mfem::VectorFEMassIntegrator(*_loss_coef));
-  }
-
-  mfem::ParLinearForm lf_real(_u->ParFESpace());
-  mfem::ParLinearForm lf_imag(_u->ParFESpace());
-  lf_real = 0.0;
-  lf_imag = 0.0;
-
-  _sources.Apply(&lf_real);
-
-  mfem::ParComplexLinearForm lf(_u->ParFESpace(), _conv);
-  _bc_map.ApplyEssentialBCs(_h_curl_var_complex_name, _ess_bdr_tdofs, *_u, _pmesh);
-  _bc_map.ApplyIntegratedBCs(_h_curl_var_complex_name, lf, _pmesh);
-  _bc_map.ApplyIntegratedBCs(_h_curl_var_complex_name, sqlf, _pmesh);
-
-  sqlf.Assemble();
-  sqlf.Finalize();
-
-  lf.Assemble();
-  lf.real() += lf_real;
-  lf.imag() += lf_imag;
-
-  sqlf.FormLinearSystem(_ess_bdr_tdofs, *_u, lf, jac, u, rhs);
-
-  auto * jac_z = jac.As<mfem::ComplexHypreParMatrix>();
-  auto jac_c = std::unique_ptr<mfem::HypreParMatrix>(jac_z->GetSystemMatrix());
-
-  mfem::SuperLURowLocMatrix a_super_lu(*jac_c);
-  mfem::SuperLUSolver solver(MPI_COMM_WORLD);
-  solver.SetOperator(a_super_lu);
-  solver.Mult(rhs, u);
-
-  sqlf.RecoverFEMSolution(u, lf, *_u);
-
-  _gridfunctions.GetRef(_state_var_names.at(0)) = _u->real();
-  _gridfunctions.GetRef(_state_var_names.at(1)) = _u->imag();
-}
-
 ComplexMaxwellFormulation::ComplexMaxwellFormulation(std::string alpha_coef_name,
                                                      std::string beta_coef_name,
                                                      std::string zeta_coef_name,
@@ -125,23 +25,24 @@ ComplexMaxwellFormulation::ComplexMaxwellFormulation(std::string alpha_coef_name
 }
 
 void
+ComplexMaxwellFormulation::ConstructJacobianSolver()
+{
+  std::shared_ptr<hephaestus::SuperLUSolver> solver{
+      std::make_shared<hephaestus::SuperLUSolver>(_problem->_comm)};
+  _problem->_jacobian_solver = solver;
+}
+
+void
 ComplexMaxwellFormulation::ConstructOperator()
 {
-  hephaestus::InputParameters & solver_options = GetProblem()->_solver_options;
-  solver_options.SetParam("HCurlVarComplexName", _h_curl_var_complex_name);
-  solver_options.SetParam("HCurlVarRealName", _h_curl_var_real_name);
-  solver_options.SetParam("HCurlVarImagName", _h_curl_var_imag_name);
-  solver_options.SetParam("StiffnessCoefName", _alpha_coef_name);
-  solver_options.SetParam("MassCoefName", _mass_coef_name);
-  solver_options.SetParam("LossCoefName", _loss_coef_name);
-  _problem->_eq_sys_operator =
-      std::make_unique<hephaestus::ComplexMaxwellOperator>(*(_problem->_pmesh),
-                                                           _problem->_fespaces,
-                                                           _problem->_gridfunctions,
-                                                           _problem->_bc_map,
-                                                           _problem->_coefficients,
-                                                           _problem->_sources,
-                                                           _problem->_solver_options);
+  _problem->_ss_operator =
+      std::make_unique<hephaestus::ComplexMaxwellOperator>(*_problem,
+                                                           _h_curl_var_complex_name,
+                                                           _h_curl_var_real_name,
+                                                           _h_curl_var_imag_name,
+                                                           _alpha_coef_name,
+                                                           _mass_coef_name,
+                                                           _loss_coef_name);
   _problem->GetOperator()->SetGridFunctions();
 }
 
@@ -224,6 +125,102 @@ ComplexMaxwellFormulation::RegisterCoefficients()
       _alpha_coef_name,
       std::make_shared<mfem::TransformedCoefficient>(
           &_one_coef, coefficients._scalars.Get("magnetic_permeability"), fracFunc));
+}
+
+ComplexMaxwellOperator::ComplexMaxwellOperator(hephaestus::Problem & problem,
+                                               std::string h_curl_var_complex_name,
+                                               std::string h_curl_var_real_name,
+                                               std::string h_curl_var_imag_name,
+                                               std::string stiffness_coef_name,
+                                               std::string mass_coef_name,
+                                               std::string loss_coef_name)
+  : ProblemOperator(problem),
+    _h_curl_var_complex_name(std::move(h_curl_var_complex_name)),
+    _h_curl_var_real_name(std::move(h_curl_var_real_name)),
+    _h_curl_var_imag_name(std::move(h_curl_var_imag_name)),
+    _stiffness_coef_name(std::move(stiffness_coef_name)),
+    _mass_coef_name(std::move(mass_coef_name)),
+    _loss_coef_name(std::move(loss_coef_name))
+{
+}
+
+void
+ComplexMaxwellOperator::SetGridFunctions()
+{
+  _trial_var_names.push_back(_h_curl_var_real_name);
+  _trial_var_names.push_back(_h_curl_var_imag_name);
+
+  ProblemOperator::SetGridFunctions();
+
+  _u = std::make_unique<mfem::ParComplexGridFunction>(_trial_variables.at(0)->ParFESpace());
+  *_u = std::complex(0.0, 0.0);
+};
+
+void
+ComplexMaxwellOperator::Init(mfem::Vector & X)
+{
+  ProblemOperator::Init(X);
+
+  _stiff_coef = _problem._coefficients._scalars.Get(_stiffness_coef_name);
+
+  if (_problem._coefficients._scalars.Has(_mass_coef_name))
+    _mass_coef = _problem._coefficients._scalars.Get(_mass_coef_name);
+  if (_problem._coefficients._scalars.Has(_loss_coef_name))
+    _loss_coef = _problem._coefficients._scalars.Get(_loss_coef_name);
+}
+
+void
+ComplexMaxwellOperator::Solve(mfem::Vector & X)
+{
+  mfem::OperatorHandle jac;
+  mfem::Vector u, rhs;
+  mfem::OperatorHandle pc_op;
+
+  mfem::Vector zero_vec(3);
+  zero_vec = 0.0;
+  mfem::VectorConstantCoefficient zero_coef(zero_vec);
+
+  mfem::ParSesquilinearForm sqlf(_u->ParFESpace(), _conv);
+  sqlf.AddDomainIntegrator(new mfem::CurlCurlIntegrator(*_stiff_coef), nullptr);
+  if (_mass_coef)
+  {
+    sqlf.AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*_mass_coef), nullptr);
+  }
+  if (_loss_coef)
+  {
+    sqlf.AddDomainIntegrator(nullptr, new mfem::VectorFEMassIntegrator(*_loss_coef));
+  }
+
+  mfem::ParLinearForm lf_real(_u->ParFESpace());
+  mfem::ParLinearForm lf_imag(_u->ParFESpace());
+  lf_real = 0.0;
+  lf_imag = 0.0;
+
+  _problem._sources.Apply(&lf_real);
+
+  mfem::ParComplexLinearForm lf(_u->ParFESpace(), _conv);
+  _problem._bc_map.ApplyEssentialBCs(
+      _h_curl_var_complex_name, _ess_bdr_tdofs, *_u, _problem._pmesh.get());
+  _problem._bc_map.ApplyIntegratedBCs(_h_curl_var_complex_name, lf, _problem._pmesh.get());
+  _problem._bc_map.ApplyIntegratedBCs(_h_curl_var_complex_name, sqlf, _problem._pmesh.get());
+
+  sqlf.Assemble();
+  sqlf.Finalize();
+
+  lf.Assemble();
+  lf.real() += lf_real;
+  lf.imag() += lf_imag;
+
+  sqlf.FormLinearSystem(_ess_bdr_tdofs, *_u, lf, jac, u, rhs);
+
+  auto * jac_z = jac.As<mfem::ComplexHypreParMatrix>()->GetSystemMatrix();
+
+  _problem._jacobian_solver->SetOperator(*jac_z);
+  _problem._jacobian_solver->Mult(rhs, u);
+  sqlf.RecoverFEMSolution(u, lf, *_u);
+
+  _problem._gridfunctions.GetRef(_trial_var_names.at(0)) = _u->real();
+  _problem._gridfunctions.GetRef(_trial_var_names.at(1)) = _u->imag();
 }
 
 } // namespace hephaestus

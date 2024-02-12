@@ -14,22 +14,15 @@ SteadyStateProblemBuilder::InitializeKernels()
 void
 SteadyStateProblemBuilder::ConstructOperator()
 {
-  _problem->_eq_sys_operator =
-      std::make_unique<hephaestus::EquationSystemOperator>(*(_problem->_pmesh),
-                                                           _problem->_fespaces,
-                                                           _problem->_gridfunctions,
-                                                           _problem->_bc_map,
-                                                           _problem->_coefficients,
-                                                           _problem->_sources,
-                                                           _problem->_solver_options);
-  _problem->_eq_sys_operator->SetGridFunctions();
+  _problem->_ss_operator = std::make_unique<hephaestus::ProblemOperator>(*_problem);
+  _problem->_ss_operator->SetGridFunctions();
 }
 
 void
 SteadyStateProblemBuilder::ConstructState()
 {
-  _problem->_f = std::make_unique<mfem::BlockVector>(
-      _problem->_eq_sys_operator->_true_offsets);    // Vector of dofs
-  _problem->_eq_sys_operator->Init(*(_problem->_f)); // Set up initial conditions
+  _problem->_f =
+      std::make_unique<mfem::BlockVector>(_problem->_ss_operator->_true_offsets); // Vector of dofs
+  _problem->_ss_operator->Init(*(_problem->_f)); // Set up initial conditions
 }
 } // namespace hephaestus

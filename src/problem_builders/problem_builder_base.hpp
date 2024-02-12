@@ -29,10 +29,14 @@ public:
   std::unique_ptr<mfem::ODESolver> _ode_solver{nullptr};
   std::unique_ptr<mfem::BlockVector> _f{nullptr};
 
+  std::shared_ptr<mfem::Solver> _jacobian_preconditioner;
+  std::shared_ptr<mfem::Solver> _jacobian_solver;
+
   hephaestus::FECollections _fecs;
   hephaestus::FESpaces _fespaces;
   hephaestus::GridFunctions _gridfunctions;
 
+  MPI_Comm _comm;
   int _myid;
   int _num_procs;
 
@@ -60,6 +64,8 @@ public:
   void SetSources(hephaestus::Sources & sources);
   void SetOutputs(hephaestus::Outputs & outputs);
   void SetSolverOptions(hephaestus::InputParameters & solver_options);
+  void SetJacobianPreconditioner(std::shared_ptr<mfem::Solver> preconditioner);
+  void SetJacobianSolver(std::shared_ptr<mfem::Solver> solver);
   void SetCoefficients(hephaestus::Coefficients & coefficients);
 
   void AddFESpace(std::string fespace_name,
@@ -87,6 +93,8 @@ public:
 
   virtual void InitializeKernels() = 0;
   virtual void ConstructEquationSystem() = 0;
+  virtual void ConstructJacobianPreconditioner();
+  virtual void ConstructJacobianSolver();
   virtual void ConstructOperator() = 0;
   virtual void ConstructState() = 0;
   virtual void ConstructSolver() = 0;
@@ -127,6 +135,8 @@ public:
     _problem_builder->RegisterAuxSolvers();
     _problem_builder->RegisterCoefficients();
     _problem_builder->InitializeKernels();
+    _problem_builder->ConstructJacobianPreconditioner();
+    _problem_builder->ConstructJacobianSolver();
     _problem_builder->ConstructOperator();
     _problem_builder->ConstructState();
     _problem_builder->InitializeAuxSolvers();

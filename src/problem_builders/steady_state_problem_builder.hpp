@@ -1,5 +1,5 @@
 #pragma once
-#include "equation_system_operator.hpp"
+#include "problem_operator.hpp"
 #include "problem_builder_base.hpp"
 namespace hephaestus
 {
@@ -8,13 +8,13 @@ class SteadyStateProblem : public hephaestus::Problem
 {
 public:
   std::unique_ptr<hephaestus::EquationSystem> _eq_sys{nullptr};
-  std::unique_ptr<hephaestus::EquationSystemOperator> _eq_sys_operator{nullptr};
+  std::unique_ptr<hephaestus::ProblemOperator> _ss_operator{nullptr};
 
   SteadyStateProblem() = default;
   ~SteadyStateProblem() override = default;
 
   hephaestus::EquationSystem * GetEquationSystem() override { return _eq_sys.get(); };
-  hephaestus::EquationSystemOperator * GetOperator() override { return _eq_sys_operator.get(); };
+  hephaestus::ProblemOperator * GetOperator() override { return _ss_operator.get(); };
 };
 
 // Builder class of a frequency-domain problem.

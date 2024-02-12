@@ -38,19 +38,33 @@ StaticsFormulation::StaticsFormulation(std::string alpha_coef_name, std::string 
 }
 
 void
+StaticsFormulation::ConstructJacobianPreconditioner()
+{
+  std::shared_ptr<mfem::HypreAMS> precond{std::make_shared<mfem::HypreAMS>(
+      _problem->_gridfunctions.Get(_h_curl_var_name)->ParFESpace())};
+  precond->SetSingularProblem();
+  precond->SetPrintLevel(-1);
+  _problem->_jacobian_preconditioner = precond;
+}
+
+void
+StaticsFormulation::ConstructJacobianSolver()
+{
+  std::shared_ptr<mfem::HypreFGMRES> solver{std::make_shared<mfem::HypreFGMRES>(_problem->_comm)};
+  solver->SetTol(1e-16);
+  solver->SetMaxIter(100);
+  solver->SetKDim(10);
+  solver->SetPrintLevel(-1);
+  solver->SetPreconditioner(
+      *std::dynamic_pointer_cast<mfem::HypreSolver>(_problem->_jacobian_preconditioner));
+  _problem->_jacobian_solver = solver;
+}
+
+void
 StaticsFormulation::ConstructOperator()
 {
-  hephaestus::InputParameters & solver_options = GetProblem()->_solver_options;
-  solver_options.SetParam("HCurlVarName", _h_curl_var_name);
-  solver_options.SetParam("StiffnessCoefName", _alpha_coef_name);
-  _problem->_eq_sys_operator =
-      std::make_unique<hephaestus::StaticsOperator>(*(_problem->_pmesh),
-                                                    _problem->_fespaces,
-                                                    _problem->_gridfunctions,
-                                                    _problem->_bc_map,
-                                                    _problem->_coefficients,
-                                                    _problem->_sources,
-                                                    _problem->_solver_options);
+  _problem->_ss_operator =
+      std::make_unique<hephaestus::StaticsOperator>(*_problem, _h_curl_var_name, _alpha_coef_name);
   _problem->GetOperator()->SetGridFunctions();
 };
 
@@ -84,32 +98,27 @@ StaticsFormulation::RegisterCoefficients()
   }
 }
 
-StaticsOperator::StaticsOperator(mfem::ParMesh & pmesh,
-                                 hephaestus::FESpaces & fespaces,
-                                 hephaestus::GridFunctions & gridfunctions,
-                                 hephaestus::BCMap & bc_map,
-                                 hephaestus::Coefficients & coefficients,
-                                 hephaestus::Sources & sources,
-                                 hephaestus::InputParameters & solver_options)
-  : EquationSystemOperator(
-        pmesh, fespaces, gridfunctions, bc_map, coefficients, sources, solver_options),
-    _h_curl_var_name(solver_options.GetParam<std::string>("HCurlVarName")),
-    _stiffness_coef_name(solver_options.GetParam<std::string>("StiffnessCoefName"))
+StaticsOperator::StaticsOperator(hephaestus::Problem & problem,
+                                 std::string h_curl_var_name,
+                                 std::string stiffness_coef_name)
+  : ProblemOperator(problem),
+    _h_curl_var_name(std::move(h_curl_var_name)),
+    _stiffness_coef_name(std::move(stiffness_coef_name))
 {
 }
 
 void
 StaticsOperator::SetGridFunctions()
 {
-  _state_var_names.push_back(_h_curl_var_name);
-  EquationSystemOperator::SetGridFunctions();
+  _trial_var_names.push_back(_h_curl_var_name);
+  ProblemOperator::SetGridFunctions();
 };
 
 void
 StaticsOperator::Init(mfem::Vector & X)
 {
-  EquationSystemOperator::Init(X);
-  _stiff_coef = _coefficients._scalars.Get(_stiffness_coef_name);
+  ProblemOperator::Init(X);
+  _stiff_coef = _problem._coefficients._scalars.Get(_stiffness_coef_name);
 }
 
 /*
@@ -125,15 +134,15 @@ Fully discretised equations
 void
 StaticsOperator::Solve(mfem::Vector & X)
 {
-  mfem::ParGridFunction & gf(*_local_test_vars.at(0));
+  mfem::ParGridFunction & gf(*_trial_variables.at(0));
   gf = 0.0;
   mfem::ParLinearForm lf(gf.ParFESpace());
   lf = 0.0;
   mfem::Array<int> ess_bdr_tdofs;
-  _bc_map.ApplyEssentialBCs(_h_curl_var_name, ess_bdr_tdofs, gf, _pmesh);
-  _bc_map.ApplyIntegratedBCs(_h_curl_var_name, lf, _pmesh);
+  _problem._bc_map.ApplyEssentialBCs(_h_curl_var_name, ess_bdr_tdofs, gf, _problem._pmesh.get());
+  _problem._bc_map.ApplyIntegratedBCs(_h_curl_var_name, lf, _problem._pmesh.get());
   lf.Assemble();
-  _sources.Apply(&lf);
+  _problem._sources.Apply(&lf);
   mfem::ParBilinearForm blf(gf.ParFESpace());
   blf.AddDomainIntegrator(new mfem::CurlCurlIntegrator(*_stiff_coef));
   blf.Assemble();
@@ -145,9 +154,8 @@ StaticsOperator::Solve(mfem::Vector & X)
 
   // Define and apply a parallel FGMRES solver for AX=B with the AMS
   // preconditioner from hypre.
-  hephaestus::DefaultHCurlFGMRESSolver a1_solver(
-      _solver_options, curl_mu_inv_curl, gf.ParFESpace());
-  a1_solver.Mult(rhs_tdofs, sol_tdofs);
+  _problem._jacobian_solver->SetOperator(curl_mu_inv_curl);
+  _problem._jacobian_solver->Mult(rhs_tdofs, sol_tdofs);
   blf.RecoverFEMSolution(sol_tdofs, lf, gf);
 }
 
