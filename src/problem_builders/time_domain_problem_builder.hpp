@@ -9,15 +9,14 @@ namespace hephaestus
 class TimeDomainProblem : public hephaestus::Problem
 {
 public:
-  std::unique_ptr<hephaestus::TimeDependentEquationSystem> _td_equation_system;
-  std::unique_ptr<hephaestus::TimeDomainProblemOperator> _td_operator;
+  std::unique_ptr<hephaestus::TimeDomainProblemOperator> _td_operator{nullptr};
 
   TimeDomainProblem() = default;
   ~TimeDomainProblem() override;
 
   hephaestus::TimeDependentEquationSystem * GetEquationSystem() override
   {
-    return _td_equation_system.get();
+    return static_cast<TimeDependentEquationSystem *>(_td_operator->GetEquationSystem());
   }
 
   hephaestus::TimeDomainProblemOperator * GetOperator() override { return _td_operator.get(); }

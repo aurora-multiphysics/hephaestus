@@ -54,8 +54,10 @@ AVFormulation::ConstructEquationSystem()
   av_system_params.SetParam("ScalarPotentialName", _scalar_potential_name);
   av_system_params.SetParam("AlphaCoefName", _alpha_coef_name);
   av_system_params.SetParam("BetaCoefName", _beta_coef_name);
-  GetProblem()->_td_equation_system =
-      std::make_unique<hephaestus::AVEquationSystem>(av_system_params);
+
+  auto equation_system = std::make_unique<hephaestus::AVEquationSystem>(av_system_params);
+
+  GetProblem()->_td_operator->SetEquationSystem(std::move(equation_system));
 }
 
 void

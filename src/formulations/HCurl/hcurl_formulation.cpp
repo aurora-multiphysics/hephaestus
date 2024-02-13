@@ -59,8 +59,10 @@ HCurlFormulation::ConstructEquationSystem()
   weak_form_params.SetParam("HCurlVarName", _h_curl_var_name);
   weak_form_params.SetParam("AlphaCoefName", _alpha_coef_name);
   weak_form_params.SetParam("BetaCoefName", _beta_coef_name);
-  GetProblem()->_td_equation_system =
-      std::make_unique<hephaestus::CurlCurlEquationSystem>(weak_form_params);
+
+  auto equation_system = std::make_unique<hephaestus::CurlCurlEquationSystem>(weak_form_params);
+
+  GetProblem()->_td_operator->SetEquationSystem(std::move(equation_system));
 }
 
 void

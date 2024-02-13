@@ -96,11 +96,4 @@ TimeDomainProblemOperator::BuildEquationSystemOperator(double dt)
   _equation_system->BuildJacobian(_true_x, _true_rhs);
 }
 
-void
-TimeDomainProblemOperator::SetEquationSystem(
-    hephaestus::TimeDependentEquationSystem * equation_system)
-{
-  _equation_system = equation_system;
-}
-
 } // namespace hephaestus

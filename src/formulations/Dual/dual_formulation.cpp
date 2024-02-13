@@ -66,8 +66,10 @@ DualFormulation::ConstructEquationSystem()
   weak_form_params.SetParam("HDivVarName", _h_div_var_name);
   weak_form_params.SetParam("AlphaCoefName", _alpha_coef_name);
   weak_form_params.SetParam("BetaCoefName", _beta_coef_name);
-  GetProblem()->_td_equation_system =
-      std::make_unique<hephaestus::WeakCurlEquationSystem>(weak_form_params);
+
+  auto equation_system = std::make_unique<hephaestus::WeakCurlEquationSystem>(weak_form_params);
+
+  GetProblem()->_td_operator->SetEquationSystem(std::move(equation_system));
 }
 
 void
@@ -96,7 +98,9 @@ void
 DualFormulation::ConstructOperator()
 {
   _problem->_td_operator = std::make_unique<hephaestus::DualOperator>(*_problem);
-  _problem->_td_operator->SetEquationSystem(_problem->_td_equation_system.get());
+
+  ConstructEquationSystem();
+
   _problem->_td_operator->SetGridFunctions();
 };
 
@@ -202,7 +206,7 @@ void
 DualOperator::Init(mfem::Vector & X)
 {
   TimeDomainProblemOperator::Init(X);
-  auto * eqs = dynamic_cast<hephaestus::WeakCurlEquationSystem *>(_equation_system);
+  auto * eqs = dynamic_cast<hephaestus::WeakCurlEquationSystem *>(GetEquationSystem());
 
   _h_curl_var_name = eqs->_h_curl_var_name;
   _h_div_var_name = eqs->_h_div_var_name;

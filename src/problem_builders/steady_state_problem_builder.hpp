@@ -7,13 +7,16 @@ namespace hephaestus
 class SteadyStateProblem : public hephaestus::Problem
 {
 public:
-  std::unique_ptr<hephaestus::EquationSystem> _eq_sys{nullptr};
   std::unique_ptr<hephaestus::ProblemOperator> _ss_operator{nullptr};
 
   SteadyStateProblem() = default;
   ~SteadyStateProblem() override = default;
 
-  hephaestus::EquationSystem * GetEquationSystem() override { return _eq_sys.get(); }
+  hephaestus::EquationSystem * GetEquationSystem() override
+  {
+    return _ss_operator->GetEquationSystem();
+  }
+
   hephaestus::ProblemOperator * GetOperator() override { return _ss_operator.get(); }
 };
 
