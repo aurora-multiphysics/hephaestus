@@ -49,7 +49,7 @@ TimeDomainProblemOperator::SetGridFunctions()
   width = _true_offsets[_trial_variables.size()];
   _true_x.Update(_block_true_offsets);
   _true_rhs.Update(_block_true_offsets);
-};
+}
 
 void
 TimeDomainProblemOperator::Init(mfem::Vector & X)
@@ -64,7 +64,7 @@ TimeDomainProblemOperator::Init(mfem::Vector & X)
   }
 
   _equation_system->BuildEquationSystem(_problem._bc_map, _problem._sources);
-};
+}
 
 void
 TimeDomainProblemOperator::ImplicitSolve(const double dt,
@@ -88,6 +88,7 @@ TimeDomainProblemOperator::ImplicitSolve(const double dt,
 
   _equation_system->RecoverFEMSolution(_true_x, _problem._gridfunctions);
 }
+
 void
 TimeDomainProblemOperator::BuildEquationSystemOperator(double dt)
 {
