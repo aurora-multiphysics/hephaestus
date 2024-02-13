@@ -13,8 +13,8 @@ public:
   SteadyStateProblem() = default;
   ~SteadyStateProblem() override = default;
 
-  hephaestus::EquationSystem * GetEquationSystem() override { return _eq_sys.get(); };
-  hephaestus::ProblemOperator * GetOperator() override { return _ss_operator.get(); };
+  hephaestus::EquationSystem * GetEquationSystem() override { return _eq_sys.get(); }
+  hephaestus::ProblemOperator * GetOperator() override { return _ss_operator.get(); }
 };
 
 // Builder class of a frequency-domain problem.
@@ -28,7 +28,7 @@ public:
   virtual std::unique_ptr<hephaestus::SteadyStateProblem> ReturnProblem()
   {
     return std::move(_problem);
-  };
+  }
 
   void RegisterFESpaces() override {}
 

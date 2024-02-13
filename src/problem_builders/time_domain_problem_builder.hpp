@@ -18,8 +18,9 @@ public:
   hephaestus::TimeDependentEquationSystem * GetEquationSystem() override
   {
     return _td_equation_system.get();
-  };
-  hephaestus::TimeDomainProblemOperator * GetOperator() override { return _td_operator.get(); };
+  }
+
+  hephaestus::TimeDomainProblemOperator * GetOperator() override { return _td_operator.get(); }
 };
 
 // Builder class of a time-domain EM formulation.
@@ -33,7 +34,7 @@ public:
   virtual std::unique_ptr<hephaestus::TimeDomainProblem> ReturnProblem()
   {
     return std::move(_problem);
-  };
+  }
 
   static std::vector<mfem::ParGridFunction *>
   RegisterTimeDerivatives(std::vector<std::string> gridfunction_names,
