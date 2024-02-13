@@ -69,7 +69,7 @@ DualFormulation::ConstructEquationSystem()
 
   auto equation_system = std::make_unique<hephaestus::WeakCurlEquationSystem>(weak_form_params);
 
-  GetProblem()->_td_operator->SetEquationSystem(std::move(equation_system));
+  GetProblem()->GetOperator()->SetEquationSystem(std::move(equation_system));
 }
 
 void
@@ -97,11 +97,11 @@ DualFormulation::ConstructJacobianSolver()
 void
 DualFormulation::ConstructOperator()
 {
-  _problem->_td_operator = std::make_unique<hephaestus::DualOperator>(*_problem);
+  _problem->SetOperator(std::make_unique<hephaestus::DualOperator>(*_problem));
 
   ConstructEquationSystem();
 
-  _problem->_td_operator->SetGridFunctions();
+  _problem->GetOperator()->SetGridFunctions();
 };
 
 void

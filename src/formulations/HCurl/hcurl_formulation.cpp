@@ -62,7 +62,7 @@ HCurlFormulation::ConstructEquationSystem()
 
   auto equation_system = std::make_unique<hephaestus::CurlCurlEquationSystem>(weak_form_params);
 
-  GetProblem()->_td_operator->SetEquationSystem(std::move(equation_system));
+  GetProblem()->GetOperator()->SetEquationSystem(std::move(equation_system));
 }
 
 void

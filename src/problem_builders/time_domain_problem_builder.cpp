@@ -3,8 +3,6 @@
 namespace hephaestus
 {
 
-TimeDomainProblem::~TimeDomainProblem() { _td_operator.reset(); }
-
 std::vector<mfem::ParGridFunction *>
 TimeDomainProblemBuilder::RegisterTimeDerivatives(std::vector<std::string> gridfunction_names,
                                                   hephaestus::GridFunctions & gridfunctions)
@@ -40,7 +38,7 @@ TimeDomainProblemBuilder::ConstructEquationSystem()
   hephaestus::InputParameters params;
   auto equation_system = std::make_unique<hephaestus::TimeDependentEquationSystem>(params);
 
-  _problem->_td_operator->SetEquationSystem(std::move(equation_system));
+  _problem->GetOperator()->SetEquationSystem(std::move(equation_system));
 }
 
 void
@@ -57,28 +55,28 @@ TimeDomainProblemBuilder::InitializeKernels()
 void
 TimeDomainProblemBuilder::ConstructOperator()
 {
-  _problem->_td_operator = std::make_unique<hephaestus::TimeDomainProblemOperator>(*_problem);
+  _problem->SetOperator(std::make_unique<hephaestus::TimeDomainProblemOperator>(*_problem));
 
   ConstructEquationSystem();
 
-  _problem->_td_operator->SetGridFunctions();
+  _problem->GetOperator()->SetGridFunctions();
 }
 
 void
 TimeDomainProblemBuilder::ConstructState()
 {
   // Vector of dofs.
-  _problem->_f = std::make_unique<mfem::BlockVector>(_problem->_td_operator->_true_offsets);
-  *(_problem->_f) = 0.0;                         // give initial value
-  _problem->_td_operator->Init(*(_problem->_f)); // Set up initial conditions
-  _problem->_td_operator->SetTime(0.0);
+  _problem->_f = std::make_unique<mfem::BlockVector>(_problem->GetOperator()->_true_offsets);
+  *(_problem->_f) = 0.0;                          // give initial value
+  _problem->GetOperator()->Init(*(_problem->_f)); // Set up initial conditions
+  _problem->GetOperator()->SetTime(0.0);
 }
 
 void
 TimeDomainProblemBuilder::ConstructTimestepper()
 {
   _problem->_ode_solver = std::make_unique<mfem::BackwardEulerSolver>();
-  _problem->_ode_solver->Init(*(_problem->_td_operator));
+  _problem->_ode_solver->Init(*(_problem->GetOperator()));
 }
 
 } // namespace hephaestus

@@ -14,15 +14,15 @@ SteadyStateProblemBuilder::InitializeKernels()
 void
 SteadyStateProblemBuilder::ConstructOperator()
 {
-  _problem->_ss_operator = std::make_unique<hephaestus::ProblemOperator>(*_problem);
-  _problem->_ss_operator->SetGridFunctions();
+  _problem->SetOperator(std::make_unique<hephaestus::ProblemOperator>(*_problem));
+  _problem->GetOperator()->SetGridFunctions();
 }
 
 void
 SteadyStateProblemBuilder::ConstructState()
 {
   _problem->_f =
-      std::make_unique<mfem::BlockVector>(_problem->_ss_operator->_true_offsets); // Vector of dofs
-  _problem->_ss_operator->Init(*(_problem->_f)); // Set up initial conditions
+      std::make_unique<mfem::BlockVector>(_problem->GetOperator()->_true_offsets); // Vector of dofs
+  _problem->GetOperator()->Init(*(_problem->_f)); // Set up initial conditions
 }
 } // namespace hephaestus

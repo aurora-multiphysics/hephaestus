@@ -35,14 +35,15 @@ ComplexMaxwellFormulation::ConstructJacobianSolver()
 void
 ComplexMaxwellFormulation::ConstructOperator()
 {
-  _problem->_ss_operator =
-      std::make_unique<hephaestus::ComplexMaxwellOperator>(*_problem,
-                                                           _h_curl_var_complex_name,
-                                                           _h_curl_var_real_name,
-                                                           _h_curl_var_imag_name,
-                                                           _alpha_coef_name,
-                                                           _mass_coef_name,
-                                                           _loss_coef_name);
+  auto new_operator = std::make_unique<hephaestus::ComplexMaxwellOperator>(*_problem,
+                                                                           _h_curl_var_complex_name,
+                                                                           _h_curl_var_real_name,
+                                                                           _h_curl_var_imag_name,
+                                                                           _alpha_coef_name,
+                                                                           _mass_coef_name,
+                                                                           _loss_coef_name);
+
+  _problem->SetOperator(std::move(new_operator));
   _problem->GetOperator()->SetGridFunctions();
 }
 
