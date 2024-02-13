@@ -16,6 +16,9 @@ public:
 
   mfem::Array<int> _true_offsets, _block_true_offsets;
 
+protected:
+  hephaestus::Problem & _problem;
+
   mfem::BlockVector _true_x, _true_rhs;
   mfem::OperatorHandle _equation_system_operator;
 
@@ -23,8 +26,5 @@ public:
   // vector during solve.
   std::vector<std::string> _trial_var_names;
   std::vector<mfem::ParGridFunction *> _trial_variables;
-
-protected:
-  hephaestus::Problem & _problem;
 };
 }

@@ -40,12 +40,9 @@ public:
     return _equation_system.get();
   }
 
-  // Vector of names of state gridfunctions used in formulation, ordered by
-  // appearance in block vector during solve.
-  std::vector<mfem::ParGridFunction *> _trial_variable_time_derivatives;
-
 protected:
   std::unique_ptr<TimeDependentEquationSystem> _equation_system{nullptr};
+  std::vector<mfem::ParGridFunction *> _trial_variable_time_derivatives;
 };
 
 } // namespace hephaestus
