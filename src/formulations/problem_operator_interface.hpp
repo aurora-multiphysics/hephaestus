@@ -3,6 +3,7 @@
 
 namespace hephaestus
 {
+/// Interface inherited by ProblemOperator and TimeDependentProblemOperator. Removes duplicated code in both classes.
 class ProblemOperatorInterface
 {
 public:
