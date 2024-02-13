@@ -2,29 +2,20 @@
 #include "../common/pfem_extras.hpp"
 #include "hephaestus_solvers.hpp"
 #include "problem_builder_base.hpp"
+#include "problem_operator_interface.hpp"
 
 namespace hephaestus
 {
-
-class ProblemOperator : public mfem::Operator
+class ProblemOperator : public mfem::Operator, public ProblemOperatorInterface
 {
 public:
-  ProblemOperator(hephaestus::Problem & problem) : _problem(problem){};
+  ProblemOperator(hephaestus::Problem & problem) : ProblemOperatorInterface(problem) {}
 
-  virtual void SetGridFunctions();
-  virtual void Init(mfem::Vector & X);
+  void SetGridFunctions() override;
+  void Init(mfem::Vector & X) override;
+
   virtual void Solve(mfem::Vector & X){};
   void Mult(const mfem::Vector & x, mfem::Vector & y) const override {}
-
-  mfem::Array<int> _true_offsets, _block_true_offsets;
-
-  // Vector of names of state gridfunctions used in formulation, ordered by
-  // appearance in block vector during solve.
-  std::vector<std::string> _trial_var_names;
-  std::vector<mfem::ParGridFunction *> _trial_variables;
-
-  mfem::BlockVector _true_x, _true_rhs;
-  mfem::OperatorHandle _equation_system_operator;
 
   void SetEquationSystem(std::unique_ptr<EquationSystem> new_equation_system)
   {
@@ -32,7 +23,7 @@ public:
     _equation_system = std::move(new_equation_system);
   }
 
-  inline EquationSystem * GetEquationSystem() const
+  [[nodiscard]] EquationSystem * GetEquationSystem() const override
   {
     if (!_equation_system)
     {
@@ -43,7 +34,6 @@ public:
   }
 
 protected:
-  hephaestus::Problem & _problem;
   std::unique_ptr<EquationSystem> _equation_system{nullptr};
 };
 
