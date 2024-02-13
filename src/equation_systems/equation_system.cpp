@@ -437,6 +437,6 @@ TimeDependentEquationSystem::UpdateEquationSystem(hephaestus::BCMap & bc_map,
   BuildLinearForms(bc_map, sources);
   BuildBilinearForms();
   BuildMixedBilinearForms();
-};
+}
 
 } // namespace hephaestus

@@ -14,7 +14,7 @@ public:
   void SetGridFunctions() override;
   void Init(mfem::Vector & X) override;
 
-  virtual void Solve(mfem::Vector & X){};
+  virtual void Solve(mfem::Vector & X) {}
   void Mult(const mfem::Vector & x, mfem::Vector & y) const override {}
 
   void SetEquationSystem(std::unique_ptr<EquationSystem> new_equation_system)
