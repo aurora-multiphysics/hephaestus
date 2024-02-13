@@ -36,7 +36,7 @@ public:
   {
     if (!_equation_system)
     {
-      MFEM_ABORT("No equation system has been added to TimeDomainProblemOperator.");
+      MFEM_ABORT("No equation system has been added to ProblemOperator.");
     }
 
     return _equation_system.get();
