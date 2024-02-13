@@ -60,7 +60,7 @@ public:
 
   void InitializeKernels() override;
 
-  void ConstructEquationSystem() override {}
+  void ConstructEquationSystem() override;
 
   void ConstructOperator() override;
 
