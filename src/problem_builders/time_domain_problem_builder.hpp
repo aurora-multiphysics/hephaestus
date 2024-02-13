@@ -16,7 +16,7 @@ public:
 
   hephaestus::TimeDependentEquationSystem * GetEquationSystem() override
   {
-    return static_cast<TimeDependentEquationSystem *>(_td_operator->GetEquationSystem());
+    return _td_operator->GetEquationSystem();
   }
 
   hephaestus::TimeDomainProblemOperator * GetOperator() override { return _td_operator.get(); }

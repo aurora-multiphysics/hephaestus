@@ -36,7 +36,7 @@ public:
     _equation_system = std::move(new_equation_system);
   }
 
-  inline EquationSystem * GetEquationSystem() const
+  inline TimeDependentEquationSystem * GetEquationSystem() const
   {
     if (!_equation_system)
     {
