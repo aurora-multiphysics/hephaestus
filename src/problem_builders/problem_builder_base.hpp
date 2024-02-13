@@ -41,8 +41,8 @@ public:
   int _myid;
   int _num_procs;
 
-  virtual hephaestus::EquationSystem * GetEquationSystem() = 0;
-  virtual mfem::Operator * GetOperator() = 0;
+  [[nodiscard]] virtual hephaestus::EquationSystem * GetEquationSystem() const = 0;
+  [[nodiscard]] virtual mfem::Operator * GetOperator() const = 0;
 };
 
 class ProblemBuilder

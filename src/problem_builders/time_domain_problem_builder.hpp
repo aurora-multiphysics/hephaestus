@@ -14,12 +14,15 @@ public:
   TimeDomainProblem() = default;
   ~TimeDomainProblem() override;
 
-  hephaestus::TimeDependentEquationSystem * GetEquationSystem() override
+  [[nodiscard]] hephaestus::TimeDependentEquationSystem * GetEquationSystem() const override
   {
     return _td_operator->GetEquationSystem();
   }
 
-  hephaestus::TimeDomainProblemOperator * GetOperator() override { return _td_operator.get(); }
+  [[nodiscard]] hephaestus::TimeDomainProblemOperator * GetOperator() const override
+  {
+    return _td_operator.get();
+  }
 };
 
 // Builder class of a time-domain EM formulation.

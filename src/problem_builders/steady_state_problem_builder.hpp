@@ -12,12 +12,15 @@ public:
   SteadyStateProblem() = default;
   ~SteadyStateProblem() override = default;
 
-  hephaestus::EquationSystem * GetEquationSystem() override
+  [[nodiscard]] hephaestus::EquationSystem * GetEquationSystem() const override
   {
     return _ss_operator->GetEquationSystem();
   }
 
-  hephaestus::ProblemOperator * GetOperator() override { return _ss_operator.get(); }
+  [[nodiscard]] hephaestus::ProblemOperator * GetOperator() const override
+  {
+    return _ss_operator.get();
+  }
 };
 
 // Builder class of a frequency-domain problem.
