@@ -93,12 +93,13 @@ public:
   virtual void RecoverFEMSolution(mfem::BlockVector & trueX,
                                   hephaestus::GridFunctions & gridfunctions);
 
+  std::vector<mfem::Array<int>> _ess_tdof_lists;
+
 protected:
   bool VectorContainsName(const std::vector<std::string> & the_vector,
                           const std::string & name) const;
 
   // gridfunctions for setting Dirichlet BCs
-  std::vector<mfem::Array<int>> _ess_tdof_lists;
   std::vector<std::unique_ptr<mfem::ParGridFunction>> _xs;
 
   mfem::Array2D<mfem::HypreParMatrix *> _h_blocks;
