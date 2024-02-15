@@ -98,9 +98,6 @@ void
 DualFormulation::ConstructOperator()
 {
   _problem->SetOperator(std::make_unique<hephaestus::DualOperator>(*_problem));
-
-  ConstructEquationSystem();
-
   _problem->GetOperator()->SetGridFunctions();
 };
 
