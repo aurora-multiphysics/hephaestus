@@ -14,6 +14,11 @@ public:
   TimeDomainProblem() = default;
   ~TimeDomainProblem() override = default;
 
+  [[nodiscard]] bool HasEquationSystem() const override
+  {
+    return GetOperator()->HasEquationSystem();
+  }
+
   [[nodiscard]] hephaestus::TimeDependentEquationSystem * GetEquationSystem() const override
   {
     return GetOperator()->GetEquationSystem();

@@ -12,6 +12,11 @@ public:
   SteadyStateProblem() = default;
   ~SteadyStateProblem() override = default;
 
+  [[nodiscard]] bool HasEquationSystem() const override
+  {
+    return GetOperator()->HasEquationSystem();
+  }
+
   [[nodiscard]] hephaestus::EquationSystem * GetEquationSystem() const override
   {
     return GetOperator()->GetEquationSystem();

@@ -24,6 +24,8 @@ public:
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
   void BuildEquationSystemOperator(double dt);
 
+  [[nodiscard]] bool HasEquationSystem() const override { return (_equation_system != nullptr); }
+
   void SetEquationSystem(std::unique_ptr<TimeDependentEquationSystem> equation_system)
   {
     _equation_system.reset();

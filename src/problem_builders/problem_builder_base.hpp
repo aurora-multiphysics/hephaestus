@@ -41,6 +41,7 @@ public:
   int _myid;
   int _num_procs;
 
+  [[nodiscard]] virtual bool HasEquationSystem() const = 0;
   [[nodiscard]] virtual hephaestus::EquationSystem * GetEquationSystem() const = 0;
   [[nodiscard]] virtual mfem::Operator * GetOperator() const = 0;
 };
@@ -136,11 +137,11 @@ public:
     _problem_builder->RegisterGridFunctions();
     _problem_builder->RegisterAuxSolvers();
     _problem_builder->RegisterCoefficients();
+    _problem_builder->ConstructOperator();
     _problem_builder->InitializeKernels();
     _problem_builder->ConstructJacobianPreconditioner();
     _problem_builder->ConstructJacobianSolver();
     _problem_builder->ConstructNonlinearSolver();
-    _problem_builder->ConstructOperator();
     _problem_builder->ConstructState();
     _problem_builder->InitializeAuxSolvers();
     _problem_builder->InitializeOutputs();
@@ -151,12 +152,12 @@ public:
     _problem_builder->RegisterGridFunctions();
     _problem_builder->RegisterAuxSolvers();
     _problem_builder->RegisterCoefficients();
+    _problem_builder->ConstructOperator();
     _problem_builder->ConstructEquationSystem();
     _problem_builder->InitializeKernels();
     _problem_builder->ConstructJacobianPreconditioner();
     _problem_builder->ConstructJacobianSolver();
     _problem_builder->ConstructNonlinearSolver();
-    _problem_builder->ConstructOperator();
     _problem_builder->ConstructState();
     _problem_builder->ConstructTimestepper();
     _problem_builder->InitializeAuxSolvers();

@@ -10,6 +10,8 @@ public:
   ProblemOperatorInterface(hephaestus::Problem & problem) : _problem(problem) {}
   virtual ~ProblemOperatorInterface() = default;
 
+  [[nodiscard]] virtual bool HasEquationSystem() const = 0;
+
   [[nodiscard]] virtual mfem::Operator * GetEquationSystem() const = 0;
 
   virtual void SetGridFunctions() = 0;
