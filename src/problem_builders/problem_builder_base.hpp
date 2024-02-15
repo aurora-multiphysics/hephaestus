@@ -95,6 +95,7 @@ public:
 
   virtual void InitializeKernels() = 0;
   virtual void ConstructEquationSystem() = 0;
+  virtual void SetOperatorGridFunctions() = 0;
   virtual void ConstructJacobianPreconditioner();
   virtual void ConstructJacobianSolver();
   virtual void ConstructNonlinearSolver();
@@ -130,34 +131,25 @@ public:
    * The ProblemBuildSequencer can construct variations of Problems using the
    * same building steps.
    */
-  void ConstructOperatorProblem()
-  {
-    // SteadyStateProblem
-    _problem_builder->RegisterFESpaces();
-    _problem_builder->RegisterGridFunctions();
-    _problem_builder->RegisterAuxSolvers();
-    _problem_builder->RegisterCoefficients();
-    _problem_builder->ConstructOperator();
-    _problem_builder->InitializeKernels();
-    _problem_builder->ConstructJacobianPreconditioner();
-    _problem_builder->ConstructJacobianSolver();
-    _problem_builder->ConstructNonlinearSolver();
-    _problem_builder->ConstructState();
-    _problem_builder->InitializeAuxSolvers();
-    _problem_builder->InitializeOutputs();
-  }
+  void ConstructOperatorProblem() { ConstructEquationSystemProblem(); }
   void ConstructEquationSystemProblem()
   {
     _problem_builder->RegisterFESpaces();
     _problem_builder->RegisterGridFunctions();
     _problem_builder->RegisterAuxSolvers();
     _problem_builder->RegisterCoefficients();
+
     _problem_builder->ConstructOperator();
+
     _problem_builder->ConstructEquationSystem();
     _problem_builder->InitializeKernels();
+
+    _problem_builder->SetOperatorGridFunctions();
+
     _problem_builder->ConstructJacobianPreconditioner();
     _problem_builder->ConstructJacobianSolver();
     _problem_builder->ConstructNonlinearSolver();
+
     _problem_builder->ConstructState();
     _problem_builder->ConstructTimestepper();
     _problem_builder->InitializeAuxSolvers();

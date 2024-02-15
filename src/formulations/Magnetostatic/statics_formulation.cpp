@@ -67,8 +67,7 @@ StaticsFormulation::ConstructOperator()
       std::make_unique<hephaestus::StaticsOperator>(*_problem, _h_curl_var_name, _alpha_coef_name);
 
   _problem->SetOperator(std::move(new_operator));
-  _problem->GetOperator()->SetGridFunctions();
-};
+}
 
 void
 StaticsFormulation::RegisterGridFunctions()

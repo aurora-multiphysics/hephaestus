@@ -42,6 +42,12 @@ TimeDomainProblemBuilder::ConstructEquationSystem()
 }
 
 void
+TimeDomainProblemBuilder::SetOperatorGridFunctions()
+{
+  _problem->GetOperator()->SetGridFunctions();
+}
+
+void
 TimeDomainProblemBuilder::InitializeKernels()
 {
   if (_problem->HasEquationSystem())
@@ -59,7 +65,6 @@ void
 TimeDomainProblemBuilder::ConstructOperator()
 {
   _problem->SetOperator(std::make_unique<hephaestus::TimeDomainProblemOperator>(*_problem));
-  _problem->GetOperator()->SetGridFunctions();
 }
 
 void

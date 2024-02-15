@@ -13,6 +13,12 @@ SteadyStateProblemBuilder::ConstructEquationSystem()
 }
 
 void
+SteadyStateProblemBuilder::SetOperatorGridFunctions()
+{
+  _problem->GetOperator()->SetGridFunctions();
+}
+
+void
 SteadyStateProblemBuilder::InitializeKernels()
 {
   if (_problem->HasEquationSystem())
@@ -30,7 +36,6 @@ void
 SteadyStateProblemBuilder::ConstructOperator()
 {
   _problem->SetOperator(std::make_unique<hephaestus::ProblemOperator>(*_problem));
-  _problem->GetOperator()->SetGridFunctions();
 }
 
 void

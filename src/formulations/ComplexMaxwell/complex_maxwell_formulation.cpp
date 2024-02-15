@@ -44,7 +44,6 @@ ComplexMaxwellFormulation::ConstructOperator()
                                                                            _loss_coef_name);
 
   _problem->SetOperator(std::move(new_operator));
-  _problem->GetOperator()->SetGridFunctions();
 }
 
 void

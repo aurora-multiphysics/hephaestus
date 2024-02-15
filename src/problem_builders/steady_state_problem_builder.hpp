@@ -67,6 +67,8 @@ public:
 
   void ConstructEquationSystem() override;
 
+  void SetOperatorGridFunctions() override;
+
   void ConstructOperator() override;
 
   void ConstructState() override;

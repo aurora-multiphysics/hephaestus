@@ -23,10 +23,10 @@ GetTimeDerivativeNames(std::vector<std::string> gridfunction_names)
 void
 TimeDomainProblemOperator::SetGridFunctions()
 {
-  _trial_var_names = _equation_system->_trial_var_names;
-  _trial_variables = _problem._gridfunctions.Get(_equation_system->_trial_var_names);
+  _trial_var_names = GetEquationSystem()->_trial_var_names;
+  _trial_variables = _problem._gridfunctions.Get(GetEquationSystem()->_trial_var_names);
   _trial_variable_time_derivatives =
-      _problem._gridfunctions.Get(_equation_system->_trial_var_time_derivative_names);
+      _problem._gridfunctions.Get(GetEquationSystem()->_trial_var_time_derivative_names);
 
   // Set operator size and block structure
   _block_true_offsets.SetSize(_trial_variables.size() + 1);
@@ -63,7 +63,7 @@ TimeDomainProblemOperator::Init(mfem::Vector & X)
     *(_trial_variable_time_derivatives.at(ind)) = 0.0;
   }
 
-  _equation_system->BuildEquationSystem(_problem._bc_map, _problem._sources);
+  GetEquationSystem()->BuildEquationSystem(_problem._bc_map, _problem._sources);
 }
 
 void
@@ -83,18 +83,18 @@ TimeDomainProblemOperator::ImplicitSolve(const double dt,
   BuildEquationSystemOperator(dt);
 
   _problem._nonlinear_solver->SetSolver(*_problem._jacobian_solver);
-  _problem._nonlinear_solver->SetOperator(*_equation_system);
+  _problem._nonlinear_solver->SetOperator(*GetEquationSystem());
   _problem._nonlinear_solver->Mult(_true_rhs, _true_x);
 
-  _equation_system->RecoverFEMSolution(_true_x, _problem._gridfunctions);
+  GetEquationSystem()->RecoverFEMSolution(_true_x, _problem._gridfunctions);
 }
 
 void
 TimeDomainProblemOperator::BuildEquationSystemOperator(double dt)
 {
-  _equation_system->SetTimeStep(dt);
-  _equation_system->UpdateEquationSystem(_problem._bc_map, _problem._sources);
-  _equation_system->BuildJacobian(_true_x, _true_rhs);
+  GetEquationSystem()->SetTimeStep(dt);
+  GetEquationSystem()->UpdateEquationSystem(_problem._bc_map, _problem._sources);
+  GetEquationSystem()->BuildJacobian(_true_x, _true_rhs);
 }
 
 } // namespace hephaestus

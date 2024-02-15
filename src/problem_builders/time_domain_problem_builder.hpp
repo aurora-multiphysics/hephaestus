@@ -71,6 +71,8 @@ public:
 
   void ConstructEquationSystem() override;
 
+  void SetOperatorGridFunctions() override;
+
   void InitializeKernels() override;
 
   void ConstructOperator() override;
