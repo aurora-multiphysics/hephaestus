@@ -81,7 +81,8 @@ ComplexEFormulation::RegisterMagneticFluxDensityAux(const std::string & b_field_
                                                                     external_b_field_real_name));
 }
 
-// Enable auxiliary calculation of P ∈ L2
+//* Enable auxiliary calculation of P ∈ L2
+//* Time averaged Joule heating density = E.J
 void
 ComplexEFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_name,
                                                     const std::string & e_field_real_name,
@@ -89,7 +90,7 @@ ComplexEFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_
                                                     const std::string & j_field_real_name,
                                                     const std::string & j_field_imag_name)
 {
-  //* Time averaged Joule heating density = E.J
+
   hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
   auxsolvers.Register(
       p_field_name,
@@ -100,6 +101,27 @@ ComplexEFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_
                                                                     j_field_real_name,
                                                                     _electric_field_imag_name,
                                                                     j_field_imag_name,
+                                                                    true));
+  auxsolvers.Get(p_field_name)->SetPriority(2);
+}
+
+//* Enable auxiliary calculation of P ∈ L2
+//* Time averaged Joule heating density σ|E|^2
+void
+ComplexEFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_name,
+                                                    const std::string & e_field_real_name,
+                                                    const std::string & e_field_imag_name)
+{
+  hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
+  auxsolvers.Register(
+      p_field_name,
+      std::make_shared<hephaestus::VectorGridFunctionDotProductAux>(p_field_name,
+                                                                    p_field_name,
+                                                                    _electric_conductivity_name,
+                                                                    _electric_field_real_name,
+                                                                    _electric_field_real_name,
+                                                                    _electric_field_imag_name,
+                                                                    _electric_field_imag_name,
                                                                     true));
   auxsolvers.Get(p_field_name)->SetPriority(2);
 }
