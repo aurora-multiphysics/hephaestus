@@ -53,5 +53,11 @@ public:
   {
     MFEM_ABORT("Joule heating auxsolver not available for this formulation");
   }
+
+  virtual void RegisterJouleHeatingDensityAux(const std::string & p_field_name,
+                                              const std::string & e_field_name)
+  {
+    MFEM_ABORT("Joule heating auxsolver not available for this formulation");
+  }
 };
 } // namespace hephaestus
