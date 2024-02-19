@@ -1,4 +1,5 @@
 #include "hephaestus.hpp"
+// Implements the TEAM Problem 4 benchmark (FELIX brick)
 
 const char * DATA_DIR = "../../data/";
 
@@ -152,7 +153,7 @@ main(int argc, char * argv[])
   hephaestus::InputParameters solver_options;
   solver_options.SetParam("AbsTolerance", float(1.0e-20));
   solver_options.SetParam("Tolerance", float(1.0e-20));
-  solver_options.SetParam("MaxIter", (unsigned int)2000);
+  solver_options.SetParam("MaxIter", (unsigned int)500);
   solver_options.SetParam("PrintLevel", 0);
   problem_builder->SetSolverOptions(solver_options);
 
@@ -168,21 +169,20 @@ main(int argc, char * argv[])
 
   auto executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
 
-  // mfem::out << "Created executioner";
   executioner->Execute();
 
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-  double r;
+  double current;
   double t;
   for (std::size_t i = 0; i < fluxmonitor->_times.Size(); ++i)
   {
     if (rank == 0)
     {
-      r = -2 * fluxmonitor->_fluxes[i];
+      current = -2 * fluxmonitor->_fluxes[i];
       t = fluxmonitor->_times[i];
-      std::cout << "t = " << t << "s, I = " << r << " A" << std::endl;
+      std::cout << "t = " << t << "s, I = " << current << " A" << std::endl;
     }
   }
 
