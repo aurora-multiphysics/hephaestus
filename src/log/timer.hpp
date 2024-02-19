@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ctime>
+#include <ostream>
 #include <chrono>
 
 namespace hephaestus
@@ -12,14 +12,25 @@ class Timer
   using TimePoint = std::chrono::time_point<Clock>;
 
   TimePoint _timerstart;
+  int _precision = 6;
 
   Timer() : _timerstart(Clock::now()) {}
+  Timer(int precision) : _timerstart(Clock::now()), _precision(precision) {}
 
-  inline double Microsec()
+  [[nodiscard]] inline double Seconds() const
   {
-    auto musec = std::chrono::duration_cast<std::chrono::microseconds>(Clock::now() - _timerstart);
-    return musec.count();
+    auto sec = std::chrono::duration_cast<std::chrono::seconds>(Clock::now() - _timerstart);
+    return sec.count();
   }
+
+  friend std::ostream & operator<<(std::ostream & stream, const Timer & timer);
 };
+
+inline std::ostream &
+operator<<(std::ostream & stream, const Timer & timer)
+{
+  stream << timer.Seconds() << " s";
+  return stream;
+}
 
 } // namespace hephaestus
