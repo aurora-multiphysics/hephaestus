@@ -285,7 +285,7 @@ ProblemBuilder::ConstructJacobianSolverWithOptions(SolverType type, SolverParams
     }
     case SolverType::SUPER_LU:
     {
-      auto solver = std::make_shared<mfem::SuperLUSolver>(GetProblem()->_comm);
+      auto solver = std::make_shared<hephaestus::SuperLUSolver>(GetProblem()->_comm);
 
       GetProblem()->_jacobian_solver = solver;
       break;
