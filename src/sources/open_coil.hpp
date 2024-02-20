@@ -1,6 +1,7 @@
 #pragma once
 #include "helmholtz_projector.hpp"
 #include "scalar_potential_source.hpp"
+#include "flux_monitor_aux.hpp"
 #include "scaled_vector_gridfunction_aux.hpp"
 #include "source_base.hpp"
 
@@ -9,10 +10,6 @@ namespace hephaestus
 
 double highV(const mfem::Vector & x, double t);
 double lowV(const mfem::Vector & x, double t);
-
-double calcFlux(mfem::GridFunction * v_field, int face_attr);
-
-double calcFlux(mfem::GridFunction * v_field, int face_attr, mfem::Coefficient & q);
 
 void inheritBdrAttributes(const mfem::ParMesh * parent_mesh, mfem::ParSubMesh * child_mesh);
 

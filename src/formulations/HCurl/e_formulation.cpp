@@ -75,5 +75,17 @@ EFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_name,
                           p_field_name, p_field_name, "", e_field_name, j_field_name));
   auxsolvers.Get(p_field_name)->SetPriority(2);
 }
+void
+EFormulation::RegisterJouleHeatingDensityAux(const std::string & p_field_name,
+                                             const std::string & e_field_name)
+{
+  //* Joule heating density = E.J
+  hephaestus::AuxSolvers & auxsolvers = GetProblem()->_postprocessors;
+  auxsolvers.Register(
+      p_field_name,
+      std::make_shared<hephaestus::VectorGridFunctionDotProductAux>(
+          p_field_name, p_field_name, _electric_conductivity_name, e_field_name, e_field_name));
+  auxsolvers.Get(p_field_name)->SetPriority(2);
+}
 
 } // namespace hephaestus

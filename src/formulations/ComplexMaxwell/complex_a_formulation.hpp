@@ -66,6 +66,11 @@ public:
                                       const std::string & j_field_real_name,
                                       const std::string & j_field_imag_name) override;
 
+  // Time averaged Joule heating density σ|E|^2
+  void RegisterJouleHeatingDensityAux(const std::string & p_field_name,
+                                      const std::string & e_field_real_name,
+                                      const std::string & e_field_imag_name) override;
+
 protected:
   const std::string & _magnetic_reluctivity_name =
       hephaestus::ComplexMaxwellFormulation::_alpha_coef_name;

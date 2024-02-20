@@ -26,6 +26,8 @@ public:
   void RegisterJouleHeatingDensityAux(const std::string & p_field_name,
                                       const std::string & e_field_name,
                                       const std::string & j_field_name) override;
+  void RegisterJouleHeatingDensityAux(const std::string & p_field_name,
+                                      const std::string & e_field_name) override;
 
 protected:
   const std::string _magnetic_permeability_name;
