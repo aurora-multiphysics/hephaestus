@@ -16,10 +16,16 @@ class Timer
 private:
   TimePoint _timerstart;
   int _precision = 6;
+  std::string _name;
 
 public:
   Timer() : _timerstart(Clock::now()) {}
-  Timer(int precision) : _timerstart(Clock::now()), _precision(precision) {}
+  Timer(int precision, std::string name)
+    : _timerstart(Clock::now()), _precision(std::move(precision)), _name(std::move(name))
+  {
+  }
+
+  std::string GetName() { return _name; }
 
   [[nodiscard]] inline double Microsec() const
   {
