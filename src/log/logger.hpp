@@ -1,5 +1,6 @@
 #pragma once
 #include "timer.hpp"
+#include "mfem.hpp"
 #include <iostream>
 
 namespace hephaestus
@@ -24,7 +25,7 @@ template <typename T>
 inline void
 operator<<(const Logger & logger, const T stream)
 {
-  if (logger._active)
+  if (logger._active && mfem::Mpi::WorldRank() == 0)
     std::cout << logger._timer << " : Hephaestus Log " + logger._log_name + " : " << stream << "\n";
 }
 
