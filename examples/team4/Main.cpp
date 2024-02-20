@@ -1,6 +1,10 @@
-#include "hephaestus.hpp"
 // Implements the TEAM Problem 4 benchmark (FELIX brick)
+// available from https://www.compumag.org/wp/team/.
+// Reference results available from
+// A. Kameari, Results for benchmark calculations of problem 4
+// (the felix brick), COMPEL, Vol 7. Num 1 (1988).
 
+#include "hephaestus.hpp"
 const char * DATA_DIR = "../../data/";
 
 static void

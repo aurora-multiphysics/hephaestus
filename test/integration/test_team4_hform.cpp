@@ -1,4 +1,10 @@
 // Test based on TEAM Problem 4
+// Implements the TEAM Problem 4 benchmark (FELIX brick)
+// available from https://www.compumag.org/wp/team/.
+// Reference results available from
+// A. Kameari, Results for benchmark calculations of problem 4
+// (the felix brick), COMPEL, Vol 7. Num 1 (1988).
+
 #include "hephaestus.hpp"
 #include <catch2/catch_test_macros.hpp>
 
