@@ -42,22 +42,18 @@ StaticsFormulation::ConstructJacobianPreconditioner()
 {
   std::shared_ptr<mfem::HypreAMS> precond{std::make_shared<mfem::HypreAMS>(
       _problem->_gridfunctions.Get(_h_curl_var_name)->ParFESpace())};
+
   precond->SetSingularProblem();
   precond->SetPrintLevel(-1);
+
   _problem->_jacobian_preconditioner = precond;
 }
 
 void
 StaticsFormulation::ConstructJacobianSolver()
 {
-  std::shared_ptr<mfem::HypreFGMRES> solver{std::make_shared<mfem::HypreFGMRES>(_problem->_comm)};
-  solver->SetTol(1e-16);
-  solver->SetMaxIter(100);
-  solver->SetKDim(10);
-  solver->SetPrintLevel(-1);
-  solver->SetPreconditioner(
-      *std::dynamic_pointer_cast<mfem::HypreSolver>(_problem->_jacobian_preconditioner));
-  _problem->_jacobian_solver = solver;
+  ConstructJacobianSolverWithOptions(SolverType::HYPRE_FGMRES,
+                                     {._max_iteration = 100, ._k_dim = 10});
 }
 
 void

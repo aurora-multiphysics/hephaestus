@@ -105,6 +105,39 @@ public:
 
   void InitializeAuxSolvers();
   void InitializeOutputs();
+
+protected:
+  /// Supported Jacobian solver types.
+  enum class SolverType
+  {
+    HYPRE_PCG,
+    HYPRE_GMRES,
+    HYPRE_FGMRES,
+    HYPRE_AMG,
+    SUPER_LU
+  };
+
+  /// Structure containing default parameters which can be passed to "ConstructJacobianSolverWithOptions".
+  /// These will be used if the user has not supplied their own values.
+  struct SolverParams
+  {
+    float _tolerance;
+    float _abs_tolerance;
+
+    unsigned int _max_iteration;
+
+    int _print_level;
+    int _k_dim;
+  };
+
+  /// Called in "ConstructJacobianSolver". This will create a solver of the chosen type and use the user's input
+  /// parameters if they have been provided.
+  void ConstructJacobianSolverWithOptions(SolverType type,
+                                          SolverParams default_params = {._tolerance = 1e-16,
+                                                                         ._abs_tolerance = 1e-16,
+                                                                         ._max_iteration = 1000,
+                                                                         ._print_level = (-1),
+                                                                         ._k_dim = 10});
 };
 
 class ProblemBuildSequencer

@@ -194,32 +194,136 @@ ProblemBuilder::AddSource(std::string source_name, std::shared_ptr<hephaestus::S
 void
 ProblemBuilder::ConstructJacobianPreconditioner()
 {
-  std::shared_ptr<mfem::HypreBoomerAMG> precond{std::make_shared<mfem::HypreBoomerAMG>()};
+  auto precond = std::make_shared<mfem::HypreBoomerAMG>();
   precond->SetPrintLevel(-1);
+
   GetProblem()->_jacobian_preconditioner = precond;
 }
 
 void
 ProblemBuilder::ConstructJacobianSolver()
 {
-  std::shared_ptr<mfem::HypreGMRES> solver{std::make_shared<mfem::HypreGMRES>(GetProblem()->_comm)};
-  solver->SetTol(1e-16);
-  solver->SetMaxIter(1000);
-  solver->SetPrintLevel(-1);
-  solver->SetPreconditioner(
-      *std::dynamic_pointer_cast<mfem::HypreSolver>(GetProblem()->_jacobian_preconditioner));
-  GetProblem()->_jacobian_solver = solver;
+  ConstructJacobianSolverWithOptions(SolverType::HYPRE_GMRES);
+}
+
+void
+ProblemBuilder::ConstructJacobianSolverWithOptions(SolverType type, SolverParams default_params)
+{
+  const auto & solver_options = GetProblem()->_solver_options;
+
+  const auto tolerance =
+      solver_options.GetOptionalParam<float>("Tolerance", default_params._tolerance);
+  const auto abs_tolerance =
+      solver_options.GetOptionalParam<float>("AbsTolerance", default_params._abs_tolerance);
+  const auto max_iter =
+      solver_options.GetOptionalParam<unsigned int>("MaxIter", default_params._max_iteration);
+  const auto print_level =
+      solver_options.GetOptionalParam<int>("PrintLevel", default_params._print_level);
+  const auto k_dim = solver_options.GetOptionalParam<unsigned int>("KDim", default_params._k_dim);
+
+  auto preconditioner =
+      std::dynamic_pointer_cast<mfem::HypreSolver>(GetProblem()->_jacobian_preconditioner);
+
+  switch (type)
+  {
+    case SolverType::HYPRE_PCG:
+    {
+      auto solver = std::make_shared<mfem::HyprePCG>(GetProblem()->_comm);
+
+      solver->SetTol(tolerance);
+      solver->SetAbsTol(abs_tolerance);
+      solver->SetMaxIter(max_iter);
+      solver->SetPrintLevel(print_level);
+
+      solver->SetOperator(*GetProblem()->GetOperator());
+
+      if (preconditioner)
+        solver->SetPreconditioner(*preconditioner);
+
+      GetProblem()->_jacobian_solver = solver;
+      break;
+    }
+    case SolverType::HYPRE_GMRES:
+    {
+      auto solver = std::make_shared<mfem::HypreGMRES>(GetProblem()->_comm);
+
+      solver->SetTol(tolerance);
+      solver->SetAbsTol(abs_tolerance);
+      solver->SetMaxIter(max_iter);
+      solver->SetKDim(k_dim);
+      solver->SetPrintLevel(print_level);
+
+      solver->SetOperator(*GetProblem()->GetOperator());
+
+      if (preconditioner)
+        solver->SetPreconditioner(*preconditioner);
+
+      GetProblem()->_jacobian_solver = solver;
+      break;
+    }
+    case SolverType::HYPRE_FGMRES:
+    {
+      auto solver = std::make_shared<mfem::HypreFGMRES>(GetProblem()->_comm);
+
+      solver->SetTol(tolerance);
+      solver->SetMaxIter(max_iter);
+      solver->SetKDim(k_dim);
+      solver->SetPrintLevel(print_level);
+
+      solver->SetOperator(*GetProblem()->GetOperator());
+
+      if (preconditioner)
+        solver->SetPreconditioner(*preconditioner);
+
+      GetProblem()->_jacobian_solver = solver;
+      break;
+    }
+    case SolverType::HYPRE_AMG:
+    {
+      auto solver = std::make_shared<mfem::HypreBoomerAMG>();
+
+      solver->SetTol(tolerance);
+      solver->SetMaxIter(max_iter);
+      solver->SetPrintLevel(print_level);
+
+      solver->SetOperator(*GetProblem()->GetOperator());
+
+      GetProblem()->_jacobian_solver = solver;
+      break;
+    }
+    case SolverType::SUPER_LU:
+    {
+      auto solver = std::make_shared<mfem::SuperLUSolver>(GetProblem()->_comm);
+
+      solver->SetOperator(*GetProblem()->GetOperator());
+
+      GetProblem()->_jacobian_solver = solver;
+      break;
+    }
+    default:
+    {
+      MFEM_ABORT("Unsupported solver type specified.");
+      break;
+    }
+  }
 }
 
 void
 ProblemBuilder::ConstructNonlinearSolver()
 {
-  std::shared_ptr<mfem::NewtonSolver> nl_solver{
-      std::make_shared<mfem::NewtonSolver>(GetProblem()->_comm)};
+  auto & solver_options = GetProblem()->_solver_options;
+
+  auto relative_tolerance = solver_options.GetOptionalParam<float>("RelativeTolerance", 0.0);
+  auto abs_tolerance = solver_options.GetOptionalParam<float>("AbsTolerance", 0.0);
+  auto max_iter = solver_options.GetOptionalParam<unsigned int>("MaxIter", 1);
+
+  auto nl_solver = std::make_shared<mfem::NewtonSolver>(GetProblem()->_comm);
+
   // Defaults to one iteration, without further nonlinear iterations
-  nl_solver->SetRelTol(0.0);
-  nl_solver->SetAbsTol(0.0);
-  nl_solver->SetMaxIter(1);
+  nl_solver->SetRelTol(relative_tolerance);
+  nl_solver->SetAbsTol(abs_tolerance);
+  nl_solver->SetMaxIter(max_iter);
+
   GetProblem()->_nonlinear_solver = nl_solver;
 }
 

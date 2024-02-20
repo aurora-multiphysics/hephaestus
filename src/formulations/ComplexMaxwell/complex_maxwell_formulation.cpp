@@ -27,9 +27,7 @@ ComplexMaxwellFormulation::ComplexMaxwellFormulation(std::string alpha_coef_name
 void
 ComplexMaxwellFormulation::ConstructJacobianSolver()
 {
-  std::shared_ptr<hephaestus::SuperLUSolver> solver{
-      std::make_shared<hephaestus::SuperLUSolver>(_problem->_comm)};
-  _problem->_jacobian_solver = solver;
+  ConstructJacobianSolverWithOptions(SolverType::SUPER_LU);
 }
 
 void
