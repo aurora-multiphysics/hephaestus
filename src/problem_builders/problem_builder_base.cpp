@@ -235,8 +235,6 @@ ProblemBuilder::ConstructJacobianSolverWithOptions(SolverType type, SolverParams
       solver->SetMaxIter(max_iter);
       solver->SetPrintLevel(print_level);
 
-      solver->SetOperator(*GetProblem()->GetOperator());
-
       if (preconditioner)
         solver->SetPreconditioner(*preconditioner);
 
@@ -253,8 +251,6 @@ ProblemBuilder::ConstructJacobianSolverWithOptions(SolverType type, SolverParams
       solver->SetKDim(k_dim);
       solver->SetPrintLevel(print_level);
 
-      solver->SetOperator(*GetProblem()->GetOperator());
-
       if (preconditioner)
         solver->SetPreconditioner(*preconditioner);
 
@@ -270,8 +266,6 @@ ProblemBuilder::ConstructJacobianSolverWithOptions(SolverType type, SolverParams
       solver->SetKDim(k_dim);
       solver->SetPrintLevel(print_level);
 
-      solver->SetOperator(*GetProblem()->GetOperator());
-
       if (preconditioner)
         solver->SetPreconditioner(*preconditioner);
 
@@ -286,16 +280,12 @@ ProblemBuilder::ConstructJacobianSolverWithOptions(SolverType type, SolverParams
       solver->SetMaxIter(max_iter);
       solver->SetPrintLevel(print_level);
 
-      solver->SetOperator(*GetProblem()->GetOperator());
-
       GetProblem()->_jacobian_solver = solver;
       break;
     }
     case SolverType::SUPER_LU:
     {
       auto solver = std::make_shared<mfem::SuperLUSolver>(GetProblem()->_comm);
-
-      solver->SetOperator(*GetProblem()->GetOperator());
 
       GetProblem()->_jacobian_solver = solver;
       break;
