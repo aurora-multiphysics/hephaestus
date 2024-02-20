@@ -1,3 +1,10 @@
+// Implements the TEAM Problem 7 benchmark in the frequency domain
+// available from https://www.compumag.org/wp/team/.
+// Reference results available from
+// Fujiwara, K. and Nakata, T. (1990), Results for Benchmark Problem 7
+// (asymmetrical conductor with a hole), COMPEL, Vol. 9 No. 3, pp. 137-154.
+// https://doi.org/10.1108/eb010071
+
 #include "hephaestus.hpp"
 
 const char * DATA_DIR = "../../data/";
