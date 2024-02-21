@@ -43,7 +43,8 @@ ClosedCoilSolver::ClosedCoilSolver(std::string source_efield_gf_name,
     _i_coef_name(std::move(i_coef_name)),
     _cond_coef_name(std::move(cond_coef_name)),
     _electric_field_transfer(std::move(electric_field_transfer)),
-    _coil_domains(std::move(coil_dom))
+    _coil_domains(std::move(coil_dom)),
+    _solver_options(std::move(solver_options))
 {
   _elec_attrs.first = electrode_face;
 }
@@ -127,22 +128,24 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     _itotal = coefficients._scalars.GetShared(_i_coef_name);
   }
 
-  if (!coefficients._scalars.Has(_cond_coef_name))
-  {
-    std::cout << _cond_coef_name + " not found in coefficients when "
-                                   "creating ClosedCoilSolver. "
-                                   "Assuming unit conductivity.\n";
-    std::cout << "Warning: GradPhi field undefined. The GridFunction "
-                 "associated with it will be set to zero.\n";
+  _sigma = std::make_shared<mfem::ConstantCoefficient>(1.0);
 
-    _sigma = std::make_shared<mfem::ConstantCoefficient>(1.0);
+  // if (!coefficients._scalars.Has(_cond_coef_name))
+  // {
+  //   std::cout << _cond_coef_name + " not found in coefficients when "
+  //                                  "creating ClosedCoilSolver. "
+  //                                  "Assuming unit conductivity.\n";
+  //   std::cout << "Warning: GradPhi field undefined. The GridFunction "
+  //                "associated with it will be set to zero.\n";
 
-    _electric_field_transfer = false;
-  }
-  else
-  {
-    _sigma = coefficients._scalars.GetShared(_cond_coef_name);
-  }
+  //   _sigma = std::make_shared<mfem::ConstantCoefficient>(1.0);
+
+  //   _electric_field_transfer = false;
+  // }
+  // else
+  // {
+  //   _sigma = coefficients._scalars.GetShared(_cond_coef_name);
+  // }
 
   if (_final_lf == nullptr)
   {
@@ -408,7 +411,6 @@ ClosedCoilSolver::SolveTransition()
   opencoil.Init(gridfunctions, fespaces, bc_maps, coefs);
   opencoil.Apply(_final_lf.get());
 
-  *v_parent *= -1.0;
   *_source_electric_field *= -1.0;
   _mesh_coil->Transfer(*v_parent, *_v_coil);
 }

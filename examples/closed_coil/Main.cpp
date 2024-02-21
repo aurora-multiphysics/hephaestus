@@ -37,14 +37,15 @@ defineSources()
 
   hephaestus::Sources sources;
   sources.Register("source",
-                   std::make_shared<hephaestus::ClosedCoilSolver>("source_grad_phi",
+                   std::make_shared<hephaestus::ClosedCoilSolver>("source_electric_field",
                                                                   "HCurl",
                                                                   "H1",
                                                                   "I",
                                                                   "electrical_conductivity",
                                                                   coil_domains,
                                                                   electrode_attr,
-                                                                  true));
+                                                                  true,
+                                                                  "source_current_density"));
   return sources;
 }
 
@@ -79,12 +80,13 @@ main(int argc, char * argv[])
     pmesh->UniformRefinement();
 
   problem_builder->SetMesh(pmesh);
-  problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P1"));
-  problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P1"));
-  problem_builder->AddFESpace(std::string("HDiv"), std::string("RT_3D_P0"));
-  problem_builder->AddGridFunction(std::string("magnetic_vector_potential"), std::string("HCurl"));
-  problem_builder->AddGridFunction(std::string("source_grad_phi"), std::string("HCurl"));
-  problem_builder->AddGridFunction(std::string("magnetic_flux_density"), std::string("HDiv"));
+  problem_builder->AddFESpace("H1", "H1_3D_P1");
+  problem_builder->AddFESpace("HCurl", "ND_3D_P1");
+  problem_builder->AddFESpace("HDiv", "RT_3D_P0");
+  problem_builder->AddGridFunction("magnetic_vector_potential", "HCurl");
+  problem_builder->AddGridFunction("source_electric_field", "HCurl");
+  problem_builder->AddGridFunction("magnetic_flux_density", "HDiv");
+  problem_builder->AddGridFunction("source_current_density", "HDiv");
   problem_builder->RegisterMagneticFluxDensityAux("magnetic_flux_density");
 
   hephaestus::Coefficients coefficients = defineCoefficients();
