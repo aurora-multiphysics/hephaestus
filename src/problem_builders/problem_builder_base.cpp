@@ -13,6 +13,7 @@ Problem::~Problem()
 void
 ProblemBuilder::SetMesh(std::shared_ptr<mfem::ParMesh> pmesh)
 {
+  logger.info("Setting Mesh");
   GetProblem()->_pmesh = pmesh;
   MPI_Comm_rank(pmesh->GetComm(), &(GetProblem()->_myid));
 }
@@ -20,60 +21,70 @@ ProblemBuilder::SetMesh(std::shared_ptr<mfem::ParMesh> pmesh)
 void
 ProblemBuilder::SetFESpaces(hephaestus::FESpaces & fespaces)
 {
+  logger.info("Setting FE Spaces");
   GetProblem()->_fespaces = fespaces;
 }
 
 void
 ProblemBuilder::SetGridFunctions(hephaestus::GridFunctions & gridfunctions)
 {
+  logger.info("Setting GridFunctions");
   GetProblem()->_gridfunctions = gridfunctions;
 }
 
 void
 ProblemBuilder::SetBoundaryConditions(hephaestus::BCMap & bc_map)
 {
+  logger.info("Setting Boundary Conditions");
   GetProblem()->_bc_map = bc_map;
 }
 
 void
 ProblemBuilder::SetAuxSolvers(hephaestus::AuxSolvers & preprocessors)
 {
+  logger.info("Setting AuxSolvers");
   GetProblem()->_preprocessors = preprocessors;
 }
 
 void
 ProblemBuilder::SetPostprocessors(hephaestus::AuxSolvers & postprocessors)
 {
+  logger.info("Setting Postprocessors");
   GetProblem()->_postprocessors = postprocessors;
 }
 
 void
 ProblemBuilder::SetSources(hephaestus::Sources & sources)
 {
+  logger.info("Setting Sources");
   GetProblem()->_sources = sources;
 }
 
 void
 ProblemBuilder::SetOutputs(hephaestus::Outputs & outputs)
 {
+  logger.info("Setting Outputs");
   GetProblem()->_outputs = outputs;
 }
 
 void
 ProblemBuilder::SetSolverOptions(hephaestus::InputParameters & solver_options)
 {
+  logger.info("Setting Solver Options");
   GetProblem()->_solver_options = solver_options;
 }
 
 void
 ProblemBuilder::SetCoefficients(hephaestus::Coefficients & coefficients)
 {
+  logger.info("Setting Coefficients");
   GetProblem()->_coefficients = coefficients;
 }
 
 void
 ProblemBuilder::AddFESpace(std::string fespace_name, std::string fec_name, int vdim, int ordering)
 {
+  logger.info("Adding {} FE Space to problem", fespace_name);
   if (GetProblem()->_fespaces.Has(fespace_name))
   {
     const std::string error_message = "A fespace with the name " + fespace_name +
