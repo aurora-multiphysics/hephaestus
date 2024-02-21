@@ -138,56 +138,8 @@ protected:
                                                                          ._max_iteration = 1000,
                                                                          ._print_level = (-1),
                                                                          ._k_dim = 10});
-};
 
-class ProblemBuildSequencer
-{
-  /**
-   * @var Builder
-   */
-private:
-  hephaestus::ProblemBuilder * _problem_builder{nullptr};
-
-  /**
-   * The ProblemBuildSequencer works with any builder instance that the client
-   * code passes to it. This way, the client code may alter the final type of
-   * the newly assembled product.
-   */
-
-public:
-  ProblemBuildSequencer(hephaestus::ProblemBuilder * problem_builder)
-    : _problem_builder{problem_builder}
-  {
-  }
-
-  /**
-   * The ProblemBuildSequencer can construct variations of Problems using the
-   * same building steps.
-   */
-  void ConstructOperatorProblem() { ConstructEquationSystemProblem(); }
-  void ConstructEquationSystemProblem()
-  {
-    _problem_builder->RegisterFESpaces();
-    _problem_builder->RegisterGridFunctions();
-    _problem_builder->RegisterAuxSolvers();
-    _problem_builder->RegisterCoefficients();
-
-    _problem_builder->ConstructOperator();
-
-    _problem_builder->ConstructEquationSystem();
-    _problem_builder->InitializeKernels();
-
-    _problem_builder->SetOperatorGridFunctions();
-
-    _problem_builder->ConstructJacobianPreconditioner();
-    _problem_builder->ConstructJacobianSolver();
-    _problem_builder->ConstructNonlinearSolver();
-
-    _problem_builder->ConstructState();
-    _problem_builder->ConstructTimestepper();
-    _problem_builder->InitializeAuxSolvers();
-    _problem_builder->InitializeOutputs();
-  }
+  void FinalizeProblem();
 };
 
 } // namespace hephaestus
