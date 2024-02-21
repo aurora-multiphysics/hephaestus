@@ -140,9 +140,8 @@ OpenCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
 {
   if (!coefficients._scalars.Has(_i_coef_name))
   {
-    std::cout << _i_coef_name + " not found in coefficients when "
-                                "creating OpenCoilSolver. "
-                                "Assuming unit current.\n";
+    logger.info("{} not found in coefficients when creating OpenCoilSolver. Assuming unit current.",
+                _i_coef_name);
     _itotal = std::make_shared<mfem::ConstantCoefficient>(1.0);
   }
   else
@@ -152,11 +151,11 @@ OpenCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
 
   if (!coefficients._scalars.Has(_cond_coef_name))
   {
-    std::cout << _cond_coef_name + " not found in coefficients when "
-                                   "creating OpenCoilSolver. "
-                                   "Assuming unit conductivity.\n";
-    std::cout << "Warning: source electric field undefined. The GridFunction "
-                 "associated with it will be set to zero.\n";
+    logger.info(
+        "{} not found in coefficients when creating OpenCoilSolver. Assuming unit conductivity.",
+        _cond_coef_name);
+    logger.warn("Source electric field undefined. The GridFunction associated with it will be set "
+                "to zero.");
 
     _sigma = std::make_shared<mfem::ConstantCoefficient>(1.0);
 

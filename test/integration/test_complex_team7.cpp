@@ -155,7 +155,7 @@ protected:
     params.SetParam("Outputs", outputs);
     params.SetParam("Sources", sources);
     params.SetParam("SolverOptions", solver_options);
-    std::cout << "Created params ";
+    logger.info("Created params ");
     return params;
   }
 };
@@ -209,7 +209,7 @@ TEST_CASE_METHOD(TestComplexTeam7, "TestComplexTeam7", "[CheckRun]")
 
   auto executioner = std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
 
-  std::cout << "Created exec ";
+  logger.info("Created exec ");
 
   executioner->Execute();
 }

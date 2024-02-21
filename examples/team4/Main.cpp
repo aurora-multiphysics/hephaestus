@@ -186,7 +186,7 @@ main(int argc, char * argv[])
     {
       current = -2 * fluxmonitor->_fluxes[i];
       t = fluxmonitor->_times[i];
-      std::cout << "t = " << t << "s, I = " << current << " A" << std::endl;
+      logger.info("t = {} s, I = {} A", t, current);
     }
   }
 

@@ -201,7 +201,7 @@ TEST_CASE_METHOD(TestAFormSource, "TestAForm", "[CheckRun]")
                                 l2errpostprocessor->_l2_errs[i],
                                 l2errpostprocessor->_l2_errs[i - 1],
                                 3);
-    std::cout << r << std::endl;
+    logger.info("{}", r);
     REQUIRE(r > 2 - 0.15);
     REQUIRE(r < 2 + 1.0);
   }

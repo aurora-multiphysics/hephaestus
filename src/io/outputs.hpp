@@ -3,6 +3,7 @@
 #include <iostream>
 #include <memory>
 
+#include "logging.hpp"
 #include "../common/pfem_extras.hpp"
 #include "gridfunctions.hpp"
 #include "mesh_extras.hpp"
@@ -133,23 +134,12 @@ private:
   }
 
   // Write out summary of last timestep to console
-  void WriteConsoleSummary(int _my_rank, double t)
-  {
-    if (_my_rank == 0)
-    {
-      std::cout << std::fixed;
-      std::cout << "step " << std::setw(6) << _cycle << ",\tt = " << std::setw(6)
-                << std::setprecision(3) << t << std::endl;
-    }
-  }
+  void WriteConsoleSummary(int _my_rank, double t) { logger.info("step {}, \tt = {}", _cycle, t); }
 
   // Initialize GLVis sockets and fields
   void InitializeGLVis(int _my_rank)
   {
-    if (_my_rank == 0)
-    {
-      std::cout << "Opening GLVis sockets." << std::endl;
-    }
+    logger.info("Opening GLVis sockets.");
 
     for (auto & gridfunction : *_gridfunctions)
     {
@@ -157,10 +147,7 @@ private:
       _socks[gridfunction.first]->precision(8);
     }
 
-    if (_my_rank == 0)
-    {
-      std::cout << "GLVis sockets open." << std::endl;
-    }
+    logger.info("GLVis sockets open.");
   }
 
   // Update GLVis display of output fields (gridfunctions)

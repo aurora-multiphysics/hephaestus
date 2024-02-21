@@ -34,9 +34,9 @@ ScalarPotentialSource::Init(hephaestus::GridFunctions & gridfunctions,
 
   if (!gridfunctions.Has(_phi_gf_name))
   {
-    std::cout << _phi_gf_name + " not found in gridfunctions when "
-                                "creating ScalarPotentialSource. "
-                                "Creating new ParGridFunction\n";
+    logger.info("{} not found in gridfunctions when creating ScalarPotentialSource. Creating new "
+                "ParGridFunction.",
+                _phi_gf_name);
     _phi = std::make_shared<mfem::ParGridFunction>(_h1_fe_space);
     gridfunctions.Register(_phi_gf_name, _phi);
   }

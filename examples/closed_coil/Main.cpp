@@ -100,7 +100,7 @@ main(int argc, char * argv[])
   solver_options.SetParam("Tolerance", float(1.0e-13));
   solver_options.SetParam("AbsTolerance", float(1.0e-16));
   solver_options.SetParam("MaxIter", (unsigned int)500);
-  solver_options.SetParam("PrintLevel", 2);
+  solver_options.SetParam("PrintLevel", 0);
   problem_builder->SetSolverOptions(solver_options);
 
   hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());

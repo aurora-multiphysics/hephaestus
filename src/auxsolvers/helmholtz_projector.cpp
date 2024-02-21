@@ -38,9 +38,9 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
 
   if (!fespaces.Has(_hcurl_fespace_name))
   {
-    std::cout << _hcurl_fespace_name + " not found in fespaces when "
-                                       "creating HelmholtzProjector. "
-                                       "Obtaining from vector GridFunction.\n";
+    logger.info("{} not found in fespaces when creating HelmholtzProjector. Obtaining from vector "
+                "GridFunction.",
+                _hcurl_fespace_name);
     _h_curl_fe_space = _div_free_src_gf->ParFESpace();
   }
   else
@@ -52,9 +52,9 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
 
   if (!fespaces.Has(_h1_fespace_name))
   {
-    std::cout << _h1_fespace_name + " not found in fespaces when "
-                                    "creating HelmholtzProjector. "
-                                    " Extracting from GridFunction\n";
+    logger.info(
+        "{} not found in fespaces when creating HelmholtzProjector. Extracting from GridFunction",
+        _h1_fespace_name);
 
     // Creates an H1 FES on the same mesh and with the same order as the HCurl
     // FES
@@ -71,9 +71,9 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
 
   if (!gridfunctions.Has(_gf_name))
   {
-    std::cout << _gf_name + " not found in gridfunctions when "
-                            "creating HelmholtzProjector. "
-                            "Creating new GridFunction\n";
+    logger.info(
+        "{} not found in gridfunctions when creating HelmholtzProjector. Creating new GridFunction",
+        _gf_name);
     _q = std::make_shared<mfem::ParGridFunction>(_h1_fe_space.get());
   }
   else

@@ -214,7 +214,7 @@ main(int argc, char * argv[])
 
   auto executioner = std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
 
-  std::cout << "Created exec ";
+  logger.info("Created exec ");
   executioner->Execute();
 
   MPI_Finalize();
