@@ -301,18 +301,12 @@ ProblemBuilder::ConstructJacobianSolverWithOptions(SolverType type, SolverParams
 void
 ProblemBuilder::ConstructNonlinearSolver()
 {
-  auto & solver_options = GetProblem()->_solver_options;
-
-  auto relative_tolerance = solver_options.GetOptionalParam<float>("RelativeTolerance", 0.0);
-  auto abs_tolerance = solver_options.GetOptionalParam<float>("AbsTolerance", 0.0);
-  auto max_iter = solver_options.GetOptionalParam<unsigned int>("MaxIter", 1);
-
   auto nl_solver = std::make_shared<mfem::NewtonSolver>(GetProblem()->_comm);
 
   // Defaults to one iteration, without further nonlinear iterations
-  nl_solver->SetRelTol(relative_tolerance);
-  nl_solver->SetAbsTol(abs_tolerance);
-  nl_solver->SetMaxIter(max_iter);
+  nl_solver->SetRelTol(0.0);
+  nl_solver->SetAbsTol(0.0);
+  nl_solver->SetMaxIter(1);
 
   GetProblem()->_nonlinear_solver = nl_solver;
 }
