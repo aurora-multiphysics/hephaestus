@@ -106,6 +106,8 @@ public:
   void InitializeAuxSolvers();
   void InitializeOutputs();
 
+  void FinalizeProblem();
+
 protected:
   /// Supported Jacobian solver types.
   enum class SolverType
@@ -138,8 +140,6 @@ protected:
                                                                          ._max_iteration = 1000,
                                                                          ._print_level = (-1),
                                                                          ._k_dim = 10});
-
-  void FinalizeProblem();
 };
 
 } // namespace hephaestus
