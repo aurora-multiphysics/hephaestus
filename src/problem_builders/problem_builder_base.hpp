@@ -1,4 +1,6 @@
 #pragma once
+#include "spdlog/spdlog.h"
+#include "logging.hpp"
 #include "auxsolvers.hpp"
 #include "equation_system.hpp"
 #include "gridfunctions.hpp"
@@ -32,6 +34,8 @@ public:
   hephaestus::FECollections _fecs;
   hephaestus::FESpaces _fespaces;
   hephaestus::GridFunctions _gridfunctions;
+
+  std::shared_ptr<spdlog::logger> _logger{nullptr};
 
   int _myid;
   int _num_procs;
@@ -93,6 +97,7 @@ public:
 
   void InitializeAuxSolvers();
   void InitializeOutputs();
+  void RegisterLogger();
 };
 
 class ProblemBuildSequencer
@@ -122,6 +127,7 @@ public:
   void ConstructOperatorProblem()
   {
     // SteadyStateProblem
+    _problem_builder->RegisterLogger();
     _problem_builder->RegisterFESpaces();
     _problem_builder->RegisterGridFunctions();
     _problem_builder->RegisterAuxSolvers();
@@ -134,6 +140,7 @@ public:
   }
   void ConstructEquationSystemProblem()
   {
+    _problem_builder->RegisterLogger();
     _problem_builder->RegisterFESpaces();
     _problem_builder->RegisterGridFunctions();
     _problem_builder->RegisterAuxSolvers();

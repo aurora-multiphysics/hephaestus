@@ -1,7 +1,5 @@
 #pragma once
 #include "../common/pfem_extras.hpp"
-#include "spdlog/spdlog.h"
-#include "logging.hpp"
 #include "factory.hpp"
 #include "inputs.hpp"
 #include "problem_builder.hpp"
