@@ -18,6 +18,7 @@ target_include_directories(magnetostatic PUBLIC ${PROJECT_SOURCE_DIR}/data/)
 
 set_property(TARGET magnetostatic PROPERTY CXX_STANDARD 17)
 
+target_link_libraries(magnetostatic spdlog::spdlog)
 target_link_libraries(magnetostatic ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY} pthread)
 target_link_libraries(magnetostatic ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lib${PROJECT_NAME}.so)
 target_link_libraries(magnetostatic ${MFEM_LIBRARIES} ${MFEM_COMMON_LIBRARY} -lrt)
