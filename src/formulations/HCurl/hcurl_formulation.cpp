@@ -124,6 +124,8 @@ CurlCurlEquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
 void
 CurlCurlEquationSystem::AddKernels()
 {
+  spdlog::stopwatch sw;
+
   AddVariableNameIfMissing(_h_curl_var_name);
   std::string dh_curl_var_dt = GetTimeDerivativeName(_h_curl_var_name);
 
@@ -144,6 +146,8 @@ CurlCurlEquationSystem::AddKernels()
   vector_fe_mass_params.SetParam("CoefficientName", _beta_coef_name);
   AddKernel(dh_curl_var_dt,
             std::make_shared<hephaestus::VectorFEMassKernel>(vector_fe_mass_params));
+
+  logger.info("CurlCurlEquationSystem AddKernels: {} seconds", sw);
 }
 
 void
@@ -191,6 +195,8 @@ u_{n+1} = u_{n} + dt du/dt_{n+1}
 void
 HCurlOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt)
 {
+  spdlog::stopwatch sw;
+
   for (unsigned int ind = 0; ind < _local_test_vars.size(); ++ind)
   {
     _local_test_vars.at(ind)->MakeRef(
@@ -211,6 +217,8 @@ HCurlOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vect
 
   _jacobian_solver->Mult(_true_rhs, _true_x);
   _equation_system->RecoverFEMSolution(_true_x, _gridfunctions);
+
+  logger.info("HCurlOperator ImplicitSolve: {} seconds", sw);
 }
 
 } // namespace hephaestus

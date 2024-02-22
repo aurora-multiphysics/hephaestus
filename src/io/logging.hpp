@@ -2,6 +2,7 @@
 #include "mfem.hpp"
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/base_sink.h"
+#include "spdlog/stopwatch.h"
 
 namespace spdlog::sinks
 {

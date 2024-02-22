@@ -161,6 +161,8 @@ AVEquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
 void
 AVEquationSystem::AddKernels()
 {
+  spdlog::stopwatch sw;
+
   AddVariableNameIfMissing(_a_name);
   std::string da_dt_name = GetTimeDerivativeName(_a_name);
   AddVariableNameIfMissing(_v_name);
@@ -201,6 +203,8 @@ AVEquationSystem::AddKernels()
       da_dt_name,
       _v_name,
       std::make_shared<hephaestus::VectorFEWeakDivergenceKernel>(vector_fe_weak_divergence_params));
+
+  logger.info("AVOperator AddKernels: {} seconds", sw);
 }
 
 AVOperator::AVOperator(mfem::ParMesh & pmesh,
@@ -241,6 +245,8 @@ u_{n+1} = u_{n} + dt du/dt_{n+1}
 void
 AVOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt)
 {
+  spdlog::stopwatch sw;
+
   for (unsigned int ind = 0; ind < _local_test_vars.size(); ++ind)
   {
     _local_test_vars.at(ind)->MakeRef(
@@ -261,5 +267,7 @@ AVOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector 
 
   _solver->Mult(_true_rhs, _true_x);
   _equation_system->RecoverFEMSolution(_true_x, _gridfunctions);
+
+  logger.info("AVOperator ImplicitSolve: {} seconds", sw);
 }
 } // namespace hephaestus

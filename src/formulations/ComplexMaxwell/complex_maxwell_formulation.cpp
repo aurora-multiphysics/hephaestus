@@ -51,6 +51,8 @@ ComplexMaxwellOperator::Init(mfem::Vector & X)
 void
 ComplexMaxwellOperator::Solve(mfem::Vector & X)
 {
+  spdlog::stopwatch sw;
+
   mfem::OperatorHandle jac;
   mfem::Vector u, rhs;
   mfem::OperatorHandle pc_op;
@@ -103,6 +105,8 @@ ComplexMaxwellOperator::Solve(mfem::Vector & X)
 
   _gridfunctions.GetRef(_state_var_names.at(0)) = _u->real();
   _gridfunctions.GetRef(_state_var_names.at(1)) = _u->imag();
+
+  logger.info("ComplexMaxwell Solve step: {} seconds", sw);
 }
 
 ComplexMaxwellFormulation::ComplexMaxwellFormulation(std::string alpha_coef_name,

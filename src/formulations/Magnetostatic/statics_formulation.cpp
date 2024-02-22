@@ -125,6 +125,8 @@ Fully discretised equations
 void
 StaticsOperator::Solve(mfem::Vector & X)
 {
+  spdlog::stopwatch sw;
+
   mfem::ParGridFunction & gf(*_local_test_vars.at(0));
   gf = 0.0;
   mfem::ParLinearForm lf(gf.ParFESpace());
@@ -149,6 +151,8 @@ StaticsOperator::Solve(mfem::Vector & X)
       _solver_options, curl_mu_inv_curl, gf.ParFESpace());
   a1_solver.Mult(rhs_tdofs, sol_tdofs);
   blf.RecoverFEMSolution(sol_tdofs, lf, gf);
+
+  logger.info("StaticsOperator Solve: {} seconds", sw);
 }
 
 } // namespace hephaestus
