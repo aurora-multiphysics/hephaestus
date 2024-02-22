@@ -11,7 +11,7 @@ defineCoefficients()
                                  std::make_shared<mfem::ConstantCoefficient>(M_PI * 4.0e-7));
 
   coefficients._scalars.Register("electrical_conductivity",
-                                 std::make_shared<mfem::ConstantCoefficient>(1.0));
+                                 std::make_shared<mfem::ConstantCoefficient>(1.0e6));
 
   coefficients._scalars.Register("I", std::make_shared<mfem::ConstantCoefficient>(2742));
 

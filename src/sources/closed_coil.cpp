@@ -91,6 +91,7 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
   {
     _source_electric_field = gridfunctions.GetShared(_source_electric_field_name);
   }
+  *_source_electric_field = 0.0;
 
   if (_source_electric_field->ParFESpace()->FEColl()->GetContType() !=
       mfem::FiniteElementCollection::TANGENTIAL)
@@ -128,24 +129,22 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     _itotal = coefficients._scalars.GetShared(_i_coef_name);
   }
 
-  _sigma = std::make_shared<mfem::ConstantCoefficient>(1.0);
+  if (!coefficients._scalars.Has(_cond_coef_name))
+  {
+    std::cout << _cond_coef_name + " not found in coefficients when "
+                                   "creating ClosedCoilSolver. "
+                                   "Assuming unit conductivity.\n";
+    std::cout << "Warning: GradPhi field undefined. The GridFunction "
+                 "associated with it will be set to zero.\n";
 
-  // if (!coefficients._scalars.Has(_cond_coef_name))
-  // {
-  //   std::cout << _cond_coef_name + " not found in coefficients when "
-  //                                  "creating ClosedCoilSolver. "
-  //                                  "Assuming unit conductivity.\n";
-  //   std::cout << "Warning: GradPhi field undefined. The GridFunction "
-  //                "associated with it will be set to zero.\n";
+    _sigma = std::make_shared<mfem::ConstantCoefficient>(1.0);
 
-  //   _sigma = std::make_shared<mfem::ConstantCoefficient>(1.0);
-
-  //   _electric_field_transfer = false;
-  // }
-  // else
-  // {
-  //   _sigma = coefficients._scalars.GetShared(_cond_coef_name);
-  // }
+    _electric_field_transfer = false;
+  }
+  else
+  {
+    _sigma = coefficients._scalars.GetShared(_cond_coef_name);
+  }
 
   if (_final_lf == nullptr)
   {
@@ -172,7 +171,6 @@ ClosedCoilSolver::Apply(mfem::ParLinearForm * lf)
   double i = _itotal->Eval(*tr, ip);
   lf->Add(i, *_final_lf);
 
-  *_source_electric_field = 0.0;
   if (_electric_field_transfer)
   {
     _source_electric_field->Add(i, *_electric_field_t_parent);
@@ -486,7 +484,6 @@ ClosedCoilSolver::SolveCoil()
   if (_electric_field_transfer)
     _electric_field_t_parent = std::make_unique<mfem::ParGridFunction>(*_source_electric_field);
 
-  *_source_electric_field = 0.0;
   _mesh_coil->Transfer(*_electric_field_aux_coil, *_source_electric_field);
 
   mfem::ParBilinearForm m1(_h_curl_fe_space_parent);
