@@ -1,5 +1,5 @@
 #pragma once
-#include "equation_system_operator.hpp"
+#include "problem_operator.hpp"
 #include "problem_builder_base.hpp"
 namespace hephaestus
 {
@@ -7,14 +7,39 @@ namespace hephaestus
 class SteadyStateProblem : public hephaestus::Problem
 {
 public:
-  std::unique_ptr<hephaestus::EquationSystem> _eq_sys{nullptr};
-  std::unique_ptr<hephaestus::EquationSystemOperator> _eq_sys_operator{nullptr};
+  friend class SteadyStateProblemBuilder;
 
   SteadyStateProblem() = default;
   ~SteadyStateProblem() override = default;
 
-  hephaestus::EquationSystem * GetEquationSystem() override { return _eq_sys.get(); };
-  hephaestus::EquationSystemOperator * GetOperator() override { return _eq_sys_operator.get(); };
+  [[nodiscard]] bool HasEquationSystem() const override
+  {
+    return GetOperator()->HasEquationSystem();
+  }
+
+  [[nodiscard]] hephaestus::EquationSystem * GetEquationSystem() const override
+  {
+    return GetOperator()->GetEquationSystem();
+  }
+
+  [[nodiscard]] hephaestus::ProblemOperator * GetOperator() const override
+  {
+    if (!_ss_operator)
+    {
+      MFEM_ABORT("No ProblemOperator has been added to SteadyStateProblem.");
+    }
+
+    return _ss_operator.get();
+  }
+
+  void SetOperator(std::unique_ptr<ProblemOperator> new_problem_operator)
+  {
+    _ss_operator.reset();
+    _ss_operator = std::move(new_problem_operator);
+  }
+
+protected:
+  std::unique_ptr<hephaestus::ProblemOperator> _ss_operator{nullptr};
 };
 
 // Builder class of a frequency-domain problem.
@@ -28,7 +53,7 @@ public:
   virtual std::unique_ptr<hephaestus::SteadyStateProblem> ReturnProblem()
   {
     return std::move(_problem);
-  };
+  }
 
   void RegisterFESpaces() override {}
 
@@ -40,13 +65,15 @@ public:
 
   void InitializeKernels() override;
 
-  void ConstructEquationSystem() override {}
+  void ConstructEquationSystem() override;
+
+  void SetOperatorGridFunctions() override;
 
   void ConstructOperator() override;
 
   void ConstructState() override;
 
-  void ConstructSolver() override {}
+  void ConstructTimestepper() override {}
 
 protected:
   std::unique_ptr<hephaestus::SteadyStateProblem> _problem{nullptr};

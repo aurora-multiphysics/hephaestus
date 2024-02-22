@@ -140,4 +140,18 @@ public:
   int _print_level;
 };
 
+class SuperLUSolver : public mfem::SuperLUSolver
+{
+public:
+  SuperLUSolver(MPI_Comm comm, int npdep = 1) : mfem::SuperLUSolver(comm, npdep){};
+  void SetOperator(const mfem::Operator & op) override
+  {
+    _a_superlu = std::make_unique<mfem::SuperLURowLocMatrix>(op);
+    mfem::SuperLUSolver::SetOperator(*_a_superlu.get());
+  }
+
+private:
+  std::unique_ptr<mfem::SuperLURowLocMatrix> _a_superlu{nullptr};
+};
+
 } // namespace hephaestus

@@ -20,8 +20,6 @@ public:
 
   void ConstructEquationSystem() override;
 
-  void ConstructOperator() override;
-
   void RegisterGridFunctions() override;
 
   void RegisterCoefficients() override;
@@ -52,19 +50,4 @@ public:
   mfem::ConstantCoefficient _neg_coef;
 };
 
-class AVOperator : public TimeDomainEquationSystemOperator
-{
-public:
-  AVOperator(mfem::ParMesh & pmesh,
-             hephaestus::FESpaces & fespaces,
-             hephaestus::GridFunctions & gridfunctions,
-             hephaestus::BCMap & bc_map,
-             hephaestus::Coefficients & coefficients,
-             hephaestus::Sources & sources,
-             hephaestus::InputParameters & solver_options);
-
-  ~AVOperator() override = default;
-
-  void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
-};
 } // namespace hephaestus

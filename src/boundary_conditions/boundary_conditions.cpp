@@ -48,7 +48,7 @@ BCMap::ApplyEssentialBCs(const std::string & name_,
   }
   mfem::Array<int> ess_bdr = GetEssentialBdrMarkers(name_, mesh_);
   gridfunc.FESpace()->GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
-};
+}
 
 void
 BCMap::ApplyEssentialBCs(const std::string & name_,
