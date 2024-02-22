@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.8)
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 include(FetchContent)
-include(ExternalProject)
 
 # no space in these names! used as shared object name and python module name
 set(PROJECT_NAME hephaestus)
@@ -54,14 +54,16 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 ############################################################
 # Fetch spdlog for logging purposes
 ############################################################
-ExternalProject_Add(
+set(SPDLOG_BUILD_PIC ON)
+#set(SPDLOG_BUILD_SHARED ON)
+
+FetchContent_Declare(
         spdlog
         GIT_REPOSITORY https://github.com/gabime/spdlog.git
         GIT_TAG        v1.x
-        INSTALL_COMMAND cmake -E echo "Skipping install step."
 )
 
-find_package(spdlog REQUIRED)
+FetchContent_MakeAvailable(spdlog)
 
 ############################################################
 # Set the build type environment variable
