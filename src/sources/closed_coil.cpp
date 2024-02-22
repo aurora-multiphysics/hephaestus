@@ -408,15 +408,13 @@ ClosedCoilSolver::SolveTransition()
   opencoil.Init(gridfunctions, fespaces, bc_maps, coefs);
   opencoil.Apply(_final_lf.get());
 
-  *v_parent *= -1.0;
-  *_source_electric_field *= -1.0;
   _mesh_coil->Transfer(*v_parent, *_v_coil);
 }
 
 void
 ClosedCoilSolver::SolveCoil()
 {
-  // -(σ∇Va,∇ψ) = (σ∇Vt,∇ψ)
+  // (σ∇Va,∇ψ) = -(σ∇Vt,∇ψ)
   // where Va is Vaux_coil_, the auxiliary continuous "potential"
   // ψ are the H1 test functions
   // Vt is the transition potential
@@ -434,7 +432,7 @@ ClosedCoilSolver::SolveCoil()
   a_t.AddDomainIntegrator(new mfem::DiffusionIntegrator(*_sigma), _transition_markers);
   a_t.Assemble();
   a_t.Finalize();
-  a_t.AddMult(*_v_coil, b_coil, 1.0);
+  a_t.AddMult(*_v_coil, b_coil, -1.0);
 
   mfem::ParBilinearForm a_coil(_h1_fe_space_coil.get());
   a_coil.AddDomainIntegrator(new mfem::DiffusionIntegrator(*_sigma));
@@ -480,6 +478,7 @@ ClosedCoilSolver::SolveCoil()
   grad.AddDomainInterpolator(new mfem::GradientInterpolator());
   grad.Assemble();
   grad.Mult(vaux_coil, *_electric_field_aux_coil);
+  *_electric_field_aux_coil *= -1.0;
 
   if (_electric_field_transfer)
     _electric_field_t_parent = std::make_unique<mfem::ParGridFunction>(*_source_electric_field);
@@ -509,14 +508,14 @@ ClosedCoilSolver::SolveCoil()
 
   _mesh_t->Transfer(*_source_electric_field, *electric_field_aux_t);
 
-  // The total flux across the electrode face is Φ_t-Φ_aux
+  // The total flux across the electrode face is Φ_t + Φ_aux
   // where Φ_t is the transition flux, already normalised to be 1
-  double flux = 1.0 - calcFlux(electric_field_aux_t.get(), _elec_attrs.first, *_sigma);
+  double flux = 1.0 + calcFlux(electric_field_aux_t.get(), _elec_attrs.first, *_sigma);
 
   if (_electric_field_transfer)
   {
-    *_source_electric_field -= *_electric_field_t_parent;
-    *_source_electric_field /= -flux;
+    *_source_electric_field += *_electric_field_t_parent;
+    *_source_electric_field /= flux;
     *_electric_field_t_parent = *_source_electric_field;
   }
 
