@@ -98,7 +98,7 @@ StaticsFormulation::RegisterCoefficients()
 StaticsOperator::StaticsOperator(hephaestus::Problem & problem,
                                  std::string h_curl_var_name,
                                  std::string stiffness_coef_name)
-  : ProblemOperator(problem),
+  : EquationSystemProblemOperator(problem),
     _h_curl_var_name(std::move(h_curl_var_name)),
     _stiffness_coef_name(std::move(stiffness_coef_name))
 {
