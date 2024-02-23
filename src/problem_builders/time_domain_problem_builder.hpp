@@ -6,7 +6,7 @@ namespace hephaestus
 {
 
 // Stores data required to describe a time domain formulation
-class TimeDomainProblem : public hephaestus::Problem
+class TimeDomainProblem : public hephaestus::EquationSystemProblem
 {
 public:
   friend class TimeDomainProblemBuilder;
@@ -40,7 +40,7 @@ protected:
 };
 
 // Builder class of a time-domain EM formulation.
-class TimeDomainProblemBuilder : public hephaestus::ProblemBuilder
+class TimeDomainProblemBuilder : public EquationSystemProblemBuilder
 {
 public:
   TimeDomainProblemBuilder() : _problem(std::make_unique<hephaestus::TimeDomainProblem>()) {}

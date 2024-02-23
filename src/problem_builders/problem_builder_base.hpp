@@ -11,6 +11,7 @@
 namespace hephaestus
 {
 
+/// Base class for a Problem with no EquationSystem.
 class Problem
 {
 public:
@@ -41,15 +42,22 @@ public:
   int _myid;
   int _num_procs;
 
-  [[nodiscard]] virtual hephaestus::EquationSystem * GetEquationSystem() const = 0;
   [[nodiscard]] virtual mfem::Operator * GetOperator() const = 0;
 };
 
+/// Base class for a Problem with an EquationSystem.
+class EquationSystemProblem : public Problem
+{
+public:
+  EquationSystemProblem() = default;
+  ~EquationSystemProblem() override = default;
+
+  [[nodiscard]] virtual hephaestus::EquationSystem * GetEquationSystem() const = 0;
+};
+
+/// ProblemBuilder for a Problem with no EquationSystem.
 class ProblemBuilder
 {
-private:
-  virtual hephaestus::Problem * GetProblem() = 0;
-
 public:
   ProblemBuilder() = default;
 
@@ -74,13 +82,6 @@ public:
                   int vdim = 1,
                   int ordering = mfem::Ordering::byNODES);
   void AddGridFunction(std::string gridfunction_name, std::string fespace_name);
-
-  template <class T>
-  void AddKernel(std::string var_name, std::shared_ptr<hephaestus::Kernel<T>> kernel)
-  {
-    GetProblem()->GetEquationSystem()->AddTrialVariableNameIfMissing(var_name);
-    GetProblem()->GetEquationSystem()->AddKernel(var_name, std::move(kernel));
-  }
 
   void AddBoundaryCondition(std::string bc_name, std::shared_ptr<hephaestus::BoundaryCondition> bc);
   void AddAuxSolver(std::string auxsolver_name, std::shared_ptr<hephaestus::AuxSolver> aux);
@@ -144,5 +145,22 @@ protected:
                                               ._max_iteration = 1000,
                                               ._print_level = GetGlobalPrintLevel(),
                                               ._k_dim = 10});
+
+  virtual Problem * GetProblem() = 0;
 };
+
+class EquationSystemProblemBuilder : public ProblemBuilder
+{
+public:
+  template <class T>
+  void AddKernel(std::string var_name, std::shared_ptr<hephaestus::Kernel<T>> kernel)
+  {
+    GetProblem()->GetEquationSystem()->AddTrialVariableNameIfMissing(var_name);
+    GetProblem()->GetEquationSystem()->AddKernel(var_name, std::move(kernel));
+  }
+
+protected:
+  EquationSystemProblem * GetProblem() override = 0;
+};
+
 } // namespace hephaestus

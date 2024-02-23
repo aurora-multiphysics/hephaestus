@@ -13,11 +13,6 @@ public:
   SteadyStateProblem() = default;
   ~SteadyStateProblem() override = default;
 
-  [[nodiscard]] hephaestus::EquationSystem * GetEquationSystem() const override
-  {
-    MFEM_ABORT("No equation system for SteadyStateProblem.");
-  }
-
   [[nodiscard]] hephaestus::ProblemOperator * GetOperator() const override
   {
     if (!_ss_operator)
