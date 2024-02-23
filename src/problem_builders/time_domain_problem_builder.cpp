@@ -33,15 +33,6 @@ TimeDomainProblemBuilder::RegisterGridFunctions()
 }
 
 void
-TimeDomainProblemBuilder::ConstructEquationSystem()
-{
-  hephaestus::InputParameters params;
-  auto equation_system = std::make_unique<hephaestus::TimeDependentEquationSystem>(params);
-
-  _problem->GetOperator()->SetEquationSystem(std::move(equation_system));
-}
-
-void
 TimeDomainProblemBuilder::SetOperatorGridFunctions()
 {
   _problem->GetOperator()->SetGridFunctions();
@@ -62,6 +53,10 @@ TimeDomainProblemBuilder::ConstructOperator()
 {
   _problem->SetOperator(
       std::make_unique<hephaestus::TimeDomainEquationSystemProblemOperator>(*_problem));
+
+  auto equation_system = std::make_unique<hephaestus::TimeDependentEquationSystem>();
+
+  _problem->GetOperator()->SetEquationSystem(std::move(equation_system));
 }
 
 void

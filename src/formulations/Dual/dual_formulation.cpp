@@ -59,20 +59,6 @@ DualFormulation::DualFormulation(std::string alpha_coef_name,
 }
 
 void
-DualFormulation::ConstructEquationSystem()
-{
-  hephaestus::InputParameters weak_form_params;
-  weak_form_params.SetParam("HCurlVarName", _h_curl_var_name);
-  weak_form_params.SetParam("HDivVarName", _h_div_var_name);
-  weak_form_params.SetParam("AlphaCoefName", _alpha_coef_name);
-  weak_form_params.SetParam("BetaCoefName", _beta_coef_name);
-
-  auto equation_system = std::make_unique<hephaestus::WeakCurlEquationSystem>(weak_form_params);
-
-  GetProblem()->GetOperator()->SetEquationSystem(std::move(equation_system));
-}
-
-void
 DualFormulation::ConstructJacobianPreconditioner()
 {
   auto precond =
@@ -94,6 +80,16 @@ void
 DualFormulation::ConstructOperator()
 {
   _problem->SetOperator(std::make_unique<hephaestus::DualOperator>(*_problem));
+
+  hephaestus::InputParameters weak_form_params;
+  weak_form_params.SetParam("HCurlVarName", _h_curl_var_name);
+  weak_form_params.SetParam("HDivVarName", _h_div_var_name);
+  weak_form_params.SetParam("AlphaCoefName", _alpha_coef_name);
+  weak_form_params.SetParam("BetaCoefName", _beta_coef_name);
+
+  auto equation_system = std::make_unique<hephaestus::WeakCurlEquationSystem>(weak_form_params);
+
+  GetProblem()->GetOperator()->SetEquationSystem(std::move(equation_system));
 }
 
 void
@@ -146,8 +142,7 @@ DualFormulation::RegisterCoefficients()
 }
 
 WeakCurlEquationSystem::WeakCurlEquationSystem(const hephaestus::InputParameters & params)
-  : TimeDependentEquationSystem(params),
-    _h_curl_var_name(params.GetParam<std::string>("HCurlVarName")),
+  : _h_curl_var_name(params.GetParam<std::string>("HCurlVarName")),
     _h_div_var_name(params.GetParam<std::string>("HDivVarName")),
     _alpha_coef_name(params.GetParam<std::string>("AlphaCoefName")),
     _beta_coef_name(params.GetParam<std::string>("BetaCoefName")),

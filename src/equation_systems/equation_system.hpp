@@ -21,8 +21,6 @@ public:
   using ParMixedBilinearFormKernel = hephaestus::Kernel<mfem::ParMixedBilinearForm>;
 
   EquationSystem() = default;
-  EquationSystem(const hephaestus::InputParameters & params);
-
   ~EquationSystem() override;
 
   // Test variables are associated with LinearForms,
@@ -125,7 +123,7 @@ Class to store weak form components for time dependent PDEs
 class TimeDependentEquationSystem : public EquationSystem
 {
 public:
-  TimeDependentEquationSystem(const hephaestus::InputParameters & params);
+  TimeDependentEquationSystem();
   ~TimeDependentEquationSystem() override = default;
 
   static std::string GetTimeDerivativeName(std::string name)

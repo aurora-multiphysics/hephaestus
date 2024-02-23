@@ -94,7 +94,6 @@ public:
   virtual void RegisterCoefficients() = 0;
 
   virtual void InitializeKernels() = 0;
-  virtual void ConstructEquationSystem() = 0;
   virtual void SetOperatorGridFunctions() = 0;
   virtual void ConstructJacobianPreconditioner();
   virtual void ConstructJacobianSolver();

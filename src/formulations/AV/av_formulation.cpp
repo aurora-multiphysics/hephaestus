@@ -47,8 +47,11 @@ AVFormulation::AVFormulation(std::string alpha_coef_name,
 }
 
 void
-AVFormulation::ConstructEquationSystem()
+AVFormulation::ConstructOperator()
 {
+  _problem->SetOperator(
+      std::make_unique<hephaestus::TimeDomainEquationSystemProblemOperator>(*_problem));
+
   hephaestus::InputParameters av_system_params;
   av_system_params.SetParam("VectorPotentialName", _vector_potential_name);
   av_system_params.SetParam("ScalarPotentialName", _scalar_potential_name);
@@ -116,8 +119,7 @@ AVFormulation::RegisterCoefficients()
 }
 
 AVEquationSystem::AVEquationSystem(const hephaestus::InputParameters & params)
-  : TimeDependentEquationSystem(params),
-    _a_name(params.GetParam<std::string>("VectorPotentialName")),
+  : _a_name(params.GetParam<std::string>("VectorPotentialName")),
     _v_name(params.GetParam<std::string>("ScalarPotentialName")),
     _alpha_coef_name(params.GetParam<std::string>("AlphaCoefName")),
     _beta_coef_name(params.GetParam<std::string>("BetaCoefName")),
