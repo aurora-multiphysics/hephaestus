@@ -556,8 +556,8 @@ ClosedCoilSolver::SolveCoil()
   _mesh_t->Transfer(*_source_electric_field, *electric_field_aux_t);
 
   // The total flux across the electrode face is Φ_t + Φ_aux
-  // where Φ_t is the transition flux, already normalised to be 1
-  double flux = 1.0 + calcFlux(electric_field_aux_t.get(), _elec_attrs.first, *_sigma);
+  // where Φ_t is the transition flux, already normalised to be -1
+  double flux = -1.0 + calcFlux(electric_field_aux_t.get(), _elec_attrs.first, *_sigma);
 
   if (_electric_field_transfer)
   {
