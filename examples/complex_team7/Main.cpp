@@ -229,9 +229,8 @@ main(int argc, char * argv[])
     solver_options.SetParam("Tolerance", float(1.0e-16));
     solver_options.SetParam("MaxIter", (unsigned int)1000);
     problem_builder->SetSolverOptions(solver_options);
-
-    hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
-    sequencer.ConstructOperatorProblem();
+    
+    problem_builder->FinalizeProblem();
 
     auto problem = problem_builder->ReturnProblem();
 

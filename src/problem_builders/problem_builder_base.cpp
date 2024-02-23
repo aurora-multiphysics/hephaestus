@@ -335,4 +335,27 @@ ProblemBuilder::InitializeOutputs()
   GetProblem()->_outputs.Init(GetProblem()->_gridfunctions);
 }
 
+void
+ProblemBuilder::FinalizeProblem()
+{
+  RegisterFESpaces();
+  RegisterGridFunctions();
+  RegisterAuxSolvers();
+  RegisterCoefficients();
+
+  ConstructOperator();
+  ConstructEquationSystem();
+  InitializeKernels();
+  SetOperatorGridFunctions();
+
+  ConstructJacobianPreconditioner();
+  ConstructJacobianSolver();
+  ConstructNonlinearSolver();
+
+  ConstructState();
+  ConstructTimestepper();
+  InitializeAuxSolvers();
+  InitializeOutputs();
+}
+
 } // namespace hephaestus

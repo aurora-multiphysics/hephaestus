@@ -216,8 +216,8 @@ TEST_CASE_METHOD(TestComplexTeam7, "TestComplexTeam7", "[CheckRun]")
   linesamplerwriter->SetPriority(5);
   problem_builder->AddPostprocessor("LineSamplerWriter", linesamplerwriter);
 
-  hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
-  sequencer.ConstructOperatorProblem();
+  problem_builder->FinalizeProblem();
+
   auto problem = problem_builder->ReturnProblem();
 
   hephaestus::InputParameters exec_params;

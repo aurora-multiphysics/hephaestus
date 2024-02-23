@@ -138,8 +138,8 @@ main(int argc, char * argv[])
   solver_options.SetParam("MaxIter", (unsigned int)500);
   problem_builder->SetSolverOptions(solver_options);
 
-  hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
-  sequencer.ConstructEquationSystemProblem();
+  problem_builder->FinalizeProblem();
+
   auto problem = problem_builder->ReturnProblem();
   hephaestus::InputParameters exec_params;
   exec_params.SetParam("VisualisationSteps", int(1));
