@@ -28,15 +28,11 @@ protected:
 };
 
 /// Interface inherited by ProblemOperators with an equation system.
-class EquationSystemProblemOperatorInterface : public ProblemOperatorInterface
+class EquationSystemProblemOperatorInterface
 {
 public:
-  EquationSystemProblemOperatorInterface(hephaestus::Problem & problem)
-    : ProblemOperatorInterface(problem)
-  {
-  }
-
-  ~EquationSystemProblemOperatorInterface() override = default;
+  EquationSystemProblemOperatorInterface() = default;
+  virtual ~EquationSystemProblemOperatorInterface() = default;
 
   [[nodiscard]] virtual mfem::Operator * GetEquationSystem() const = 0;
 };

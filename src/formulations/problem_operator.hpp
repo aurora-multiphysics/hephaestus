@@ -6,12 +6,12 @@
 
 namespace hephaestus
 {
-class ProblemOperator : public mfem::Operator, public EquationSystemProblemOperatorInterface
+class ProblemOperator : public mfem::Operator,
+                        public ProblemOperatorInterface,
+                        public EquationSystemProblemOperatorInterface
 {
 public:
-  ProblemOperator(hephaestus::Problem & problem) : EquationSystemProblemOperatorInterface(problem)
-  {
-  }
+  ProblemOperator(hephaestus::Problem & problem) : ProblemOperatorInterface(problem) {}
 
   void SetGridFunctions() override;
   void Init(mfem::Vector & X) override;
