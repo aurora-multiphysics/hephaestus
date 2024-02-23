@@ -344,7 +344,6 @@ ProblemBuilder::FinalizeProblem()
   RegisterCoefficients();
 
   ConstructOperator();
-  ConstructEquationSystem();
   InitializeKernels();
   SetOperatorGridFunctions();
 

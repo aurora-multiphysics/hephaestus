@@ -4,15 +4,6 @@ namespace hephaestus
 {
 
 void
-SteadyStateEquationSystemProblemBuilder::ConstructEquationSystem()
-{
-  hephaestus::InputParameters params;
-  auto equation_system = std::make_unique<hephaestus::EquationSystem>(params);
-
-  _problem->GetOperator()->SetEquationSystem(std::move(equation_system));
-}
-
-void
 SteadyStateEquationSystemProblemBuilder::SetOperatorGridFunctions()
 {
   _problem->GetOperator()->SetGridFunctions();
@@ -32,6 +23,10 @@ void
 SteadyStateEquationSystemProblemBuilder::ConstructOperator()
 {
   _problem->SetOperator(std::make_unique<hephaestus::EquationSystemProblemOperator>(*_problem));
+
+  auto equation_system = std::make_unique<hephaestus::EquationSystem>();
+
+  _problem->GetOperator()->SetEquationSystem(std::move(equation_system));
 }
 
 void

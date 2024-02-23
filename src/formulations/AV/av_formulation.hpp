@@ -18,7 +18,7 @@ public:
 
   ~AVFormulation() override = default;
 
-  void ConstructEquationSystem() override;
+  void ConstructOperator() override;
 
   void RegisterGridFunctions() override;
 

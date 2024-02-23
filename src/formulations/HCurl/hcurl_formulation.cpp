@@ -53,8 +53,11 @@ HCurlFormulation::HCurlFormulation(std::string alpha_coef_name,
 }
 
 void
-HCurlFormulation::ConstructEquationSystem()
+HCurlFormulation::ConstructOperator()
 {
+  _problem->SetOperator(
+      std::make_unique<hephaestus::TimeDomainEquationSystemProblemOperator>(*_problem));
+
   hephaestus::InputParameters weak_form_params;
   weak_form_params.SetParam("HCurlVarName", _h_curl_var_name);
   weak_form_params.SetParam("AlphaCoefName", _alpha_coef_name);
@@ -106,8 +109,7 @@ HCurlFormulation::RegisterGridFunctions()
 };
 
 CurlCurlEquationSystem::CurlCurlEquationSystem(const hephaestus::InputParameters & params)
-  : TimeDependentEquationSystem(params),
-    _h_curl_var_name(params.GetParam<std::string>("HCurlVarName")),
+  : _h_curl_var_name(params.GetParam<std::string>("HCurlVarName")),
     _alpha_coef_name(params.GetParam<std::string>("AlphaCoefName")),
     _beta_coef_name(params.GetParam<std::string>("BetaCoefName")),
     _dtalpha_coef_name(std::string("dt_") + _alpha_coef_name)
