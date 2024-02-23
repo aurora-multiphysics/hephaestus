@@ -5,7 +5,7 @@ namespace hephaestus
 {
 
 /// Class for steady-state problems with an equation system.
-class SteadyStateEquationSystemProblem : public hephaestus::Problem
+class SteadyStateEquationSystemProblem : public EquationSystemProblem
 {
 public:
   friend class SteadyStateEquationSystemProblemBuilder;
@@ -39,7 +39,7 @@ private:
 };
 
 // Builder class of a frequency-domain problem.
-class SteadyStateEquationSystemProblemBuilder : public hephaestus::ProblemBuilder
+class SteadyStateEquationSystemProblemBuilder : public EquationSystemProblemBuilder
 {
 public:
   SteadyStateEquationSystemProblemBuilder()
