@@ -240,7 +240,7 @@ ClosedCoilSolver::MakeWedge(hephaestus::Coefficients & coefficients)
   }
 
   // Now we need to find all elements in the mesh that touch, on at least one
-  // vertex, the electrode face if they do touch the vertex, are on one side of
+  // vertex, the electrode face. If they do touch the vertex, are on one side of
   // the electrode, and belong to the coil domain, we add them to our wedge
 
   std::vector<int> wedge_els;
@@ -265,6 +265,36 @@ ClosedCoilSolver::MakeWedge(hephaestus::Coefficients & coefficients)
         }
       }
     }
+  }
+
+  // If we are dealing with a piecewise-defined conductivity, we need to
+  // add the new wedge domain to the coefficient
+
+  if (typeid(*_sigma) == typeid(mfem::PWCoefficient))
+  {
+
+    std::vector<hephaestus::Subdomain> subdomains = coefficients._subdomains;
+    hephaestus::Subdomain new_domain("wedge", _new_domain_attr);
+    int wedge_old_att = _mesh_parent->GetAttribute(wedge_els[0]);
+
+    int sd = 0;
+    for (int i = 0; i < subdomains.size(); ++i)
+    {
+      if (subdomains[i]._id == wedge_old_att)
+      {
+        sd = i;
+        break;
+      }
+    }
+
+    new_domain._scalar_coefficients.Register(
+        "electrical_conductivity",
+        subdomains[sd]._scalar_coefficients.GetShared("electrical_conductivity"));
+    subdomains.push_back(new_domain);
+    coefficients._subdomains = subdomains;
+    coefficients._scalars.Deregister("electrical_conductivity");
+    coefficients.AddGlobalCoefficientsFromSubdomains();
+    _sigma = coefficients._scalars.GetShared(_cond_coef_name);
   }
 
   // Now we set the second electrode boundary attribute. Start with a list of
@@ -348,19 +378,6 @@ ClosedCoilSolver::MakeWedge(hephaestus::Coefficients & coefficients)
   _mesh_parent->FinalizeTopology();
   _mesh_parent->Finalize();
   _mesh_parent->SetAttributes();
-
-  if (typeid(*_sigma) == typeid(mfem::PWCoefficient))
-  {
-
-    std::vector<hephaestus::Subdomain> * subdomains = &coefficients._subdomains;
-    hephaestus::Subdomain new_domain("wedge", _new_domain_attr);
-    new_domain._scalar_coefficients.Register("electrical_conductivity",
-                                             std::make_shared<mfem::ConstantCoefficient>(1.0));
-    subdomains->push_back(new_domain);
-    coefficients._scalars.Deregister("electrical_conductivity");
-    coefficients.AddGlobalCoefficientsFromSubdomains();
-    _sigma = coefficients._scalars.GetShared(_cond_coef_name);
-  }
 }
 
 void
