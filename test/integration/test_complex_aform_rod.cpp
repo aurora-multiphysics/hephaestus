@@ -191,8 +191,8 @@ TEST_CASE_METHOD(TestComplexAFormRod, "TestComplexAFormRod", "[CheckRun]")
   problem_builder->SetOutputs(outputs);
   problem_builder->SetSolverOptions(solver_options);
 
-  hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
-  sequencer.ConstructOperatorProblem();
+  problem_builder->FinalizeProblem();
+
   std::unique_ptr<hephaestus::SteadyStateProblem> problem = problem_builder->ReturnProblem();
 
   hephaestus::InputParameters exec_params;
