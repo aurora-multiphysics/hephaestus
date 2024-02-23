@@ -29,7 +29,7 @@ protected:
   const std::string _h_curl_var_name;
 };
 
-class StaticsOperator : public EquationSystemProblemOperator
+class StaticsOperator : public ProblemOperator
 {
 public:
   StaticsOperator(hephaestus::Problem & problem,
