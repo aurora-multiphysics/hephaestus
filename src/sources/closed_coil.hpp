@@ -43,7 +43,7 @@ public:
   // 1-element layer adjacent to it. Applies a different domain attribute to
   // other elements in the coil. Also applies different boundary attributes on
   // the two opposing faces of the layer, to act as Dirichlet BCs.
-  void MakeWedge(hephaestus::Coefficients & coefficients);
+  void MakeWedge();
 
   // Extracts the coil submesh and prepares the gridfunctions and FE spaces
   // for being passed to the OpenCoilSolver in the transition region
@@ -81,6 +81,7 @@ private:
   std::shared_ptr<mfem::Coefficient> _itotal{nullptr};
   std::vector<int> _old_dom_attrs;
   hephaestus::InputParameters _solver_options;
+  hephaestus::Coefficients _ccs_coefs;
 
   // Here, we are solving for -(σ∇Va,∇ψ) = (σ∇Vt,∇ψ), where ∇Vt is grad_phi_t (within its relevant
   // mesh), ∇Va is grad_phi_aux, and their sum ∇Vt+∇Va is the full grad_phi, which is, up to an

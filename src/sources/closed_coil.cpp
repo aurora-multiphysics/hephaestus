@@ -57,6 +57,9 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
   // Retrieving the parent FE space and mesh
   _h_curl_fe_space_parent = fespaces.Get(_hcurl_fespace_name);
 
+  // Setting the ccs coefs which will be altered later
+  _ccs_coefs = coefficients;
+
   _mesh_parent = _h_curl_fe_space_parent->GetParMesh();
   _order_hcurl = _h_curl_fe_space_parent->FEColl()->GetOrder();
   _order_h1 = _order_hcurl;
@@ -150,7 +153,7 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     *_final_lf = 0.0;
   }
 
-  MakeWedge(coefficients);
+  MakeWedge();
   PrepareCoilSubmesh();
   SolveTransition();
   SolveCoil();
@@ -199,7 +202,7 @@ ClosedCoilSolver::SubtractSource(mfem::ParGridFunction * gf)
 // ClosedCoilSolver main methods
 
 void
-ClosedCoilSolver::MakeWedge(hephaestus::Coefficients & coefficients)
+ClosedCoilSolver::MakeWedge()
 {
   std::vector<int> bdr_els;
 
@@ -278,7 +281,7 @@ ClosedCoilSolver::MakeWedge(hephaestus::Coefficients & coefficients)
   if (typeid(*sig_ptr) == typeid(mfem::PWCoefficient))
   {
 
-    std::vector<hephaestus::Subdomain> subdomains = coefficients._subdomains;
+    std::vector<hephaestus::Subdomain> subdomains = _ccs_coefs._subdomains;
     hephaestus::Subdomain new_domain("wedge", _new_domain_attr);
     int wedge_old_att = _mesh_parent->GetAttribute(wedge_els[0]);
 
@@ -308,10 +311,10 @@ ClosedCoilSolver::MakeWedge(hephaestus::Coefficients & coefficients)
     }
 
     subdomains.push_back(new_domain);
-    coefficients._subdomains = subdomains;
-    coefficients._scalars.Deregister("electrical_conductivity");
-    coefficients.AddGlobalCoefficientsFromSubdomains();
-    _sigma = coefficients._scalars.GetShared(_cond_coef_name);
+    _ccs_coefs._subdomains = subdomains;
+    _ccs_coefs._scalars.Deregister("electrical_conductivity");
+    _ccs_coefs.AddGlobalCoefficientsFromSubdomains();
+    _sigma = _ccs_coefs._scalars.GetShared(_cond_coef_name);
   }
 
   // Now we set the second electrode boundary attribute. Start with a list of
