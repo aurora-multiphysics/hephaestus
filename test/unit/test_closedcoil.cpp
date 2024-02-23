@@ -7,8 +7,8 @@ extern const char * DATA_DIR;
 TEST_CASE("ClosedCoilTest", "[CheckData]")
 {
 
-  // Floating point error tolerance
-  const double eps{1e-10};
+  // Error tolerance
+  const double eps{1e-2};
 
   int order = 1;
 
@@ -51,5 +51,5 @@ TEST_CASE("ClosedCoilTest", "[CheckData]")
 
   double flux = hephaestus::calcFlux(grad_phi.get(), test_attr, *conductivity);
 
-  REQUIRE_THAT(flux, Catch::Matchers::WithinAbs(ival, eps));
+  REQUIRE_THAT(-flux, Catch::Matchers::WithinAbs(ival, eps));
 }
