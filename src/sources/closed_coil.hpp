@@ -43,7 +43,7 @@ public:
   // 1-element layer adjacent to it. Applies a different domain attribute to
   // other elements in the coil. Also applies different boundary attributes on
   // the two opposing faces of the layer, to act as Dirichlet BCs.
-  void MakeWedge();
+  void MakeWedge(hephaestus::Coefficients & coefficients);
 
   // Extracts the coil submesh and prepares the gridfunctions and FE spaces
   // for being passed to the OpenCoilSolver in the transition region

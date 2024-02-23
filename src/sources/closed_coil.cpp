@@ -150,7 +150,7 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     *_final_lf = 0.0;
   }
 
-  MakeWedge();
+  MakeWedge(coefficients);
   PrepareCoilSubmesh();
   SolveTransition();
   SolveCoil();
@@ -199,7 +199,7 @@ ClosedCoilSolver::SubtractSource(mfem::ParGridFunction * gf)
 // ClosedCoilSolver main methods
 
 void
-ClosedCoilSolver::MakeWedge()
+ClosedCoilSolver::MakeWedge(hephaestus::Coefficients & coefficients)
 {
   std::vector<int> bdr_els;
 
@@ -348,6 +348,19 @@ ClosedCoilSolver::MakeWedge()
   _mesh_parent->FinalizeTopology();
   _mesh_parent->Finalize();
   _mesh_parent->SetAttributes();
+
+  if (typeid(*_sigma) == typeid(mfem::PWCoefficient))
+  {
+
+    std::vector<hephaestus::Subdomain> * subdomains = &coefficients._subdomains;
+    hephaestus::Subdomain new_domain("wedge", _new_domain_attr);
+    new_domain._scalar_coefficients.Register("electrical_conductivity",
+                                             std::make_shared<mfem::ConstantCoefficient>(1.0));
+    subdomains->push_back(new_domain);
+    coefficients._scalars.Deregister("electrical_conductivity");
+    coefficients.AddGlobalCoefficientsFromSubdomains();
+    _sigma = coefficients._scalars.GetShared(_cond_coef_name);
+  }
 }
 
 void
