@@ -17,7 +17,7 @@ public:
     return GetOperator()->GetEquationSystem();
   }
 
-  [[nodiscard]] hephaestus::ProblemOperator * GetOperator() const override
+  [[nodiscard]] hephaestus::EquationSystemProblemOperator * GetOperator() const override
   {
     if (!_ss_operator)
     {
@@ -27,14 +27,14 @@ public:
     return _ss_operator.get();
   }
 
-  void SetOperator(std::unique_ptr<ProblemOperator> new_problem_operator)
+  void SetOperator(std::unique_ptr<EquationSystemProblemOperator> new_problem_operator)
   {
     _ss_operator.reset();
     _ss_operator = std::move(new_problem_operator);
   }
 
 protected:
-  std::unique_ptr<hephaestus::ProblemOperator> _ss_operator{nullptr};
+  std::unique_ptr<hephaestus::EquationSystemProblemOperator> _ss_operator{nullptr};
 };
 
 // Builder class of a frequency-domain problem.

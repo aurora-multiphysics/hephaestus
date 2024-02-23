@@ -59,7 +59,7 @@ protected:
   const std::string _loss_coef_name;
 };
 
-class ComplexMaxwellOperator : public ProblemOperator
+class ComplexMaxwellOperator : public EquationSystemProblemOperator
 {
 public:
   ComplexMaxwellOperator(hephaestus::Problem & problem,

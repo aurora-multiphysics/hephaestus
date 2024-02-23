@@ -31,7 +31,7 @@ SteadyStateProblemBuilder::InitializeKernels()
 void
 SteadyStateProblemBuilder::ConstructOperator()
 {
-  _problem->SetOperator(std::make_unique<hephaestus::ProblemOperator>(*_problem));
+  _problem->SetOperator(std::make_unique<hephaestus::EquationSystemProblemOperator>(*_problem));
 }
 
 void

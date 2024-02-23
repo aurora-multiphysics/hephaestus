@@ -132,7 +132,7 @@ ComplexMaxwellOperator::ComplexMaxwellOperator(hephaestus::Problem & problem,
                                                std::string stiffness_coef_name,
                                                std::string mass_coef_name,
                                                std::string loss_coef_name)
-  : ProblemOperator(problem),
+  : EquationSystemProblemOperator(problem),
     _h_curl_var_complex_name(std::move(h_curl_var_complex_name)),
     _h_curl_var_real_name(std::move(h_curl_var_real_name)),
     _h_curl_var_imag_name(std::move(h_curl_var_imag_name)),

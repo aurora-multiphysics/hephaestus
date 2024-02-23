@@ -42,4 +42,9 @@ ProblemOperator::Init(mfem::Vector & X)
   }
 }
 
+EquationSystemProblemOperator::EquationSystemProblemOperator(hephaestus::Problem & problem)
+  : ProblemOperator(problem)
+{
+}
+
 } // namespace hephaestus
