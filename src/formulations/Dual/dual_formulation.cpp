@@ -122,7 +122,7 @@ DualFormulation::RegisterGridFunctions()
   }
 
   // Register time derivatives
-  TimeDomainProblemBuilder::RegisterGridFunctions();
+  TimeDomainEquationSystemProblemBuilder::RegisterGridFunctions();
 };
 
 void

@@ -157,7 +157,7 @@ TEST_CASE_METHOD(TestEBFormRod, "TestEBFormRod", "[CheckRun]")
 
   problem_builder->FinalizeProblem();
 
-  std::unique_ptr<hephaestus::TimeDomainProblem> problem = problem_builder->ReturnProblem();
+  auto problem = problem_builder->ReturnProblem();
   hephaestus::InputParameters exec_params;
   exec_params.SetParam("TimeStep", float(0.5));
   exec_params.SetParam("StartTime", float(0.00));

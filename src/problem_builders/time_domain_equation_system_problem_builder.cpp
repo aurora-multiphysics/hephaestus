@@ -1,11 +1,11 @@
-#include "time_domain_problem_builder.hpp"
+#include "time_domain_equation_system_problem_builder.hpp"
 
 namespace hephaestus
 {
 
 std::vector<mfem::ParGridFunction *>
-TimeDomainProblemBuilder::RegisterTimeDerivatives(std::vector<std::string> gridfunction_names,
-                                                  hephaestus::GridFunctions & gridfunctions)
+TimeDomainEquationSystemProblemBuilder::RegisterTimeDerivatives(
+    std::vector<std::string> gridfunction_names, hephaestus::GridFunctions & gridfunctions)
 {
   std::vector<mfem::ParGridFunction *> time_derivatives;
 
@@ -22,7 +22,7 @@ TimeDomainProblemBuilder::RegisterTimeDerivatives(std::vector<std::string> gridf
 }
 
 void
-TimeDomainProblemBuilder::RegisterGridFunctions()
+TimeDomainEquationSystemProblemBuilder::RegisterGridFunctions()
 {
   std::vector<std::string> gridfunction_names;
   for (auto const & [name, gf] : _problem->_gridfunctions)
@@ -33,19 +33,22 @@ TimeDomainProblemBuilder::RegisterGridFunctions()
 }
 
 void
-TimeDomainProblemBuilder::SetOperatorGridFunctions()
+TimeDomainEquationSystemProblemBuilder::SetOperatorGridFunctions()
 {
   _problem->GetOperator()->SetGridFunctions();
 }
 
 void
-TimeDomainProblemBuilder::ConstructOperator()
+TimeDomainEquationSystemProblemBuilder::ConstructOperator()
 {
-  _problem->SetOperator(std::make_unique<hephaestus::TimeDomainProblemOperator>(*_problem));
+  auto equation_system = std::make_unique<hephaestus::TimeDependentEquationSystem>();
+
+  _problem->SetOperator(std::make_unique<hephaestus::TimeDomainEquationSystemProblemOperator>(
+      *_problem, std::move(equation_system)));
 }
 
 void
-TimeDomainProblemBuilder::ConstructState()
+TimeDomainEquationSystemProblemBuilder::ConstructState()
 {
   // Vector of dofs.
   _problem->_f = std::make_unique<mfem::BlockVector>(_problem->GetOperator()->_true_offsets);
@@ -55,7 +58,7 @@ TimeDomainProblemBuilder::ConstructState()
 }
 
 void
-TimeDomainProblemBuilder::ConstructTimestepper()
+TimeDomainEquationSystemProblemBuilder::ConstructTimestepper()
 {
   _problem->_ode_solver = std::make_unique<mfem::BackwardEulerSolver>();
   _problem->_ode_solver->Init(*(_problem->GetOperator()));

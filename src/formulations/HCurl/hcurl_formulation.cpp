@@ -103,7 +103,7 @@ HCurlFormulation::RegisterGridFunctions()
     AddGridFunction(_h_curl_var_name, std::string("_HCurlFESpace"));
   };
   // Register time derivatives
-  TimeDomainProblemBuilder::RegisterGridFunctions();
+  TimeDomainEquationSystemProblemBuilder::RegisterGridFunctions();
 };
 
 CurlCurlEquationSystem::CurlCurlEquationSystem(const hephaestus::InputParameters & params)

@@ -176,7 +176,7 @@ TEST_CASE_METHOD(TestComplexIrisWaveguide, "TestComplexIrisWaveguide", "[CheckRu
 
   problem_builder->FinalizeProblem();
 
-  std::unique_ptr<hephaestus::SteadyStateProblem> problem = problem_builder->ReturnProblem();
+  auto problem = problem_builder->ReturnProblem();
 
   hephaestus::InputParameters exec_params;
   exec_params.SetParam("Problem", problem.get());
