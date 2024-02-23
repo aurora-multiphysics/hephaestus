@@ -267,29 +267,46 @@ ClosedCoilSolver::MakeWedge(hephaestus::Coefficients & coefficients)
     }
   }
 
+  if (wedge_els.size() == 0)
+    mfem::mfem_error("ClosedCoilSolver wedge has size zero");
+
   // If we are dealing with a piecewise-defined conductivity, we need to
   // add the new wedge domain to the coefficient
 
-  if (typeid(*_sigma) == typeid(mfem::PWCoefficient))
+  // This is to avoid a compiler warning
+  auto sig_ptr = _sigma.get();
+  if (typeid(*sig_ptr) == typeid(mfem::PWCoefficient))
   {
 
     std::vector<hephaestus::Subdomain> subdomains = coefficients._subdomains;
     hephaestus::Subdomain new_domain("wedge", _new_domain_attr);
     int wedge_old_att = _mesh_parent->GetAttribute(wedge_els[0]);
 
-    int sd = 0;
+    int sd_wedge = -1;
     for (int i = 0; i < subdomains.size(); ++i)
     {
       if (subdomains[i]._id == wedge_old_att)
       {
-        sd = i;
+        sd_wedge = i;
         break;
       }
     }
 
-    new_domain._scalar_coefficients.Register(
-        "electrical_conductivity",
-        subdomains[sd]._scalar_coefficients.GetShared("electrical_conductivity"));
+    // If the conductivity in the region in which the wedge is located has been defined in the
+    // PWCoefficient, the new subdomain inherits the same conductivity coefficient. Otherwise, the
+    // conductivity is set to zero
+    if (sd_wedge != -1)
+    {
+      new_domain._scalar_coefficients.Register(
+          "electrical_conductivity",
+          subdomains[sd_wedge]._scalar_coefficients.GetShared("electrical_conductivity"));
+    }
+    else
+    {
+      new_domain._scalar_coefficients.Register("electrical_conductivity",
+                                               std::make_shared<mfem::ConstantCoefficient>(0.0));
+    }
+
     subdomains.push_back(new_domain);
     coefficients._subdomains = subdomains;
     coefficients._scalars.Deregister("electrical_conductivity");
