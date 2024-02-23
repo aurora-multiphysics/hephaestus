@@ -79,8 +79,6 @@ DualFormulation::ConstructJacobianSolver()
 void
 DualFormulation::ConstructOperator()
 {
-  _problem->SetOperator(std::make_unique<hephaestus::DualOperator>(*_problem));
-
   hephaestus::InputParameters weak_form_params;
   weak_form_params.SetParam("HCurlVarName", _h_curl_var_name);
   weak_form_params.SetParam("HDivVarName", _h_div_var_name);
@@ -89,7 +87,8 @@ DualFormulation::ConstructOperator()
 
   auto equation_system = std::make_unique<hephaestus::WeakCurlEquationSystem>(weak_form_params);
 
-  GetProblem()->GetOperator()->SetEquationSystem(std::move(equation_system));
+  _problem->SetOperator(
+      std::make_unique<hephaestus::DualOperator>(*_problem, std::move(equation_system)));
 }
 
 void

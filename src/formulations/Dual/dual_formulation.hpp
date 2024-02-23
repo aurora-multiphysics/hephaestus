@@ -52,7 +52,11 @@ public:
 class DualOperator : public TimeDomainEquationSystemProblemOperator
 {
 public:
-  DualOperator(hephaestus::Problem & problem) : TimeDomainEquationSystemProblemOperator(problem) {}
+  DualOperator(hephaestus::Problem & problem,
+               std::unique_ptr<TimeDependentEquationSystem> equation_system)
+    : TimeDomainEquationSystemProblemOperator(problem, std::move(equation_system))
+  {
+  }
 
   void Init(mfem::Vector & X) override;
 

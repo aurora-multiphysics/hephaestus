@@ -51,12 +51,10 @@ TimeDomainProblemBuilder::InitializeKernels()
 void
 TimeDomainProblemBuilder::ConstructOperator()
 {
-  _problem->SetOperator(
-      std::make_unique<hephaestus::TimeDomainEquationSystemProblemOperator>(*_problem));
-
   auto equation_system = std::make_unique<hephaestus::TimeDependentEquationSystem>();
 
-  _problem->GetOperator()->SetEquationSystem(std::move(equation_system));
+  _problem->SetOperator(std::make_unique<hephaestus::TimeDomainEquationSystemProblemOperator>(
+      *_problem, std::move(equation_system)));
 }
 
 void

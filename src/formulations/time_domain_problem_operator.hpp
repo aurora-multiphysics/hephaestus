@@ -32,8 +32,10 @@ class TimeDomainEquationSystemProblemOperator : public TimeDomainProblemOperator
                                                 public EquationSystemProblemOperatorInterface
 {
 public:
-  TimeDomainEquationSystemProblemOperator(hephaestus::Problem & problem)
-    : TimeDomainProblemOperator(problem)
+  TimeDomainEquationSystemProblemOperator(hephaestus::Problem &) = delete;
+  TimeDomainEquationSystemProblemOperator(
+      hephaestus::Problem & problem, std::unique_ptr<TimeDependentEquationSystem> equation_system)
+    : TimeDomainProblemOperator(problem), _equation_system{std::move(equation_system)}
   {
   }
 
@@ -41,12 +43,6 @@ public:
   void Init(mfem::Vector & X) override;
 
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
-
-  void SetEquationSystem(std::unique_ptr<TimeDependentEquationSystem> equation_system)
-  {
-    _equation_system.reset();
-    _equation_system = std::move(equation_system);
-  }
 
   [[nodiscard]] TimeDependentEquationSystem * GetEquationSystem() const override
   {
