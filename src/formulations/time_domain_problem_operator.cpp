@@ -21,7 +21,7 @@ GetTimeDerivativeNames(std::vector<std::string> gridfunction_names)
 }
 
 void
-TimeDomainProblemOperator::SetGridFunctions()
+TimeDomainEquationSystemProblemOperator::SetGridFunctions()
 {
   _trial_var_names = GetEquationSystem()->_trial_var_names;
   _trial_variables = _problem._gridfunctions.Get(GetEquationSystem()->_trial_var_names);
@@ -52,7 +52,7 @@ TimeDomainProblemOperator::SetGridFunctions()
 }
 
 void
-TimeDomainProblemOperator::Init(mfem::Vector & X)
+TimeDomainEquationSystemProblemOperator::Init(mfem::Vector & X)
 {
   // Define material property coefficients
   for (unsigned int ind = 0; ind < _trial_variables.size(); ++ind)
@@ -67,9 +67,9 @@ TimeDomainProblemOperator::Init(mfem::Vector & X)
 }
 
 void
-TimeDomainProblemOperator::ImplicitSolve(const double dt,
-                                         const mfem::Vector & X,
-                                         mfem::Vector & dX_dt)
+TimeDomainEquationSystemProblemOperator::ImplicitSolve(const double dt,
+                                                       const mfem::Vector & X,
+                                                       mfem::Vector & dX_dt)
 {
   dX_dt = 0.0;
   for (unsigned int ind = 0; ind < _trial_variables.size(); ++ind)
@@ -90,7 +90,7 @@ TimeDomainProblemOperator::ImplicitSolve(const double dt,
 }
 
 void
-TimeDomainProblemOperator::BuildEquationSystemOperator(double dt)
+TimeDomainEquationSystemProblemOperator::BuildEquationSystemOperator(double dt)
 {
   GetEquationSystem()->SetTimeStep(dt);
   GetEquationSystem()->UpdateEquationSystem(_problem._bc_map, _problem._sources);

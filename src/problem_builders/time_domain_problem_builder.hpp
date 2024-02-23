@@ -19,7 +19,7 @@ public:
     return GetOperator()->GetEquationSystem();
   }
 
-  [[nodiscard]] hephaestus::TimeDomainProblemOperator * GetOperator() const override
+  [[nodiscard]] hephaestus::TimeDomainEquationSystemProblemOperator * GetOperator() const override
   {
     if (!_td_operator)
     {
@@ -29,14 +29,14 @@ public:
     return _td_operator.get();
   }
 
-  void SetOperator(std::unique_ptr<TimeDomainProblemOperator> new_problem_operator)
+  void SetOperator(std::unique_ptr<TimeDomainEquationSystemProblemOperator> new_problem_operator)
   {
     _td_operator.reset();
     _td_operator = std::move(new_problem_operator);
   }
 
 protected:
-  std::unique_ptr<hephaestus::TimeDomainProblemOperator> _td_operator{nullptr};
+  std::unique_ptr<hephaestus::TimeDomainEquationSystemProblemOperator> _td_operator{nullptr};
 };
 
 // Builder class of a time-domain EM formulation.

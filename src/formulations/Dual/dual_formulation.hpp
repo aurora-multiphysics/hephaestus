@@ -51,10 +51,10 @@ public:
       _dtalpha_coef_name;
 };
 
-class DualOperator : public TimeDomainProblemOperator
+class DualOperator : public TimeDomainEquationSystemProblemOperator
 {
 public:
-  DualOperator(hephaestus::Problem & problem) : TimeDomainProblemOperator(problem){};
+  DualOperator(hephaestus::Problem & problem) : TimeDomainEquationSystemProblemOperator(problem) {}
 
   void Init(mfem::Vector & X) override;
 
