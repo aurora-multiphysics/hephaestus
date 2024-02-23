@@ -40,6 +40,7 @@ TEST_CASE("ClosedCoilTest", "[CheckData]")
   gridfunctions.Register(std::string("GradPhi"), grad_phi);
 
   int elec_attr = 7;
+  int test_attr = 8;
   mfem::Array<int> submesh_domains({3, 4, 5, 6});
 
   hephaestus::ClosedCoilSolver closedcoil(
@@ -48,7 +49,7 @@ TEST_CASE("ClosedCoilTest", "[CheckData]")
   mfem::ParLinearForm dummy(h_curl_fe_space.get());
   closedcoil.Apply(&dummy);
 
-  double flux = hephaestus::calcFlux(grad_phi.get(), elec_attr, *conductivity);
+  double flux = hephaestus::calcFlux(grad_phi.get(), test_attr, *conductivity);
 
   REQUIRE_THAT(flux, Catch::Matchers::WithinAbs(ival, eps));
 }
