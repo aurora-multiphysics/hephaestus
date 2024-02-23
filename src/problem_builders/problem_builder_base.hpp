@@ -127,8 +127,8 @@ protected:
   /// These will be used if the user has not supplied their own values.
   struct SolverParams
   {
-    float _tolerance;
-    float _abs_tolerance;
+    double _tolerance;
+    double _abs_tolerance;
 
     unsigned int _max_iteration;
 
