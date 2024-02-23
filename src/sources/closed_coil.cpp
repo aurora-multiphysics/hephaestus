@@ -275,12 +275,10 @@ ClosedCoilSolver::MakeWedge()
 
   // If we are dealing with a piecewise-defined conductivity, we need to
   // add the new wedge domain to the coefficient
-
-  // This is to avoid a compiler warning
-  auto sig_ptr = _sigma.get();
-  if (typeid(*sig_ptr) == typeid(mfem::PWCoefficient))
+  std::shared_ptr<mfem::PWCoefficient> id_test =
+      std::dynamic_pointer_cast<mfem::PWCoefficient>(_sigma);
+  if (id_test != nullptr)
   {
-
     std::vector<hephaestus::Subdomain> subdomains = _ccs_coefs._subdomains;
     hephaestus::Subdomain new_domain("wedge", _new_domain_attr);
     int wedge_old_att = _mesh_parent->GetAttribute(wedge_els[0]);
@@ -316,7 +314,6 @@ ClosedCoilSolver::MakeWedge()
     _ccs_coefs.AddGlobalCoefficientsFromSubdomains();
     _sigma = _ccs_coefs._scalars.GetShared(_cond_coef_name);
   }
-
   // Now we set the second electrode boundary attribute. Start with a list of
   // all the faces of the wedge elements and eliminate mesh and coil boundaries,
   // the first electrode, and faces between wedge elements
