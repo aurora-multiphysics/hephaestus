@@ -10,16 +10,6 @@ SteadyStateEquationSystemProblemBuilder::SetOperatorGridFunctions()
 }
 
 void
-SteadyStateEquationSystemProblemBuilder::InitializeKernels()
-{
-  _problem->GetEquationSystem()->Init(
-      _problem->_gridfunctions, _problem->_fespaces, _problem->_bc_map, _problem->_coefficients);
-  _problem->_preprocessors.Init(_problem->_gridfunctions, _problem->_coefficients);
-  _problem->_sources.Init(
-      _problem->_gridfunctions, _problem->_fespaces, _problem->_bc_map, _problem->_coefficients);
-}
-
-void
 SteadyStateEquationSystemProblemBuilder::ConstructOperator()
 {
   auto equation_system = std::make_unique<hephaestus::EquationSystem>();

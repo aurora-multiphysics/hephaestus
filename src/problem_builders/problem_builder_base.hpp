@@ -93,7 +93,6 @@ public:
   virtual void RegisterAuxSolvers() = 0;
   virtual void RegisterCoefficients() = 0;
 
-  virtual void InitializeKernels() = 0;
   virtual void SetOperatorGridFunctions() = 0;
   virtual void ConstructJacobianPreconditioner();
   virtual void ConstructJacobianSolver();
@@ -101,6 +100,8 @@ public:
   virtual void ConstructOperator() = 0;
   virtual void ConstructState() = 0;
   virtual void ConstructTimestepper() = 0;
+
+  virtual void InitializeKernels();
 
   void InitializeAuxSolvers();
   void InitializeOutputs();
@@ -157,6 +158,8 @@ public:
     GetProblem()->GetEquationSystem()->AddTrialVariableNameIfMissing(var_name);
     GetProblem()->GetEquationSystem()->AddKernel(var_name, std::move(kernel));
   }
+
+  void InitializeKernels() final;
 
 protected:
   EquationSystemProblem * GetProblem() override = 0;

@@ -53,8 +53,6 @@ public:
 
   void RegisterCoefficients() override {}
 
-  void InitializeKernels() override;
-
   void SetOperatorGridFunctions() override;
 
   void ConstructOperator() override;
