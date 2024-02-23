@@ -66,8 +66,6 @@ public:
 
   void SetOperatorGridFunctions() override;
 
-  void InitializeKernels() override;
-
   void ConstructOperator() override;
 
   void ConstructState() override;

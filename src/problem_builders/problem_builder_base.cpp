@@ -312,6 +312,17 @@ ProblemBuilder::ConstructNonlinearSolver()
 }
 
 void
+ProblemBuilder::InitializeKernels()
+{
+  GetProblem()->_preprocessors.Init(GetProblem()->_gridfunctions, GetProblem()->_coefficients);
+
+  GetProblem()->_sources.Init(GetProblem()->_gridfunctions,
+                              GetProblem()->_fespaces,
+                              GetProblem()->_bc_map,
+                              GetProblem()->_coefficients);
+}
+
+void
 ProblemBuilder::InitializeAuxSolvers()
 {
   GetProblem()->_preprocessors.Init(GetProblem()->_gridfunctions, GetProblem()->_coefficients);
@@ -344,6 +355,17 @@ ProblemBuilder::FinalizeProblem()
   ConstructTimestepper();
   InitializeAuxSolvers();
   InitializeOutputs();
+}
+
+void
+EquationSystemProblemBuilder::InitializeKernels()
+{
+  ProblemBuilder::InitializeKernels();
+
+  GetProblem()->GetEquationSystem()->Init(GetProblem()->_gridfunctions,
+                                          GetProblem()->_fespaces,
+                                          GetProblem()->_bc_map,
+                                          GetProblem()->_coefficients);
 }
 
 } // namespace hephaestus
