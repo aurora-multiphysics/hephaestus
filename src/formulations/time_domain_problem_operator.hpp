@@ -13,18 +13,19 @@ std::vector<std::string> GetTimeDerivativeNames(std::vector<std::string> gridfun
 
 // Specifies output interfaces of a time-domain formulation.
 class TimeDomainProblemOperator : public mfem::TimeDependentOperator,
-                                  public ProblemOperatorInterface
+                                  public EquationSystemProblemOperatorInterface
 {
 public:
-  TimeDomainProblemOperator(hephaestus::Problem & problem) : ProblemOperatorInterface(problem) {}
+  TimeDomainProblemOperator(hephaestus::Problem & problem)
+    : EquationSystemProblemOperatorInterface(problem)
+  {
+  }
 
   void SetGridFunctions() override;
   void Init(mfem::Vector & X) override;
 
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
   void BuildEquationSystemOperator(double dt);
-
-  [[nodiscard]] bool HasEquationSystem() const override { return (_equation_system != nullptr); }
 
   void SetEquationSystem(std::unique_ptr<TimeDependentEquationSystem> equation_system)
   {

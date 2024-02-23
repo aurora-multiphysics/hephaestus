@@ -41,7 +41,6 @@ public:
   int _myid;
   int _num_procs;
 
-  [[nodiscard]] virtual bool HasEquationSystem() const = 0;
   [[nodiscard]] virtual hephaestus::EquationSystem * GetEquationSystem() const = 0;
   [[nodiscard]] virtual mfem::Operator * GetOperator() const = 0;
 };

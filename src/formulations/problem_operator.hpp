@@ -6,18 +6,18 @@
 
 namespace hephaestus
 {
-class ProblemOperator : public mfem::Operator, public ProblemOperatorInterface
+class ProblemOperator : public mfem::Operator, public EquationSystemProblemOperatorInterface
 {
 public:
-  ProblemOperator(hephaestus::Problem & problem) : ProblemOperatorInterface(problem) {}
+  ProblemOperator(hephaestus::Problem & problem) : EquationSystemProblemOperatorInterface(problem)
+  {
+  }
 
   void SetGridFunctions() override;
   void Init(mfem::Vector & X) override;
 
   virtual void Solve(mfem::Vector & X) {}
   void Mult(const mfem::Vector & x, mfem::Vector & y) const override {}
-
-  [[nodiscard]] bool HasEquationSystem() const override { return (_equation_system != nullptr); }
 
   void SetEquationSystem(std::unique_ptr<EquationSystem> new_equation_system)
   {
