@@ -25,15 +25,14 @@ class EquationSystemProblemOperator : public ProblemOperator,
                                       public EquationSystemProblemOperatorInterface
 {
 public:
-  EquationSystemProblemOperator(hephaestus::Problem & problem) : ProblemOperator(problem) {}
+  EquationSystemProblemOperator(hephaestus::Problem &) = delete;
+  EquationSystemProblemOperator(hephaestus::Problem & problem,
+                                std::unique_ptr<EquationSystem> equation_system)
+    : ProblemOperator(problem), _equation_system{std::move(equation_system)}
+  {
+  }
 
   ~EquationSystemProblemOperator() override = default;
-
-  void SetEquationSystem(std::unique_ptr<EquationSystem> new_equation_system)
-  {
-    _equation_system.reset();
-    _equation_system = std::move(new_equation_system);
-  }
 
   [[nodiscard]] EquationSystem * GetEquationSystem() const override
   {

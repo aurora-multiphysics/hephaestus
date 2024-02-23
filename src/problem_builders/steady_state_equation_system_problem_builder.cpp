@@ -22,11 +22,10 @@ SteadyStateEquationSystemProblemBuilder::InitializeKernels()
 void
 SteadyStateEquationSystemProblemBuilder::ConstructOperator()
 {
-  _problem->SetOperator(std::make_unique<hephaestus::EquationSystemProblemOperator>(*_problem));
-
   auto equation_system = std::make_unique<hephaestus::EquationSystem>();
 
-  _problem->GetOperator()->SetEquationSystem(std::move(equation_system));
+  _problem->SetOperator(std::make_unique<hephaestus::EquationSystemProblemOperator>(
+      *_problem, std::move(equation_system)));
 }
 
 void
