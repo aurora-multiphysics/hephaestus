@@ -41,10 +41,4 @@ ProblemOperator::Init(mfem::Vector & X)
         _trial_variables.at(ind)->ParFESpace(), const_cast<mfem::Vector &>(X), _true_offsets[ind]);
   }
 }
-
-EquationSystemProblemOperator::EquationSystemProblemOperator(hephaestus::Problem & problem)
-  : ProblemOperator(problem)
-{
-}
-
 } // namespace hephaestus

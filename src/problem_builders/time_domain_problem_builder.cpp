@@ -60,7 +60,8 @@ TimeDomainProblemBuilder::InitializeKernels()
 void
 TimeDomainProblemBuilder::ConstructOperator()
 {
-  _problem->SetOperator(std::make_unique<hephaestus::TimeDomainProblemOperator>(*_problem));
+  _problem->SetOperator(
+      std::make_unique<hephaestus::TimeDomainEquationSystemProblemOperator>(*_problem));
 }
 
 void

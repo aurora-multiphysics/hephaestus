@@ -25,7 +25,8 @@ class EquationSystemProblemOperator : public ProblemOperator,
                                       public EquationSystemProblemOperatorInterface
 {
 public:
-  EquationSystemProblemOperator(hephaestus::Problem & problem);
+  EquationSystemProblemOperator(hephaestus::Problem & problem) : ProblemOperator(problem) {}
+
   ~EquationSystemProblemOperator() override = default;
 
   void SetEquationSystem(std::unique_ptr<EquationSystem> new_equation_system)
