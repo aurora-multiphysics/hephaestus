@@ -1,6 +1,7 @@
 #include "time_domain_em_formulation.hpp"
 
-namespace hephaestus {
+namespace hephaestus
+{
 
 // enum EMField {
 //   ElectricField,
@@ -51,7 +52,7 @@ namespace hephaestus {
 //   }
 // }
 
-TimeDomainEMFormulation::TimeDomainEMFormulation()
-    : TimeDomainProblemBuilder(){};
+TimeDomainEMFormulation::TimeDomainEMFormulation() = default;
+;
 
 } // namespace hephaestus

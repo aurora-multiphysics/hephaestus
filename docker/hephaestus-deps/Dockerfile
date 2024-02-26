@@ -1,6 +1,6 @@
 # Build image containing Hephaestus dependencies
 # Get base image
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 # This is needed or it mpiexec complains because docker runs as root
 # Discussion on this issue https://github.com/open-mpi/ompi/issues/4451
@@ -18,11 +18,13 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install 
     build-essential \
     bison \
     flex \
-    clang-format-9 \
+    clang-format \
+    clang-tidy \
     curl \
     doxygen \
     git \
     ninja-build \
+    pre-commit \
     python3 \
     python3-dev \
     python3-distutils \
@@ -35,6 +37,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install 
     libglm-dev \
     libhdf5-mpich-dev \
     libnetcdf-dev \
+    libomp-14-dev \
     libpng-dev \
     libsdl2-dev \
     libssl-dev \
@@ -104,9 +107,9 @@ RUN cd /$WORKDIR/petsc/petsc-3.19.3 && \
 
 # Build MFEM and common miniapp
 RUN cd /$WORKDIR && \
-    git clone https://github.com/mfem/mfem.git && \
+    git clone https://github.com/Heinrich-BR/mfem.git && \
     cd mfem && \
-    git checkout master && \
+    git checkout SubmeshBoundary && \
     mkdir build && \
     cd build && \
     cmake .. \

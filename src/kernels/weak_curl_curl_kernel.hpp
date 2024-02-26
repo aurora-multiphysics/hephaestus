@@ -1,27 +1,32 @@
 #pragma once
 #include "kernel_base.hpp"
 
-namespace hephaestus {
+namespace hephaestus
+{
 
 /*
 (α∇×u_{n}, ∇×u')
 */
-class WeakCurlCurlKernel : public Kernel<mfem::ParLinearForm> {
+class WeakCurlCurlKernel : public Kernel<mfem::ParLinearForm>
+{
 public:
-  WeakCurlCurlKernel(const hephaestus::InputParameters &params);
-  ~WeakCurlCurlKernel();
-  virtual void Init(hephaestus::GridFunctions &gridfunctions,
-                    const hephaestus::FESpaces &fespaces,
-                    hephaestus::BCMap &bc_map,
-                    hephaestus::Coefficients &coefficients) override;
-  virtual void Apply(mfem::ParLinearForm *lf) override;
+  WeakCurlCurlKernel(const hephaestus::InputParameters & params);
 
-  std::string coupled_gf_name;
-  std::string coef_name;
-  mfem::ParGridFunction *u_; //
-  mfem::ParFiniteElementSpace *H1FESpace_;
-  mfem::Coefficient *coef;
-  mfem::ParBilinearForm *curlCurl;
+  ~WeakCurlCurlKernel() override = default;
+
+  void Init(hephaestus::GridFunctions & gridfunctions,
+            const hephaestus::FESpaces & fespaces,
+            hephaestus::BCMap & bc_map,
+            hephaestus::Coefficients & coefficients) override;
+  void Apply(mfem::ParLinearForm * lf) override;
+
+  std::string _coupled_gf_name;
+  std::string _coef_name;
+  mfem::ParGridFunction * _u{nullptr};
+  mfem::ParFiniteElementSpace * _h1_fe_space{nullptr};
+
+  mfem::Coefficient * _coef{nullptr};
+  std::unique_ptr<mfem::ParBilinearForm> _curl_curl;
 };
 
-}; // namespace hephaestus
+} // namespace hephaestus

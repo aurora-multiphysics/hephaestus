@@ -1,13 +1,16 @@
 #include "mfem.hpp"
-#include <gtest/gtest.h>
+#include <catch2/catch_session.hpp>
 #include <iostream>
 
-int main(int argc, char *argv[]) {
-  std::cout << "Regression tests from test/regression/Main.cpp" << std::endl;
-  int result = 0;
-  ::testing::InitGoogleTest(&argc, argv);
+const char * DATA_DIR = "../data/";
+
+int
+main(int argc, char * argv[])
+{
+
   MPI_Init(&argc, &argv);
-  result = RUN_ALL_TESTS();
+  int result = Catch::Session().run(argc, argv);
   MPI_Finalize();
+
   return result;
 }

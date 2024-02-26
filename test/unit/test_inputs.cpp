@@ -1,9 +1,10 @@
 #include "inputs.hpp"
-#include <gtest/gtest.h>
+#include <catch2/catch_test_macros.hpp>
 
-extern const char *DATA_DIR;
+extern const char * DATA_DIR;
 
-TEST(InputParametersTest, CheckData) {
+TEST_CASE("InputParametersTest", "[CheckData]")
+{
   hephaestus::InputParameters params;
   int example_int = 5;
   params.SetParam("IntegerParam", example_int);
@@ -14,14 +15,12 @@ TEST(InputParametersTest, CheckData) {
   mfem::Array<int> example_array({1, 2, 3});
   params.SetParam("ArrayParam", example_array);
 
-  EXPECT_EQ(params.GetParam<int>("IntegerParam"), example_int);
+  REQUIRE(params.GetParam<int>("IntegerParam") == example_int);
 
-  EXPECT_EQ(params.GetParam<std::string>("StringParam"), example_string);
+  REQUIRE(params.GetParam<std::string>("StringParam") == example_string);
 
-  mfem::Array<int> stored_array =
-      params.GetParam<mfem::Array<int>>("ArrayParam");
-  for (int i = 0; i < example_array.Size(); ++i) {
-    EXPECT_EQ(example_array[i], stored_array[i])
-        << "Input and stored arrays differ at index " << i;
-  }
+  auto stored_array = params.GetParam<mfem::Array<int>>("ArrayParam");
+
+  for (int i = 0; i < example_array.Size(); ++i)
+    REQUIRE(example_array[i] == stored_array[i]);
 }

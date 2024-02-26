@@ -1,34 +1,39 @@
 #include "coefficients.hpp"
-#include <gtest/gtest.h>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 
-TEST(CoefficientsTest, CheckData) {
+// Floating point error tolerance
+const double eps{1e-10};
+
+TEST_CASE("CoefficientsTest", "[CheckData]")
+{
   hephaestus::Subdomain wire("wire", 1);
-  wire.scalar_coefficients.Register("property_one",
-                                    new mfem::ConstantCoefficient(1.0), true);
-  wire.scalar_coefficients.Register("property_two",
-                                    new mfem::ConstantCoefficient(150.0), true);
-  hephaestus::Subdomain air("air", 2);
-  air.scalar_coefficients.Register("property_one",
-                                   new mfem::ConstantCoefficient(26.0), true);
-  air.scalar_coefficients.Register("property_two",
-                                   new mfem::ConstantCoefficient(152.0), true);
+  wire._scalar_coefficients.Register("property_one",
+                                     std::make_shared<mfem::ConstantCoefficient>(1.0));
+  wire._scalar_coefficients.Register("property_two",
+                                     std::make_shared<mfem::ConstantCoefficient>(150.0));
 
-  hephaestus::Coefficients coefficients(
-      std::vector<hephaestus::Subdomain>({wire, air}));
+  hephaestus::Subdomain air("air", 2);
+  air._scalar_coefficients.Register("property_one",
+                                    std::make_shared<mfem::ConstantCoefficient>(26.0));
+  air._scalar_coefficients.Register("property_two",
+                                    std::make_shared<mfem::ConstantCoefficient>(152.0));
+
+  hephaestus::Coefficients coefficients(std::vector<hephaestus::Subdomain>({wire, air}));
 
   // Verify predefined values
-  mfem::IsoparametricTransformation T;
+  mfem::IsoparametricTransformation t;
   mfem::IntegrationPoint ip;
 
-  mfem::Coefficient *pw = coefficients.scalars.Get("property_one");
-  T.Attribute = 1;
-  EXPECT_FLOAT_EQ(pw->Eval(T, ip), 1.0);
-  T.Attribute = 2;
-  EXPECT_FLOAT_EQ(pw->Eval(T, ip), 26.0);
+  mfem::Coefficient * pw = coefficients._scalars.Get("property_one");
+  t.Attribute = 1;
+  REQUIRE_THAT(pw->Eval(t, ip), Catch::Matchers::WithinAbs(1.0, eps));
+  t.Attribute = 2;
+  REQUIRE_THAT(pw->Eval(t, ip), Catch::Matchers::WithinAbs(26.0, eps));
 
-  pw = coefficients.scalars.Get("property_two");
-  T.Attribute = 1;
-  EXPECT_FLOAT_EQ(pw->Eval(T, ip), 150.0);
-  T.Attribute = 2;
-  EXPECT_FLOAT_EQ(pw->Eval(T, ip), 152.0);
+  pw = coefficients._scalars.Get("property_two");
+  t.Attribute = 1;
+  REQUIRE_THAT(pw->Eval(t, ip), Catch::Matchers::WithinAbs(150.0, eps));
+  t.Attribute = 2;
+  REQUIRE_THAT(pw->Eval(t, ip), Catch::Matchers::WithinAbs(152.0, eps));
 }

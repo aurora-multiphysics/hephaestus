@@ -1,37 +1,55 @@
 #include "coefficients.hpp"
 
-namespace hephaestus {
+#include <utility>
 
-double prodFunc(double a, double b) { return a * b; }
-double fracFunc(double a, double b) { return a / b; }
+namespace hephaestus
+{
 
-Subdomain::Subdomain(const std::string &name_, int id_)
-    : name(name_), id(id_) {}
+double
+prodFunc(double a, double b)
+{
+  return a * b;
+}
+double
+fracFunc(double a, double b)
+{
+  return a / b;
+}
 
-Coefficients::Coefficients() { registerDefaultCoefficients(); }
+Subdomain::Subdomain(std::string name_, int id_) : _name(std::move(name_)), _id(id_) {}
 
-Coefficients::Coefficients(std::vector<Subdomain> subdomains_)
-    : subdomains(subdomains_) {
+Coefficients::Coefficients() { RegisterDefaultCoefficients(); }
+
+Coefficients::Coefficients(std::vector<Subdomain> subdomains_) : _subdomains(std::move(subdomains_))
+{
   AddGlobalCoefficientsFromSubdomains();
-  registerDefaultCoefficients();
+  RegisterDefaultCoefficients();
 }
 
-void Coefficients::registerDefaultCoefficients() {
-  scalars.Register("_one", new mfem::ConstantCoefficient(1.0), true);
+void
+Coefficients::RegisterDefaultCoefficients()
+{
+  _scalars.Register("_one", std::make_shared<mfem::ConstantCoefficient>(1.0));
 }
 
-void Coefficients::SetTime(double time) {
-  for (auto const &[name, coeff_] : scalars) {
+void
+Coefficients::SetTime(double time)
+{
+  for (auto const & [name, coeff_] : _scalars)
+  {
     coeff_->SetTime(time);
   }
-  for (auto const &[name, vec_coeff_] : vectors) {
+  for (auto const & [name, vec_coeff_] : _vectors)
+  {
     vec_coeff_->SetTime(time);
   }
-  t = time;
+  _t = time;
 }
 
 // merge subdomains?
-void Coefficients::AddGlobalCoefficientsFromSubdomains() {
+void
+Coefficients::AddGlobalCoefficientsFromSubdomains()
+{
 
   // iterate over subdomains
   // check IDs span domain
@@ -43,26 +61,29 @@ void Coefficients::AddGlobalCoefficientsFromSubdomains() {
   mfem::Array<int> subdomain_ids;
   std::unordered_set<std::string> scalar_property_names;
 
-  for (std::size_t i = 0; i < subdomains.size(); i++) {
-    subdomain_ids.Append(subdomains[i].id);
+  for (auto & subdomain : _subdomains)
+  {
+    subdomain_ids.Append(subdomain._id);
     // accumulate property names on subdomains, ignoring duplicates
-    for (auto const &[name, coeff_] : subdomains[i].scalar_coefficients) {
+    for (auto const & [name, coeff_] : subdomain._scalar_coefficients)
+    {
       scalar_property_names.insert(name);
     }
   }
   // check if IDs span
   // iterate over properties stored on subdomains, and create global
   // coefficients
-  for (auto &scalar_property_name : scalar_property_names) {
+  for (auto & scalar_property_name : scalar_property_names)
+  {
     mfem::Array<mfem::Coefficient *> subdomain_coefs;
-    for (std::size_t i = 0; i < subdomains.size(); i++) {
-      subdomain_coefs.Append(
-          subdomains[i].scalar_coefficients.Get(scalar_property_name));
+    for (auto & subdomain : _subdomains)
+    {
+      subdomain_coefs.Append(subdomain._scalar_coefficients.Get(scalar_property_name));
     }
-    if (!scalars.Has(scalar_property_name)) {
-      scalars.Register(scalar_property_name,
-                       new mfem::PWCoefficient(subdomain_ids, subdomain_coefs),
-                       true);
+    if (!_scalars.Has(scalar_property_name))
+    {
+      _scalars.Register(scalar_property_name,
+                        std::make_shared<mfem::PWCoefficient>(subdomain_ids, subdomain_coefs));
     }
   }
 }

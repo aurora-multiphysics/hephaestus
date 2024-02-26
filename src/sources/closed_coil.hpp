@@ -3,117 +3,145 @@
 #include "scalar_potential_source.hpp"
 #include "source_base.hpp"
 
-namespace hephaestus {
+namespace hephaestus
+{
 
 // Calculates the flux of a vector field v_field through the face with boundary
 // attribute face_attr.
-double calcFluxCC(mfem::GridFunction *v_field, int face_attr);
+double calcFluxCC(mfem::GridFunction * v_field, int face_attr);
 
-class ClosedCoilSolver : public hephaestus::Source {
+class ClosedCoilSolver : public hephaestus::Source
+{
 
 public:
-  ClosedCoilSolver(const hephaestus::InputParameters &params,
-                   const mfem::Array<int> &coil_dom, const int electrode_face);
+  ClosedCoilSolver(std::string source_efield_gf_name,
+                   std::string hcurl_fespace_name,
+                   std::string h1_fespace_name,
+                   std::string i_coef_name,
+                   std::string cond_coef_name,
+                   mfem::Array<int> coil_dom,
+                   const int electrode_face,
+                   bool electric_field_transfer = false,
+                   std::string source_jfield_gf_name = "",
+                   hephaestus::InputParameters solver_options =
+                       hephaestus::InputParameters({{"Tolerance", float(1.0e-18)},
+                                                    {"AbsTolerance", float(1.0e-18)},
+                                                    {"MaxIter", (unsigned int)1000},
+                                                    {"PrintLevel", 1}}));
 
-  ~ClosedCoilSolver();
+  // Override virtual Source destructor to avoid leaks.
+  ~ClosedCoilSolver() override = default;
 
-  void Init(hephaestus::GridFunctions &gridfunctions,
-            const hephaestus::FESpaces &fespaces, hephaestus::BCMap &bc_map,
-            hephaestus::Coefficients &coefficients) override;
-  void Apply(mfem::ParLinearForm *lf) override;
-  void SubtractSource(mfem::ParGridFunction *gf) override;
+  void Init(hephaestus::GridFunctions & gridfunctions,
+            const hephaestus::FESpaces & fespaces,
+            hephaestus::BCMap & bc_map,
+            hephaestus::Coefficients & coefficients) override;
+  void Apply(mfem::ParLinearForm * lf) override;
+  void SubtractSource(mfem::ParGridFunction * gf) override;
 
   // Finds the electrode face and applies a single domain attribute to a
   // 1-element layer adjacent to it. Applies a different domain attribute to
   // other elements in the coil. Also applies different boundary attributes on
   // the two opposing faces of the layer, to act as Dirichlet BCs.
-  void makeWedge();
+  void MakeWedge();
 
   // Extracts the coil submesh and prepares the gridfunctions and FE spaces
   // for being passed to the OpenCoilSolver in the transition region
-  void prepareCoilSubmesh();
+  void PrepareCoilSubmesh();
 
   // Applies the OpenCoilSolver to the transition region
-  void solveTransition();
+  void SolveTransition();
 
   // Solves for the current in the coil region
-  void solveCoil();
+  void SolveCoil();
 
   // Resets the domain attributes on the parent mesh to what they were initially
-  void restoreAttributes();
+  void RestoreAttributes();
 
   // Finds the coordinates for the "centre of mass" of the vertices of an
   // element.
-  mfem::Vector elementCentre(int el, mfem::ParMesh *pm);
+  mfem::Vector ElementCentre(int el, mfem::ParMesh * pm);
 
   // Checks whether a given element is within a certain domain or vector of
   // domains.
-  bool isInDomain(const int el, const mfem::Array<int> &dom,
-                  const mfem::ParMesh *mesh);
-  bool isInDomain(const int el, const int &sd, const mfem::ParMesh *mesh);
+  bool IsInDomain(const int el, const mfem::Array<int> & dom, const mfem::ParMesh * mesh);
+  bool IsInDomain(const int el, const int & sd, const mfem::ParMesh * mesh);
 
 private:
   // Parameters
-  int order_hcurl_;
-  int order_h1_;
-  int new_domain_attr_;
-  std::pair<int, int> elec_attrs_;
-  mfem::Array<int> coil_domains_;
-  mfem::Array<int> coil_markers_;
-  mfem::Array<int> transition_domain_;
-  mfem::Array<int> transition_markers_;
-  mfem::Coefficient *Itotal_;
-  std::vector<int> old_dom_attrs;
-  hephaestus::InputParameters solver_options_;
+  int _order_hcurl;
+  int _order_h1;
+  int _new_domain_attr;
+  std::pair<int, int> _elec_attrs;
+  mfem::Array<int> _coil_domains;
+  mfem::Array<int> _coil_markers;
+  mfem::Array<int> _transition_domain;
+  mfem::Array<int> _transition_markers;
+  std::shared_ptr<mfem::Coefficient> _sigma{nullptr};
+  std::shared_ptr<mfem::Coefficient> _itotal{nullptr};
+  std::vector<int> _old_dom_attrs;
+  hephaestus::InputParameters _solver_options;
 
-  // Seting J_transfer_ to true will negatively affect performance, but
-  // the resulting source current will be correct for visualisation purposes.
-  // Only set to true if you wish to view the final current.
-  bool J_transfer_;
+  // Here, we are solving for -(σ∇Va,∇ψ) = (σ∇Vt,∇ψ), where ∇Vt is grad_phi_t (within its relevant
+  // mesh), ∇Va is grad_phi_aux, and their sum ∇Vt+∇Va is the full grad_phi, which is, up to an
+  // overall sign, equal to the electric field in the electrostatic case. Setting
+  // _electric_field_transfer to true will negatively affect performance, but the final electric
+  // field function will be transferred to a GridFunction for viewing purposes. Only set to true if
+  // you wish to visualise the final electric field.
+  bool _electric_field_transfer{false};
 
   // Names
-  std::string hcurl_fespace_name_;
-  std::string h1_fespace_name_;
-  std::string J_gf_name_;
-  std::string I_coef_name_;
+  std::string _hcurl_fespace_name;
+  std::string _cond_coef_name;
+  std::string _h1_fespace_name;
+  std::string _source_electric_field_name;
+  std::string _source_current_density_name;
+  std::string _i_coef_name;
 
   // Parent mesh, FE space, and current
-  mfem::ParMesh *mesh_parent_;
-  mfem::ParGridFunction *J_parent_;
-  mfem::ParFiniteElementSpace *HCurlFESpace_parent_;
-  mfem::ParFiniteElementSpace *H1FESpace_parent_;
+  mfem::ParMesh * _mesh_parent{nullptr};
+  std::shared_ptr<mfem::ParGridFunction> _source_electric_field{nullptr};
+  std::shared_ptr<mfem::ParGridFunction> _source_current_density{nullptr};
+  mfem::ParFiniteElementSpace * _h_curl_fe_space_parent{nullptr};
+  std::shared_ptr<mfem::ParFiniteElementSpace> _h1_fe_space_parent{nullptr};
+
+  // Finite element collections
+  std::unique_ptr<mfem::H1_FECollection> _h1_fe_space_parent_fec{nullptr};
+  std::unique_ptr<mfem::H1_FECollection> _h1_fe_space_coil_fec{nullptr};
 
   // In case J transfer is true
-  mfem::ParGridFunction *Jt_parent_;
+  std::unique_ptr<mfem::ParGridFunction> _electric_field_t_parent{nullptr};
 
   // Coil mesh, FE Space, and current
-  mfem::ParSubMesh *mesh_coil_;
-  mfem::ParSubMesh *mesh_t_;
-  mfem::ParFiniteElementSpace *H1FESpace_coil_;
-  mfem::ParGridFunction *Jaux_coil_;
-  mfem::ParGridFunction *V_coil_;
+  std::unique_ptr<mfem::ParSubMesh> _mesh_coil{nullptr};
+  std::unique_ptr<mfem::ParSubMesh> _mesh_t{nullptr};
+  std::unique_ptr<mfem::ParFiniteElementSpace> _h1_fe_space_coil{nullptr};
+  std::unique_ptr<mfem::ParGridFunction> _electric_field_aux_coil{nullptr};
+  std::unique_ptr<mfem::ParGridFunction> _v_coil{nullptr};
+
+  std::unique_ptr<mfem::ND_FECollection> _electric_field_aux_coil_fec{nullptr};
+  std::unique_ptr<mfem::ParFiniteElementSpace> _electric_field_aux_coil_fes{nullptr};
 
   // Final LinearForm
-  mfem::ParLinearForm *final_lf_;
-
+  std::unique_ptr<mfem::ParLinearForm> _final_lf{nullptr};
 };
 
-class Plane3D {
+class Plane3D
+{
 
 public:
   Plane3D();
-  ~Plane3D();
 
   // Constructs a mathematical 3D plane from a mesh face
-  void make3DPlane(const mfem::ParMesh *pm, const int face);
+  void Make3DPlane(const mfem::ParMesh * pm, const int face);
 
   // Calculates on which side of the infinite 3D plane a point is.
   // Returns 1, -1, or 0, the latter meaning the point is on the plane
-  int side(const mfem::Vector v);
+  int Side(const mfem::Vector v);
 
 private:
-  mfem::Vector *u;
-  double d;
+  std::unique_ptr<mfem::Vector> _u{nullptr};
+  double _d{0};
 };
 
 } // namespace hephaestus

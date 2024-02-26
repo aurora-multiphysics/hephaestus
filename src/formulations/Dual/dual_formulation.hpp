@@ -3,22 +3,30 @@
 #include "formulation.hpp"
 #include "inputs.hpp"
 
-namespace hephaestus {
+namespace hephaestus
+{
 
-class DualFormulation : public TimeDomainEMFormulation {
+class DualFormulation : public TimeDomainEMFormulation
+{
 public:
-  DualFormulation(const std::string &alpha_coef_name,
-                  const std::string &beta_coef_name,
-                  const std::string &h_curl_var_name,
-                  const std::string &h_div_var_name);
+  DualFormulation(std::string alpha_coef_name,
+                  std::string beta_coef_name,
+                  std::string h_curl_var_name,
+                  std::string h_div_var_name);
 
-  virtual void ConstructEquationSystem() override;
+  ~DualFormulation() override = default;
 
-  virtual void ConstructOperator() override;
+  void ConstructEquationSystem() override;
 
-  virtual void RegisterGridFunctions() override;
+  void ConstructJacobianPreconditioner() override;
 
-  virtual void RegisterCoefficients() override;
+  void ConstructJacobianSolver() override;
+
+  void ConstructOperator() override;
+
+  void RegisterGridFunctions() override;
+
+  void RegisterCoefficients() override;
 
 protected:
   const std::string _alpha_coef_name;
@@ -27,45 +35,41 @@ protected:
   const std::string _h_div_var_name;
 };
 
-class WeakCurlEquationSystem : public TimeDependentEquationSystem {
+class WeakCurlEquationSystem : public TimeDependentEquationSystem
+{
 public:
-  WeakCurlEquationSystem(const hephaestus::InputParameters &params);
+  WeakCurlEquationSystem(const hephaestus::InputParameters & params);
+  ~WeakCurlEquationSystem() override = default;
 
-  virtual void Init(hephaestus::GridFunctions &gridfunctions,
-                    const hephaestus::FESpaces &fespaces,
-                    hephaestus::BCMap &bc_map,
-                    hephaestus::Coefficients &coefficients) override;
-  virtual void addKernels() override;
+  void Init(hephaestus::GridFunctions & gridfunctions,
+            const hephaestus::FESpaces & fespaces,
+            hephaestus::BCMap & bc_map,
+            hephaestus::Coefficients & coefficients) override;
+  void AddKernels() override;
 
-  std::string _h_curl_var_name, _h_div_var_name, _alpha_coef_name,
-      _beta_coef_name, _dtalpha_coef_name;
+  std::string _h_curl_var_name, _h_div_var_name, _alpha_coef_name, _beta_coef_name,
+      _dtalpha_coef_name;
 };
 
-class DualOperator : public TimeDomainEquationSystemOperator {
+class DualOperator : public TimeDomainProblemOperator
+{
 public:
-  DualOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
-               hephaestus::GridFunctions &gridfunctions,
-               hephaestus::BCMap &bc_map,
-               hephaestus::Coefficients &coefficients,
-               hephaestus::Sources &sources,
-               hephaestus::InputParameters &solver_options);
+  DualOperator(hephaestus::Problem & problem) : TimeDomainProblemOperator(problem){};
 
-  ~DualOperator(){};
+  void Init(mfem::Vector & X) override;
 
-  void Init(mfem::Vector &X) override;
+  void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
+  void SetGridFunctions() override;
 
-  void ImplicitSolve(const double dt, const mfem::Vector &X,
-                     mfem::Vector &dX_dt) override;
-  virtual void SetGridFunctions() override;
-  mfem::ParFiniteElementSpace *HCurlFESpace_;
-  mfem::ParFiniteElementSpace *HDivFESpace_;
+  mfem::ParFiniteElementSpace * _h_curl_fe_space{nullptr};
+  mfem::ParFiniteElementSpace * _h_div_fe_space{nullptr};
 
   std::string _h_curl_var_name, _h_div_var_name;
 
-  mfem::ParGridFunction *u_;  // HCurl vector field
-  mfem::ParGridFunction *dv_; // HDiv vector field
+  mfem::ParGridFunction * _u{nullptr};  // HCurl vector field
+  mfem::ParGridFunction * _dv{nullptr}; // HDiv vector field
 
 protected:
-  mfem::ParDiscreteLinearOperator *curl;
+  std::unique_ptr<mfem::ParDiscreteLinearOperator> _curl;
 };
 } // namespace hephaestus

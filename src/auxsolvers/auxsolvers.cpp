@@ -1,19 +1,27 @@
 #include "auxsolvers.hpp"
 
-namespace hephaestus {
+namespace hephaestus
+{
 
-void AuxSolvers::Init(const hephaestus::GridFunctions &gridfunctions,
-                      hephaestus::Coefficients &coefficients) {
+void
+AuxSolvers::Init(const hephaestus::GridFunctions & gridfunctions,
+                 hephaestus::Coefficients & coefficients)
+{
 
-  for (const auto &[name, auxsolver] : GetMap()) {
+  for (const auto & [name, auxsolver] : *this)
+  {
     auxsolver->Init(gridfunctions, coefficients);
-    aux_queue.push_back(auxsolver);
+    _aux_queue.push_back(auxsolver);
   }
-  std::sort(aux_queue.begin(), aux_queue.end(), AuxCompare());
+
+  std::sort(_aux_queue.begin(), _aux_queue.end(), AuxSolver::PriorityComparator);
 }
 
-void AuxSolvers::Solve(double t) {
-  for (auto &auxsolver : aux_queue) {
+void
+AuxSolvers::Solve(double t)
+{
+  for (auto & auxsolver : _aux_queue)
+  {
     auxsolver->Solve(t);
   }
 }

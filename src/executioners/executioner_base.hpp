@@ -1,12 +1,16 @@
 #pragma once
 #include "inputs.hpp"
 
-namespace hephaestus {
+namespace hephaestus
+{
 
-class Executioner {
+class Executioner
+{
 public:
   Executioner() = default;
-  explicit Executioner(const hephaestus::InputParameters &params){};
+  explicit Executioner(const hephaestus::InputParameters & params) {}
+
+  virtual ~Executioner() = default;
 
   // Solve the current system of equations
   virtual void Solve() const = 0;

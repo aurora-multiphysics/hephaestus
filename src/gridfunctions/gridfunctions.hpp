@@ -1,13 +1,20 @@
 #pragma once
 #include "mfem.hpp"
+#include "named_fields_map.hpp"
 
-namespace hephaestus {
+namespace hephaestus
+{
 
-class FECollections
-    : public mfem::NamedFieldsMap<mfem::FiniteElementCollection> {};
+class FECollections : public hephaestus::NamedFieldsMap<mfem::FiniteElementCollection>
+{
+};
 
-class FESpaces : public mfem::NamedFieldsMap<mfem::ParFiniteElementSpace> {};
+class FESpaces : public hephaestus::NamedFieldsMap<mfem::ParFiniteElementSpace>
+{
+};
 
-class GridFunctions : public mfem::NamedFieldsMap<mfem::ParGridFunction> {};
+class GridFunctions : public hephaestus::NamedFieldsMap<mfem::ParGridFunction>
+{
+};
 
 } // namespace hephaestus

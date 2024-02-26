@@ -2,3 +2,7 @@ build
 lib
 bin
 .vscode
+CMakeFiles/
+*.cmake
+Makefile
+CMakeCache.txt 

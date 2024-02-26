@@ -1,41 +1,47 @@
 #pragma once
 #include "auxsolver_base.hpp"
 
-namespace hephaestus {
+namespace hephaestus
+{
 
-class HelmholtzProjector {
+class HelmholtzProjector
+{
 public:
-  HelmholtzProjector(const hephaestus::InputParameters &params);
-  ~HelmholtzProjector();
+  HelmholtzProjector(const hephaestus::InputParameters & params);
 
-  void Project(hephaestus::GridFunctions &gridfunctions,
-               const hephaestus::FESpaces &fespaces, hephaestus::BCMap &bc_map);
+  void Project(hephaestus::GridFunctions & gridfunctions,
+               const hephaestus::FESpaces & fespaces,
+               hephaestus::BCMap & bc_map);
 
-  void setForms();
-  void setGrad();
-  void setBCs();
-  void solveLinearSystem();
+  void SetForms();
+  void SetGrad();
+  void SetBCs();
+  void SolveLinearSystem();
 
 private:
-  std::string hcurl_fespace_name_;
-  std::string h1_fespace_name_;
-  std::string gf_grad_name_;
-  std::string gf_name_;
-  hephaestus::InputParameters solver_options_;
+  std::string _hcurl_fespace_name;
+  std::string _h1_fespace_name;
+  std::string _gf_grad_name;
+  std::string _gf_name;
+  hephaestus::InputParameters _solver_options;
 
-  mfem::ParFiniteElementSpace *H1FESpace_;
-  mfem::ParFiniteElementSpace *HCurlFESpace_;
-  mfem::ParGridFunction *q_;
-  mfem::ParGridFunction *g; // H(Curl) projection of user specified source
-  mfem::ParGridFunction *div_free_src_gf_; // Divergence free projected source
+  std::shared_ptr<mfem::ParFiniteElementSpace> _h1_fe_space{nullptr};
+  mfem::ParFiniteElementSpace * _h_curl_fe_space{nullptr};
+  std::shared_ptr<mfem::ParGridFunction> _q{nullptr};
 
-  mfem::ParLinearForm *gDiv_;
-  mfem::ParBilinearForm *a0_;
-  mfem::ParMixedBilinearForm *weakDiv_;
-  mfem::ParDiscreteLinearOperator *grad_;
+  // H(Curl) projection of user specified source
+  std::unique_ptr<mfem::ParGridFunction> _g;
 
-  mfem::Array<int> ess_bdr_tdofs_;
-  hephaestus::BCMap *bc_map_;
+  // Divergence free projected source.
+  mfem::ParGridFunction * _div_free_src_gf{nullptr};
+
+  std::unique_ptr<mfem::ParLinearForm> _g_div;
+  std::unique_ptr<mfem::ParBilinearForm> _a0;
+  std::unique_ptr<mfem::ParMixedBilinearForm> _weak_div;
+  std::unique_ptr<mfem::ParDiscreteLinearOperator> _grad;
+
+  mfem::Array<int> _ess_bdr_tdofs;
+  hephaestus::BCMap * _bc_map;
 };
 
 } // namespace hephaestus

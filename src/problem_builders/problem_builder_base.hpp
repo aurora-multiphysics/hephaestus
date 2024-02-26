@@ -8,68 +8,85 @@
 #include <iostream>
 #include <memory>
 
-namespace hephaestus {
+namespace hephaestus
+{
 
-class Problem {
+class Problem
+{
 public:
-  std::shared_ptr<mfem::ParMesh> pmesh;
-  hephaestus::BCMap bc_map;
-  hephaestus::Coefficients coefficients;
-  hephaestus::AuxSolvers preprocessors;
-  hephaestus::AuxSolvers postprocessors;
-  hephaestus::Sources sources;
-  hephaestus::Outputs outputs;
-  hephaestus::InputParameters solver_options;
-
-  mfem::ODESolver *ode_solver;
-  mfem::BlockVector *F;
-
-  hephaestus::FECollections fecs;
-  hephaestus::FESpaces fespaces;
-  hephaestus::GridFunctions gridfunctions;
-  int myid_;
-  int num_procs_;
-
   Problem() = default;
+  virtual ~Problem();
 
-  virtual hephaestus::EquationSystem *GetEquationSystem() = 0;
-  virtual mfem::Operator *GetOperator() = 0;
+  std::shared_ptr<mfem::ParMesh> _pmesh{nullptr};
+  hephaestus::BCMap _bc_map;
+  hephaestus::Coefficients _coefficients;
+  hephaestus::AuxSolvers _preprocessors;
+  hephaestus::AuxSolvers _postprocessors;
+  hephaestus::Sources _sources;
+  hephaestus::Outputs _outputs;
+  hephaestus::InputParameters _solver_options;
+
+  std::unique_ptr<mfem::ODESolver> _ode_solver{nullptr};
+  std::unique_ptr<mfem::BlockVector> _f{nullptr};
+
+  std::shared_ptr<mfem::Solver> _jacobian_preconditioner{nullptr};
+  std::shared_ptr<mfem::Solver> _jacobian_solver{nullptr};
+  std::shared_ptr<mfem::NewtonSolver> _nonlinear_solver{nullptr};
+
+  hephaestus::FECollections _fecs;
+  hephaestus::FESpaces _fespaces;
+  hephaestus::GridFunctions _gridfunctions;
+
+  MPI_Comm _comm;
+  int _myid;
+  int _num_procs;
+
+  [[nodiscard]] virtual bool HasEquationSystem() const = 0;
+  [[nodiscard]] virtual hephaestus::EquationSystem * GetEquationSystem() const = 0;
+  [[nodiscard]] virtual mfem::Operator * GetOperator() const = 0;
 };
 
-class ProblemBuilder {
+class ProblemBuilder
+{
 private:
-  virtual hephaestus::Problem *GetProblem() = 0;
+  virtual hephaestus::Problem * GetProblem() = 0;
 
 public:
-  ProblemBuilder(){};
+  ProblemBuilder() = default;
+
+  // Virtual destructor required to prevent leaks.
+  virtual ~ProblemBuilder() = default;
 
   void SetMesh(std::shared_ptr<mfem::ParMesh> pmesh);
-  void SetFESpaces(hephaestus::FESpaces &fespaces);
-  void SetGridFunctions(hephaestus::GridFunctions &gridfunctions);
-  void SetBoundaryConditions(hephaestus::BCMap &bc_map);
-  void SetAuxSolvers(hephaestus::AuxSolvers &preprocessors);
-  void SetPostprocessors(hephaestus::AuxSolvers &postprocessors);
-  void SetSources(hephaestus::Sources &sources);
-  void SetOutputs(hephaestus::Outputs &outputs);
-  void SetSolverOptions(hephaestus::InputParameters &solver_options);
-  void SetCoefficients(hephaestus::Coefficients &coefficients);
+  void SetFESpaces(hephaestus::FESpaces & fespaces);
+  void SetGridFunctions(hephaestus::GridFunctions & gridfunctions);
+  void SetBoundaryConditions(hephaestus::BCMap & bc_map);
+  void SetAuxSolvers(hephaestus::AuxSolvers & preprocessors);
+  void SetPostprocessors(hephaestus::AuxSolvers & postprocessors);
+  void SetSources(hephaestus::Sources & sources);
+  void SetOutputs(hephaestus::Outputs & outputs);
+  void SetSolverOptions(hephaestus::InputParameters & solver_options);
+  void SetJacobianPreconditioner(std::shared_ptr<mfem::Solver> preconditioner);
+  void SetJacobianSolver(std::shared_ptr<mfem::Solver> solver);
+  void SetCoefficients(hephaestus::Coefficients & coefficients);
 
-  void AddFESpace(std::string fespace_name, std::string fec_name, int vdim = 1,
+  void AddFESpace(std::string fespace_name,
+                  std::string fec_name,
+                  int vdim = 1,
                   int ordering = mfem::Ordering::byNODES);
   void AddGridFunction(std::string gridfunction_name, std::string fespace_name);
+
   template <class T>
-  void AddKernel(std::string var_name, hephaestus::Kernel<T> *kernel) {
-    this->GetProblem()->GetEquationSystem()->addVariableNameIfMissing(var_name);
-    this->GetProblem()->GetEquationSystem()->addKernel(var_name, kernel);
-  };
-  void AddBoundaryCondition(std::string bc_name,
-                            hephaestus::BoundaryCondition *bc, bool own_data);
-  void AddAuxSolver(std::string auxsolver_name, hephaestus::AuxSolver *aux,
-                    bool own_data);
-  void AddPostprocessor(std::string auxsolver_name, hephaestus::AuxSolver *aux,
-                        bool own_data);
-  void AddSource(std::string source_name, hephaestus::Source *source,
-                 bool own_data);
+  void AddKernel(std::string var_name, std::shared_ptr<hephaestus::Kernel<T>> kernel)
+  {
+    GetProblem()->GetEquationSystem()->AddTrialVariableNameIfMissing(var_name);
+    GetProblem()->GetEquationSystem()->AddKernel(var_name, std::move(kernel));
+  }
+
+  void AddBoundaryCondition(std::string bc_name, std::shared_ptr<hephaestus::BoundaryCondition> bc);
+  void AddAuxSolver(std::string auxsolver_name, std::shared_ptr<hephaestus::AuxSolver> aux);
+  void AddPostprocessor(std::string auxsolver_name, std::shared_ptr<hephaestus::AuxSolver> aux);
+  void AddSource(std::string source_name, std::shared_ptr<hephaestus::Source> source);
 
   virtual void RegisterFESpaces() = 0;
   virtual void RegisterGridFunctions() = 0;
@@ -78,20 +95,59 @@ public:
 
   virtual void InitializeKernels() = 0;
   virtual void ConstructEquationSystem() = 0;
+  virtual void SetOperatorGridFunctions() = 0;
+  virtual void ConstructJacobianPreconditioner();
+  virtual void ConstructJacobianSolver();
+  virtual void ConstructNonlinearSolver();
   virtual void ConstructOperator() = 0;
   virtual void ConstructState() = 0;
-  virtual void ConstructSolver() = 0;
+  virtual void ConstructTimestepper() = 0;
 
   void InitializeAuxSolvers();
   void InitializeOutputs();
+
+protected:
+  /// Supported Jacobian solver types.
+  enum class SolverType
+  {
+    HYPRE_PCG,
+    HYPRE_GMRES,
+    HYPRE_FGMRES,
+    HYPRE_AMG,
+    SUPER_LU
+  };
+
+  /// Structure containing default parameters which can be passed to "ConstructJacobianSolverWithOptions".
+  /// These will be used if the user has not supplied their own values.
+  struct SolverParams
+  {
+    float _tolerance;
+    float _abs_tolerance;
+
+    unsigned int _max_iteration;
+
+    int _print_level;
+    int _k_dim;
+  };
+
+  /// Called in "ConstructJacobianSolver". This will create a solver of the chosen type and use the user's input
+  /// parameters if they have been provided.
+  void ConstructJacobianSolverWithOptions(SolverType type,
+                                          SolverParams default_params = {._tolerance = 1e-16,
+                                                                         ._abs_tolerance = 1e-16,
+                                                                         ._max_iteration = 1000,
+                                                                         ._print_level = (-1),
+                                                                         ._k_dim = 10});
 };
 
-class ProblemBuildSequencer {
+class ProblemBuildSequencer
+{
   /**
    * @var Builder
    */
 private:
-  std::unique_ptr<hephaestus::ProblemBuilder> problem_builder;
+  hephaestus::ProblemBuilder * _problem_builder{nullptr};
+
   /**
    * The ProblemBuildSequencer works with any builder instance that the client
    * code passes to it. This way, the client code may alter the final type of
@@ -99,37 +155,38 @@ private:
    */
 
 public:
-  ProblemBuildSequencer(hephaestus::ProblemBuilder *problem_builder_)
-      : problem_builder(problem_builder_) {}
+  ProblemBuildSequencer(hephaestus::ProblemBuilder * problem_builder)
+    : _problem_builder{problem_builder}
+  {
+  }
 
   /**
    * The ProblemBuildSequencer can construct variations of Problems using the
    * same building steps.
    */
-  void ConstructOperatorProblem() {
-    // SteadyStateProblem
-    this->problem_builder->RegisterFESpaces();
-    this->problem_builder->RegisterGridFunctions();
-    this->problem_builder->RegisterAuxSolvers();
-    this->problem_builder->RegisterCoefficients();
-    this->problem_builder->InitializeKernels();
-    this->problem_builder->ConstructOperator();
-    this->problem_builder->ConstructState();
-    this->problem_builder->InitializeAuxSolvers();
-    this->problem_builder->InitializeOutputs();
-  }
-  void ConstructEquationSystemProblem() {
-    this->problem_builder->RegisterFESpaces();
-    this->problem_builder->RegisterGridFunctions();
-    this->problem_builder->RegisterAuxSolvers();
-    this->problem_builder->RegisterCoefficients();
-    this->problem_builder->ConstructEquationSystem();
-    this->problem_builder->InitializeKernels();
-    this->problem_builder->ConstructOperator();
-    this->problem_builder->ConstructState();
-    this->problem_builder->ConstructSolver();
-    this->problem_builder->InitializeAuxSolvers();
-    this->problem_builder->InitializeOutputs();
+  void ConstructOperatorProblem() { ConstructEquationSystemProblem(); }
+  void ConstructEquationSystemProblem()
+  {
+    _problem_builder->RegisterFESpaces();
+    _problem_builder->RegisterGridFunctions();
+    _problem_builder->RegisterAuxSolvers();
+    _problem_builder->RegisterCoefficients();
+
+    _problem_builder->ConstructOperator();
+
+    _problem_builder->ConstructEquationSystem();
+    _problem_builder->InitializeKernels();
+
+    _problem_builder->SetOperatorGridFunctions();
+
+    _problem_builder->ConstructJacobianPreconditioner();
+    _problem_builder->ConstructJacobianSolver();
+    _problem_builder->ConstructNonlinearSolver();
+
+    _problem_builder->ConstructState();
+    _problem_builder->ConstructTimestepper();
+    _problem_builder->InitializeAuxSolvers();
+    _problem_builder->InitializeOutputs();
   }
 };
 

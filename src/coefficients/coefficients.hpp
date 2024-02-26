@@ -1,22 +1,25 @@
 #pragma once
 #include "mesh_extras.hpp"
+#include "named_fields_map.hpp"
 #include <fstream>
 #include <iostream>
 #include <memory>
 #include <unordered_set>
 
-namespace hephaestus {
+namespace hephaestus
+{
 
 double prodFunc(double a, double b);
 double fracFunc(double a, double b);
 
-class Subdomain {
+class Subdomain
+{
 public:
-  Subdomain(const std::string &name_, int id_);
+  Subdomain(std::string name_, int id_);
 
-  std::string name;
-  int id;
-  mfem::NamedFieldsMap<mfem::Coefficient> scalar_coefficients;
+  std::string _name;
+  int _id;
+  hephaestus::NamedFieldsMap<mfem::Coefficient> _scalar_coefficients;
 };
 
 // Coefficients - stores all scalar and vector coefficients
@@ -25,18 +28,21 @@ public:
 //--vectors
 
 // Stores all coefficients defined over
-class Coefficients {
-  double t; // Time at which time-dependent coefficients are evaluated
+class Coefficients
+{
+  double _t; // Time at which time-dependent coefficients are evaluated
 public:
   Coefficients();
+  ~Coefficients() = default;
+
   Coefficients(std::vector<Subdomain> subdomains_);
   void SetTime(double t);
   void AddGlobalCoefficientsFromSubdomains();
-  void registerDefaultCoefficients();
+  void RegisterDefaultCoefficients();
 
-  mfem::NamedFieldsMap<mfem::Coefficient> scalars;
-  mfem::NamedFieldsMap<mfem::VectorCoefficient> vectors;
-  std::vector<Subdomain> subdomains;
+  hephaestus::NamedFieldsMap<mfem::Coefficient> _scalars;
+  hephaestus::NamedFieldsMap<mfem::VectorCoefficient> _vectors;
+  std::vector<Subdomain> _subdomains;
 };
 
 } // namespace hephaestus

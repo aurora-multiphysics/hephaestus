@@ -4,43 +4,48 @@
 #include "inputs.hpp"
 #include "sources.hpp"
 
-namespace hephaestus {
+namespace hephaestus
+{
 
-class StaticsFormulation : public SteadyStateEMFormulation {
+class StaticsFormulation : public SteadyStateEMFormulation
+{
 public:
-  StaticsFormulation(const std::string &alpha_coef_name,
-                     const std::string &h_curl_var_name);
+  StaticsFormulation(std::string alpha_coef_name, std::string h_curl_var_name);
 
-  virtual void ConstructOperator() override;
+  ~StaticsFormulation() override = default;
 
-  virtual void RegisterGridFunctions() override;
+  void ConstructJacobianPreconditioner() override;
 
-  virtual void RegisterCoefficients() override;
+  void ConstructJacobianSolver() override;
+
+  void ConstructOperator() override;
+
+  void RegisterGridFunctions() override;
+
+  void RegisterCoefficients() override;
 
 protected:
   const std::string _alpha_coef_name;
   const std::string _h_curl_var_name;
 };
 
-class StaticsOperator : public EquationSystemOperator {
+class StaticsOperator : public ProblemOperator
+{
 public:
-  StaticsOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
-                  hephaestus::GridFunctions &gridfunctions,
-                  hephaestus::BCMap &bc_map,
-                  hephaestus::Coefficients &coefficients,
-                  hephaestus::Sources &sources,
-                  hephaestus::InputParameters &solver_options);
+  StaticsOperator(hephaestus::Problem & problem,
+                  std::string h_curl_var_name,
+                  std::string stiffness_coef_name);
 
-  ~StaticsOperator(){};
+  ~StaticsOperator() override = default;
 
-  virtual void SetGridFunctions() override;
-  virtual void Init(mfem::Vector &X) override;
-  virtual void Solve(mfem::Vector &X) override;
+  void SetGridFunctions() override;
+  void Init(mfem::Vector & X) override;
+  void Solve(mfem::Vector & X) override;
 
 private:
-  std::string h_curl_var_name, stiffness_coef_name;
+  std::string _h_curl_var_name, _stiffness_coef_name;
 
-  mfem::Coefficient *stiffCoef_; // Stiffness Material Coefficient
+  mfem::Coefficient * _stiff_coef{nullptr}; // Stiffness Material Coefficient
 };
 
 } // namespace hephaestus

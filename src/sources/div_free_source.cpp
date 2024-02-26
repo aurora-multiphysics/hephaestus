@@ -1,7 +1,8 @@
 #include "div_free_source.hpp"
 #include "helmholtz_projector.hpp"
 
-namespace hephaestus {
+namespace hephaestus
+{
 
 /*
 Returns the Helmholtz (divergence-free) projection P(g) of a source g
@@ -14,111 +15,108 @@ P(g) = g + β∇p - ∇×M
 via the weak form:
 (g, ∇q) - (∇Q, ∇q) - <P(g).n, q> = 0
 */
-DivFreeSource::DivFreeSource(const hephaestus::InputParameters &params)
-    : src_coef_name(params.GetParam<std::string>("SourceName")),
-      src_gf_name(params.GetParam<std::string>("SourceName")),
-      hcurl_fespace_name(params.GetParam<std::string>("HCurlFESpaceName")),
-      h1_fespace_name(params.GetParam<std::string>("H1FESpaceName")),
-      potential_gf_name(params.GetOptionalParam<std::string>(
-          "PotentialName", std::string("_source_potential"))),
-      solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
-          "SolverOptions", hephaestus::InputParameters())),
-      perform_helmholtz_projection(
-          params.GetOptionalParam<bool>("HelmholtzProjection", true)),
-      h_curl_mass(NULL) {}
-
-void DivFreeSource::Init(hephaestus::GridFunctions &gridfunctions,
-                         const hephaestus::FESpaces &fespaces,
-                         hephaestus::BCMap &bc_map,
-                         hephaestus::Coefficients &coefficients) {
-  H1FESpace_ = fespaces.Get(h1_fespace_name);
-  if (H1FESpace_ == NULL) {
-    const std::string error_message = h1_fespace_name +
-                                      " not found in fespaces when "
-                                      "creating DivFreeSource\n";
-    mfem::mfem_error(error_message.c_str());
-  }
-  HCurlFESpace_ = fespaces.Get(hcurl_fespace_name);
-  if (HCurlFESpace_ == NULL) {
-    const std::string error_message = hcurl_fespace_name +
-                                      " not found in fespaces when "
-                                      "creating DivFreeSource\n";
-    mfem::mfem_error(error_message.c_str());
-  }
-  if (coefficients.vectors.Has(src_coef_name)) {
-    sourceVecCoef = coefficients.vectors.Get(src_coef_name);
-  } else {
-    MFEM_ABORT("SOURCE NOT FOUND");
-  }
-
-  div_free_src_gf = new mfem::ParGridFunction(HCurlFESpace_);
-  gridfunctions.Register(src_gf_name, div_free_src_gf, false);
-  g = new mfem::ParGridFunction(HCurlFESpace_);
-  gridfunctions.Register("_user_source", g, false);
-  q_ = new mfem::ParGridFunction(H1FESpace_);
-  gridfunctions.Register(potential_gf_name, q_, false);
-
-  bc_map_ = &bc_map;
-  gridfunctions_ = &gridfunctions;
-  fespaces_ = &fespaces;
-
-  this->buildHCurlMass();
+DivFreeSource::DivFreeSource(std::string src_coef_name,
+                             std::string src_gf_name,
+                             std::string hcurl_fespace_name,
+                             std::string h1_fespace_name,
+                             std::string potential_gf_name,
+                             hephaestus::InputParameters solver_options,
+                             bool perform_helmholtz_projection)
+  : _src_coef_name(std::move(src_coef_name)),
+    _src_gf_name(std::move(src_gf_name)),
+    _hcurl_fespace_name(std::move(hcurl_fespace_name)),
+    _h1_fespace_name(std::move(h1_fespace_name)),
+    _potential_gf_name(std::move(potential_gf_name)),
+    _solver_options(std::move(solver_options)),
+    _perform_helmholtz_projection(std::move(perform_helmholtz_projection)),
+    _h_curl_mass(nullptr)
+{
 }
 
-void DivFreeSource::buildHCurlMass() {
-  if (h_curl_mass != NULL) {
-    delete h_curl_mass;
-  }
-  h_curl_mass = new mfem::ParBilinearForm(HCurlFESpace_);
-  h_curl_mass->AddDomainIntegrator(new mfem::VectorFEMassIntegrator);
-  h_curl_mass->Assemble();
-  h_curl_mass->Finalize();
+void
+DivFreeSource::Init(hephaestus::GridFunctions & gridfunctions,
+                    const hephaestus::FESpaces & fespaces,
+                    hephaestus::BCMap & bc_map,
+                    hephaestus::Coefficients & coefficients)
+{
+  _h1_fe_space = fespaces.Get(_h1_fespace_name);
+  _h_curl_fe_space = fespaces.Get(_hcurl_fespace_name);
+  _source_vec_coef = coefficients._vectors.Get(_src_coef_name);
+
+  _div_free_src_gf = std::make_shared<mfem::ParGridFunction>(_h_curl_fe_space);
+  gridfunctions.Register(_src_gf_name, _div_free_src_gf);
+
+  _g = std::make_shared<mfem::ParGridFunction>(_h_curl_fe_space);
+  gridfunctions.Register("_user_source", _g);
+
+  _q = std::make_shared<mfem::ParGridFunction>(_h1_fe_space);
+  gridfunctions.Register(_potential_gf_name, _q);
+
+  _bc_map = &bc_map;
+  _gridfunctions = &gridfunctions;
+  _fespaces = &fespaces;
+
+  BuildHCurlMass();
 }
 
-void DivFreeSource::Apply(mfem::ParLinearForm *lf) {
+void
+DivFreeSource::BuildHCurlMass()
+{
+  _h_curl_mass = std::make_unique<mfem::ParBilinearForm>(_h_curl_fe_space);
+  _h_curl_mass->AddDomainIntegrator(new mfem::VectorFEMassIntegrator);
+  _h_curl_mass->Assemble();
+  _h_curl_mass->Finalize();
+}
+
+void
+DivFreeSource::Apply(mfem::ParLinearForm * lf)
+{
   // Find an averaged representation of current density in H(curl)*
-  g->ProjectCoefficient(*sourceVecCoef);
-  mfem::ParLinearForm J(HCurlFESpace_);
-  J.AddDomainIntegrator(new mfem::VectorFEDomainLFIntegrator(*sourceVecCoef));
-  J.Assemble();
+  _g->ProjectCoefficient(*_source_vec_coef);
+  mfem::ParLinearForm j(_h_curl_fe_space);
+  j.AddDomainIntegrator(new mfem::VectorFEDomainLFIntegrator(*_source_vec_coef));
+  j.Assemble();
   {
-    mfem::HypreParMatrix M;
-    mfem::Vector X, RHS;
+    mfem::HypreParMatrix m;
+    mfem::Vector x, rhs;
     mfem::Array<int> ess_tdof_list;
-    h_curl_mass->FormLinearSystem(ess_tdof_list, *g, J, M, X, RHS);
+    _h_curl_mass->FormLinearSystem(ess_tdof_list, *_g, j, m, x, rhs);
 
-    DefaultGMRESSolver solver(solver_options, M);
-    solver.Mult(RHS, X);
+    DefaultGMRESSolver solver(_solver_options, m);
+    solver.Mult(rhs, x);
 
-    h_curl_mass->RecoverFEMSolution(X, J, *g);
+    _h_curl_mass->RecoverFEMSolution(x, j, *_g);
   }
 
-  *div_free_src_gf = *g;
+  *_div_free_src_gf = *_g;
 
-  if (perform_helmholtz_projection) {
+  if (_perform_helmholtz_projection)
+  {
 
     hephaestus::InputParameters projector_pars;
-    projector_pars.SetParam("VectorGridFunctionName", src_gf_name);
-    projector_pars.SetParam("ScalarGridFunctionName", potential_gf_name);
-    projector_pars.SetParam("H1FESpaceName", h1_fespace_name);
-    projector_pars.SetParam("HCurlFESpaceName", hcurl_fespace_name);
+    projector_pars.SetParam("VectorGridFunctionName", _src_gf_name);
+    projector_pars.SetParam("ScalarGridFunctionName", _potential_gf_name);
+    projector_pars.SetParam("H1FESpaceName", _h1_fespace_name);
+    projector_pars.SetParam("HCurlFESpaceName", _hcurl_fespace_name);
 
     hephaestus::BCMap bcs;
 
     hephaestus::HelmholtzProjector projector(projector_pars);
-    projector.Project(*gridfunctions_, *fespaces_, bcs);
+    projector.Project(*_gridfunctions, *_fespaces, bcs);
   }
 
   // Add divergence free source to target linear form
-  h_curl_mass->Update();
-  h_curl_mass->Assemble();
-  h_curl_mass->Finalize();
+  _h_curl_mass->Update();
+  _h_curl_mass->Assemble();
+  _h_curl_mass->Finalize();
 
-  h_curl_mass->AddMult(*div_free_src_gf, *lf, 1.0);
+  _h_curl_mass->AddMult(*_div_free_src_gf, *lf, 1.0);
 }
 
-void DivFreeSource::SubtractSource(mfem::ParGridFunction *gf) {
-  h_curl_mass->AddMult(*div_free_src_gf, *gf, -1.0);
+void
+DivFreeSource::SubtractSource(mfem::ParGridFunction * gf)
+{
+  _h_curl_mass->AddMult(*_div_free_src_gf, *gf, -1.0);
 }
 
 } // namespace hephaestus

@@ -28,47 +28,49 @@
 
 #include "av_formulation.hpp"
 
-namespace hephaestus {
+#include <utility>
 
-AVFormulation::AVFormulation(const std::string &alpha_coef_name,
-                             const std::string &inv_alpha_coef_name,
-                             const std::string &beta_coef_name,
-                             const std::string &vector_potential_name,
-                             const std::string &scalar_potential_name)
-    : TimeDomainEMFormulation(), _alpha_coef_name(alpha_coef_name),
-      _inv_alpha_coef_name(inv_alpha_coef_name),
-      _beta_coef_name(beta_coef_name),
-      _vector_potential_name(vector_potential_name),
-      _scalar_potential_name(scalar_potential_name) {}
+namespace hephaestus
+{
 
-void AVFormulation::ConstructEquationSystem() {
+AVFormulation::AVFormulation(std::string alpha_coef_name,
+                             std::string inv_alpha_coef_name,
+                             std::string beta_coef_name,
+                             std::string vector_potential_name,
+                             std::string scalar_potential_name)
+  : _alpha_coef_name(std::move(alpha_coef_name)),
+    _inv_alpha_coef_name(std::move(inv_alpha_coef_name)),
+    _beta_coef_name(std::move(beta_coef_name)),
+    _vector_potential_name(std::move(vector_potential_name)),
+    _scalar_potential_name(std::move(scalar_potential_name))
+{
+}
+
+void
+AVFormulation::ConstructEquationSystem()
+{
   hephaestus::InputParameters av_system_params;
   av_system_params.SetParam("VectorPotentialName", _vector_potential_name);
   av_system_params.SetParam("ScalarPotentialName", _scalar_potential_name);
   av_system_params.SetParam("AlphaCoefName", _alpha_coef_name);
   av_system_params.SetParam("BetaCoefName", _beta_coef_name);
-  this->GetProblem()->td_equation_system =
-      std::make_unique<hephaestus::AVEquationSystem>(av_system_params);
+
+  auto equation_system = std::make_unique<hephaestus::AVEquationSystem>(av_system_params);
+
+  GetProblem()->GetOperator()->SetEquationSystem(std::move(equation_system));
 }
 
-void AVFormulation::ConstructOperator() {
-  this->problem->td_operator = std::make_unique<hephaestus::AVOperator>(
-      *(this->problem->pmesh), this->problem->fespaces,
-      this->problem->gridfunctions, this->problem->bc_map,
-      this->problem->coefficients, this->problem->sources,
-      this->problem->solver_options);
-  this->problem->td_operator->SetEquationSystem(
-      this->problem->td_equation_system.get());
-  this->problem->td_operator->SetGridFunctions();
-};
-
-void AVFormulation::RegisterGridFunctions() {
-  int &myid = this->GetProblem()->myid_;
-  hephaestus::GridFunctions &gridfunctions = this->GetProblem()->gridfunctions;
+void
+AVFormulation::RegisterGridFunctions()
+{
+  int & myid = GetProblem()->_myid;
+  hephaestus::GridFunctions & gridfunctions = GetProblem()->_gridfunctions;
 
   // Register default ParGridFunctions of state gridfunctions if not provided
-  if (!gridfunctions.Has(_vector_potential_name)) {
-    if (myid == 0) {
+  if (!gridfunctions.Has(_vector_potential_name))
+  {
+    if (myid == 0)
+    {
       MFEM_WARNING(_vector_potential_name
                    << " not found in gridfunctions: building gridfunction from "
                       "defaults");
@@ -78,8 +80,10 @@ void AVFormulation::RegisterGridFunctions() {
   }
 
   // Register default ParGridFunctions of state gridfunctions if not provided
-  if (!gridfunctions.Has(_scalar_potential_name)) {
-    if (myid == 0) {
+  if (!gridfunctions.Has(_scalar_potential_name))
+  {
+    if (myid == 0)
+    {
       MFEM_WARNING(_scalar_potential_name
                    << " not found in gridfunctions: building gridfunction from "
                       "defaults");
@@ -92,151 +96,98 @@ void AVFormulation::RegisterGridFunctions() {
   TimeDomainProblemBuilder::RegisterGridFunctions();
 };
 
-void AVFormulation::RegisterCoefficients() {
-  hephaestus::Coefficients &coefficients = this->GetProblem()->coefficients;
-  if (!coefficients.scalars.Has(_inv_alpha_coef_name)) {
+void
+AVFormulation::RegisterCoefficients()
+{
+  hephaestus::Coefficients & coefficients = GetProblem()->_coefficients;
+  if (!coefficients._scalars.Has(_inv_alpha_coef_name))
+  {
     MFEM_ABORT(_inv_alpha_coef_name + " coefficient not found.");
   }
-  if (!coefficients.scalars.Has(_beta_coef_name)) {
+  if (!coefficients._scalars.Has(_beta_coef_name))
+  {
     MFEM_ABORT(_beta_coef_name + " coefficient not found.");
   }
 
-  coefficients.scalars.Register(
+  coefficients._scalars.Register(
       _alpha_coef_name,
-      new mfem::TransformedCoefficient(
-          &oneCoef, coefficients.scalars.Get(_inv_alpha_coef_name), fracFunc),
-      true);
+      std::make_shared<mfem::TransformedCoefficient>(
+          &_one_coef, coefficients._scalars.Get(_inv_alpha_coef_name), fracFunc));
 }
 
-AVEquationSystem::AVEquationSystem(const hephaestus::InputParameters &params)
-    : TimeDependentEquationSystem(params),
-      a_name(params.GetParam<std::string>("VectorPotentialName")),
-      v_name(params.GetParam<std::string>("ScalarPotentialName")),
-      alpha_coef_name(params.GetParam<std::string>("AlphaCoefName")),
-      beta_coef_name(params.GetParam<std::string>("BetaCoefName")),
-      dtalpha_coef_name(std::string("dt_") + alpha_coef_name),
-      neg_beta_coef_name(std::string("negative_") + beta_coef_name),
-      negCoef(-1.0) {}
-
-void AVEquationSystem::Init(hephaestus::GridFunctions &gridfunctions,
-                            const hephaestus::FESpaces &fespaces,
-                            hephaestus::BCMap &bc_map,
-                            hephaestus::Coefficients &coefficients) {
-  coefficients.scalars.Register(
-      dtalpha_coef_name,
-      new mfem::TransformedCoefficient(
-          &dtCoef, coefficients.scalars.Get(alpha_coef_name), prodFunc),
-      true);
-
-  coefficients.scalars.Register(
-      neg_beta_coef_name,
-      new mfem::TransformedCoefficient(
-          &negCoef, coefficients.scalars.Get(beta_coef_name), prodFunc),
-      true);
-
-  TimeDependentEquationSystem::Init(gridfunctions, fespaces, bc_map,
-                                    coefficients);
+AVEquationSystem::AVEquationSystem(const hephaestus::InputParameters & params)
+  : TimeDependentEquationSystem(params),
+    _a_name(params.GetParam<std::string>("VectorPotentialName")),
+    _v_name(params.GetParam<std::string>("ScalarPotentialName")),
+    _alpha_coef_name(params.GetParam<std::string>("AlphaCoefName")),
+    _beta_coef_name(params.GetParam<std::string>("BetaCoefName")),
+    _dtalpha_coef_name(std::string("dt_") + _alpha_coef_name),
+    _neg_beta_coef_name(std::string("negative_") + _beta_coef_name),
+    _neg_coef(-1.0)
+{
 }
 
-void AVEquationSystem::addKernels() {
-  addVariableNameIfMissing(a_name);
-  std::string da_dt_name = GetTimeDerivativeName(a_name);
-  addVariableNameIfMissing(v_name);
-  std::string dv_dt_name = GetTimeDerivativeName(v_name);
+void
+AVEquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
+                       const hephaestus::FESpaces & fespaces,
+                       hephaestus::BCMap & bc_map,
+                       hephaestus::Coefficients & coefficients)
+{
+  coefficients._scalars.Register(
+      _dtalpha_coef_name,
+      std::make_shared<mfem::TransformedCoefficient>(
+          &_dt_coef, coefficients._scalars.Get(_alpha_coef_name), prodFunc));
 
-  // (α∇×A_{n}, ∇×A')
-  hephaestus::InputParameters weakCurlCurlParams;
-  weakCurlCurlParams.SetParam("CoupledVariableName", a_name);
-  weakCurlCurlParams.SetParam("CoefficientName", alpha_coef_name);
-  addKernel(da_dt_name, new hephaestus::WeakCurlCurlKernel(weakCurlCurlParams));
+  coefficients._scalars.Register(
+      _neg_beta_coef_name,
+      std::make_shared<mfem::TransformedCoefficient>(
+          &_neg_coef, coefficients._scalars.Get(_beta_coef_name), prodFunc));
 
-  // (αdt∇×dA/dt_{n+1}, ∇×A')
-  hephaestus::InputParameters curlCurlParams;
-  curlCurlParams.SetParam("CoefficientName", dtalpha_coef_name);
-  addKernel(da_dt_name, new hephaestus::CurlCurlKernel(curlCurlParams));
+  TimeDependentEquationSystem::Init(gridfunctions, fespaces, bc_map, coefficients);
+}
 
-  // (βdA/dt_{n+1}, A')
-  hephaestus::InputParameters vectorFEMassParams;
-  vectorFEMassParams.SetParam("CoefficientName", beta_coef_name);
-  addKernel(da_dt_name, new hephaestus::VectorFEMassKernel(vectorFEMassParams));
+void
+AVEquationSystem::AddKernels()
+{
+  AddTrialVariableNameIfMissing(_a_name);
+  std::string da_dt_name = GetTimeDerivativeName(_a_name);
+  AddTrialVariableNameIfMissing(_v_name);
+  std::string dv_dt_name = GetTimeDerivativeName(_v_name);
+
+  // (α∇×A_{n}, ∇×dA'/dt)
+  hephaestus::InputParameters weak_curl_curl_params;
+  weak_curl_curl_params.SetParam("CoupledVariableName", _a_name);
+  weak_curl_curl_params.SetParam("CoefficientName", _alpha_coef_name);
+  AddKernel(da_dt_name, std::make_shared<hephaestus::WeakCurlCurlKernel>(weak_curl_curl_params));
+
+  // (αdt∇×dA/dt_{n+1}, ∇×dA'/dt)
+  hephaestus::InputParameters curl_curl_params;
+  curl_curl_params.SetParam("CoefficientName", _dtalpha_coef_name);
+  AddKernel(da_dt_name, std::make_shared<hephaestus::CurlCurlKernel>(curl_curl_params));
+
+  // (βdA/dt_{n+1}, dA'/dt)
+  hephaestus::InputParameters vector_fe_mass_params;
+  vector_fe_mass_params.SetParam("CoefficientName", _beta_coef_name);
+  AddKernel(da_dt_name, std::make_shared<hephaestus::VectorFEMassKernel>(vector_fe_mass_params));
 
   // (σ ∇ V, dA'/dt)
-  hephaestus::InputParameters mixedVectorGradientParams;
-  mixedVectorGradientParams.SetParam("CoefficientName", beta_coef_name);
-  addKernel(
-      v_name, da_dt_name,
-      new hephaestus::MixedVectorGradientKernel(mixedVectorGradientParams));
+  hephaestus::InputParameters mixed_vector_gradient_params;
+  mixed_vector_gradient_params.SetParam("CoefficientName", _beta_coef_name);
+  AddKernel(_v_name,
+            da_dt_name,
+            std::make_shared<hephaestus::MixedVectorGradientKernel>(mixed_vector_gradient_params));
 
   // (σ ∇ V, ∇ V')
-  hephaestus::InputParameters diffusionParams;
-  diffusionParams.SetParam("CoefficientName", beta_coef_name);
-  addKernel(v_name, new hephaestus::DiffusionKernel(diffusionParams));
+  hephaestus::InputParameters diffusion_params;
+  diffusion_params.SetParam("CoefficientName", _beta_coef_name);
+  AddKernel(_v_name, std::make_shared<hephaestus::DiffusionKernel>(diffusion_params));
 
   // (σdA/dt, ∇ V')
-  hephaestus::InputParameters vectorFEWeakDivergenceParams;
-  vectorFEWeakDivergenceParams.SetParam("CoefficientName", beta_coef_name);
-  addKernel(da_dt_name, v_name,
-            new hephaestus::VectorFEWeakDivergenceKernel(
-                vectorFEWeakDivergenceParams));
-}
-
-AVOperator::AVOperator(mfem::ParMesh &pmesh, hephaestus::FESpaces &fespaces,
-                       hephaestus::GridFunctions &gridfunctions,
-                       hephaestus::BCMap &bc_map,
-                       hephaestus::Coefficients &coefficients,
-                       hephaestus::Sources &sources,
-                       hephaestus::InputParameters &solver_options)
-    : TimeDomainEquationSystemOperator(pmesh, fespaces, gridfunctions, bc_map,
-                                       coefficients, sources, solver_options) {
-  // Initialize MPI gridfunctions
-  MPI_Comm_size(pmesh.GetComm(), &num_procs_);
-  MPI_Comm_rank(pmesh.GetComm(), &myid_);
-
-  aux_var_names.resize(2);
-  aux_var_names.at(0) = "electric_field";
-  aux_var_names.at(1) = "magnetic_flux_density";
-}
-
-/*
-This is the main computational code that computes dX/dt implicitly
-where X is the state vector containing p, u and v.
-
-Unknowns
-s0_{n+1} ∈ H(div) source field, where s0 = -β∇p
-du/dt_{n+1} ∈ H(curl)
-p_{n+1} ∈ H1
-
-Fully discretised equations
--(s0_{n+1}, ∇ p') + <n.s0_{n+1}, p'> = 0
-(α∇×u_{n}, ∇×u') + (αdt∇×du/dt_{n+1}, ∇×u') + (βdu/dt_{n+1}, u')
-- (s0_{n+1}, u') - <(α∇×u_{n+1}) × n, u'> = 0
-using
-u_{n+1} = u_{n} + dt du/dt_{n+1}
-*/
-void AVOperator::ImplicitSolve(const double dt, const mfem::Vector &X,
-                               mfem::Vector &dX_dt) {
-  dX_dt = 0.0;
-  for (unsigned int ind = 0; ind < local_test_vars.size(); ++ind) {
-    local_test_vars.at(ind)->MakeRef(local_test_vars.at(ind)->ParFESpace(),
-                                     const_cast<mfem::Vector &>(X),
-                                     true_offsets[ind]);
-    local_trial_vars.at(ind)->MakeRef(local_trial_vars.at(ind)->ParFESpace(),
-                                      dX_dt, true_offsets[ind]);
-  }
-  _coefficients.SetTime(this->GetTime());
-  _equation_system->setTimeStep(dt);
-  _equation_system->updateEquationSystem(_bc_map, _sources);
-
-  _equation_system->FormLinearSystem(blockA, trueX, trueRhs);
-  if (solver != NULL) {
-    delete solver;
-  }
-  solver = new hephaestus::DefaultGMRESSolver(
-      _solver_options, *blockA.As<mfem::HypreParMatrix>());
-  // solver = new hephaestus::DefaultGMRESSolver(_solver_options, *blockA,
-  //                                             pmesh_->GetComm());
-
-  solver->Mult(trueRhs, trueX);
-  _equation_system->RecoverFEMSolution(trueX, _gridfunctions);
+  hephaestus::InputParameters vector_fe_weak_divergence_params;
+  vector_fe_weak_divergence_params.SetParam("CoefficientName", _beta_coef_name);
+  AddKernel(
+      da_dt_name,
+      _v_name,
+      std::make_shared<hephaestus::VectorFEWeakDivergenceKernel>(vector_fe_weak_divergence_params));
 }
 } // namespace hephaestus

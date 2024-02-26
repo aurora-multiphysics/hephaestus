@@ -1,7 +1,8 @@
 #include "frequency_domain_em_formulation.hpp"
 
-namespace hephaestus {
+namespace hephaestus
+{
 
-FrequencyDomainEMFormulation::FrequencyDomainEMFormulation(){};
+FrequencyDomainEMFormulation::FrequencyDomainEMFormulation() = default;
 
 } // namespace hephaestus
