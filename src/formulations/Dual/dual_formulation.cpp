@@ -173,8 +173,8 @@ WeakCurlEquationSystem::AddKernels()
 {
   spdlog::stopwatch sw;
 
-  AddVariableNameIfMissing(_h_curl_var_name);
-  AddVariableNameIfMissing(_h_div_var_name);
+  AddTrialVariableNameIfMissing(_h_curl_var_name);
+  AddTrialVariableNameIfMissing(_h_div_var_name);
   std::string dh_curl_var_dt = GetTimeDerivativeName(_h_curl_var_name);
 
   // (αv_{n}, ∇×u')
@@ -221,6 +221,8 @@ DualOperator::Init(mfem::Vector & X)
 void
 DualOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt)
 {
+  spdlog::stopwatch sw;
+
   TimeDomainProblemOperator::ImplicitSolve(dt, X, dX_dt);
   // Subtract off contribution from source
   _problem._sources.SubtractSources(_u);

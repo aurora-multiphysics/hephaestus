@@ -133,7 +133,7 @@ StaticsOperator::Solve(mfem::Vector & X)
 {
   spdlog::stopwatch sw;
 
-  mfem::ParGridFunction & gf(*_local_test_vars.at(0));
+  mfem::ParGridFunction & gf(*_trial_variables.at(0));
   gf = 0.0;
   mfem::ParLinearForm lf(gf.ParFESpace());
   lf = 0.0;

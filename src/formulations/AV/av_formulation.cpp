@@ -151,7 +151,7 @@ AVEquationSystem::AddKernels()
 {
   spdlog::stopwatch sw;
 
-  AddVariableNameIfMissing(_a_name);
+  AddTrialVariableNameIfMissing(_a_name);
   std::string da_dt_name = GetTimeDerivativeName(_a_name);
   AddTrialVariableNameIfMissing(_v_name);
   std::string dv_dt_name = GetTimeDerivativeName(_v_name);
@@ -194,5 +194,5 @@ AVEquationSystem::AddKernels()
 
   logger.info("AVOperator AddKernels: {} seconds", sw);
 }
-  
+
 } // namespace hephaestus
