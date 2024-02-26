@@ -66,23 +66,35 @@ DualFormulation::ConstructEquationSystem()
   weak_form_params.SetParam("HDivVarName", _h_div_var_name);
   weak_form_params.SetParam("AlphaCoefName", _alpha_coef_name);
   weak_form_params.SetParam("BetaCoefName", _beta_coef_name);
-  GetProblem()->_td_equation_system =
-      std::make_unique<hephaestus::WeakCurlEquationSystem>(weak_form_params);
+
+  auto equation_system = std::make_unique<hephaestus::WeakCurlEquationSystem>(weak_form_params);
+
+  GetProblem()->GetOperator()->SetEquationSystem(std::move(equation_system));
+}
+
+void
+DualFormulation::ConstructJacobianPreconditioner()
+{
+  auto precond =
+      std::make_shared<mfem::HypreAMS>(_problem->GetEquationSystem()->_test_pfespaces.at(0));
+
+  precond->SetSingularProblem();
+  precond->SetPrintLevel(-1);
+
+  _problem->_jacobian_preconditioner = precond;
+}
+
+void
+DualFormulation::ConstructJacobianSolver()
+{
+  ConstructJacobianSolverWithOptions(SolverType::HYPRE_PCG, {._max_iteration = 1000});
 }
 
 void
 DualFormulation::ConstructOperator()
 {
-  _problem->_td_operator = std::make_unique<hephaestus::DualOperator>(*(_problem->_pmesh),
-                                                                      _problem->_fespaces,
-                                                                      _problem->_gridfunctions,
-                                                                      _problem->_bc_map,
-                                                                      _problem->_coefficients,
-                                                                      _problem->_sources,
-                                                                      _problem->_solver_options);
-  _problem->_td_operator->SetEquationSystem(_problem->_td_equation_system.get());
-  _problem->_td_operator->SetGridFunctions();
-};
+  _problem->SetOperator(std::make_unique<hephaestus::DualOperator>(*_problem));
+}
 
 void
 DualFormulation::RegisterGridFunctions()
@@ -186,29 +198,17 @@ WeakCurlEquationSystem::AddKernels()
   logger.info("WeakCurlEquationSystem AddKernels: {} seconds", sw);
 }
 
-DualOperator::DualOperator(mfem::ParMesh & pmesh,
-                           hephaestus::FESpaces & fespaces,
-                           hephaestus::GridFunctions & gridfunctions,
-                           hephaestus::BCMap & bc_map,
-                           hephaestus::Coefficients & coefficients,
-                           hephaestus::Sources & sources,
-                           hephaestus::InputParameters & solver_options)
-  : TimeDomainEquationSystemOperator(
-        pmesh, fespaces, gridfunctions, bc_map, coefficients, sources, solver_options)
-{
-}
-
 void
 DualOperator::Init(mfem::Vector & X)
 {
-  TimeDomainEquationSystemOperator::Init(X);
-  auto * eqs = dynamic_cast<hephaestus::WeakCurlEquationSystem *>(_equation_system);
+  TimeDomainProblemOperator::Init(X);
+  auto * eqs = dynamic_cast<hephaestus::WeakCurlEquationSystem *>(GetEquationSystem());
 
   _h_curl_var_name = eqs->_h_curl_var_name;
   _h_div_var_name = eqs->_h_div_var_name;
 
-  _u = _gridfunctions.Get(_h_curl_var_name);
-  _dv = _gridfunctions.Get(GetTimeDerivativeName(_h_div_var_name));
+  _u = _problem._gridfunctions.Get(_h_curl_var_name);
+  _dv = _problem._gridfunctions.Get(GetTimeDerivativeName(_h_div_var_name));
 
   _h_curl_fe_space = _u->ParFESpace();
   _h_div_fe_space = _dv->ParFESpace();
@@ -221,32 +221,9 @@ DualOperator::Init(mfem::Vector & X)
 void
 DualOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt)
 {
-  spdlog::stopwatch sw;
-
-  for (unsigned int ind = 0; ind < _local_test_vars.size(); ++ind)
-  {
-    _local_test_vars.at(ind)->MakeRef(
-        _local_test_vars.at(ind)->ParFESpace(), const_cast<mfem::Vector &>(X), _true_offsets[ind]);
-    _local_trial_vars.at(ind)->MakeRef(
-        _local_trial_vars.at(ind)->ParFESpace(), dX_dt, _true_offsets[ind]);
-  }
-  _coefficients.SetTime(GetTime());
-  _equation_system->SetTimeStep(dt);
-  _equation_system->UpdateEquationSystem(_bc_map, _sources);
-
-  _equation_system->FormLinearSystem(_block_a, _true_x, _true_rhs);
-
-  _jacobian_solver =
-      std::make_unique<hephaestus::DefaultHCurlPCGSolver>(_solver_options,
-                                                          *_block_a.As<mfem::HypreParMatrix>(),
-                                                          _equation_system->_test_pfespaces.at(0));
-
-  _jacobian_solver->Mult(_true_rhs, _true_x);
-  _equation_system->RecoverFEMSolution(_true_x, _gridfunctions);
-
+  TimeDomainProblemOperator::ImplicitSolve(dt, X, dX_dt);
   // Subtract off contribution from source
-  _sources.SubtractSources(_u);
-
+  _problem._sources.SubtractSources(_u);
   // dv/dt_{n+1} = -∇×u
   _curl->Mult(*_u, *_dv);
   *_dv *= -1.0;
@@ -257,15 +234,15 @@ DualOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vecto
 void
 DualOperator::SetGridFunctions()
 {
-  TimeDomainEquationSystemOperator::SetGridFunctions();
+  TimeDomainProblemOperator::SetGridFunctions();
   // Blocks for solution vector are smaller than the operator size
   // for DualOperator, as curl is stored separately.
   // Block operator only has the HCurl TrueVSize;
-  _block_true_offsets.SetSize(_local_test_vars.size());
+  _block_true_offsets.SetSize(_trial_variables.size());
   _block_true_offsets[0] = 0;
-  for (unsigned int ind = 0; ind < _local_test_vars.size() - 1; ++ind)
+  for (unsigned int ind = 0; ind < _trial_variables.size() - 1; ++ind)
   {
-    _block_true_offsets[ind + 1] = _local_test_vars.at(ind)->ParFESpace()->TrueVSize();
+    _block_true_offsets[ind + 1] = _trial_variables.at(ind)->ParFESpace()->TrueVSize();
   }
   _block_true_offsets.PartialSum();
 

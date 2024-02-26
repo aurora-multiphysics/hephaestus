@@ -18,6 +18,10 @@ public:
 
   void ConstructEquationSystem() override;
 
+  void ConstructJacobianPreconditioner() override;
+
+  void ConstructJacobianSolver() override;
+
   void ConstructOperator() override;
 
   void RegisterGridFunctions() override;
@@ -47,18 +51,10 @@ public:
       _dtalpha_coef_name;
 };
 
-class DualOperator : public TimeDomainEquationSystemOperator
+class DualOperator : public TimeDomainProblemOperator
 {
 public:
-  DualOperator(mfem::ParMesh & pmesh,
-               hephaestus::FESpaces & fespaces,
-               hephaestus::GridFunctions & gridfunctions,
-               hephaestus::BCMap & bc_map,
-               hephaestus::Coefficients & coefficients,
-               hephaestus::Sources & sources,
-               hephaestus::InputParameters & solver_options);
-
-  ~DualOperator() override = default;
+  DualOperator(hephaestus::Problem & problem) : TimeDomainProblemOperator(problem){};
 
   void Init(mfem::Vector & X) override;
 

@@ -18,11 +18,11 @@ EquationSystem::VectorContainsName(const std::vector<std::string> & the_vector,
 }
 
 void
-EquationSystem::AddVariableNameIfMissing(const std::string & var_name)
+EquationSystem::AddTrialVariableNameIfMissing(const std::string & trial_var_name)
 {
-  if (!VectorContainsName(_var_names, var_name))
+  if (!VectorContainsName(_trial_var_names, trial_var_name))
   {
-    _var_names.push_back(var_name);
+    _trial_var_names.push_back(trial_var_name);
   }
 }
 
@@ -189,6 +189,26 @@ EquationSystem::FormLinearSystem(mfem::OperatorHandle & op,
 
   // Create monolithic matrix
   op.Reset(mfem::HypreParMatrixFromBlocks(_h_blocks));
+}
+
+void
+EquationSystem::BuildJacobian(mfem::BlockVector & trueX, mfem::BlockVector & trueRHS)
+{
+  height = trueX.Size();
+  width = trueRHS.Size();
+  FormLinearSystem(_jacobian, trueX, trueRHS);
+}
+
+void
+EquationSystem::Mult(const mfem::Vector & x, mfem::Vector & residual) const
+{
+  _jacobian->Mult(x, residual);
+}
+
+mfem::Operator &
+EquationSystem::GetGradient(const mfem::Vector & u) const
+{
+  return *_jacobian;
 }
 
 void
@@ -383,15 +403,15 @@ TimeDependentEquationSystem::TimeDependentEquationSystem(const hephaestus::Input
 }
 
 void
-TimeDependentEquationSystem::AddVariableNameIfMissing(const std::string & var_name)
+TimeDependentEquationSystem::AddTrialVariableNameIfMissing(const std::string & var_name)
 {
-  EquationSystem::AddVariableNameIfMissing(var_name);
+  EquationSystem::AddTrialVariableNameIfMissing(var_name);
   std::string var_time_derivative_name = GetTimeDerivativeName(var_name);
-  if (std::find(_var_time_derivative_names.begin(),
-                _var_time_derivative_names.end(),
-                var_time_derivative_name) == _var_time_derivative_names.end())
+  if (std::find(_trial_var_time_derivative_names.begin(),
+                _trial_var_time_derivative_names.end(),
+                var_time_derivative_name) == _trial_var_time_derivative_names.end())
   {
-    _var_time_derivative_names.push_back(var_time_derivative_name);
+    _trial_var_time_derivative_names.push_back(var_time_derivative_name);
   }
 }
 
@@ -417,6 +437,6 @@ TimeDependentEquationSystem::UpdateEquationSystem(hephaestus::BCMap & bc_map,
   BuildLinearForms(bc_map, sources);
   BuildBilinearForms();
   BuildMixedBilinearForms();
-};
+}
 
 } // namespace hephaestus

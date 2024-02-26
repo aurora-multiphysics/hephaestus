@@ -1,6 +1,6 @@
 #pragma once
 #include "problem_builder_base.hpp"
-#include "time_domain_equation_system_operator.hpp"
+#include "time_domain_problem_operator.hpp"
 
 namespace hephaestus
 {
@@ -9,20 +9,39 @@ namespace hephaestus
 class TimeDomainProblem : public hephaestus::Problem
 {
 public:
-  std::unique_ptr<hephaestus::TimeDependentEquationSystem> _td_equation_system;
-  std::unique_ptr<hephaestus::TimeDomainEquationSystemOperator> _td_operator;
+  friend class TimeDomainProblemBuilder;
 
   TimeDomainProblem() = default;
-  ~TimeDomainProblem() override;
+  ~TimeDomainProblem() override = default;
 
-  hephaestus::TimeDependentEquationSystem * GetEquationSystem() override
+  [[nodiscard]] bool HasEquationSystem() const override
   {
-    return _td_equation_system.get();
-  };
-  hephaestus::TimeDomainEquationSystemOperator * GetOperator() override
+    return GetOperator()->HasEquationSystem();
+  }
+
+  [[nodiscard]] hephaestus::TimeDependentEquationSystem * GetEquationSystem() const override
   {
+    return GetOperator()->GetEquationSystem();
+  }
+
+  [[nodiscard]] hephaestus::TimeDomainProblemOperator * GetOperator() const override
+  {
+    if (!_td_operator)
+    {
+      MFEM_ABORT("No TimeDomainProblemOperator has been added to TimeDomainProblem.");
+    }
+
     return _td_operator.get();
-  };
+  }
+
+  void SetOperator(std::unique_ptr<TimeDomainProblemOperator> new_problem_operator)
+  {
+    _td_operator.reset();
+    _td_operator = std::move(new_problem_operator);
+  }
+
+protected:
+  std::unique_ptr<hephaestus::TimeDomainProblemOperator> _td_operator{nullptr};
 };
 
 // Builder class of a time-domain EM formulation.
@@ -36,7 +55,7 @@ public:
   virtual std::unique_ptr<hephaestus::TimeDomainProblem> ReturnProblem()
   {
     return std::move(_problem);
-  };
+  }
 
   static std::vector<mfem::ParGridFunction *>
   RegisterTimeDerivatives(std::vector<std::string> gridfunction_names,
@@ -52,13 +71,15 @@ public:
 
   void ConstructEquationSystem() override;
 
+  void SetOperatorGridFunctions() override;
+
   void InitializeKernels() override;
 
   void ConstructOperator() override;
 
   void ConstructState() override;
 
-  void ConstructSolver() override;
+  void ConstructTimestepper() override;
 
 protected:
   std::unique_ptr<hephaestus::TimeDomainProblem> _problem{nullptr};
