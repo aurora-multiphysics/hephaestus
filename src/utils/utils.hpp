@@ -5,33 +5,35 @@
 #include "hephaestus_solvers.hpp"
 #include "inputs.hpp"
 
-namespace hephaestus {
+namespace hephaestus
+{
 
 // Useful functions available to all classes
 
-template <typename T> 
-void ifDelete(T *ptr) {
+template <typename T>
+void
+ifDelete(T * ptr)
+{
   if (ptr != nullptr)
     delete ptr;
 }
 
-double calcFlux(mfem::GridFunction *v_field, int face_attr);
+// This is a hotfix for the MFEM issue where internal boundary attributes are not passed down from
+// parent to child submesh. Once this issue is resolved on the MFEM side, this function will be
+// deprecated.
+void inheritBdrAttributes(const mfem::ParMesh * parent_mesh, mfem::ParSubMesh * child_mesh);
 
-void SubdomainToArray(const std::vector<hephaestus::Subdomain> &sd,
-                      mfem::Array<int> &arr);
+// Takes in an array of attributes and turns into a marker array.
+void attrToMarker(const mfem::Array<int> attr_list, mfem::Array<int> & marker_list, int max_attr);
 
-void SubdomainToArray(const hephaestus::Subdomain &sd, mfem::Array<int> &arr);
+// Uses the HelmholtzProjector auxsolver to return a divergence-free GridFunction. This version of
+// the function assumes all natural boundary conditions for the HelmholtzProjector equal zero.
+void cleanDivergence(mfem::ParGridFunction & Vec_GF, hephaestus::InputParameters solve_pars);
 
-void inheritBdrAttributes(const mfem::ParMesh *parent_mesh,
-                          mfem::ParSubMesh *child_mesh);
-
-void attrToMarker(const mfem::Array<int> attr_list,
-                  mfem::Array<int> &marker_list, int max_attr);
-
-void cleanDivergence(mfem::ParGridFunction &Vec_GF,
-                     hephaestus::InputParameters solve_pars);
-
-void cleanDivergence(hephaestus::GridFunctions &gfs, hephaestus::BCMap &bcs,
+// Uses the HelmholtzProjector auxsolver to return a divergence-free GridFunction. This version of
+// the function allows the user to set up boundary conditions for the HelmholtzProjector.
+void cleanDivergence(hephaestus::GridFunctions & gfs,
+                     hephaestus::BCMap & bcs,
                      const std::string vec_gf_name,
                      const std::string scalar_gf_name,
                      hephaestus::InputParameters solve_pars);

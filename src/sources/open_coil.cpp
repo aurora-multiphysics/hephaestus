@@ -41,7 +41,6 @@ OpenCoilSolver::OpenCoilSolver(std::string source_efield_gf_name,
     _low_terminal(1),
     _ref_face(_elec_attrs.first)
 {
-
 }
 
 void
