@@ -81,6 +81,7 @@ private:
   std::shared_ptr<mfem::Coefficient> _itotal{nullptr};
   std::vector<int> _old_dom_attrs;
   hephaestus::InputParameters _solver_options;
+  hephaestus::Coefficients _ccs_coefs;
 
   // Here, we are solving for -(σ∇Va,∇ψ) = (σ∇Vt,∇ψ), where ∇Vt is grad_phi_t (within its relevant
   // mesh), ∇Va is grad_phi_aux, and their sum ∇Vt+∇Va is the full grad_phi, which is, up to an

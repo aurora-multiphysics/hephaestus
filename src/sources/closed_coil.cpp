@@ -57,6 +57,9 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
   // Retrieving the parent FE space and mesh
   _h_curl_fe_space_parent = fespaces.Get(_hcurl_fespace_name);
 
+  // Setting the ccs coefs which will be altered later
+  _ccs_coefs = coefficients;
+
   _mesh_parent = _h_curl_fe_space_parent->GetParMesh();
   _order_hcurl = _h_curl_fe_space_parent->FEColl()->GetOrder();
   _order_h1 = _order_hcurl;
@@ -240,7 +243,7 @@ ClosedCoilSolver::MakeWedge()
   }
 
   // Now we need to find all elements in the mesh that touch, on at least one
-  // vertex, the electrode face if they do touch the vertex, are on one side of
+  // vertex, the electrode face. If they do touch the vertex, are on one side of
   // the electrode, and belong to the coil domain, we add them to our wedge
 
   std::vector<int> wedge_els;
@@ -267,6 +270,50 @@ ClosedCoilSolver::MakeWedge()
     }
   }
 
+  if (wedge_els.size() == 0)
+    mfem::mfem_error("ClosedCoilSolver wedge has size zero");
+
+  // If we are dealing with a piecewise-defined conductivity, we need to
+  // add the new wedge domain to the coefficient
+  std::shared_ptr<mfem::PWCoefficient> id_test =
+      std::dynamic_pointer_cast<mfem::PWCoefficient>(_sigma);
+  if (id_test != nullptr)
+  {
+    std::vector<hephaestus::Subdomain> subdomains = _ccs_coefs._subdomains;
+    hephaestus::Subdomain new_domain("wedge", _new_domain_attr);
+    int wedge_old_att = _mesh_parent->GetAttribute(wedge_els[0]);
+
+    int sd_wedge = -1;
+    for (int i = 0; i < subdomains.size(); ++i)
+    {
+      if (subdomains[i]._id == wedge_old_att)
+      {
+        sd_wedge = i;
+        break;
+      }
+    }
+
+    // If the conductivity in the region in which the wedge is located has been defined in the
+    // PWCoefficient, the new subdomain inherits the same conductivity coefficient. Otherwise, the
+    // conductivity is set to zero
+    if (sd_wedge != -1)
+    {
+      new_domain._scalar_coefficients.Register(
+          "electrical_conductivity",
+          subdomains[sd_wedge]._scalar_coefficients.GetShared("electrical_conductivity"));
+    }
+    else
+    {
+      new_domain._scalar_coefficients.Register("electrical_conductivity",
+                                               std::make_shared<mfem::ConstantCoefficient>(0.0));
+    }
+
+    subdomains.push_back(new_domain);
+    _ccs_coefs._subdomains = subdomains;
+    _ccs_coefs._scalars.Deregister("electrical_conductivity");
+    _ccs_coefs.AddGlobalCoefficientsFromSubdomains();
+    _sigma = _ccs_coefs._scalars.GetShared(_cond_coef_name);
+  }
   // Now we set the second electrode boundary attribute. Start with a list of
   // all the faces of the wedge elements and eliminate mesh and coil boundaries,
   // the first electrode, and faces between wedge elements
@@ -408,15 +455,13 @@ ClosedCoilSolver::SolveTransition()
   opencoil.Init(gridfunctions, fespaces, bc_maps, coefs);
   opencoil.Apply(_final_lf.get());
 
-  *v_parent *= -1.0;
-  *_source_electric_field *= -1.0;
   _mesh_coil->Transfer(*v_parent, *_v_coil);
 }
 
 void
 ClosedCoilSolver::SolveCoil()
 {
-  // -(σ∇Va,∇ψ) = (σ∇Vt,∇ψ)
+  // (σ∇Va,∇ψ) = -(σ∇Vt,∇ψ)
   // where Va is Vaux_coil_, the auxiliary continuous "potential"
   // ψ are the H1 test functions
   // Vt is the transition potential
@@ -434,7 +479,7 @@ ClosedCoilSolver::SolveCoil()
   a_t.AddDomainIntegrator(new mfem::DiffusionIntegrator(*_sigma), _transition_markers);
   a_t.Assemble();
   a_t.Finalize();
-  a_t.AddMult(*_v_coil, b_coil, 1.0);
+  a_t.AddMult(*_v_coil, b_coil, -1.0);
 
   mfem::ParBilinearForm a_coil(_h1_fe_space_coil.get());
   a_coil.AddDomainIntegrator(new mfem::DiffusionIntegrator(*_sigma));
@@ -480,6 +525,7 @@ ClosedCoilSolver::SolveCoil()
   grad.AddDomainInterpolator(new mfem::GradientInterpolator());
   grad.Assemble();
   grad.Mult(vaux_coil, *_electric_field_aux_coil);
+  *_electric_field_aux_coil *= -1.0;
 
   if (_electric_field_transfer)
     _electric_field_t_parent = std::make_unique<mfem::ParGridFunction>(*_source_electric_field);
@@ -509,14 +555,14 @@ ClosedCoilSolver::SolveCoil()
 
   _mesh_t->Transfer(*_source_electric_field, *electric_field_aux_t);
 
-  // The total flux across the electrode face is Φ_t-Φ_aux
-  // where Φ_t is the transition flux, already normalised to be 1
-  double flux = 1.0 - calcFlux(electric_field_aux_t.get(), _elec_attrs.first, *_sigma);
+  // The total flux across the electrode face is Φ_t + Φ_aux
+  // where Φ_t is the transition flux, already normalised to be -1
+  double flux = -1.0 + calcFlux(electric_field_aux_t.get(), _elec_attrs.first, *_sigma);
 
   if (_electric_field_transfer)
   {
-    *_source_electric_field -= *_electric_field_t_parent;
-    *_source_electric_field /= -flux;
+    *_source_electric_field += *_electric_field_t_parent;
+    *_source_electric_field /= flux;
     *_electric_field_t_parent = *_source_electric_field;
   }
 
