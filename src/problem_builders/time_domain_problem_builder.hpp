@@ -4,7 +4,6 @@
 
 namespace hephaestus
 {
-
 // Stores data required to describe a time domain formulation
 class TimeDomainProblem : public hephaestus::Problem
 {
@@ -13,16 +12,6 @@ public:
 
   TimeDomainProblem() = default;
   ~TimeDomainProblem() override = default;
-
-  [[nodiscard]] bool HasEquationSystem() const override
-  {
-    return GetOperator()->HasEquationSystem();
-  }
-
-  [[nodiscard]] hephaestus::TimeDependentEquationSystem * GetEquationSystem() const override
-  {
-    return GetOperator()->GetEquationSystem();
-  }
 
   [[nodiscard]] hephaestus::TimeDomainProblemOperator * GetOperator() const override
   {
@@ -44,8 +33,7 @@ protected:
   std::unique_ptr<hephaestus::TimeDomainProblemOperator> _td_operator{nullptr};
 };
 
-// Builder class of a time-domain EM formulation.
-class TimeDomainProblemBuilder : public hephaestus::ProblemBuilder
+class TimeDomainProblemBuilder : public ProblemBuilder
 {
 public:
   TimeDomainProblemBuilder() : _problem(std::make_unique<hephaestus::TimeDomainProblem>()) {}
@@ -69,11 +57,7 @@ public:
 
   void RegisterCoefficients() override {}
 
-  void ConstructEquationSystem() override;
-
   void SetOperatorGridFunctions() override;
-
-  void InitializeKernels() override;
 
   void ConstructOperator() override;
 

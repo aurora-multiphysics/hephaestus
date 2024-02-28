@@ -59,20 +59,6 @@ DualFormulation::DualFormulation(std::string alpha_coef_name,
 }
 
 void
-DualFormulation::ConstructEquationSystem()
-{
-  hephaestus::InputParameters weak_form_params;
-  weak_form_params.SetParam("HCurlVarName", _h_curl_var_name);
-  weak_form_params.SetParam("HDivVarName", _h_div_var_name);
-  weak_form_params.SetParam("AlphaCoefName", _alpha_coef_name);
-  weak_form_params.SetParam("BetaCoefName", _beta_coef_name);
-
-  auto equation_system = std::make_unique<hephaestus::WeakCurlEquationSystem>(weak_form_params);
-
-  GetProblem()->GetOperator()->SetEquationSystem(std::move(equation_system));
-}
-
-void
 DualFormulation::ConstructJacobianPreconditioner()
 {
   auto precond =
@@ -93,7 +79,16 @@ DualFormulation::ConstructJacobianSolver()
 void
 DualFormulation::ConstructOperator()
 {
-  _problem->SetOperator(std::make_unique<hephaestus::DualOperator>(*_problem));
+  hephaestus::InputParameters weak_form_params;
+  weak_form_params.SetParam("HCurlVarName", _h_curl_var_name);
+  weak_form_params.SetParam("HDivVarName", _h_div_var_name);
+  weak_form_params.SetParam("AlphaCoefName", _alpha_coef_name);
+  weak_form_params.SetParam("BetaCoefName", _beta_coef_name);
+
+  auto equation_system = std::make_unique<hephaestus::WeakCurlEquationSystem>(weak_form_params);
+
+  _problem->SetOperator(
+      std::make_unique<hephaestus::DualOperator>(*_problem, std::move(equation_system)));
 }
 
 void
@@ -127,7 +122,7 @@ DualFormulation::RegisterGridFunctions()
   }
 
   // Register time derivatives
-  TimeDomainProblemBuilder::RegisterGridFunctions();
+  TimeDomainEquationSystemProblemBuilder::RegisterGridFunctions();
 };
 
 void
@@ -146,8 +141,7 @@ DualFormulation::RegisterCoefficients()
 }
 
 WeakCurlEquationSystem::WeakCurlEquationSystem(const hephaestus::InputParameters & params)
-  : TimeDependentEquationSystem(params),
-    _h_curl_var_name(params.GetParam<std::string>("HCurlVarName")),
+  : _h_curl_var_name(params.GetParam<std::string>("HCurlVarName")),
     _h_div_var_name(params.GetParam<std::string>("HDivVarName")),
     _alpha_coef_name(params.GetParam<std::string>("AlphaCoefName")),
     _beta_coef_name(params.GetParam<std::string>("BetaCoefName")),
@@ -197,7 +191,7 @@ WeakCurlEquationSystem::AddKernels()
 void
 DualOperator::Init(mfem::Vector & X)
 {
-  TimeDomainProblemOperator::Init(X);
+  TimeDomainEquationSystemProblemOperator::Init(X);
   auto * eqs = dynamic_cast<hephaestus::WeakCurlEquationSystem *>(GetEquationSystem());
 
   _h_curl_var_name = eqs->_h_curl_var_name;
@@ -217,7 +211,7 @@ DualOperator::Init(mfem::Vector & X)
 void
 DualOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt)
 {
-  TimeDomainProblemOperator::ImplicitSolve(dt, X, dX_dt);
+  TimeDomainEquationSystemProblemOperator::ImplicitSolve(dt, X, dX_dt);
   // Subtract off contribution from source
   _problem._sources.SubtractSources(_u);
   // dv/dt_{n+1} = -∇×u
@@ -228,7 +222,7 @@ DualOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vecto
 void
 DualOperator::SetGridFunctions()
 {
-  TimeDomainProblemOperator::SetGridFunctions();
+  TimeDomainEquationSystemProblemOperator::SetGridFunctions();
   // Blocks for solution vector are smaller than the operator size
   // for DualOperator, as curl is stored separately.
   // Block operator only has the HCurl TrueVSize;

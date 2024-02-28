@@ -3,8 +3,6 @@
 namespace hephaestus
 {
 
-EquationSystem::EquationSystem(const hephaestus::InputParameters & params) {}
-
 EquationSystem::~EquationSystem() { _h_blocks.DeleteAll(); }
 
 bool
@@ -397,10 +395,7 @@ EquationSystem::BuildEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sour
   BuildMixedBilinearForms();
 }
 
-TimeDependentEquationSystem::TimeDependentEquationSystem(const hephaestus::InputParameters & params)
-  : EquationSystem(params), _dt_coef(1.0)
-{
-}
+TimeDependentEquationSystem::TimeDependentEquationSystem() : _dt_coef(1.0) {}
 
 void
 TimeDependentEquationSystem::AddTrialVariableNameIfMissing(const std::string & var_name)

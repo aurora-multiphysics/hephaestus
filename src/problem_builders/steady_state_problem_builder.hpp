@@ -4,6 +4,7 @@
 namespace hephaestus
 {
 
+/// Class for steady-state problems with no equation system.
 class SteadyStateProblem : public hephaestus::Problem
 {
 public:
@@ -11,16 +12,6 @@ public:
 
   SteadyStateProblem() = default;
   ~SteadyStateProblem() override = default;
-
-  [[nodiscard]] bool HasEquationSystem() const override
-  {
-    return GetOperator()->HasEquationSystem();
-  }
-
-  [[nodiscard]] hephaestus::EquationSystem * GetEquationSystem() const override
-  {
-    return GetOperator()->GetEquationSystem();
-  }
 
   [[nodiscard]] hephaestus::ProblemOperator * GetOperator() const override
   {
@@ -38,11 +29,10 @@ public:
     _ss_operator = std::move(new_problem_operator);
   }
 
-protected:
+private:
   std::unique_ptr<hephaestus::ProblemOperator> _ss_operator{nullptr};
 };
 
-// Builder class of a frequency-domain problem.
 class SteadyStateProblemBuilder : public hephaestus::ProblemBuilder
 {
 public:
@@ -62,10 +52,6 @@ public:
   void RegisterAuxSolvers() override {}
 
   void RegisterCoefficients() override {}
-
-  void InitializeKernels() override;
-
-  void ConstructEquationSystem() override;
 
   void SetOperatorGridFunctions() override;
 

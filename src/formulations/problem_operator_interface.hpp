@@ -10,10 +10,6 @@ public:
   ProblemOperatorInterface(hephaestus::Problem & problem) : _problem(problem) {}
   virtual ~ProblemOperatorInterface() = default;
 
-  [[nodiscard]] virtual bool HasEquationSystem() const = 0;
-
-  [[nodiscard]] virtual mfem::Operator * GetEquationSystem() const = 0;
-
   virtual void SetGridFunctions() = 0;
   virtual void Init(mfem::Vector & X) = 0;
 
@@ -29,5 +25,15 @@ protected:
   // vector during solve.
   std::vector<std::string> _trial_var_names;
   std::vector<mfem::ParGridFunction *> _trial_variables;
+};
+
+/// Interface inherited by ProblemOperators with an equation system.
+class EquationSystemProblemOperatorInterface
+{
+public:
+  EquationSystemProblemOperatorInterface() = default;
+  virtual ~EquationSystemProblemOperatorInterface() = default;
+
+  [[nodiscard]] virtual mfem::Operator * GetEquationSystem() const = 0;
 };
 }

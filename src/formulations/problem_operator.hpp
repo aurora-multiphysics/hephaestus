@@ -6,24 +6,33 @@
 
 namespace hephaestus
 {
+/// Steady-state problem operator with no equation system.
 class ProblemOperator : public mfem::Operator, public ProblemOperatorInterface
 {
 public:
   ProblemOperator(hephaestus::Problem & problem) : ProblemOperatorInterface(problem) {}
+  ~ProblemOperator() override = default;
 
   void SetGridFunctions() override;
   void Init(mfem::Vector & X) override;
 
   virtual void Solve(mfem::Vector & X) {}
   void Mult(const mfem::Vector & x, mfem::Vector & y) const override {}
+};
 
-  [[nodiscard]] bool HasEquationSystem() const override { return (_equation_system != nullptr); }
-
-  void SetEquationSystem(std::unique_ptr<EquationSystem> new_equation_system)
+/// Steady-state problem operator with an equation system.
+class EquationSystemProblemOperator : public ProblemOperator,
+                                      public EquationSystemProblemOperatorInterface
+{
+public:
+  EquationSystemProblemOperator(hephaestus::Problem &) = delete;
+  EquationSystemProblemOperator(hephaestus::Problem & problem,
+                                std::unique_ptr<EquationSystem> equation_system)
+    : ProblemOperator(problem), _equation_system{std::move(equation_system)}
   {
-    _equation_system.reset();
-    _equation_system = std::move(new_equation_system);
   }
+
+  ~EquationSystemProblemOperator() override = default;
 
   [[nodiscard]] EquationSystem * GetEquationSystem() const override
   {
@@ -35,7 +44,7 @@ public:
     return _equation_system.get();
   }
 
-protected:
+private:
   std::unique_ptr<EquationSystem> _equation_system{nullptr};
 };
 

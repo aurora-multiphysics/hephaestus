@@ -173,9 +173,9 @@ TEST_CASE_METHOD(TestAFormSource, "TestAForm", "[CheckRun]")
     problem_builder->SetOutputs(outputs);
     problem_builder->SetSolverOptions(solver_options);
 
-    hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
-    sequencer.ConstructEquationSystemProblem();
-    std::unique_ptr<hephaestus::TimeDomainProblem> problem = problem_builder->ReturnProblem();
+    problem_builder->FinalizeProblem();
+
+    auto problem = problem_builder->ReturnProblem();
 
     hephaestus::InputParameters exec_params;
     exec_params.SetParam("TimeStep", float(0.05));
