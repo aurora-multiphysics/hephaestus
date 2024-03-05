@@ -30,10 +30,11 @@ public:
 
   [[nodiscard]] inline int Priority() const { return _priority; }
 
-  static bool PriorityComparator(const std::shared_ptr<AuxSolver> & first,
-                                 const std::shared_ptr<AuxSolver> & second)
+  static bool PriorityComparator(
+      const std::pair<std::shared_ptr<hephaestus::AuxSolver>, std::string> & first_comp,
+      const std::pair<std::shared_ptr<hephaestus::AuxSolver>, std::string> & second_comp)
   {
-    return (first->Priority() < second->Priority());
+    return (first_comp.first->Priority() < second_comp.first->Priority());
   }
 
 private:
