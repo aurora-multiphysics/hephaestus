@@ -3,6 +3,14 @@
 namespace hephaestus
 {
 
+template <typename T>
+void
+IfDelete(T * ptr)
+{
+  if (ptr != nullptr)
+    delete ptr;
+}
+
 void
 InheritBdrAttributes(const mfem::ParMesh * parent_mesh, mfem::ParSubMesh * child_mesh)
 {

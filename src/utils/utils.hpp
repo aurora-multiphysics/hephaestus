@@ -10,13 +10,9 @@ namespace hephaestus
 
 // Useful functions available to all classes
 
+// Deletes a pointer if it's not null
 template <typename T>
-void
-ifDelete(T * ptr)
-{
-  if (ptr != nullptr)
-    delete ptr;
-}
+void IfDelete(T * ptr);
 
 // This is a hotfix for the MFEM issue where internal boundary attributes are not passed down from
 // parent to child submesh. Once this issue is resolved on the MFEM side, this function will be
