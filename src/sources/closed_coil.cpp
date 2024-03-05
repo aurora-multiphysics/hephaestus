@@ -430,7 +430,7 @@ ClosedCoilSolver::SolveCoil()
   mfem::ParLinearForm b_coil(_h1_fe_space_coil.get());
   b_coil = 0.0;
 
-  attrToMarker(_transition_domain, _transition_markers, _mesh_coil->attributes.Max());
+  hephaestus::AttrToMarker(_transition_domain, _transition_markers, _mesh_coil->attributes.Max());
   a_t.AddDomainIntegrator(new mfem::DiffusionIntegrator(*_sigma), _transition_markers);
   a_t.Assemble();
   a_t.Finalize();
@@ -488,7 +488,7 @@ ClosedCoilSolver::SolveCoil()
   _mesh_coil->Transfer(*_electric_field_aux_coil, *_source_electric_field);
 
   mfem::ParBilinearForm m1(_h_curl_fe_space_parent);
-  hephaestus::attrToMarker(_coil_domains, _coil_markers, _mesh_parent->attributes.Max());
+  hephaestus::AttrToMarker(_coil_domains, _coil_markers, _mesh_parent->attributes.Max());
 
   m1.AddDomainIntegrator(new mfem::VectorFEMassIntegrator(_sigma.get()), _coil_markers);
   m1.Assemble();

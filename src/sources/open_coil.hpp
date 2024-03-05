@@ -25,8 +25,6 @@ void cleanDivergence(const hephaestus::GridFunctions & gfs,
                      const std::string scalar_gf_name,
                      hephaestus::InputParameters solve_pars);
 
-void attrToMarker(const mfem::Array<int> attr_list, mfem::Array<int> & marker_list, int max_attr);
-
 class OpenCoilSolver : public hephaestus::Source
 {
 

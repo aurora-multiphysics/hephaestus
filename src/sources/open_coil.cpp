@@ -302,7 +302,7 @@ OpenCoilSolver::BuildM1()
   if (_m1 == nullptr)
   {
     _m1 = std::make_unique<mfem::ParBilinearForm>(_source_electric_field->ParFESpace());
-    hephaestus::attrToMarker(_coil_domains, _coil_markers, _mesh_parent->attributes.Max());
+    hephaestus::AttrToMarker(_coil_domains, _coil_markers, _mesh_parent->attributes.Max());
     _m1->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(_sigma.get()), _coil_markers);
     _m1->Assemble();
     _m1->Finalize();

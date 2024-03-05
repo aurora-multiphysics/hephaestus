@@ -4,7 +4,7 @@ namespace hephaestus
 {
 
 void
-inheritBdrAttributes(const mfem::ParMesh * parent_mesh, mfem::ParSubMesh * child_mesh)
+InheritBdrAttributes(const mfem::ParMesh * parent_mesh, mfem::ParSubMesh * child_mesh)
 {
 
   int face, ori, att;
@@ -29,7 +29,7 @@ inheritBdrAttributes(const mfem::ParMesh * parent_mesh, mfem::ParSubMesh * child
 }
 
 void
-attrToMarker(const mfem::Array<int> attr_list, mfem::Array<int> & marker_list, int max_attr)
+AttrToMarker(const mfem::Array<int> attr_list, mfem::Array<int> & marker_list, int max_attr)
 {
 
   marker_list.SetSize(max_attr);
@@ -40,7 +40,7 @@ attrToMarker(const mfem::Array<int> attr_list, mfem::Array<int> & marker_list, i
 }
 
 void
-cleanDivergence(std::shared_ptr<mfem::ParGridFunction> Vec_GF,
+CleanDivergence(std::shared_ptr<mfem::ParGridFunction> Vec_GF,
                 hephaestus::InputParameters solve_pars)
 {
 
@@ -57,7 +57,7 @@ cleanDivergence(std::shared_ptr<mfem::ParGridFunction> Vec_GF,
 }
 
 void
-cleanDivergence(hephaestus::GridFunctions & gfs,
+CleanDivergence(hephaestus::GridFunctions & gfs,
                 hephaestus::BCMap & bcs,
                 const std::string vec_gf_name,
                 const std::string scalar_gf_name,
