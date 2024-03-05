@@ -192,7 +192,7 @@ AVEquationSystem::AddKernels()
       _v_name,
       std::make_shared<hephaestus::VectorFEWeakDivergenceKernel>(vector_fe_weak_divergence_params));
 
-  logger.info("AVOperator AddKernels: {} seconds", sw);
+  logger.info("{} AddKernels: {} seconds", typeid(this).name(), sw);
 }
 
 } // namespace hephaestus
