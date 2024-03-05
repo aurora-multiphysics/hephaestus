@@ -66,6 +66,8 @@ main(int argc, char * argv[])
   args.Parse();
   MPI_Init(&argc, &argv);
 
+  logger.set_level(spdlog::level::info);
+
   // Create Formulation
   auto problem_builder = std::make_unique<hephaestus::MagnetostaticFormulation>(
       "magnetic_reluctivity", "magnetic_permeability", "magnetic_vector_potential");
@@ -100,7 +102,6 @@ main(int argc, char * argv[])
   solver_options.SetParam("Tolerance", float(1.0e-13));
   solver_options.SetParam("AbsTolerance", float(1.0e-16));
   solver_options.SetParam("MaxIter", (unsigned int)500);
-  solver_options.SetParam("PrintLevel", 0);
   problem_builder->SetSolverOptions(solver_options);
 
   hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());

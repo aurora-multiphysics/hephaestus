@@ -206,7 +206,7 @@ void
 ProblemBuilder::ConstructJacobianPreconditioner()
 {
   auto precond = std::make_shared<mfem::HypreBoomerAMG>();
-  precond->SetPrintLevel(-1);
+  precond->SetPrintLevel(logger.level());
 
   GetProblem()->_jacobian_preconditioner = precond;
 }

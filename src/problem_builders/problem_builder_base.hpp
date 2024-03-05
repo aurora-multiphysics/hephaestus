@@ -133,11 +133,12 @@ protected:
   /// Called in "ConstructJacobianSolver". This will create a solver of the chosen type and use the user's input
   /// parameters if they have been provided.
   void ConstructJacobianSolverWithOptions(SolverType type,
-                                          SolverParams default_params = {._tolerance = 1e-16,
-                                                                         ._abs_tolerance = 1e-16,
-                                                                         ._max_iteration = 1000,
-                                                                         ._print_level = (-1),
-                                                                         ._k_dim = 10});
+                                          SolverParams default_params = {
+                                              ._tolerance = 1e-16,
+                                              ._abs_tolerance = 1e-16,
+                                              ._max_iteration = 1000,
+                                              ._print_level = logger.level(),
+                                              ._k_dim = 10});
 };
 
 class ProblemBuildSequencer

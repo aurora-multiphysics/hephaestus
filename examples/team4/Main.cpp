@@ -71,7 +71,6 @@ defineSources()
   hephaestus::InputParameters source_solver_options;
   source_solver_options.SetParam("Tolerance", float(1.0e-20));
   source_solver_options.SetParam("MaxIter", (unsigned int)2000);
-  source_solver_options.SetParam("PrintLevel", 0);
 
   hephaestus::Sources sources;
   sources.Register("source",
@@ -158,7 +157,6 @@ main(int argc, char * argv[])
   solver_options.SetParam("AbsTolerance", float(1.0e-20));
   solver_options.SetParam("Tolerance", float(1.0e-20));
   solver_options.SetParam("MaxIter", (unsigned int)500);
-  solver_options.SetParam("PrintLevel", 0);
   problem_builder->SetSolverOptions(solver_options);
 
   hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());

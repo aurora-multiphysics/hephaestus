@@ -104,7 +104,6 @@ protected:
     hephaestus::InputParameters solver_options;
     solver_options.SetParam("Tolerance", float(1.0e-16));
     solver_options.SetParam("MaxIter", (unsigned int)1000);
-    solver_options.SetParam("PrintLevel", 0);
 
     hephaestus::InputParameters params;
     params.SetParam("UseGLVis", true);
