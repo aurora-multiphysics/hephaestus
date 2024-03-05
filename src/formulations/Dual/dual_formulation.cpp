@@ -195,7 +195,7 @@ WeakCurlEquationSystem::AddKernels()
   AddKernel(_h_curl_var_name,
             std::make_shared<hephaestus::VectorFEMassKernel>(vector_fe_mass_params));
 
-  logger.info("WeakCurlEquationSystem AddKernels: {} seconds", sw);
+  logger.info("{} AddKernels: {} seconds", typeid(this).name(), sw);
 }
 
 void
@@ -230,7 +230,7 @@ DualOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vecto
   _curl->Mult(*_u, *_dv);
   *_dv *= -1.0;
 
-  logger.info("DualOperator ImplicitSolve: {} seconds", sw);
+  logger.info("{} ImplicitSolve: {} seconds", typeid(this).name(), sw);
 }
 
 void

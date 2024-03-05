@@ -153,7 +153,7 @@ CurlCurlEquationSystem::AddKernels()
   AddKernel(dh_curl_var_dt,
             std::make_shared<hephaestus::VectorFEMassKernel>(vector_fe_mass_params));
 
-  logger.info("CurlCurlEquationSystem AddKernels: {} seconds", sw);
+  logger.info("{} AddKernels: {} seconds", typeid(this).name(), sw);
 }
 
 void

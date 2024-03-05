@@ -38,9 +38,10 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
 
   if (!fespaces.Has(_hcurl_fespace_name))
   {
-    logger.info("{} not found in fespaces when creating HelmholtzProjector. Obtaining from vector "
+    logger.info("{} not found in fespaces when creating {}. Obtaining from vector "
                 "GridFunction.",
-                _hcurl_fespace_name);
+                _hcurl_fespace_name,
+                typeid(this).name());
     _h_curl_fe_space = _div_free_src_gf->ParFESpace();
   }
   else

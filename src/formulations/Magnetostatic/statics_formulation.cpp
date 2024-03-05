@@ -157,7 +157,7 @@ StaticsOperator::Solve(mfem::Vector & X)
   _problem._jacobian_solver->Mult(rhs_tdofs, sol_tdofs);
   blf.RecoverFEMSolution(sol_tdofs, lf, gf);
 
-  logger.info("StaticsOperator Solve: {} seconds", sw);
+  logger.info("{} Solve: {} seconds", typeid(this).name(), sw);
 }
 
 } // namespace hephaestus
