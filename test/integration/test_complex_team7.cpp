@@ -132,7 +132,6 @@ protected:
     hephaestus::InputParameters current_solver_options;
     current_solver_options.SetParam("Tolerance", float(1.0e-12));
     current_solver_options.SetParam("MaxIter", (unsigned int)200);
-    current_solver_options.SetParam("PrintLevel", 1);
 
     sources.Register(
         "source",
@@ -142,7 +141,6 @@ protected:
     hephaestus::InputParameters solver_options;
     solver_options.SetParam("Tolerance", float(1.0e-16));
     solver_options.SetParam("MaxIter", (unsigned int)1000);
-    solver_options.SetParam("PrintLevel", 0);
 
     hephaestus::InputParameters params;
     params.SetParam("UseGLVis", true);
@@ -155,7 +153,7 @@ protected:
     params.SetParam("Outputs", outputs);
     params.SetParam("Sources", sources);
     params.SetParam("SolverOptions", solver_options);
-    std::cout << "Created params ";
+    logger.info("Created params ");
     return params;
   }
 };
@@ -209,7 +207,7 @@ TEST_CASE_METHOD(TestComplexTeam7, "TestComplexTeam7", "[CheckRun]")
 
   auto executioner = std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
 
-  std::cout << "Created exec ";
+  logger.info("Created exec ");
 
   executioner->Execute();
 }

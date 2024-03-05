@@ -117,7 +117,6 @@ defineSources()
   hephaestus::InputParameters current_solver_options;
   current_solver_options.SetParam("Tolerance", float(1.0e-12));
   current_solver_options.SetParam("MaxIter", (unsigned int)200);
-  current_solver_options.SetParam("PrintLevel", 0);
 
   hephaestus::Sources sources;
   sources.Register(
@@ -192,7 +191,6 @@ main(int argc, char * argv[])
   hephaestus::InputParameters solver_options;
   solver_options.SetParam("Tolerance", float(1.0e-16));
   solver_options.SetParam("MaxIter", (unsigned int)1000);
-  solver_options.SetParam("PrintLevel", 0);
   problem_builder->SetSolverOptions(solver_options);
 
   hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
@@ -207,7 +205,7 @@ main(int argc, char * argv[])
 
   auto executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
 
-  mfem::out << "Created executioner";
+  logger.info("Created executioner");
   executioner->Execute();
 
   MPI_Finalize();

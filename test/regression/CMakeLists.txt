@@ -14,6 +14,7 @@ target_include_directories(regression_tests PUBLIC ${MFEM_COMMON_INCLUDES} ${MFE
 target_include_directories(regression_tests PUBLIC ${${PROJECT_NAME}_INCLUDE_DIRS})
 set_property(TARGET regression_tests PROPERTY CXX_STANDARD 17)
 
+target_link_libraries(regression_tests spdlog::spdlog)
 target_link_libraries(regression_tests Catch2::Catch2)
 target_link_libraries(regression_tests ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lib${PROJECT_NAME}.so)
 target_link_libraries(regression_tests ${MFEM_LIBRARIES} ${MFEM_COMMON_LIBRARY} -lrt)

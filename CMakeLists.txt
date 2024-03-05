@@ -1,4 +1,6 @@
 cmake_minimum_required(VERSION 3.8)
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+include(FetchContent)
 
 # no space in these names! used as shared object name and python module name
 set(PROJECT_NAME hephaestus)
@@ -47,6 +49,20 @@ enable_testing()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 ## put all libraries in lib
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
+
+
+############################################################
+# Fetch spdlog for logging purposes
+############################################################
+set(SPDLOG_BUILD_PIC ON)
+
+FetchContent_Declare(
+        spdlog
+        GIT_REPOSITORY https://github.com/gabime/spdlog.git
+        GIT_TAG        v1.x
+)
+
+FetchContent_MakeAvailable(spdlog)
 
 ############################################################
 # Set the build type environment variable

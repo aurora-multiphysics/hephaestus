@@ -1,4 +1,5 @@
 #include "mfem.hpp"
+#include "logging.hpp"
 #include <catch2/catch_session.hpp>
 #include <iostream>
 

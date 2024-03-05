@@ -18,6 +18,7 @@ target_include_directories(complex_team7 PUBLIC ${PROJECT_SOURCE_DIR}/data/)
 
 set_property(TARGET complex_team7 PROPERTY CXX_STANDARD 17)
 
+target_link_libraries(complex_team7 spdlog::spdlog)
 target_link_libraries(complex_team7 ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY} pthread)
 target_link_libraries(complex_team7 ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lib${PROJECT_NAME}.so)
 target_link_libraries(complex_team7 ${MFEM_LIBRARIES} ${MFEM_COMMON_LIBRARY} -lrt)

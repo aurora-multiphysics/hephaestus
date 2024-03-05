@@ -91,7 +91,6 @@ protected:
     hephaestus::InputParameters solver_options;
     solver_options.SetParam("Tolerance", float(1.0e-16));
     solver_options.SetParam("MaxIter", (unsigned int)1000);
-    solver_options.SetParam("PrintLevel", 0);
 
     hephaestus::GridFunctions gridfunctions;
     hephaestus::AuxSolvers preprocessors;
@@ -101,7 +100,6 @@ protected:
     hephaestus::InputParameters current_solver_options;
     current_solver_options.SetParam("Tolerance", float(1.0e-12));
     current_solver_options.SetParam("MaxIter", (unsigned int)200);
-    current_solver_options.SetParam("PrintLevel", 0);
     sources.Register("source",
                      std::make_shared<hephaestus::ScalarPotentialSource>("source",
                                                                          "magnetic_potential",

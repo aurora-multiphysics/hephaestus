@@ -67,8 +67,9 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
   // Optional FE Spaces and parameters
   if (!fespaces.Has(_h1_fespace_name))
   {
-    std::cout << _h1_fespace_name + " not found in fespaces when "
-                                    "creating ClosedCoilSolver. Creating from mesh.\n";
+    logger.info("{} not found in fespaces when creating {}. Creating from mesh.",
+                _h1_fespace_name,
+                typeid(this).name());
 
     // Need to free this memory after use. FEC not freed by ParFiniteElementSpace destructor!
     _h1_fe_space_parent_fec =
@@ -84,9 +85,9 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
 
   if (!gridfunctions.Has(_source_electric_field_name))
   {
-    std::cout << _source_electric_field_name +
-                     " not found in gridfunctions when "
-                     "creating OpenCoilSolver. Creating new GridFunction.\n";
+    logger.info("{} not found in gridfunctions when creating {}. Creating new GridFunction.",
+                _source_electric_field_name,
+                typeid(this).name());
     _source_electric_field = std::make_shared<mfem::ParGridFunction>(_h_curl_fe_space_parent);
   }
   else
@@ -119,10 +120,9 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
 
   if (!coefficients._scalars.Has(_i_coef_name))
   {
-    std::cout << _i_coef_name + " not found in coefficients when "
-                                "creating ClosedCoilSolver. "
-                                "Assuming unit current. ";
-
+    logger.info("{} not found in coefficients when creating {}. Assuming unit current.",
+                _i_coef_name,
+                typeid(this).name());
     _itotal = std::make_shared<mfem::ConstantCoefficient>(1.0);
   }
   else
@@ -132,12 +132,11 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
 
   if (!coefficients._scalars.Has(_cond_coef_name))
   {
-    std::cout << _cond_coef_name + " not found in coefficients when "
-                                   "creating ClosedCoilSolver. "
-                                   "Assuming unit conductivity.\n";
-    std::cout << "Warning: GradPhi field undefined. The GridFunction "
-                 "associated with it will be set to zero.\n";
-
+    logger.info("{} not found in coefficients when creating {}. Assuming unit conductivity.",
+                _cond_coef_name,
+                typeid(this).name());
+    logger.warn(
+        "GradPhi field undefined. The GridFunction associated with it will be set to zero.");
     _sigma = std::make_shared<mfem::ConstantCoefficient>(1.0);
 
     _electric_field_transfer = false;

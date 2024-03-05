@@ -14,6 +14,7 @@ target_include_directories(integration_tests PUBLIC ${MFEM_COMMON_INCLUDES} ${MF
 target_include_directories(integration_tests PUBLIC ${${PROJECT_NAME}_INCLUDE_DIRS})
 set_property(TARGET integration_tests PROPERTY CXX_STANDARD 17)
 
+target_link_libraries(integration_tests spdlog::spdlog)
 target_link_libraries(integration_tests Catch2::Catch2)
 target_link_libraries(integration_tests ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lib${PROJECT_NAME}.so)
 target_link_libraries(integration_tests ${MFEM_LIBRARIES} ${MFEM_COMMON_LIBRARY} -lrt)

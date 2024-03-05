@@ -27,7 +27,7 @@ public:
                        hephaestus::InputParameters({{"Tolerance", float(1.0e-18)},
                                                     {"AbsTolerance", float(1.0e-18)},
                                                     {"MaxIter", (unsigned int)1000},
-                                                    {"PrintLevel", 1}}));
+                                                    {"PrintLevel", logger.level()}}));
 
   // Override virtual Source destructor to avoid leaks.
   ~ClosedCoilSolver() override = default;

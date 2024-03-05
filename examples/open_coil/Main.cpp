@@ -163,7 +163,6 @@ main(int argc, char * argv[])
   solver_options.SetParam("Tolerance", float(1.0e-10));
   solver_options.SetParam("AbsTolerance", float(1.0e-10));
   solver_options.SetParam("MaxIter", (unsigned int)1000);
-  solver_options.SetParam("PrintLevel", 2);
   problem_builder->SetSolverOptions(solver_options);
 
   hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
@@ -176,7 +175,7 @@ main(int argc, char * argv[])
 
   auto executioner = std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
 
-  mfem::out << "Created executioner";
+  logger.info("Created executioner");
   executioner->Execute();
 
   MPI_Finalize();

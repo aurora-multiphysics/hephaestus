@@ -149,6 +149,8 @@ AVEquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
 void
 AVEquationSystem::AddKernels()
 {
+  spdlog::stopwatch sw;
+
   AddTrialVariableNameIfMissing(_a_name);
   std::string da_dt_name = GetTimeDerivativeName(_a_name);
   AddTrialVariableNameIfMissing(_v_name);
@@ -189,5 +191,8 @@ AVEquationSystem::AddKernels()
       da_dt_name,
       _v_name,
       std::make_shared<hephaestus::VectorFEWeakDivergenceKernel>(vector_fe_weak_divergence_params));
+
+  logger.info("{} AddKernels: {} seconds", typeid(this).name(), sw);
 }
+
 } // namespace hephaestus

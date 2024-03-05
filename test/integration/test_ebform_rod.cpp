@@ -94,7 +94,6 @@ protected:
     hephaestus::InputParameters current_solver_options;
     current_solver_options.SetParam("Tolerance", float(1.0e-9));
     current_solver_options.SetParam("MaxIter", (unsigned int)1000);
-    current_solver_options.SetParam("PrintLevel", -1);
     sources.Register("source",
                      std::make_shared<hephaestus::ScalarPotentialSource>("source",
                                                                          "electric_potential",
@@ -107,7 +106,6 @@ protected:
     hephaestus::InputParameters solver_options;
     solver_options.SetParam("Tolerance", float(1.0e-9));
     solver_options.SetParam("MaxIter", (unsigned int)1000);
-    solver_options.SetParam("PrintLevel", 0);
 
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));

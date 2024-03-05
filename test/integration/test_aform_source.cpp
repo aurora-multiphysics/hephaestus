@@ -100,7 +100,6 @@ protected:
     hephaestus::InputParameters current_solver_options;
     current_solver_options.SetParam("Tolerance", float(1.0e-12));
     current_solver_options.SetParam("MaxIter", (unsigned int)200);
-    current_solver_options.SetParam("PrintLevel", 0);
 
     sources.Register("source",
                      std::make_shared<hephaestus::DivFreeSource>("source",
@@ -114,7 +113,6 @@ protected:
     hephaestus::InputParameters solver_options;
     solver_options.SetParam("Tolerance", float(1.0e-16));
     solver_options.SetParam("MaxIter", (unsigned int)1000);
-    solver_options.SetParam("PrintLevel", 0);
 
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
@@ -201,7 +199,7 @@ TEST_CASE_METHOD(TestAFormSource, "TestAForm", "[CheckRun]")
                                 l2errpostprocessor->_l2_errs[i],
                                 l2errpostprocessor->_l2_errs[i - 1],
                                 3);
-    std::cout << r << std::endl;
+    logger.info("{}", r);
     REQUIRE(r > 2 - 0.15);
     REQUIRE(r < 2 + 1.0);
   }

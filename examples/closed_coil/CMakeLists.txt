@@ -18,6 +18,7 @@ target_include_directories(closed_coil PUBLIC ${PROJECT_SOURCE_DIR}/data/)
 
 set_property(TARGET closed_coil PROPERTY CXX_STANDARD 17)
 
+target_link_libraries(closed_coil spdlog::spdlog)
 target_link_libraries(closed_coil ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY} pthread)
 target_link_libraries(closed_coil ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lib${PROJECT_NAME}.so)
 target_link_libraries(closed_coil ${MFEM_LIBRARIES} ${MFEM_COMMON_LIBRARY} -lrt)
