@@ -1,11 +1,10 @@
 #include "open_coil.hpp"
+#include "utils.hpp"
 
 #include <utility>
 
 namespace hephaestus
 {
-
-///// THESE FUNCTIONS WILL EVENTUALLY GO INTO A UTILS FILE ///////////
 
 double
 highV(const mfem::Vector & x, double t)
@@ -17,94 +16,6 @@ lowV(const mfem::Vector & x, double t)
 {
   return -0.5;
 }
-
-void
-SubdomainToArray(const std::vector<hephaestus::Subdomain> & sd, mfem::Array<int> & arr)
-{
-  arr.DeleteAll();
-  for (auto s : sd)
-    arr.Append(s._id);
-}
-
-void
-SubdomainToArray(const hephaestus::Subdomain & sd, mfem::Array<int> & arr)
-{
-  arr.DeleteAll();
-  arr.Append(sd._id);
-}
-
-void
-inheritBdrAttributes(const mfem::ParMesh * parent_mesh, mfem::ParSubMesh * child_mesh)
-{
-
-  int face, ori, att;
-  auto map = child_mesh->GetParentToSubMeshFaceIDMap();
-
-  for (int bdr = 0; bdr < parent_mesh->GetNBE(); ++bdr)
-  {
-
-    parent_mesh->GetBdrElementFace(bdr, &face, &ori);
-    if (map[face] != -1)
-    {
-      att = parent_mesh->GetBdrAttribute(bdr);
-      auto * new_elem = child_mesh->GetFace(map[face])->Duplicate(child_mesh);
-      new_elem->SetAttribute(att);
-      child_mesh->AddBdrElement(new_elem);
-    }
-  }
-
-  child_mesh->FinalizeTopology();
-  child_mesh->Finalize();
-  child_mesh->SetAttributes();
-}
-
-void
-attrToMarker(const mfem::Array<int> attr_list, mfem::Array<int> & marker_list, int max_attr)
-{
-
-  marker_list.SetSize(max_attr);
-  marker_list = 0;
-
-  for (auto a : attr_list)
-    marker_list[a - 1] = 1;
-}
-
-void
-cleanDivergence(std::shared_ptr<mfem::ParGridFunction> Vec_GF,
-                hephaestus::InputParameters solve_pars)
-{
-
-  hephaestus::InputParameters pars;
-  hephaestus::GridFunctions gfs;
-  hephaestus::FESpaces fes;
-  hephaestus::BCMap bcs;
-
-  gfs.Register("Vector_GF", std::move(Vec_GF));
-  pars.SetParam("VectorGridFunctionName", std::string("Vector_GF"));
-  pars.SetParam("SolverOptions", solve_pars);
-  hephaestus::HelmholtzProjector projector(pars);
-  projector.Project(gfs, fes, bcs);
-}
-
-void
-cleanDivergence(hephaestus::GridFunctions & gfs,
-                hephaestus::BCMap & bcs,
-                const std::string vec_gf_name,
-                const std::string scalar_gf_name,
-                hephaestus::InputParameters solve_pars)
-{
-
-  hephaestus::InputParameters pars;
-  hephaestus::FESpaces fes;
-
-  pars.SetParam("VectorGridFunctionName", vec_gf_name);
-  pars.SetParam("ScalarGridFunctionName", scalar_gf_name);
-  pars.SetParam("SolverOptions", solve_pars);
-  hephaestus::HelmholtzProjector projector(pars);
-  projector.Project(gfs, fes, bcs);
-}
-
-/////////////////////////////////////////////////////////////////////
 
 OpenCoilSolver::OpenCoilSolver(std::string source_efield_gf_name,
                                std::string phi_gf_name,
@@ -391,7 +302,7 @@ OpenCoilSolver::BuildM1()
   if (_m1 == nullptr)
   {
     _m1 = std::make_unique<mfem::ParBilinearForm>(_source_electric_field->ParFESpace());
-    hephaestus::attrToMarker(_coil_domains, _coil_markers, _mesh_parent->attributes.Max());
+    hephaestus::AttrToMarker(_coil_domains, _coil_markers, _mesh_parent->attributes.Max());
     _m1->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(_sigma.get()), _coil_markers);
     _m1->Assemble();
     _m1->Finalize();
