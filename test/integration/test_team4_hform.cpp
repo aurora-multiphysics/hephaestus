@@ -108,8 +108,8 @@ TEST_CASE_METHOD(TestTEAM4HForm, "TestTEAM4HForm", "[CheckRun]")
   problem_builder->AddFESpace("H1", "H1_3D_P1");
   problem_builder->AddFESpace("HCurl", "ND_3D_P1");
   problem_builder->AddFESpace("HDiv", "RT_3D_P0");
-  problem_builder->AddFESpace("Scalar_L2", "L2Int_3D_P0");
-  problem_builder->AddFESpace("Vector_L2", "L2Int_3D_P0", 3);
+  problem_builder->AddFESpace("Scalar_L2", "L2_3D_P0");
+  problem_builder->AddFESpace("Vector_L2", "L2_3D_P0", 3);
   problem_builder->AddGridFunction("magnetic_field", "HCurl");
 
   problem_builder->AddGridFunction("dmagnetic_potential_dt", "H1");
