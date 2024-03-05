@@ -55,7 +55,6 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 # Fetch spdlog for logging purposes
 ############################################################
 set(SPDLOG_BUILD_PIC ON)
-#set(SPDLOG_BUILD_SHARED ON)
 
 FetchContent_Declare(
         spdlog
