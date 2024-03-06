@@ -7,7 +7,7 @@ namespace hephaestus
 /*
 (βu, u')
 */
-class VectorFEMassKernel : public Kernel<mfem::ParBilinearForm>
+class VectorFEMassKernel : public ParBilinearFormKernel
 {
 public:
   VectorFEMassKernel(const hephaestus::InputParameters & params);

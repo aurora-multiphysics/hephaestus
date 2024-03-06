@@ -7,7 +7,7 @@ namespace hephaestus
 /*
 (α∇×u, ∇×u')
 */
-class CurlCurlKernel : public Kernel<mfem::ParBilinearForm>
+class CurlCurlKernel : public ParBilinearFormKernel
 {
 public:
   CurlCurlKernel(const hephaestus::InputParameters & params);

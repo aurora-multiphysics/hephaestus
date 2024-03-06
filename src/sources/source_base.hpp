@@ -9,7 +9,7 @@
 namespace hephaestus
 {
 
-class Source : public hephaestus::Kernel<mfem::ParLinearForm>
+class Source : public ParLinearFormKernel
 {
 public:
   Source() = default;

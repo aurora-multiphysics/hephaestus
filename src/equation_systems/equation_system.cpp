@@ -44,7 +44,7 @@ EquationSystem::AddKernel(const std::string & test_var_name,
   if (!_blf_kernels_map.Has(test_var_name))
   {
     // 1. Create kernels vector.
-    auto kernels = std::make_shared<std::vector<std::shared_ptr<ParBilinearFormKernel>>>();
+    auto kernels = std::make_shared<ParBilinearFormKernelStore>();
 
     // 2. Register with map to prevent leaks.
     _blf_kernels_map.Register(test_var_name, std::move(kernels));
@@ -61,7 +61,7 @@ EquationSystem::AddKernel(const std::string & test_var_name,
 
   if (!_lf_kernels_map.Has(test_var_name))
   {
-    auto kernels = std::make_shared<std::vector<std::shared_ptr<ParLinearFormKernel>>>();
+    auto kernels = std::make_shared<ParLinearFormKernelStore>();
 
     _lf_kernels_map.Register(test_var_name, std::move(kernels));
   }
@@ -77,7 +77,7 @@ EquationSystem::AddKernel(const std::string & test_var_name,
 
   if (!_nlf_kernels_map.Has(test_var_name))
   {
-    auto kernels = std::make_shared<std::vector<std::shared_ptr<ParNonlinearFormKernel>>>();
+    auto kernels = std::make_shared<ParNonlinearFormKernelStore>();
 
     _nlf_kernels_map.Register(test_var_name, std::move(kernels));
   }
@@ -95,8 +95,8 @@ EquationSystem::AddKernel(const std::string & trial_var_name,
   // Register new mblf kernels map if not present for this test variable
   if (!_mblf_kernels_map_map.Has(test_var_name))
   {
-    auto kernel_field_map = std::make_shared<
-        hephaestus::NamedFieldsMap<std::vector<std::shared_ptr<ParMixedBilinearFormKernel>>>>();
+    auto kernel_field_map =
+        std::make_shared<hephaestus::NamedFieldsMap<ParMixedBilinearFormKernelStore>>();
 
     _mblf_kernels_map_map.Register(test_var_name, std::move(kernel_field_map));
   }
