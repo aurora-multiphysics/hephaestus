@@ -150,7 +150,7 @@ TEST_CASE_METHOD(TestComplexIrisWaveguide, "TestComplexIrisWaveguide", "[CheckRu
   problem_builder->SetAuxSolvers(preprocessors);
 
   problem_builder->AddFESpace("HDiv", "RT_3D_P0");
-  problem_builder->AddFESpace("Scalar_L2", "L2Int_3D_P0");
+  problem_builder->AddFESpace("Scalar_L2", "L2_3D_P0");
 
   problem_builder->AddGridFunction("magnetic_flux_density_real", "HDiv");
   problem_builder->AddGridFunction("magnetic_flux_density_imag", "HDiv");

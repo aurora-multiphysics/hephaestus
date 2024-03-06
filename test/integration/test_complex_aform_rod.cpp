@@ -163,7 +163,7 @@ TEST_CASE_METHOD(TestComplexAFormRod, "TestComplexAFormRod", "[CheckRun]")
   problem_builder->SetPostprocessors(postprocessors);
 
   problem_builder->AddFESpace("HDiv", "RT_3D_P0");
-  problem_builder->AddFESpace("Scalar_L2", "L2Int_3D_P0");
+  problem_builder->AddFESpace("Scalar_L2", "L2_3D_P0");
 
   problem_builder->AddGridFunction("electric_field_real", "HCurl");
   problem_builder->AddGridFunction("electric_field_imag", "HCurl");

@@ -25,4 +25,4 @@ MpiSink<Mutex>::flush_()
 }
 
 // Global logger
-spdlog::logger logger("Hephaestus Logger", std::make_shared<spdlog::sinks::MpiSink_st>());
+spdlog::logger logger("Hephaestus", std::make_shared<spdlog::sinks::MpiSink_st>());
