@@ -60,6 +60,7 @@ Coefficients::AddGlobalCoefficientsFromSubdomains()
   // accumulate coefs
   mfem::Array<int> subdomain_ids;
   std::unordered_set<std::string> scalar_property_names;
+  std::unordered_set<std::string> vector_property_names;
 
   for (auto & subdomain : _subdomains)
   {
@@ -68,6 +69,11 @@ Coefficients::AddGlobalCoefficientsFromSubdomains()
     for (auto const & [name, coeff_] : subdomain._scalar_coefficients)
     {
       scalar_property_names.insert(name);
+    }
+
+    for (auto const & [name, coeff_] : subdomain._vector_coefficients)
+    {
+      vector_property_names.insert(name);
     }
   }
   // check if IDs span
@@ -84,6 +90,21 @@ Coefficients::AddGlobalCoefficientsFromSubdomains()
     {
       _scalars.Register(scalar_property_name,
                         std::make_shared<mfem::PWCoefficient>(subdomain_ids, subdomain_coefs));
+    }
+  }
+
+  for (auto & vector_property_name : vector_property_names)
+  {
+    mfem::Array<mfem::VectorCoefficient *> subdomain_coefs;
+    for (auto & subdomain : _subdomains)
+    {
+      subdomain_coefs.Append(subdomain._vector_coefficients.Get(vector_property_name));
+    }
+    if (!_vectors.Has(vector_property_name))
+    {
+      _vectors.Register(
+          vector_property_name,
+          std::make_shared<mfem::PWVectorCoefficient>(3, subdomain_ids, subdomain_coefs));
     }
   }
 }

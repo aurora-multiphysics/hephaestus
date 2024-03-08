@@ -20,6 +20,7 @@ public:
   std::string _name;
   int _id;
   hephaestus::NamedFieldsMap<mfem::Coefficient> _scalar_coefficients;
+  hephaestus::NamedFieldsMap<mfem::VectorCoefficient> _vector_coefficients;
 };
 
 // Coefficients - stores all scalar and vector coefficients
