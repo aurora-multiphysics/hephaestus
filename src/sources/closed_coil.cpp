@@ -269,9 +269,6 @@ ClosedCoilSolver::MakeWedge()
     }
   }
 
-  if (wedge_els.size() == 0)
-    mfem::mfem_error("ClosedCoilSolver wedge has size zero");
-
   AddWedgeToPWCoefs(wedge_els);
 
   // Now we set the second electrode boundary attribute. Start with a list of
@@ -364,7 +361,34 @@ ClosedCoilSolver::AddWedgeToPWCoefs(std::vector<int> & wedge_els)
   // First, define what in which of the old subdomains the wedge elements of the new subdomain lie
   std::vector<hephaestus::Subdomain> subdomains = _ccs_coefs._subdomains;
   hephaestus::Subdomain new_domain("wedge", _new_domain_attr);
-  int wedge_old_att = _mesh_parent->GetAttribute(wedge_els[0]);
+  int wedge_old_att = -1;
+
+  // This creates a binary representation of which MPI ranks contain at
+  // least one wedge element. The lowest rank which contains the wedge will be used as a reference
+  // for the old attribute
+  int ref_rank = 0;
+  int has_els = (bool)wedge_els.size() ? 1 << mfem::Mpi::WorldRank() : 0;
+  int has_els_sum;
+
+  MPI_Allreduce(&has_els, &has_els_sum, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+  if (has_els_sum == 0)
+    mfem::mfem_error("ClosedCoilSolver wedge has size zero!");
+
+  for (int i = 0; i < mfem::Mpi::WorldSize(); ++i)
+  {
+    if ((1 << i & has_els_sum) != 0)
+    {
+      ref_rank = i;
+      break;
+    }
+  }
+
+  if (mfem::Mpi::WorldRank() == ref_rank)
+    wedge_old_att = _mesh_parent->GetAttribute(wedge_els[0]);
+
+  MPI_Bcast(&wedge_old_att, 1, MPI_INT, ref_rank, MPI_COMM_WORLD);
+
+  // Now we check in which of the old subdomains the wedge lies
   int sd_wedge = -1;
 
   for (int i = 0; i < subdomains.size(); ++i)
