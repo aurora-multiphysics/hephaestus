@@ -9,6 +9,135 @@
 
 const char * DATA_DIR = "../../data/";
 
+class LineSampler
+{
+public:
+  LineSampler() = default;
+  LineSampler(const mfem::ParGridFunction & gridfunction,
+              mfem::Vector start_pos,
+              mfem::Vector end_pos,
+              unsigned int num_pts)
+    : _gf(gridfunction),
+      _pmesh(*gridfunction.ParFESpace()->GetParMesh()),
+      _dim(_pmesh.Dimension()),
+      _vec_dim(_dim),
+      _num_pts(num_pts),
+      _gf_ordering(gridfunction.ParFESpace()->GetOrdering()),
+      _point_ordering(_gf_ordering),
+      _vxyz(num_pts * _dim),
+      _interp_vals(num_pts * _vec_dim),
+      _finder(MPI_COMM_WORLD)
+  {
+    mfem::H1_FECollection fecm(1, _dim);
+    mfem::ParFiniteElementSpace pfespace(&_pmesh, &fecm, _dim);
+    _pmesh.SetNodalFESpace(&pfespace);
+
+    // Use a dummy SegmentElement to create sample points along line
+    mfem::L2_SegmentElement el(num_pts - 1, mfem::BasisType::ClosedUniform);
+    const mfem::IntegrationRule & ir = el.GetNodes();
+    for (int i = 0; i < ir.GetNPoints(); i++)
+    {
+      const mfem::IntegrationPoint & ip = ir.IntPoint(i);
+      if (_point_ordering == mfem::Ordering::byNODES)
+      {
+        _vxyz(i) = start_pos(0) + ip.x * (end_pos(0) - start_pos(0));
+        _vxyz(num_pts + i) = start_pos(1) + ip.x * (end_pos(1) - start_pos(1));
+        _vxyz(2 * num_pts + i) = start_pos(2) + ip.x * (end_pos(2) - start_pos(2));
+      }
+      else
+      {
+        _vxyz(i * _dim + 0) = start_pos(0) + ip.x * (end_pos(0) - start_pos(0));
+        _vxyz(i * _dim + 1) = start_pos(1) + ip.x * (end_pos(1) - start_pos(1));
+        _vxyz(i * _dim + 2) = start_pos(2) + ip.x * (end_pos(2) - start_pos(2));
+      }
+    }
+    // Find and Interpolate FE function values on the desired points.
+    _finder.Setup(_pmesh);
+    _finder.Interpolate(_vxyz, _gf, _interp_vals, _point_ordering);
+  }
+
+  void WriteToFile(std::ofstream & filestream)
+  {
+    filestream << "x (m), y (m), z (m), B_x (T), B_y (T), B_z (T)\n";
+    // Print the results for task 0 since either 1) all tasks have the
+    // same set of points or 2) only task 0 has any points.
+    int myid;
+    MPI_Comm_rank(_pmesh.GetComm(), &myid);
+    if (myid == 0)
+    {
+      int face_pts = 0, not_found = 0, found_loc = 0, found_away = 0;
+      double error = 0.0, max_err = 0.0, max_dist = 0.0;
+      std::string sep = ", ";
+      mfem::Vector pos(_dim);
+      for (int i = 0; i < _num_pts; i++)
+      {
+        if (_gf_ordering == mfem::Ordering::byNODES)
+        {
+          filestream << _vxyz(i) << sep << _vxyz(_num_pts + i) << sep << _vxyz(2 * _num_pts + i)
+                     << sep;
+        }
+        else
+        {
+          filestream << _vxyz(i * _dim + 0) << sep << _vxyz(i * _dim + 1) << sep
+                     << _vxyz(i * _dim + 2) << sep;
+        }
+        for (int j = 0; j < _vec_dim; j++)
+        {
+
+          if (j == 0)
+          {
+            (_task_id_out[i] == (unsigned)(myid)) ? found_loc++ : found_away++;
+          }
+
+          if (_code_out[i] < 2)
+          {
+            for (int d = 0; d < _dim; d++)
+            {
+              pos(d) = _point_ordering == mfem::Ordering::byNODES ? _vxyz(d * _num_pts + i)
+                                                                  : _vxyz(i * _dim + d);
+            }
+            filestream << (_gf_ordering == mfem::Ordering::byNODES ? _interp_vals[i + j * _num_pts]
+                                                                   : _interp_vals[i * _vec_dim + j])
+                       << sep;
+            max_dist = std::max(max_dist, _dist_p_out(i));
+            if (_code_out[i] == 1 && j == 0)
+            {
+              face_pts++;
+            }
+          }
+          else
+          {
+            if (j == 0)
+            {
+              not_found++;
+            }
+          }
+        }
+        filestream << "\n";
+      }
+      std::cout << std::setprecision(16) << "Searched unique points: " << _num_pts
+                << "\nFound on local mesh:  " << found_loc
+                << "\nFound on other tasks: " << found_away << "\nMax interp error:     " << max_err
+                << "\nMax dist (of found):  " << max_dist << "\nPoints not found:     " << not_found
+                << "\nPoints on faces:      " << face_pts << std::endl;
+    }
+  }
+
+  const mfem::ParGridFunction & _gf;
+  mfem::ParMesh & _pmesh;
+  int _dim;
+  int _vec_dim;
+  int _num_pts;
+  mfem::Ordering::Type _gf_ordering;
+  mfem::Ordering::Type _point_ordering;
+  mfem::Vector _vxyz;
+  mfem::Vector _interp_vals;
+  mfem::FindPointsGSLIB _finder;
+  mfem::Array<unsigned int> _code_out;
+  mfem::Array<unsigned int> _task_id_out;
+  mfem::Vector _dist_p_out;
+};
+
 static void
 source_current(const mfem::Vector & xv, double t, mfem::Vector & J)
 {
@@ -161,8 +290,8 @@ main(int argc, char * argv[])
   auto pmesh = std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mesh);
 
   problem_builder->SetMesh(pmesh);
-  problem_builder->AddFESpace("HCurl", "ND_3D_P1");
   problem_builder->AddFESpace("H1", "H1_3D_P1");
+  problem_builder->AddFESpace("HCurl", "ND_3D_P1");
   problem_builder->AddFESpace("HDiv", "RT_3D_P0");
   problem_builder->AddFESpace("L2", "L2_3D_P0");
 
@@ -214,6 +343,123 @@ main(int argc, char * argv[])
 
   logger.info("Created exec ");
   executioner->Execute();
+
+  std::string gridfunction_name("magnetic_flux_density_real");
+  std::string csv_name("example.csv");
+  int point_ordering = 0;
+  int gf_ordering = 0;
+  int dim = 3;
+  int ncomp = 1;
+  int vec_dim = dim;
+  const int num_pts = 100;
+
+  // Mesh bounding box (for the full serial mesh).
+  mfem::Vector pos_min, pos_max;
+  mesh.GetBoundingBox(pos_min, pos_max, 1);
+  pos_min(1) = 0.072;
+  pos_max(1) = 0.072;
+  pos_min(2) = 0.034;
+  pos_max(2) = 0.034;
+
+  mfem::H1_FECollection fecm(1, dim);
+  mfem::ParFiniteElementSpace pfespace(pmesh.get(), &fecm, dim);
+  pmesh->SetNodalFESpace(&pfespace);
+
+  mfem::L2_SegmentElement el(num_pts - 1, mfem::BasisType::ClosedUniform);
+  mfem::Vector vxyz(num_pts * dim);
+  const mfem::IntegrationRule & ir = el.GetNodes();
+  for (int i = 0; i < ir.GetNPoints(); i++)
+  {
+    const mfem::IntegrationPoint & ip = ir.IntPoint(i);
+    if (point_ordering == mfem::Ordering::byNODES)
+    {
+      vxyz(i) = pos_min(0) + ip.x * (pos_max(0) - pos_min(0));
+      vxyz(num_pts + i) = pos_min(1) + ip.x * (pos_max(1) - pos_min(1));
+      vxyz(2 * num_pts + i) = pos_min(2) + ip.x * (pos_max(2) - pos_min(2));
+    }
+    else
+    {
+      vxyz(i * dim + 0) = pos_min(0) + ip.x * (pos_max(0) - pos_min(0));
+      vxyz(i * dim + 1) = pos_min(1) + ip.x * (pos_max(1) - pos_min(1));
+      vxyz(i * dim + 2) = pos_min(2) + ip.x * (pos_max(2) - pos_min(2));
+    }
+  }
+  // Find and Interpolate FE function values on the desired points.
+  mfem::Vector interp_vals(num_pts * vec_dim);
+  mfem::FindPointsGSLIB finder(pmesh->GetComm());
+  finder.Setup(*pmesh);
+  finder.Interpolate(
+      vxyz, *problem.get()->_gridfunctions.Get(gridfunction_name), interp_vals, point_ordering);
+  mfem::Array<unsigned int> code_out = finder.GetCode();
+  mfem::Array<unsigned int> task_id_out = finder.GetProc();
+  mfem::Vector dist_p_out = finder.GetDist();
+
+  std::ofstream myfile;
+  myfile.open(csv_name);
+  myfile << "x (m), y (m), z (m), B_x (T), B_y (T), B_z (T)\n";
+  // Print the results for task 0 since either 1) all tasks have the
+  // same set of points or 2) only task 0 has any points.
+  if (problem->_myid == 0)
+  {
+    int face_pts = 0, not_found = 0, found_loc = 0, found_away = 0;
+    double error = 0.0, max_err = 0.0, max_dist = 0.0;
+    std::string sep = ", ";
+    mfem::Vector pos(dim);
+    for (int i = 0; i < num_pts; i++)
+    {
+      if (gf_ordering == mfem::Ordering::byNODES)
+      {
+        myfile << vxyz(i) << sep << vxyz(num_pts + i) << sep << vxyz(2 * num_pts + i) << sep;
+      }
+      else
+      {
+        myfile << vxyz(i * dim + 0) << sep << vxyz(i * dim + 1) << sep << vxyz(i * dim + 2) << sep;
+      }
+      for (int j = 0; j < vec_dim; j++)
+      {
+
+        if (j == 0)
+        {
+          (task_id_out[i] == (unsigned)(problem->_myid)) ? found_loc++ : found_away++;
+        }
+
+        if (code_out[i] < 2)
+        {
+          for (int d = 0; d < dim; d++)
+          {
+            pos(d) = point_ordering == mfem::Ordering::byNODES ? vxyz(d * num_pts + i)
+                                                               : vxyz(i * dim + d);
+          }
+          mfem::Vector exact_val(vec_dim);
+          myfile << (gf_ordering == mfem::Ordering::byNODES ? interp_vals[i + j * num_pts]
+                                                            : interp_vals[i * vec_dim + j])
+                 << sep;
+          max_dist = std::max(max_dist, dist_p_out(i));
+          if (code_out[i] == 1 && j == 0)
+          {
+            face_pts++;
+          }
+        }
+        else
+        {
+          if (j == 0)
+          {
+            not_found++;
+          }
+        }
+      }
+      myfile << "\n";
+    }
+    std::cout << std::setprecision(16) << "Searched unique points: " << num_pts
+              << "\nFound on local mesh:  " << found_loc << "\nFound on other tasks: " << found_away
+              << "\nMax interp error:     " << max_err << "\nMax dist (of found):  " << max_dist
+              << "\nPoints not found:     " << not_found << "\nPoints on faces:      " << face_pts
+              << std::endl;
+  }
+  myfile.close();
+
+  // Free the internal gslib data.
+  finder.FreeData();
 
   MPI_Finalize();
 }
