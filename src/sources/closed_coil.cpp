@@ -440,22 +440,26 @@ ClosedCoilSolver::AddWedgeToPWCoefs(std::vector<int> & wedge_els)
     }
   }
 
-  // This part is for the near future when we have PWVectorCoefficient capabilities
-  /*
-  for (const auto &name:pw_vec_coefs){
-    if (sd_wedge != -1){
-      new_domain._vectors.Register(name,subdomains[sd_wedge]._vectors.GetShared(name));
+  for (const auto & name : pw_vec_coefs)
+  {
+    if (sd_wedge != -1)
+    {
+      new_domain._vector_coefficients.Register(
+          name, subdomains[sd_wedge]._vector_coefficients.GetShared(name));
       _ccs_coefs._vectors.Deregister(name);
     }
-    else{
-      logger.warn("Could not find old attribute for wedge defined in the coefficient subdomains!
-  Setting null coefficient for {} in wedge", name); mfem::Vector
-  zero_vec(_mesh_parent->Dimension()); zero_vec = 0.0; new_domain._vectors.Register(name,
-  std::make_shared<mfem::VectorConstantCoefficient>(zero_vec));
+    else
+    {
+      logger.warn("Could not find old attribute for wedge defined in the coefficient subdomains! "
+                  "Setting null coefficient for {} in wedge",
+                  name);
+      mfem::Vector zero_vec(_mesh_parent->Dimension());
+      zero_vec = 0.0;
+      new_domain._vector_coefficients.Register(
+          name, std::make_shared<mfem::VectorConstantCoefficient>(zero_vec));
       _ccs_coefs._vectors.Deregister(name);
     }
   }
-  */
 
   subdomains.push_back(new_domain);
   _ccs_coefs._subdomains = subdomains;
