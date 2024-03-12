@@ -269,50 +269,8 @@ ClosedCoilSolver::MakeWedge()
     }
   }
 
-  if (wedge_els.size() == 0)
-    mfem::mfem_error("ClosedCoilSolver wedge has size zero");
+  AddWedgeToPWCoefs(wedge_els);
 
-  // If we are dealing with a piecewise-defined conductivity, we need to
-  // add the new wedge domain to the coefficient
-  std::shared_ptr<mfem::PWCoefficient> id_test =
-      std::dynamic_pointer_cast<mfem::PWCoefficient>(_sigma);
-  if (id_test != nullptr)
-  {
-    std::vector<hephaestus::Subdomain> subdomains = _ccs_coefs._subdomains;
-    hephaestus::Subdomain new_domain("wedge", _new_domain_attr);
-    int wedge_old_att = _mesh_parent->GetAttribute(wedge_els[0]);
-
-    int sd_wedge = -1;
-    for (int i = 0; i < subdomains.size(); ++i)
-    {
-      if (subdomains[i]._id == wedge_old_att)
-      {
-        sd_wedge = i;
-        break;
-      }
-    }
-
-    // If the conductivity in the region in which the wedge is located has been defined in the
-    // PWCoefficient, the new subdomain inherits the same conductivity coefficient. Otherwise, the
-    // conductivity is set to zero
-    if (sd_wedge != -1)
-    {
-      new_domain._scalar_coefficients.Register(
-          "electrical_conductivity",
-          subdomains[sd_wedge]._scalar_coefficients.GetShared("electrical_conductivity"));
-    }
-    else
-    {
-      new_domain._scalar_coefficients.Register("electrical_conductivity",
-                                               std::make_shared<mfem::ConstantCoefficient>(0.0));
-    }
-
-    subdomains.push_back(new_domain);
-    _ccs_coefs._subdomains = subdomains;
-    _ccs_coefs._scalars.Deregister("electrical_conductivity");
-    _ccs_coefs.AddGlobalCoefficientsFromSubdomains();
-    _sigma = _ccs_coefs._scalars.GetShared(_cond_coef_name);
-  }
   // Now we set the second electrode boundary attribute. Start with a list of
   // all the faces of the wedge elements and eliminate mesh and coil boundaries,
   // the first electrode, and faces between wedge elements
@@ -394,6 +352,119 @@ ClosedCoilSolver::MakeWedge()
   _mesh_parent->FinalizeTopology();
   _mesh_parent->Finalize();
   _mesh_parent->SetAttributes();
+}
+
+void
+ClosedCoilSolver::AddWedgeToPWCoefs(std::vector<int> & wedge_els)
+{
+
+  // First, define what in which of the old subdomains the wedge elements of the new subdomain lie
+  std::vector<hephaestus::Subdomain> subdomains = _ccs_coefs._subdomains;
+  hephaestus::Subdomain new_domain("wedge", _new_domain_attr);
+  int wedge_old_att = -1;
+
+  // This creates a binary representation of which MPI ranks contain at
+  // least one wedge element. The lowest rank which contains the wedge will be used as a reference
+  // for the old attribute
+  int ref_rank = 0;
+  int has_els = (bool)wedge_els.size() ? 1 << mfem::Mpi::WorldRank() : 0;
+  int has_els_sum;
+
+  MPI_Allreduce(&has_els, &has_els_sum, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+  if (has_els_sum == 0)
+    mfem::mfem_error("ClosedCoilSolver wedge has size zero!");
+
+  for (int i = 0; i < mfem::Mpi::WorldSize(); ++i)
+  {
+    if ((1 << i & has_els_sum) != 0)
+    {
+      ref_rank = i;
+      break;
+    }
+  }
+
+  if (mfem::Mpi::WorldRank() == ref_rank)
+    wedge_old_att = _mesh_parent->GetAttribute(wedge_els[0]);
+
+  MPI_Bcast(&wedge_old_att, 1, MPI_INT, ref_rank, MPI_COMM_WORLD);
+
+  // Now we check in which of the old subdomains the wedge lies
+  int sd_wedge = -1;
+
+  for (int i = 0; i < subdomains.size(); ++i)
+  {
+    if (subdomains[i]._id == wedge_old_att)
+    {
+      sd_wedge = i;
+      break;
+    }
+  }
+
+  // If we are dealing with piecewise-defined coefficients, we need to
+  // add the new wedge domain to the PW coefficients. First we decide whether there are scalar
+  // and/or vector PW coefficients
+  std::vector<std::string> pw_scalar_coefs;
+  for (const auto & coef : _ccs_coefs._scalars)
+  {
+    std::shared_ptr<mfem::PWCoefficient> id_test =
+        std::dynamic_pointer_cast<mfem::PWCoefficient>(coef.second);
+    if (id_test != nullptr)
+      pw_scalar_coefs.push_back(coef.first);
+  }
+
+  std::vector<std::string> pw_vec_coefs;
+  for (const auto & coef : _ccs_coefs._vectors)
+  {
+    std::shared_ptr<mfem::PWVectorCoefficient> id_test =
+        std::dynamic_pointer_cast<mfem::PWVectorCoefficient>(coef.second);
+    if (id_test != nullptr)
+      pw_vec_coefs.push_back(coef.first);
+  }
+
+  for (const auto & name : pw_scalar_coefs)
+  {
+    if (sd_wedge != -1)
+    {
+      new_domain._scalar_coefficients.Register(
+          name, subdomains[sd_wedge]._scalar_coefficients.GetShared(name));
+      _ccs_coefs._scalars.Deregister(name);
+    }
+    else
+    {
+      logger.warn("Could not find old attribute for wedge defined in the coefficient subdomains! "
+                  "Setting null coefficient for {} in wedge",
+                  name);
+      new_domain._scalar_coefficients.Register(name,
+                                               std::make_shared<mfem::ConstantCoefficient>(0.0));
+      _ccs_coefs._scalars.Deregister(name);
+    }
+  }
+
+  for (const auto & name : pw_vec_coefs)
+  {
+    if (sd_wedge != -1)
+    {
+      new_domain._vector_coefficients.Register(
+          name, subdomains[sd_wedge]._vector_coefficients.GetShared(name));
+      _ccs_coefs._vectors.Deregister(name);
+    }
+    else
+    {
+      logger.warn("Could not find old attribute for wedge defined in the coefficient subdomains! "
+                  "Setting null coefficient for {} in wedge",
+                  name);
+      mfem::Vector zero_vec(_mesh_parent->Dimension());
+      zero_vec = 0.0;
+      new_domain._vector_coefficients.Register(
+          name, std::make_shared<mfem::VectorConstantCoefficient>(zero_vec));
+      _ccs_coefs._vectors.Deregister(name);
+    }
+  }
+
+  subdomains.push_back(new_domain);
+  _ccs_coefs._subdomains = subdomains;
+  _ccs_coefs.AddGlobalCoefficientsFromSubdomains();
+  _sigma = _ccs_coefs._scalars.GetShared(_cond_coef_name);
 }
 
 void

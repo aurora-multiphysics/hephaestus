@@ -45,6 +45,10 @@ public:
   // the two opposing faces of the layer, to act as Dirichlet BCs.
   void MakeWedge();
 
+  // Detects whether the coefficients passed to CCS have piecewise-defined functions and if so, adds
+  // the new wedge subdomain to them
+  void AddWedgeToPWCoefs(std::vector<int> & wedge_els);
+
   // Extracts the coil submesh and prepares the gridfunctions and FE spaces
   // for being passed to the OpenCoilSolver in the transition region
   void PrepareCoilSubmesh();

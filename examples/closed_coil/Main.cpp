@@ -8,26 +8,42 @@ defineCoefficients()
   hephaestus::Subdomain air("air", 1);
   air._scalar_coefficients.Register("electrical_conductivity",
                                     std::make_shared<mfem::ConstantCoefficient>(1.0));
+  air._scalar_coefficients.Register("magnetic_permeability",
+                                    std::make_shared<mfem::ConstantCoefficient>(M_PI * 4.0e-7));
+
   hephaestus::Subdomain plate("plate", 2);
   plate._scalar_coefficients.Register("electrical_conductivity",
                                       std::make_shared<mfem::ConstantCoefficient>(3.526e7));
+  plate._scalar_coefficients.Register("magnetic_permeability",
+                                      std::make_shared<mfem::ConstantCoefficient>(M_PI * 4.0e-7));
+
   hephaestus::Subdomain coil1("coil1", 3);
   coil1._scalar_coefficients.Register("electrical_conductivity",
                                       std::make_shared<mfem::ConstantCoefficient>(1.0));
+  coil1._scalar_coefficients.Register("magnetic_permeability",
+                                      std::make_shared<mfem::ConstantCoefficient>(M_PI * 4.0e-7));
+
   hephaestus::Subdomain coil2("coil2", 4);
   coil2._scalar_coefficients.Register("electrical_conductivity",
                                       std::make_shared<mfem::ConstantCoefficient>(1.0));
+  coil2._scalar_coefficients.Register("magnetic_permeability",
+                                      std::make_shared<mfem::ConstantCoefficient>(M_PI * 4.0e-7));
+
   hephaestus::Subdomain coil3("coil3", 5);
   coil3._scalar_coefficients.Register("electrical_conductivity",
                                       std::make_shared<mfem::ConstantCoefficient>(1.0));
+  coil3._scalar_coefficients.Register("magnetic_permeability",
+                                      std::make_shared<mfem::ConstantCoefficient>(M_PI * 4.0e-7));
+
   hephaestus::Subdomain coil4("coil4", 6);
   coil4._scalar_coefficients.Register("electrical_conductivity",
                                       std::make_shared<mfem::ConstantCoefficient>(1.0));
+  coil4._scalar_coefficients.Register("magnetic_permeability",
+                                      std::make_shared<mfem::ConstantCoefficient>(M_PI * 4.0e-7));
+
   hephaestus::Coefficients coefficients(
       std::vector<hephaestus::Subdomain>({air, plate, coil1, coil2, coil3, coil4}));
   coefficients._scalars.Register("frequency", std::make_shared<mfem::ConstantCoefficient>(200.0));
-  coefficients._scalars.Register("magnetic_permeability",
-                                 std::make_shared<mfem::ConstantCoefficient>(M_PI * 4.0e-7));
   coefficients._scalars.Register("dielectric_permittivity",
                                  std::make_shared<mfem::ConstantCoefficient>(8.854e-12));
 
