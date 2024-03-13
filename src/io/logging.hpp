@@ -26,4 +26,5 @@ using MpiSink_st = MpiSink<spdlog::details::null_mutex>;
 namespace hephaestus
 {
 extern spdlog::logger logger;
+extern int GetGlobalPrintLevel();
 }

@@ -137,7 +137,7 @@ protected:
                                               ._tolerance = 1e-16,
                                               ._abs_tolerance = 1e-16,
                                               ._max_iteration = 1000,
-                                              ._print_level = logger.level(),
+                                              ._print_level = GetGlobalPrintLevel(),
                                               ._k_dim = 10});
 };
 
