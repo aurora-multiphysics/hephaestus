@@ -100,7 +100,7 @@ main(int argc, char * argv[])
   args.Parse();
   MPI_Init(&argc, &argv);
 
-  logger.set_level(spdlog::level::info);
+  hephaestus::logger.set_level(spdlog::level::info);
 
   // Create Formulation
   auto problem_builder = std::make_unique<hephaestus::MagnetostaticFormulation>(
@@ -148,7 +148,7 @@ main(int argc, char * argv[])
 
   auto executioner = std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
 
-  logger.info("Created executioner");
+  hephaestus::logger.info("Created executioner");
   executioner->Execute();
 
   MPI_Finalize();

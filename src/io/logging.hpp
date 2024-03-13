@@ -23,4 +23,7 @@ using MpiSink_st = MpiSink<spdlog::details::null_mutex>;
 } // namespace spdlog::sinks
 
 // Global logger
+namespace hephaestus
+{
 extern spdlog::logger logger;
+}
