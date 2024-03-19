@@ -214,7 +214,7 @@ TEST_CASE_METHOD(TestHFormSource, "TestHFormSource", "[CheckRun]")
                                 l2errpostprocessor->_l2_errs[i],
                                 l2errpostprocessor->_l2_errs[i - 1],
                                 3);
-    logger.info("{}", r);
+    hephaestus::logger.info("{}", r);
     REQUIRE(r > _var_order - 0.15);
     REQUIRE(r < _var_order + 1.0);
   }

@@ -25,4 +25,31 @@ MpiSink<Mutex>::flush_()
 }
 
 // Global logger
+namespace hephaestus
+{
 spdlog::logger logger("Hephaestus", std::make_shared<spdlog::sinks::MpiSink_st>());
+
+int
+GetGlobalPrintLevel()
+{
+  int global_print_level;
+  if (logger.level() >= SPDLOG_LEVEL_WARN)
+  {
+    global_print_level = 0;
+  }
+  else if (logger.level() == SPDLOG_LEVEL_INFO)
+  {
+    global_print_level = 1;
+  }
+  else if (logger.level() == SPDLOG_LEVEL_DEBUG)
+  {
+    global_print_level = 2;
+  }
+  else
+  {
+    global_print_level = 3;
+  }
+
+  return global_print_level;
+}
+}

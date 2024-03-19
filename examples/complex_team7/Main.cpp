@@ -341,7 +341,7 @@ main(int argc, char * argv[])
 
   auto executioner = std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
 
-  logger.info("Created exec ");
+  hephaestus::logger.info("Created exec ");
   executioner->Execute();
 
   std::string gridfunction_name("magnetic_flux_density_real");

@@ -40,7 +40,7 @@ ComplexEFormulation::RegisterCurrentDensityAux(const std::string & j_field_real_
                           external_j_field_real_name,
                           hephaestus::InputParameters({{"Tolerance", float(1.0e-12)},
                                                        {"MaxIter", (unsigned int)200},
-                                                       {"PrintLevel", logger.level()}})));
+                                                       {"PrintLevel", GetGlobalPrintLevel()}})));
   auxsolvers.Register(j_field_imag_name,
                       std::make_shared<hephaestus::ScaledVectorGridFunctionAux>(
                           _electric_field_imag_name,
@@ -51,7 +51,7 @@ ComplexEFormulation::RegisterCurrentDensityAux(const std::string & j_field_real_
                           external_j_field_imag_name,
                           hephaestus::InputParameters({{"Tolerance", float(1.0e-12)},
                                                        {"MaxIter", (unsigned int)200},
-                                                       {"PrintLevel", logger.level()}})));
+                                                       {"PrintLevel", GetGlobalPrintLevel()}})));
 };
 
 void
