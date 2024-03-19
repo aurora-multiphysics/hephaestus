@@ -184,7 +184,7 @@ main(int argc, char * argv[])
     {
       current = -2 * fluxmonitor->_fluxes[i];
       t = fluxmonitor->_times[i];
-      logger.info("t = {} s, I = {} A", t, current);
+      hephaestus::logger.info("t = {} s, I = {} A", t, current);
     }
   }
 

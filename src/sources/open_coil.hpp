@@ -41,7 +41,7 @@ public:
                      hephaestus::InputParameters({{"Tolerance", float(1.0e-20)},
                                                   {"AbsTolerance", float(1.0e-20)},
                                                   {"MaxIter", (unsigned int)1000},
-                                                  {"PrintLevel", logger.level()}}));
+                                                  {"PrintLevel", GetGlobalPrintLevel()}}));
 
   ~OpenCoilSolver() override = default;
 

@@ -14,8 +14,8 @@ find_package(Boost REQUIRED COMPONENTS ${Boost_PACKAGES})
 #  * mfem_DIR - absolute path to where MFEMConfig.cmake is.
 message(STATUS "Looking for mfem ...")
 
-set(MFEM_DIR "${PROJECT_SOURCE_DIR}/../mfem_build" CACHE PATH "Path to the MFEM build or install prefix.")
-set(MFEM_COMMON_INCLUDES "${PROJECT_SOURCE_DIR}/../mfem/miniapps/common" CACHE PATH "Path to the MFEM common miniapp headers.")
+set(MFEM_DIR "${PROJECT_SOURCE_DIR}/../mfem/build" CACHE PATH "Path to the MFEM build or install prefix.")
+set(MFEM_COMMON_INCLUDES "${MFEM_DIR}/../mfem/miniapps/common" CACHE PATH "Path to the MFEM common miniapp headers.")
 
 if (MFEM_DIR)
    find_package(mfem REQUIRED NAMES MFEM HINTS "${MFEM_DIR}"
