@@ -363,25 +363,26 @@ ClosedCoilSolver::AddWedgeToPWCoefs(std::vector<int> & wedge_els)
   hephaestus::Subdomain new_domain("wedge", _new_domain_attr);
   int wedge_old_att = -1;
 
-  // This creates a binary representation of which MPI ranks contain at
-  // least one wedge element. The lowest rank which contains the wedge will be used as a reference
-  // for the old attribute
-  int ref_rank = 0;
-  int has_els = (bool)wedge_els.size() ? 1 << mfem::Mpi::WorldRank() : 0;
-  int has_els_sum;
+  int ref_rank = -1;
+  bool has_els = (bool)wedge_els.size();
 
-  MPI_Allreduce(&has_els, &has_els_sum, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-  if (has_els_sum == 0)
-    mfem::mfem_error("ClosedCoilSolver wedge has size zero!");
+  // Gather all has_els info from the processes to determine the lowest rank that contains wedge
+  // elements
+  bool * all_has_els = (bool *)malloc(sizeof(bool) * mfem::Mpi::WorldSize());
+  MPI_Allgather(&has_els, 1, MPI_CXX_BOOL, all_has_els, 1, MPI_CXX_BOOL, MPI_COMM_WORLD);
 
   for (int i = 0; i < mfem::Mpi::WorldSize(); ++i)
   {
-    if ((1 << i & has_els_sum) != 0)
+    if (all_has_els[i] == true)
     {
       ref_rank = i;
       break;
     }
   }
+  if (ref_rank == -1)
+    mfem::mfem_error("ClosedCoilSolver wedge has size zero!");
+
+  free(all_has_els);
 
   if (mfem::Mpi::WorldRank() == ref_rank)
     wedge_old_att = _mesh_parent->GetAttribute(wedge_els[0]);
@@ -557,23 +558,25 @@ ClosedCoilSolver::SolveCoil()
 
   mfem::Array<int> ess_bdr_tdofs_coil;
 
-  // This creates a binary representation of which MPI ranks contain at
-  // least one element
-  int ref_rank = 0;
-  int has_els = (bool)_mesh_coil->GetNE() ? 1 << mfem::Mpi::WorldRank() : 0;
-  int has_els_sum;
+  int ref_rank = -1;
+  bool has_els = (bool)_mesh_coil->GetNE();
 
-  MPI_Allreduce(&has_els, &has_els_sum, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-  MFEM_ASSERT(has_els_sum != 0, "Empty coil submesh!");
+  // Gather all has_els info from the processes
+  bool * all_has_els = (bool *)malloc(sizeof(bool) * mfem::Mpi::WorldSize());
+  MPI_Allgather(&has_els, 1, MPI_CXX_BOOL, all_has_els, 1, MPI_CXX_BOOL, MPI_COMM_WORLD);
 
   for (int i = 0; i < mfem::Mpi::WorldSize(); ++i)
   {
-    if ((1 << i & has_els_sum) != 0)
+    if (all_has_els[i] == true)
     {
       ref_rank = i;
       break;
     }
   }
+  if (ref_rank == -1)
+    mfem::mfem_error("Coil mesh has size zero!");
+
+  free(all_has_els);
 
   if (mfem::Mpi::WorldRank() == ref_rank)
   {
