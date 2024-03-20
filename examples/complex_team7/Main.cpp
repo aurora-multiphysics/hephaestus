@@ -9,6 +9,9 @@
 
 const char * DATA_DIR = "../../data/";
 
+namespace hephaestus
+{
+
 class LineSampler
 {
 public:
@@ -20,7 +23,7 @@ public:
     : _gf(gridfunction),
       _pmesh(*gridfunction.ParFESpace()->GetParMesh()),
       _dim(_pmesh.Dimension()),
-      _vec_dim(_dim),
+      _vec_dim(_dim), // TODO - fetch from GridFunction
       _num_pts(num_pts),
       _gf_ordering(gridfunction.ParFESpace()->GetOrdering()),
       _point_ordering(_gf_ordering),
@@ -28,10 +31,6 @@ public:
       _interp_vals(num_pts * _vec_dim),
       _finder(_pmesh.GetComm())
   {
-    mfem::H1_FECollection fecm(1, _dim);
-    mfem::ParFiniteElementSpace pfespace(&_pmesh, &fecm, _dim);
-    _pmesh.SetNodalFESpace(&pfespace);
-
     // Use a dummy SegmentElement to create sample points along line
     mfem::L2_SegmentElement el(num_pts - 1, mfem::BasisType::ClosedUniform);
     const mfem::IntegrationRule & ir = el.GetNodes();
@@ -51,30 +50,22 @@ public:
         _vxyz(i * _dim + 2) = start_pos(2) + ip.x * (end_pos(2) - start_pos(2));
       }
     }
-    // Find and Interpolate FE function values on the desired points.
+    // Find and interpolate FE function values on the desired points.
     _finder.Setup(_pmesh);
-    _finder.Interpolate(_vxyz, _gf, _interp_vals, _point_ordering);
   }
 
   ~LineSampler() { _finder.FreeData(); }
 
-  void WriteToFile(std::ofstream & filestream)
-  {
-    _code_out = _finder.GetCode();
-    _task_id_out = _finder.GetProc();
-    _dist_p_out = _finder.GetDist();
+  void Solve(double t = 0.0) { _finder.Interpolate(_vxyz, _gf, _interp_vals, _point_ordering); }
 
-    filestream << "x (m), y (m), z (m), B_x (T), B_y (T), B_z (T)\n";
+  void WriteToFile(std::ofstream & filestream, std::string sep = ", ")
+  {
     // Print the results for task 0 since either 1) all tasks have the
     // same set of points or 2) only task 0 has any points.
     int myid;
     MPI_Comm_rank(_pmesh.GetComm(), &myid);
     if (myid == 0)
     {
-      int face_pts = 0, not_found = 0, found_loc = 0, found_away = 0;
-      double error = 0.0, max_err = 0.0, max_dist = 0.0;
-      std::string sep = ", ";
-      mfem::Vector pos(_dim);
       for (int i = 0; i < _num_pts; i++)
       {
         if (_gf_ordering == mfem::Ordering::byNODES)
@@ -89,46 +80,16 @@ public:
         }
         for (int j = 0; j < _vec_dim; j++)
         {
-
-          if (j == 0)
-          {
-            (_task_id_out[i] == (unsigned)(myid)) ? found_loc++ : found_away++;
-          }
-
-          if (_code_out[i] < 2)
-          {
-            for (int d = 0; d < _dim; d++)
-            {
-              pos(d) = _point_ordering == mfem::Ordering::byNODES ? _vxyz(d * _num_pts + i)
-                                                                  : _vxyz(i * _dim + d);
-            }
-            filestream << (_gf_ordering == mfem::Ordering::byNODES ? _interp_vals[i + j * _num_pts]
-                                                                   : _interp_vals[i * _vec_dim + j])
-                       << sep;
-            max_dist = std::max(max_dist, _dist_p_out(i));
-            if (_code_out[i] == 1 && j == 0)
-            {
-              face_pts++;
-            }
-          }
-          else
-          {
-            if (j == 0)
-            {
-              not_found++;
-            }
-          }
+          filestream << (_gf_ordering == mfem::Ordering::byNODES ? _interp_vals[i + j * _num_pts]
+                                                                 : _interp_vals[i * _vec_dim + j])
+                     << sep;
         }
         filestream << "\n";
       }
-      std::cout << std::setprecision(16) << "Searched unique points: " << _num_pts
-                << "\nFound on local mesh:  " << found_loc
-                << "\nFound on other tasks: " << found_away << "\nMax interp error:     " << max_err
-                << "\nMax dist (of found):  " << max_dist << "\nPoints not found:     " << not_found
-                << "\nPoints on faces:      " << face_pts << std::endl;
     }
   }
 
+private:
   const mfem::ParGridFunction & _gf;
   mfem::ParMesh & _pmesh;
   int _dim;
@@ -139,10 +100,63 @@ public:
   mfem::Vector _vxyz;
   mfem::Vector _interp_vals;
   mfem::FindPointsGSLIB _finder;
-  mfem::Array<unsigned int> _code_out;
-  mfem::Array<unsigned int> _task_id_out;
-  mfem::Vector _dist_p_out;
 };
+
+// Wrapper for LineSampler to resample points every timestep and write to a file
+class LineSamplerWriterAux : public AuxSolver
+{
+public:
+  LineSamplerWriterAux(std::string gridfunction_name,
+                       mfem::Vector start_pos,
+                       mfem::Vector end_pos,
+                       unsigned int num_pts,
+                       std::string filename,
+                       std::string header)
+    : _gridfunction_name{std::move(gridfunction_name)},
+      _start_pos{std::move(start_pos)},
+      _end_pos{std::move(end_pos)},
+      _num_pts(num_pts),
+      _filename{std::move(filename)},
+      _header{std::move(header)} {};
+
+  void Init(const hephaestus::GridFunctions & gridfunctions,
+            hephaestus::Coefficients & coefficients) override
+  {
+    _gf = gridfunctions.Get(_gridfunction_name);
+    _line_sampler = std::make_shared<LineSampler>(*_gf, _start_pos, _end_pos, _num_pts);
+
+    _filestream.open(_filename);
+    _filestream << _header << "\n";
+    _filestream.close();
+  };
+
+  void Solve(double t = 0.0) override
+  {
+    if (_line_sampler != nullptr)
+    {
+      _line_sampler->Solve(t);
+
+      _filestream.open(_filename);
+      _line_sampler->WriteToFile(_filestream);
+      _filestream.close();
+    }
+  };
+
+  LineSampler & GetLineSampler() { return *_line_sampler; }
+
+private:
+  std::string _gridfunction_name;
+  std::shared_ptr<LineSampler> _line_sampler{nullptr};
+
+  mfem::ParGridFunction * _gf{nullptr};
+  unsigned int _num_pts;
+  mfem::Vector _start_pos;
+  mfem::Vector _end_pos;
+  std::string _filename;
+  std::string _header;
+  std::ofstream _filestream;
+};
+}
 
 static void
 source_current(const mfem::Vector & xv, double t, mfem::Vector & J)
@@ -294,6 +308,10 @@ main(int argc, char * argv[])
   mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team7.g")).c_str(), 1, 1);
 
   auto pmesh = std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mesh);
+  mfem::H1_FECollection fecm(1, 3);
+  mfem::ParFiniteElementSpace pfespace(pmesh.get(), &fecm, 3);
+  // Necessary, in case the nodal FE space is not set on the pmesh because it is lowest order.
+  pmesh->SetNodalFESpace(&pfespace);
 
   problem_builder->SetMesh(pmesh);
   problem_builder->AddFESpace("H1", "H1_3D_P1");
@@ -333,15 +351,37 @@ main(int argc, char * argv[])
   hephaestus::Outputs outputs = defineOutputs();
   problem_builder->SetOutputs(outputs);
 
-  hephaestus::InputParameters solver_options;
-  solver_options.SetParam("Tolerance", float(1.0e-16));
-  solver_options.SetParam("MaxIter", (unsigned int)1000);
-  problem_builder->SetSolverOptions(solver_options);
-
-  hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
-  sequencer.ConstructOperatorProblem();
-
   {
+    // Call LineSampler to save values
+    std::string gridfunction_name("magnetic_flux_density_real");
+    std::string csv_name("example.csv");
+    const int num_pts = 100;
+    // Mesh bounding box (for the full serial mesh).
+    mfem::Vector pos_min, pos_max;
+    mesh.GetBoundingBox(pos_min, pos_max, 1);
+    pos_min(1) = 0.072;
+    pos_max(1) = 0.072;
+    pos_min(2) = 0.034;
+    pos_max(2) = 0.034;
+    std::shared_ptr<hephaestus::LineSamplerWriterAux> linesamplerwriter =
+        std::make_shared<hephaestus::LineSamplerWriterAux>(
+            gridfunction_name,
+            pos_min,
+            pos_max,
+            num_pts,
+            csv_name,
+            "x (m), y (m), z (m), B_x (T), B_y (T), B_z (T)");
+    linesamplerwriter->SetPriority(5);
+    problem_builder->AddPostprocessor("LineSamplerWriter", linesamplerwriter);
+
+    hephaestus::InputParameters solver_options;
+    solver_options.SetParam("Tolerance", float(1.0e-16));
+    solver_options.SetParam("MaxIter", (unsigned int)1000);
+    problem_builder->SetSolverOptions(solver_options);
+
+    hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
+    sequencer.ConstructOperatorProblem();
+
     auto problem = problem_builder->ReturnProblem();
 
     hephaestus::InputParameters exec_params;
@@ -351,33 +391,6 @@ main(int argc, char * argv[])
 
     hephaestus::logger.info("Created exec ");
     executioner->Execute();
-
-    // Call LineSampler to save values
-
-    std::string gridfunction_name("magnetic_flux_density_real");
-    std::string csv_name("example.csv");
-    int point_ordering = 0;
-    int gf_ordering = 0;
-    int dim = 3;
-    int ncomp = 1;
-    int vec_dim = dim;
-    const int num_pts = 100;
-
-    // Mesh bounding box (for the full serial mesh).
-    mfem::Vector pos_min, pos_max;
-    mesh.GetBoundingBox(pos_min, pos_max, 1);
-    pos_min(1) = 0.072;
-    pos_max(1) = 0.072;
-    pos_min(2) = 0.034;
-    pos_max(2) = 0.034;
-
-    LineSampler linesampler(
-        *problem.get()->_gridfunctions.Get(gridfunction_name), pos_min, pos_max, num_pts);
-
-    std::ofstream myfile;
-    myfile.open(csv_name);
-    linesampler.WriteToFile(myfile);
-    myfile.close();
   }
   MPI_Finalize();
 }
