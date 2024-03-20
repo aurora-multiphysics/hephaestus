@@ -153,6 +153,10 @@ main(int argc, char * argv[])
   // Set Mesh
   mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team7.g")).c_str(), 1, 1);
   auto pmesh = std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mesh);
+  mfem::H1_FECollection fecm(1, 3);
+  mfem::ParFiniteElementSpace pfespace(pmesh.get(), &fecm, 3);
+  // Necessary, in case the nodal FE space is not set on the pmesh because it is lowest order.
+  pmesh->SetNodalFESpace(&pfespace);
 
   problem_builder->SetMesh(pmesh);
   problem_builder->AddFESpace("H1", "H1_3D_P1");
@@ -187,137 +191,48 @@ main(int argc, char * argv[])
 
   hephaestus::Outputs outputs = defineOutputs();
   problem_builder->SetOutputs(outputs);
-
-  hephaestus::InputParameters solver_options;
-  solver_options.SetParam("Tolerance", float(1.0e-16));
-  solver_options.SetParam("MaxIter", (unsigned int)1000);
-  problem_builder->SetSolverOptions(solver_options);
-
-  hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
-  sequencer.ConstructEquationSystemProblem();
-  auto problem = problem_builder->ReturnProblem();
-  hephaestus::InputParameters exec_params;
-  exec_params.SetParam("TimeStep", float(0.001));
-  exec_params.SetParam("StartTime", float(0.00));
-  exec_params.SetParam("EndTime", float(0.002));
-  exec_params.SetParam("VisualisationSteps", int(1));
-  exec_params.SetParam("Problem", problem.get());
-
-  auto executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
-
-  hephaestus::logger.info("Created executioner");
-  executioner->Execute();
-
-  std::string gridfunction_name("magnetic_flux_density");
-  int point_ordering = 0;
-  int gf_ordering = 0;
-  int dim = 3;
-  int ncomp = 1;
-  int vec_dim = dim;
-
-  // Mesh bounding box (for the full serial mesh).
-  mfem::Vector pos_min, pos_max;
-  mesh.GetBoundingBox(pos_min, pos_max, 1);
-  pos_min(1) = 0.072;
-  pos_max(1) = 0.072;
-  pos_min(2) = 0.034;
-  pos_max(2) = 0.034;
-  mfem::H1_FECollection fecm(1, dim);
-  mfem::ParFiniteElementSpace pfespace(pmesh.get(), &fecm, dim);
-  pmesh->SetNodalFESpace(&pfespace);
-  const int num_pts = 100;
-  mfem::L2_SegmentElement el(num_pts - 1, mfem::BasisType::ClosedUniform);
-  mfem::Vector vxyz(num_pts * dim);
-  const mfem::IntegrationRule & ir = el.GetNodes();
-  for (int i = 0; i < ir.GetNPoints(); i++)
   {
-    const mfem::IntegrationPoint & ip = ir.IntPoint(i);
-    if (point_ordering == mfem::Ordering::byNODES)
-    {
-      vxyz(i) = pos_min(0) + ip.x * (pos_max(0) - pos_min(0));
-      vxyz(num_pts + i) = pos_min(1) + ip.x * (pos_max(1) - pos_min(1));
-      vxyz(2 * num_pts + i) = pos_min(2) + ip.x * (pos_max(2) - pos_min(2));
-    }
-    else
-    {
-      vxyz(i * dim + 0) = pos_min(0) + ip.x * (pos_max(0) - pos_min(0));
-      vxyz(i * dim + 1) = pos_min(1) + ip.x * (pos_max(1) - pos_min(1));
-      vxyz(i * dim + 2) = pos_min(2) + ip.x * (pos_max(2) - pos_min(2));
-    }
+    // Call LineSampler to save values
+    std::string gridfunction_name("magnetic_flux_density");
+    std::string csv_name("SimulatedA1B1Transect.csv");
+    const int num_pts = 100;
+    // Mesh bounding box (for the full serial mesh).
+    mfem::Vector pos_min, pos_max;
+    mesh.GetBoundingBox(pos_min, pos_max, 1);
+    pos_min(1) = 0.072;
+    pos_max(1) = 0.072;
+    pos_min(2) = 0.034;
+    pos_max(2) = 0.034;
+    std::shared_ptr<hephaestus::LineSamplerAux> linesamplerwriter =
+        std::make_shared<hephaestus::LineSamplerAux>(
+            gridfunction_name,
+            pos_min,
+            pos_max,
+            num_pts,
+            csv_name,
+            "x (m), y (m), z (m), B_x (T), B_y (T), B_z (T)");
+    linesamplerwriter->SetPriority(5);
+    problem_builder->AddPostprocessor("LineSamplerWriter", linesamplerwriter);
+
+    hephaestus::InputParameters solver_options;
+    solver_options.SetParam("Tolerance", float(1.0e-16));
+    solver_options.SetParam("MaxIter", (unsigned int)1000);
+    problem_builder->SetSolverOptions(solver_options);
+
+    hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
+    sequencer.ConstructEquationSystemProblem();
+    auto problem = problem_builder->ReturnProblem();
+    hephaestus::InputParameters exec_params;
+    exec_params.SetParam("TimeStep", float(0.001));
+    exec_params.SetParam("StartTime", float(0.00));
+    exec_params.SetParam("EndTime", float(0.002));
+    exec_params.SetParam("VisualisationSteps", int(1));
+    exec_params.SetParam("Problem", problem.get());
+
+    auto executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
+
+    hephaestus::logger.info("Created executioner");
+    executioner->Execute();
   }
-  // Find and Interpolate FE function values on the desired points.
-  mfem::Vector interp_vals(num_pts * vec_dim);
-  mfem::FindPointsGSLIB finder(pmesh->GetComm());
-  finder.Setup(*pmesh);
-  finder.Interpolate(
-      vxyz, *problem.get()->_gridfunctions.Get(gridfunction_name), interp_vals, point_ordering);
-  mfem::Array<unsigned int> code_out = finder.GetCode();
-  mfem::Array<unsigned int> task_id_out = finder.GetProc();
-  mfem::Vector dist_p_out = finder.GetDist();
-
-  std::ofstream myfile;
-  myfile.open("example.csv");
-  myfile << "x (m), y (m), z (m), B_x (T), B_y (T), B_z (T)\n";
-  // Print the results for task 0 since either 1) all tasks have the
-  // same set of points or 2) only task 0 has any points.
-  if (problem->_myid == 0)
-  {
-    int face_pts = 0, not_found = 0, found_loc = 0, found_away = 0;
-    double error = 0.0, max_err = 0.0, max_dist = 0.0;
-    std::string sep = ", ";
-    mfem::Vector pos(dim);
-    for (int i = 0; i < num_pts; i++)
-    {
-      if (gf_ordering == mfem::Ordering::byNODES)
-      {
-        myfile << vxyz(i) << sep << vxyz(num_pts + i) << sep << vxyz(2 * num_pts + i) << sep;
-      }
-      else
-      {
-        myfile << vxyz(i * dim + 0) << sep << vxyz(i * dim + 1) << sep << vxyz(i * dim + 2) << sep;
-      }
-      for (int j = 0; j < vec_dim; j++)
-      {
-
-        if (j == 0)
-        {
-          (task_id_out[i] == (unsigned)(problem->_myid)) ? found_loc++ : found_away++;
-        }
-
-        if (code_out[i] < 2)
-        {
-          for (int d = 0; d < dim; d++)
-          {
-            pos(d) = point_ordering == mfem::Ordering::byNODES ? vxyz(d * num_pts + i)
-                                                               : vxyz(i * dim + d);
-          }
-          mfem::Vector exact_val(vec_dim);
-          myfile << (gf_ordering == mfem::Ordering::byNODES ? interp_vals[i + j * num_pts]
-                                                            : interp_vals[i * vec_dim + j])
-                 << sep;
-          max_dist = std::max(max_dist, dist_p_out(i));
-          if (code_out[i] == 1 && j == 0)
-          {
-            face_pts++;
-          }
-        }
-        else
-        {
-          if (j == 0)
-          {
-            not_found++;
-          }
-        }
-      }
-      myfile << "\n";
-    }
-    std::cout << std::setprecision(16) << "Searched unique points: " << num_pts
-              << "\nFound on local mesh:  " << found_loc << "\nFound on other tasks: " << found_away
-              << "\nMax interp error:     " << max_err << "\nMax dist (of found):  " << max_dist
-              << "\nPoints not found:     " << not_found << "\nPoints on faces:      " << face_pts
-              << std::endl;
-  }
-  myfile.close();
-
   MPI_Finalize();
 }
