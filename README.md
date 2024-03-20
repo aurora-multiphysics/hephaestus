@@ -28,11 +28,11 @@ Hephaestus can be built with the following commands from the top level `hephaest
 
     mkdir build
     cd build
-    cmake -G "Unix Makefiles" -DBUILD_TYPE=Release -DMFEM_DIR=/opt/mfem/build -DMFEM_COMMON_INCLUDES=/opt/mfem/miniapps/common ..
-    make
-    make test
+    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DMFEM_DIR=/opt/mfem/build ..
+    ninja
+    ninja test
 
-Running `make test` after `hephaestus` is built will run the entire set of tests found in `hephaestus/test`. Running a specific test is possible by providing the test name when running the corresponding test executable; for example:
+Running `ninja test` after `hephaestus` is built will run the entire set of tests found in `hephaestus/test`. Running a specific test is possible by providing the test name when running the corresponding test executable; for example:
 ```
 /opt/hephaestus/bin/integration_tests TestAFormSource
 ```

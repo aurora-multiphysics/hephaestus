@@ -17,8 +17,8 @@ RUN cd /$WORKDIR && \
 RUN cd /$WORKDIR/hephaestus/ && \
     mkdir build && \
     cd build && \
-    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DMFEM_DIR=/$WORKDIR/mfem/build -DMFEM_COMMON_INCLUDES=/$WORKDIR/mfem/miniapps/common -DCMAKE_EXPORT_COMPILE_COMMANDS=ON .. && \
-    make -j1
+    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DMFEM_DIR=/$WORKDIR/mfem/build .. && \
+    ninja
 
 # Install and run pre-commit hooks
 RUN cd /$WORKDIR/hephaestus/ && \
@@ -27,4 +27,4 @@ RUN cd /$WORKDIR/hephaestus/ && \
 
 # Test Hephaestus
 RUN cd /$WORKDIR/hephaestus/build && \
-    make test
+    ninja test

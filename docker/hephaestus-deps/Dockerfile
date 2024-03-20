@@ -50,6 +50,12 @@ RUN pip install packaging && \
     pip install setuptools && \
     pip install jinja2
 
+# Install GSLib
+RUN cd /$WORKDIR && \
+    git clone https://github.com/Nek5000/gslib.git && \
+    cd gslib/ && \
+    make CFLAGS='-O2 -fPIC'
+
 # Install CMake
 RUN cd /$WORKDIR && \
     git clone https://github.com/Kitware/CMake.git && \
@@ -114,9 +120,8 @@ RUN cd /$WORKDIR && \
     cd build && \
     cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_CXX_FLAGS_RELEASE=-fPIC \
-    -DMFEM_SHARED=YES \
-    -DMFEM_USE_OPENMP=YES \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=YES \
+    -DMFEM_USE_OPENMP=NO \
     -DMFEM_THREAD_SAFE=NO \
     -DHYPRE_DIR=/$WORKDIR/petsc/ \
     -DBLAS_LIBRARIES=/$WORKDIR/petsc/lib/libfblas.a \
@@ -129,7 +134,8 @@ RUN cd /$WORKDIR && \
     -DSuperLUDist_DIR=/$WORKDIR/petsc/ \
     -DMFEM_USE_NETCDF=YES \
     -DHDF5_DIR=/usr/lib/x86_64-linux-gnu/hdf5/mpich/ \
-    -DCMAKE_POLICY_DEFAULT_CMP0057=NEW && \
+    -DMFEM_USE_GSLIB=YES \
+    -DGSLIB_DIR=/$WORKDIR/gslib/build && \
     make -j"$compile_cores" && \
     cd miniapps/common && \
     make -j"$compile_cores"

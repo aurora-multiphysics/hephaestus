@@ -159,10 +159,14 @@ main(int argc, char * argv[])
   mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team7.g")).c_str(), 1, 1);
 
   auto pmesh = std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mesh);
+  mfem::H1_FECollection fecm(1, 3);
+  mfem::ParFiniteElementSpace pfespace(pmesh.get(), &fecm, 3);
+  // Necessary, in case the nodal FE space is not set on the pmesh because it is lowest order.
+  pmesh->SetNodalFESpace(&pfespace);
 
   problem_builder->SetMesh(pmesh);
-  problem_builder->AddFESpace("HCurl", "ND_3D_P1");
   problem_builder->AddFESpace("H1", "H1_3D_P1");
+  problem_builder->AddFESpace("HCurl", "ND_3D_P1");
   problem_builder->AddFESpace("HDiv", "RT_3D_P0");
   problem_builder->AddFESpace("L2", "L2_3D_P0");
 
@@ -198,22 +202,46 @@ main(int argc, char * argv[])
   hephaestus::Outputs outputs = defineOutputs();
   problem_builder->SetOutputs(outputs);
 
-  hephaestus::InputParameters solver_options;
-  solver_options.SetParam("Tolerance", float(1.0e-16));
-  solver_options.SetParam("MaxIter", (unsigned int)1000);
-  problem_builder->SetSolverOptions(solver_options);
+  {
+    // Call LineSampler to save values
+    std::string gridfunction_name("magnetic_flux_density_real");
+    std::string csv_name("SimulatedA1B1Transect.csv");
+    const int num_pts = 100;
+    // Mesh bounding box (for the full serial mesh).
+    mfem::Vector pos_min, pos_max;
+    mesh.GetBoundingBox(pos_min, pos_max, 1);
+    pos_min(1) = 0.072;
+    pos_max(1) = 0.072;
+    pos_min(2) = 0.034;
+    pos_max(2) = 0.034;
+    std::shared_ptr<hephaestus::LineSamplerAux> linesamplerwriter =
+        std::make_shared<hephaestus::LineSamplerAux>(
+            gridfunction_name,
+            pos_min,
+            pos_max,
+            num_pts,
+            csv_name,
+            "t (s), x (m), y (m), z (m), B_x (T), B_y (T), B_z (T)");
+    linesamplerwriter->SetPriority(5);
+    problem_builder->AddPostprocessor("LineSamplerWriter", linesamplerwriter);
 
-  hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
-  sequencer.ConstructOperatorProblem();
-  auto problem = problem_builder->ReturnProblem();
+    hephaestus::InputParameters solver_options;
+    solver_options.SetParam("Tolerance", float(1.0e-16));
+    solver_options.SetParam("MaxIter", (unsigned int)1000);
+    problem_builder->SetSolverOptions(solver_options);
 
-  hephaestus::InputParameters exec_params;
-  exec_params.SetParam("Problem", problem.get());
+    hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
+    sequencer.ConstructOperatorProblem();
 
-  auto executioner = std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
+    auto problem = problem_builder->ReturnProblem();
 
-  hephaestus::logger.info("Created exec ");
-  executioner->Execute();
+    hephaestus::InputParameters exec_params;
+    exec_params.SetParam("Problem", problem.get());
 
+    auto executioner = std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
+
+    hephaestus::logger.info("Created exec ");
+    executioner->Execute();
+  }
   MPI_Finalize();
 }
