@@ -104,9 +104,6 @@ protected:
     outputs.Register("ParaViewDataCollection",
                      std::make_shared<mfem::ParaViewDataCollection>("ComplexMaxwellTeam7ParaView"));
 
-    hephaestus::AuxSolvers postprocessors;
-    hephaestus::AuxSolvers preprocessors;
-
     hephaestus::Sources sources;
 
     // NB: needs to live to end of program so register to keep non-zero reference count.
@@ -148,8 +145,6 @@ protected:
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("BoundaryConditions", bc_map);
     params.SetParam("Coefficients", coefficients);
-    params.SetParam("PreProcessors", preprocessors);
-    params.SetParam("PostProcessors", postprocessors);
     params.SetParam("Outputs", outputs);
     params.SetParam("Sources", sources);
     params.SetParam("SolverOptions", solver_options);
@@ -162,11 +157,13 @@ TEST_CASE_METHOD(TestComplexTeam7, "TestComplexTeam7", "[CheckRun]")
 {
   hephaestus::InputParameters params(TestParams());
   auto pmesh = std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
+  mfem::H1_FECollection fecm(1, 3);
+  mfem::ParFiniteElementSpace pfespace(pmesh.get(), &fecm, 3);
+  // Necessary, in case the nodal FE space is not set on the pmesh because it is lowest order.
+  pmesh->SetNodalFESpace(&pfespace);
 
   auto bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
   auto coefficients(params.GetParam<hephaestus::Coefficients>("Coefficients"));
-  auto preprocessors(params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
-  auto postprocessors(params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
   auto sources(params.GetParam<hephaestus::Sources>("Sources"));
   auto outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
   auto solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
@@ -181,22 +178,43 @@ TEST_CASE_METHOD(TestComplexTeam7, "TestComplexTeam7", "[CheckRun]")
                                                         "magnetic_vector_potential_real",
                                                         "magnetic_vector_potential_imag");
   problem_builder->SetMesh(pmesh);
-  problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P1"));
-  problem_builder->AddFESpace(std::string("HDiv"), std::string("RT_3D_P0"));
-  problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P1"));
-  problem_builder->AddGridFunction(std::string("magnetic_vector_potential_real"),
-                                   std::string("HCurl"));
-  problem_builder->AddGridFunction(std::string("magnetic_vector_potential_imag"),
-                                   std::string("HCurl"));
-  problem_builder->AddGridFunction(std::string("magnetic_flux_density_real"), std::string("HDiv"));
-  problem_builder->AddGridFunction(std::string("magnetic_flux_density_imag"), std::string("HDiv"));
+  problem_builder->AddFESpace("HCurl", "ND_3D_P1");
+  problem_builder->AddFESpace("HDiv", "RT_3D_P0");
+  problem_builder->AddFESpace("H1", "H1_3D_P1");
+  problem_builder->AddGridFunction("magnetic_vector_potential_real", "HCurl");
+  problem_builder->AddGridFunction("magnetic_vector_potential_imag", "HCurl");
+  problem_builder->AddGridFunction("magnetic_flux_density_real", "HDiv");
+  problem_builder->AddGridFunction("magnetic_flux_density_imag", "HDiv");
+  problem_builder->RegisterMagneticFluxDensityAux("magnetic_flux_density_real",
+                                                  "magnetic_flux_density_imag");
+
   problem_builder->SetBoundaryConditions(bc_map);
-  problem_builder->SetAuxSolvers(preprocessors);
   problem_builder->SetCoefficients(coefficients);
-  problem_builder->SetPostprocessors(postprocessors);
   problem_builder->SetSources(sources);
   problem_builder->SetOutputs(outputs);
   problem_builder->SetSolverOptions(solver_options);
+
+  // Call LineSampler to save values
+  std::string gridfunction_name("magnetic_flux_density_real");
+  std::string csv_name("SimulatedA1B1Transect.csv");
+  const int num_pts = 100;
+  // Mesh bounding box (for the full serial mesh).
+  mfem::Vector pos_min, pos_max;
+  pmesh->GetBoundingBox(pos_min, pos_max, 1);
+  pos_min(1) = 0.072;
+  pos_max(1) = 0.072;
+  pos_min(2) = 0.034;
+  pos_max(2) = 0.034;
+  std::shared_ptr<hephaestus::LineSamplerAux> linesamplerwriter =
+      std::make_shared<hephaestus::LineSamplerAux>(
+          gridfunction_name,
+          pos_min,
+          pos_max,
+          num_pts,
+          csv_name,
+          "t (s), x (m), y (m), z (m), B_x (T), B_y (T), B_z (T)");
+  linesamplerwriter->SetPriority(5);
+  problem_builder->AddPostprocessor("LineSamplerWriter", linesamplerwriter);
 
   hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
   sequencer.ConstructOperatorProblem();
