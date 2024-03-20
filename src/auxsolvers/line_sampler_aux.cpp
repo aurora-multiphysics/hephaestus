@@ -9,7 +9,7 @@ LineSampler::LineSampler(const mfem::ParGridFunction & gridfunction,
   : _gf(gridfunction),
     _pmesh(*gridfunction.ParFESpace()->GetParMesh()),
     _dim(_pmesh.Dimension()),
-    _vec_dim(_dim), // TODO - fetch from GridFunction
+    _vec_dim(gridfunction.VectorDim()),
     _num_pts(num_pts),
     _gf_ordering(gridfunction.ParFESpace()->GetOrdering()),
     _point_ordering(_gf_ordering),
@@ -51,7 +51,8 @@ LineSampler::WriteToFile(std::ofstream & filestream, std::string sep)
   {
     for (int i = 0; i < _num_pts; i++)
     {
-      if (_gf_ordering == mfem::Ordering::byNODES)
+      filestream << _t << sep;
+      if (_point_ordering == mfem::Ordering::byNODES)
       {
         filestream << _vxyz(i) << sep << _vxyz(_num_pts + i) << sep << _vxyz(2 * _num_pts + i)
                    << sep;

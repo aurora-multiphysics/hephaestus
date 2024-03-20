@@ -15,7 +15,11 @@ public:
 
   ~LineSampler() { _finder.FreeData(); }
 
-  void Solve(double t = 0.0) { _finder.Interpolate(_vxyz, _gf, _interp_vals, _point_ordering); }
+  void Solve(double t = 0.0)
+  {
+    _t = t;
+    _finder.Interpolate(_vxyz, _gf, _interp_vals, _point_ordering);
+  }
 
   void WriteToFile(std::ofstream & filestream, std::string sep = ", ");
 
@@ -25,6 +29,7 @@ private:
   int _dim;
   int _vec_dim;
   int _num_pts;
+  double _t{0.0};
   mfem::Ordering::Type _gf_ordering;
   mfem::Ordering::Type _point_ordering;
   mfem::Vector _vxyz;

@@ -210,7 +210,7 @@ main(int argc, char * argv[])
             pos_max,
             num_pts,
             csv_name,
-            "x (m), y (m), z (m), B_x (T), B_y (T), B_z (T)");
+            "t (s), x (m), y (m), z (m), B_x (T), B_y (T), B_z (T)");
     linesamplerwriter->SetPriority(5);
     problem_builder->AddPostprocessor("LineSamplerWriter", linesamplerwriter);
 
