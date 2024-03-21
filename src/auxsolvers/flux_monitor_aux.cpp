@@ -28,6 +28,7 @@ calcFlux(mfem::GridFunction * v_field, int face_attr, mfem::Coefficient & q)
       continue;
 
     const mfem::FiniteElement & elem = *fes->GetFE(f_tr->Elem1No);
+    f_tr->Attribute = mesh->GetAttribute(f_tr->Elem1No);
     const int int_order = 2 * elem.GetOrder() + 3;
     const mfem::IntegrationRule & ir = mfem::IntRules.Get(f_tr->FaceGeom, int_order);
 
