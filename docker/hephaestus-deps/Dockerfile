@@ -56,6 +56,16 @@ RUN cd /$WORKDIR && \
     cd gslib/ && \
     make CFLAGS='-O2 -fPIC'
 
+# Install ADIOS2
+RUN cd /$WORKDIR && \
+    git clone git clone https://github.com/ornladios/ADIOS2.git&& \
+    cd ADIOS2/ && \
+    mkdir adios2-build && \
+    cd adios2-build/ && \
+    cmake .. -DADIOS2_BUILD_EXAMPLES=ON && \
+    make -j"$compile_cores" && \
+    make install
+
 # Install CMake
 RUN cd /$WORKDIR && \
     git clone https://github.com/Kitware/CMake.git && \
@@ -135,7 +145,9 @@ RUN cd /$WORKDIR && \
     -DMFEM_USE_NETCDF=YES \
     -DHDF5_DIR=/usr/lib/x86_64-linux-gnu/hdf5/mpich/ \
     -DMFEM_USE_GSLIB=YES \
-    -DGSLIB_DIR=/$WORKDIR/gslib/build && \
+    -DGSLIB_DIR=/$WORKDIR/gslib/build \
+    -DMFEM_USE_ADIOS2=YES \
+    -DADIOS2_DIR=/$WORKDIR/ADIOS2/adios2-build  && \
     make -j"$compile_cores" && \
     cd miniapps/common && \
     make -j"$compile_cores"
