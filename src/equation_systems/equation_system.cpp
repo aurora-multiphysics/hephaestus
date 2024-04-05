@@ -128,8 +128,8 @@ EquationSystem::FormLinearSystem(mfem::OperatorHandle & op,
     auto & test_var_name = _test_var_names.at(i);
     auto nlf = _nlfs.Get(test_var_name);
     auto lf = _lfs.Get(test_var_name);
-    trueX.GetBlock(i) = *_xs.at(i);
-    trueRHS.GetBlock(i) = *lf;
+    trueX.GetBlock(i) = *_xs.at(i)->ParallelAssemble();
+    trueRHS.GetBlock(i) = *lf->ParallelAssemble();
     nlf->SetEssentialTrueDofs(_ess_tdof_lists.at(i));
     for (int j = 0; j < _ess_tdof_lists.at(i).Size(); j++)
     {
@@ -167,8 +167,8 @@ EquationSystem::FormLinearSystem(mfem::OperatorHandle & op,
   // Sync memory
   for (int i = 0; i < _test_var_names.size(); i++)
   {
-    trueX.GetBlock(0).SyncAliasMemory(trueX);
-    trueRHS.GetBlock(0).SyncAliasMemory(trueRHS);
+    trueX.GetBlock(i).SyncAliasMemory(trueX);
+    trueRHS.GetBlock(i).SyncAliasMemory(trueRHS);
   }
 
   // Create monolithic matrix
