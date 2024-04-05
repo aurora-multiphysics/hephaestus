@@ -15,7 +15,6 @@ mixed and nonlinear forms) and build methods
 class EquationSystem : public mfem::Operator
 {
 public:
-  using ParBilinearFormKernel = hephaestus::Kernel<mfem::ParBilinearForm>;
   using ParLinearFormKernel = hephaestus::Kernel<mfem::ParLinearForm>;
   using ParNonlinearFormKernel = hephaestus::Kernel<mfem::ParNonlinearForm>;
   using ParMixedBilinearFormKernel = hephaestus::Kernel<mfem::ParMixedBilinearForm>;
@@ -37,7 +36,6 @@ public:
   std::vector<mfem::ParFiniteElementSpace *> _test_pfespaces;
 
   // Components of weak form. // Named according to test variable
-  hephaestus::NamedFieldsMap<mfem::ParBilinearForm> _blfs;
   hephaestus::NamedFieldsMap<mfem::ParLinearForm> _lfs;
   hephaestus::NamedFieldsMap<mfem::ParNonlinearForm> _nlfs;
   hephaestus::NamedFieldsMap<hephaestus::NamedFieldsMap<mfem::ParMixedBilinearForm>>
@@ -48,9 +46,6 @@ public:
   virtual void AddTrialVariableNameIfMissing(const std::string & trial_var_name);
 
   // Add kernels.
-  void AddKernel(const std::string & test_var_name,
-                 std::shared_ptr<ParBilinearFormKernel> blf_kernel);
-
   void AddKernel(const std::string & test_var_name, std::shared_ptr<ParLinearFormKernel> lf_kernel);
 
   void AddKernel(const std::string & test_var_name,
@@ -71,7 +66,7 @@ public:
                     hephaestus::BCMap & bc_map,
                     hephaestus::Coefficients & coefficients);
   virtual void BuildLinearForms(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);
-  virtual void BuildBilinearForms();
+  virtual void BuildNonlinearForms();
   virtual void BuildMixedBilinearForms();
   virtual void BuildEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);
 
@@ -106,8 +101,6 @@ protected:
 
   // Arrays to store kernels to act on each component of weak form. Named
   // according to test variable
-  hephaestus::NamedFieldsMap<std::vector<std::shared_ptr<ParBilinearFormKernel>>> _blf_kernels_map;
-
   hephaestus::NamedFieldsMap<std::vector<std::shared_ptr<ParLinearFormKernel>>> _lf_kernels_map;
 
   hephaestus::NamedFieldsMap<std::vector<std::shared_ptr<ParNonlinearFormKernel>>> _nlf_kernels_map;

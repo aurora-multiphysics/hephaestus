@@ -18,9 +18,9 @@ CurlCurlKernel::Init(hephaestus::GridFunctions & gridfunctions,
 }
 
 void
-CurlCurlKernel::Apply(mfem::ParBilinearForm * blf)
+CurlCurlKernel::Apply(mfem::ParNonlinearForm * nlf)
 {
-  blf->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*_coef));
+  nlf->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*_coef));
 }
 
 } // namespace hephaestus

@@ -18,9 +18,9 @@ VectorFEMassKernel::Init(hephaestus::GridFunctions & gridfunctions,
 }
 
 void
-VectorFEMassKernel::Apply(mfem::ParBilinearForm * blf)
+VectorFEMassKernel::Apply(mfem::ParNonlinearForm * nlf)
 {
-  blf->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*_coef));
+  nlf->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*_coef));
 };
 
 } // namespace hephaestus

@@ -37,24 +37,6 @@ EquationSystem::AddTestVariableNameIfMissing(const std::string & test_var_name)
 
 void
 EquationSystem::AddKernel(const std::string & test_var_name,
-                          std::shared_ptr<ParBilinearFormKernel> blf_kernel)
-{
-  AddTestVariableNameIfMissing(test_var_name);
-
-  if (!_blf_kernels_map.Has(test_var_name))
-  {
-    // 1. Create kernels vector.
-    auto kernels = std::make_shared<std::vector<std::shared_ptr<ParBilinearFormKernel>>>();
-
-    // 2. Register with map to prevent leaks.
-    _blf_kernels_map.Register(test_var_name, std::move(kernels));
-  }
-
-  _blf_kernels_map.GetRef(test_var_name).push_back(std::move(blf_kernel));
-}
-
-void
-EquationSystem::AddKernel(const std::string & test_var_name,
                           std::shared_ptr<ParLinearFormKernel> lf_kernel)
 {
   AddTestVariableNameIfMissing(test_var_name);
@@ -136,22 +118,24 @@ EquationSystem::FormLinearSystem(mfem::OperatorHandle & op,
                                  mfem::BlockVector & trueX,
                                  mfem::BlockVector & trueRHS)
 {
-
   // Allocate block operator
   _h_blocks.DeleteAll();
   _h_blocks.SetSize(_test_var_names.size(), _test_var_names.size());
+
   // Form diagonal blocks.
   for (int i = 0; i < _test_var_names.size(); i++)
   {
     auto & test_var_name = _test_var_names.at(i);
-    auto blf = _blfs.Get(test_var_name);
+    auto nlf = _nlfs.Get(test_var_name);
     auto lf = _lfs.Get(test_var_name);
-    mfem::Vector aux_x, aux_rhs;
-    _h_blocks(i, i) = new mfem::HypreParMatrix;
-    blf->FormLinearSystem(
-        _ess_tdof_lists.at(i), *(_xs.at(i)), *lf, *_h_blocks(i, i), aux_x, aux_rhs);
-    trueX.GetBlock(i) = aux_x;
-    trueRHS.GetBlock(i) = aux_rhs;
+    trueX.GetBlock(i) = *_xs.at(i);
+    trueRHS.GetBlock(i) = *lf;
+    nlf->SetEssentialTrueDofs(_ess_tdof_lists.at(i));
+    for (int j = 0; j < _ess_tdof_lists.at(i).Size(); j++)
+    {
+      (trueRHS.GetBlock(i))(_ess_tdof_lists.at(i)[j]) = 0.0;
+    }
+    _h_blocks(i, i) = dynamic_cast<mfem::HypreParMatrix *>(&nlf->GetGradient(trueX.GetBlock(i)));
   }
 
   // Form off-diagonal blocks
@@ -202,12 +186,19 @@ EquationSystem::BuildJacobian(mfem::BlockVector & trueX, mfem::BlockVector & tru
 void
 EquationSystem::Mult(const mfem::Vector & x, mfem::Vector & residual) const
 {
+  // for (int i = 0; i < _test_var_names.size(); i++)
+  // {
+  //   auto & test_var_name = _test_var_names.at(i);
+  //   auto nlf = _nlfs.Get(test_var_name);
+  //   nlf->Mult(x, residual);
+  // }
   _jacobian->Mult(x, residual);
 }
 
 mfem::Operator &
 EquationSystem::GetGradient(const mfem::Vector & u) const
 {
+  // return _nlfs.Get(_test_var_names.at(0))->GetGradient(u);
   return *_jacobian;
 }
 
@@ -219,7 +210,8 @@ EquationSystem::RecoverFEMSolution(mfem::BlockVector & trueX,
   {
     auto & test_var_name = _test_var_names.at(i);
     trueX.GetBlock(i).SyncAliasMemory(trueX);
-    gridfunctions.Get(test_var_name)->Distribute(&(trueX.GetBlock(i)));
+    // gridfunctions.Get(test_var_name)->Distribute(&(trueX.GetBlock(i)));
+    gridfunctions.Get(test_var_name)->SetFromTrueDofs(trueX.GetBlock(i));
   }
 }
 
@@ -248,15 +240,6 @@ EquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
         std::make_unique<mfem::ParGridFunction>(gridfunctions.Get(test_var_name)->ParFESpace()));
   }
 
-  // Initialise bilinear forms
-
-  for (const auto & [test_var_name, blf_kernels] : _blf_kernels_map)
-  {
-    for (auto & i : *blf_kernels)
-    {
-      i->Init(gridfunctions, fespaces, bc_map, coefficients);
-    }
-  }
   // Initialise linear form kernels
   for (const auto & [test_var_name, lf_kernels] : _lf_kernels_map)
   {
@@ -324,27 +307,27 @@ EquationSystem::BuildLinearForms(hephaestus::BCMap & bc_map, hephaestus::Sources
 }
 
 void
-EquationSystem::BuildBilinearForms()
+EquationSystem::BuildNonlinearForms()
 {
   // Register bilinear forms
   for (int i = 0; i < _test_var_names.size(); i++)
   {
     auto test_var_name = _test_var_names.at(i);
-    _blfs.Register(test_var_name, std::make_shared<mfem::ParBilinearForm>(_test_pfespaces.at(i)));
+    _nlfs.Register(test_var_name, std::make_shared<mfem::ParNonlinearForm>(_test_pfespaces.at(i)));
 
     // Apply kernels
-    auto blf = _blfs.Get(test_var_name);
-    if (_blf_kernels_map.Has(test_var_name))
+    auto nlf = _nlfs.Get(test_var_name);
+    if (_nlf_kernels_map.Has(test_var_name))
     {
-      auto blf_kernels = _blf_kernels_map.GetRef(test_var_name);
+      auto nlf_kernels = _nlf_kernels_map.GetRef(test_var_name);
 
-      for (auto & blf_kernel : blf_kernels)
+      for (auto & nlf_kernel : nlf_kernels)
       {
-        blf_kernel->Apply(blf);
+        nlf_kernel->Apply(nlf);
       }
     }
     // Assemble
-    blf->Assemble();
+    // nlf->Setup();
   }
 }
 
@@ -393,7 +376,7 @@ void
 EquationSystem::BuildEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sources & sources)
 {
   BuildLinearForms(bc_map, sources);
-  BuildBilinearForms();
+  BuildNonlinearForms();
   BuildMixedBilinearForms();
 }
 
@@ -423,9 +406,9 @@ TimeDependentEquationSystem::SetTimeStep(double dt)
     _dt_coef.constant = dt;
     for (auto test_var_name : _test_var_names)
     {
-      auto blf = _blfs.Get(test_var_name);
-      blf->Update();
-      blf->Assemble();
+      auto nlf = _nlfs.Get(test_var_name);
+      nlf->Update();
+      // nlf->Setup();
     }
   }
 }
@@ -435,7 +418,7 @@ TimeDependentEquationSystem::UpdateEquationSystem(hephaestus::BCMap & bc_map,
                                                   hephaestus::Sources & sources)
 {
   BuildLinearForms(bc_map, sources);
-  BuildBilinearForms();
+  BuildNonlinearForms();
   BuildMixedBilinearForms();
 }
 

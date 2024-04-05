@@ -7,7 +7,7 @@ namespace hephaestus
 /*
 (βu, u')
 */
-class VectorFEMassKernel : public Kernel<mfem::ParBilinearForm>
+class VectorFEMassKernel : public Kernel<mfem::ParNonlinearForm>
 {
 public:
   VectorFEMassKernel(const hephaestus::InputParameters & params);
@@ -18,7 +18,7 @@ public:
             const hephaestus::FESpaces & fespaces,
             hephaestus::BCMap & bc_map,
             hephaestus::Coefficients & coefficients) override;
-  void Apply(mfem::ParBilinearForm * blf) override;
+  void Apply(mfem::ParNonlinearForm * nlf) override;
   std::string _coef_name;
   mfem::Coefficient * _coef{nullptr};
 };

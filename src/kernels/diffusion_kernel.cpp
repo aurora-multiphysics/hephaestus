@@ -18,9 +18,9 @@ DiffusionKernel::Init(hephaestus::GridFunctions & gridfunctions,
 }
 
 void
-DiffusionKernel::Apply(mfem::ParBilinearForm * blf)
+DiffusionKernel::Apply(mfem::ParNonlinearForm * nlf)
 {
-  blf->AddDomainIntegrator(new mfem::DiffusionIntegrator(*_coef));
+  nlf->AddDomainIntegrator(new mfem::DiffusionIntegrator(*_coef));
 }
 
 } // namespace hephaestus
