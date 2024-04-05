@@ -180,7 +180,11 @@ TEST_CASE_METHOD(TestAFormSource, "TestAForm", "[CheckRun]")
     exec_params.SetParam("StartTime", float(0.00));
     exec_params.SetParam("EndTime", float(0.05));
     exec_params.SetParam("VisualisationSteps", int(1));
-    exec_params.SetParam("Problem", problem.get());
+
+    // NB: cast to base-class because the executioner must be able to handle time domain
+    // problems with and without equation systems and we will run into bad_cast issues
+    // using std::any with a derived-class pointer.
+    exec_params.SetParam("Problem", static_cast<hephaestus::Problem *>(problem.get()));
 
     auto executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
 
