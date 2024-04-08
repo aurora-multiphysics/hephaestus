@@ -5,41 +5,45 @@ namespace hephaestus
 {
 
 /// Class for steady-state problems with an equation system.
-class SteadyStateEquationSystemProblem : public EquationSystemProblem
-{
-public:
-  friend class SteadyStateEquationSystemProblemBuilder;
+using SteadyStateEquationSystemProblem =
+    EquationSystemProblemTemplate<EquationSystemProblemOperator>;
 
-  SteadyStateEquationSystemProblem() = default;
-  ~SteadyStateEquationSystemProblem() override = default;
+// class SteadyStateEquationSystemProblem : public EquationSystemProblem
+// {
+// public:
+//   friend class SteadyStateEquationSystemProblemBuilder;
 
-  [[nodiscard]] hephaestus::EquationSystem * GetEquationSystem() const override
-  {
-    return GetOperator()->GetEquationSystem();
-  }
+//   SteadyStateEquationSystemProblem() = default;
+//   ~SteadyStateEquationSystemProblem() override = default;
 
-  [[nodiscard]] hephaestus::EquationSystemProblemOperator * GetOperator() const override
-  {
-    if (!_ss_operator)
-    {
-      MFEM_ABORT("No ProblemOperator has been added to SteadyStateProblem.");
-    }
+//   [[nodiscard]] hephaestus::EquationSystem * GetEquationSystem() const override
+//   {
+//     return GetOperator()->GetEquationSystem();
+//   }
 
-    return _ss_operator.get();
-  }
+//   [[nodiscard]] hephaestus::EquationSystemProblemOperator * GetOperator() const override
+//   {
+//     if (!_ss_operator)
+//     {
+//       MFEM_ABORT("No ProblemOperator has been added to SteadyStateProblem.");
+//     }
 
-  void SetOperator(std::unique_ptr<EquationSystemProblemOperator> new_problem_operator)
-  {
-    _ss_operator.reset();
-    _ss_operator = std::move(new_problem_operator);
-  }
+//     return _ss_operator.get();
+//   }
 
-private:
-  std::unique_ptr<hephaestus::EquationSystemProblemOperator> _ss_operator{nullptr};
-};
+//   void SetOperator(std::unique_ptr<EquationSystemProblemOperator> new_problem_operator)
+//   {
+//     _ss_operator.reset();
+//     _ss_operator = std::move(new_problem_operator);
+//   }
+
+// private:
+//   std::unique_ptr<hephaestus::EquationSystemProblemOperator> _ss_operator{nullptr};
+// };
 
 // Builder class of a frequency-domain problem.
-class SteadyStateEquationSystemProblemBuilder : public EquationSystemProblemBuilder
+class SteadyStateEquationSystemProblemBuilder
+  : public EquationSystemProblemBuilder<SteadyStateEquationSystemProblem>
 {
 public:
   SteadyStateEquationSystemProblemBuilder()
@@ -70,11 +74,21 @@ public:
 
   void ConstructTimestepper() override {}
 
+  void InitializeKernels() override
+  {
+    ProblemBuilder::InitializeKernels();
+
+    GetProblem()->GetEquationSystem()->Init(GetProblem()->_gridfunctions,
+                                            GetProblem()->_fespaces,
+                                            GetProblem()->_bc_map,
+                                            GetProblem()->_coefficients);
+  }
+
 protected:
   std::unique_ptr<hephaestus::SteadyStateEquationSystemProblem> _problem{nullptr};
   mfem::ConstantCoefficient _one_coef{1.0};
 
-  hephaestus::SteadyStateEquationSystemProblem * GetProblem() override { return _problem.get(); };
+  SteadyStateEquationSystemProblem * GetProblem() override { return _problem.get(); };
 };
 
 } // namespace hephaestus

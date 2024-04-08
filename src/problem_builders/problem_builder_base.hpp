@@ -45,18 +45,18 @@ public:
   [[nodiscard]] virtual mfem::Operator * GetOperator() const = 0;
 };
 
-/// Base class for a Problem with an EquationSystem.
-class EquationSystemProblem : public Problem
-{
-public:
-  EquationSystemProblem() = default;
-  ~EquationSystemProblem() override = default;
+// /// Base class for a Problem with an EquationSystem.
+// class EquationSystemProblem : public Problem
+// {
+// public:
+//   EquationSystemProblem() = default;
+//   ~EquationSystemProblem() override = default;
 
-  [[nodiscard]] virtual hephaestus::EquationSystem * GetEquationSystem() const = 0;
-};
+//   [[nodiscard]] virtual hephaestus::EquationSystem * GetEquationSystem() const = 0;
+// };
 
 /// Template class for TimeDomainProblem and SteadyStateProblem.
-template <typename ProblemOperator>
+template <class ProblemOperator>
 class ProblemTemplate : public Problem
 {
 public:
@@ -81,6 +81,19 @@ public:
 
 protected:
   std::unique_ptr<ProblemOperator> _operator{nullptr};
+};
+
+template <class EquationSystemProblemOperator>
+class EquationSystemProblemTemplate : public ProblemTemplate<EquationSystemProblemOperator>
+{
+public:
+  EquationSystemProblemTemplate() = default;
+  ~EquationSystemProblemTemplate() override = default;
+
+  [[nodiscard]] EquationSystem * GetEquationSystem() const
+  {
+    return ProblemTemplate<EquationSystemProblemOperator>::GetOperator()->GetEquationSystem();
+  }
 };
 
 /// ProblemBuilder for a Problem with no EquationSystem.
@@ -177,6 +190,7 @@ protected:
   virtual Problem * GetProblem() = 0;
 };
 
+template <class EquationSystemProblem>
 class EquationSystemProblemBuilder : public ProblemBuilder
 {
 public:
@@ -187,7 +201,7 @@ public:
     GetProblem()->GetEquationSystem()->AddKernel(var_name, std::move(kernel));
   }
 
-  void InitializeKernels() final;
+  // void InitializeKernels() override;
 
 protected:
   EquationSystemProblem * GetProblem() override = 0;
