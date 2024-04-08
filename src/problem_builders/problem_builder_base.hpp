@@ -185,6 +185,8 @@ template <class EquationSystemProblem>
 class EquationSystemProblemBuilder : public ProblemBuilder
 {
 public:
+  EquationSystemProblemBuilder() : _problem{std::make_unique<EquationSystemProblem>()} {}
+
   template <class T>
   void AddKernel(std::string var_name, std::shared_ptr<hephaestus::Kernel<T>> kernel)
   {
@@ -192,10 +194,14 @@ public:
     GetProblem()->GetEquationSystem()->AddKernel(var_name, std::move(kernel));
   }
 
+  virtual std::unique_ptr<EquationSystemProblem> ReturnProblem() { return std::move(_problem); }
+
   // void InitializeKernels() override;
 
 protected:
-  EquationSystemProblem * GetProblem() override = 0;
+  EquationSystemProblem * GetProblem() override { return _problem.get(); }
+
+  std::unique_ptr<EquationSystemProblem> _problem{nullptr};
 };
 
 } // namespace hephaestus

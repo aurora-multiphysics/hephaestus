@@ -13,17 +13,8 @@ class TimeDomainEquationSystemProblemBuilder
   : public EquationSystemProblemBuilder<TimeDomainEquationSystemProblem>
 {
 public:
-  TimeDomainEquationSystemProblemBuilder()
-    : _problem(std::make_unique<hephaestus::TimeDomainEquationSystemProblem>())
-  {
-  }
-
+  TimeDomainEquationSystemProblemBuilder() = default;
   ~TimeDomainEquationSystemProblemBuilder() override = default;
-
-  virtual std::unique_ptr<hephaestus::TimeDomainEquationSystemProblem> ReturnProblem()
-  {
-    return std::move(_problem);
-  }
 
   static std::vector<mfem::ParGridFunction *>
   RegisterTimeDerivatives(std::vector<std::string> gridfunction_names,
@@ -56,10 +47,7 @@ public:
   }
 
 protected:
-  std::unique_ptr<hephaestus::TimeDomainEquationSystemProblem> _problem{nullptr};
   mfem::ConstantCoefficient _one_coef{1.0};
-
-  TimeDomainEquationSystemProblem * GetProblem() override { return _problem.get(); };
 };
 
 } // namespace hephaestus

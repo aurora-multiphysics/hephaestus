@@ -13,17 +13,8 @@ class SteadyStateEquationSystemProblemBuilder
   : public EquationSystemProblemBuilder<SteadyStateEquationSystemProblem>
 {
 public:
-  SteadyStateEquationSystemProblemBuilder()
-    : _problem(std::make_unique<hephaestus::SteadyStateEquationSystemProblem>())
-  {
-  }
-
+  SteadyStateEquationSystemProblemBuilder() = default;
   ~SteadyStateEquationSystemProblemBuilder() override = default;
-
-  virtual std::unique_ptr<hephaestus::SteadyStateEquationSystemProblem> ReturnProblem()
-  {
-    return std::move(_problem);
-  }
 
   void RegisterFESpaces() override {}
 
@@ -52,10 +43,7 @@ public:
   }
 
 protected:
-  std::unique_ptr<hephaestus::SteadyStateEquationSystemProblem> _problem{nullptr};
   mfem::ConstantCoefficient _one_coef{1.0};
-
-  SteadyStateEquationSystemProblem * GetProblem() override { return _problem.get(); };
 };
 
 } // namespace hephaestus
