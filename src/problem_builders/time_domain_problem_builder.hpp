@@ -4,8 +4,6 @@
 
 namespace hephaestus
 {
-
-// Stores data required to describe a time domain formulation
 using TimeDomainProblem = ProblemTemplate<TimeDomainProblemOperator>;
 
 class TimeDomainProblemBuilder : public ProblemBuilder
@@ -41,10 +39,10 @@ public:
   void ConstructTimestepper() override;
 
 protected:
-  std::unique_ptr<hephaestus::TimeDomainProblem> _problem{nullptr};
+  std::unique_ptr<TimeDomainProblem> _problem{nullptr};
   mfem::ConstantCoefficient _one_coef{1.0};
 
-  hephaestus::TimeDomainProblem * GetProblem() override { return _problem.get(); };
+  TimeDomainProblem * GetProblem() override { return _problem.get(); };
 };
 
 } // namespace hephaestus

@@ -4,7 +4,6 @@
 
 namespace hephaestus
 {
-// Stores data required to describe a time domain formulation
 using TimeDomainEquationSystemProblem =
     EquationSystemProblemTemplate<TimeDomainEquationSystemProblemOperator>;
 
