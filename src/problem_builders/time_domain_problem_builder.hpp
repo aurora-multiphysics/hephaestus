@@ -4,34 +4,9 @@
 
 namespace hephaestus
 {
+
 // Stores data required to describe a time domain formulation
-class TimeDomainProblem : public hephaestus::Problem
-{
-public:
-  friend class TimeDomainProblemBuilder;
-
-  TimeDomainProblem() = default;
-  ~TimeDomainProblem() override = default;
-
-  [[nodiscard]] hephaestus::TimeDomainProblemOperator * GetOperator() const override
-  {
-    if (!_td_operator)
-    {
-      MFEM_ABORT("No TimeDomainProblemOperator has been added to TimeDomainProblem.");
-    }
-
-    return _td_operator.get();
-  }
-
-  void SetOperator(std::unique_ptr<TimeDomainProblemOperator> new_problem_operator)
-  {
-    _td_operator.reset();
-    _td_operator = std::move(new_problem_operator);
-  }
-
-protected:
-  std::unique_ptr<hephaestus::TimeDomainProblemOperator> _td_operator{nullptr};
-};
+using TimeDomainProblem = ProblemTemplate<TimeDomainProblemOperator>;
 
 class TimeDomainProblemBuilder : public ProblemBuilder
 {

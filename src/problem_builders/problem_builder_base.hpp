@@ -55,6 +55,34 @@ public:
   [[nodiscard]] virtual hephaestus::EquationSystem * GetEquationSystem() const = 0;
 };
 
+/// Template class for TimeDomainProblem and SteadyStateProblem.
+template <typename ProblemOperator>
+class ProblemTemplate : public Problem
+{
+public:
+  ProblemTemplate() = default;
+  ~ProblemTemplate() override = default;
+
+  [[nodiscard]] ProblemOperator * GetOperator() const override
+  {
+    if (!_operator)
+    {
+      MFEM_ABORT("No operator has been added.");
+    }
+
+    return _operator.get();
+  }
+
+  void SetOperator(std::unique_ptr<ProblemOperator> new_problem_operator)
+  {
+    _operator.reset();
+    _operator = std::move(new_problem_operator);
+  }
+
+protected:
+  std::unique_ptr<ProblemOperator> _operator{nullptr};
+};
+
 /// ProblemBuilder for a Problem with no EquationSystem.
 class ProblemBuilder
 {
