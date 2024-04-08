@@ -36,10 +36,10 @@ public:
   {
     ProblemBuilder::InitializeKernels();
 
-    GetProblem()->GetEquationSystem()->Init(GetProblem()->_gridfunctions,
-                                            GetProblem()->_fespaces,
-                                            GetProblem()->_bc_map,
-                                            GetProblem()->_coefficients);
+    GetEquationSystem()->Init(GetProblem()->_gridfunctions,
+                              GetProblem()->_fespaces,
+                              GetProblem()->_bc_map,
+                              GetProblem()->_coefficients);
   }
 
 protected:

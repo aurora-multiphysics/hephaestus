@@ -190,8 +190,8 @@ public:
   template <class T>
   void AddKernel(std::string var_name, std::shared_ptr<hephaestus::Kernel<T>> kernel)
   {
-    GetProblem()->GetEquationSystem()->AddTrialVariableNameIfMissing(var_name);
-    GetProblem()->GetEquationSystem()->AddKernel(var_name, std::move(kernel));
+    GetEquationSystem()->AddTrialVariableNameIfMissing(var_name);
+    GetEquationSystem()->AddKernel(var_name, std::move(kernel));
   }
 
   virtual std::unique_ptr<EquationSystemProblem> ReturnProblem() { return std::move(_problem); }
@@ -200,6 +200,8 @@ public:
 
 protected:
   EquationSystemProblem * GetProblem() override { return _problem.get(); }
+
+  EquationSystem * GetEquationSystem() { return GetProblem()->GetEquationSystem(); }
 
   std::unique_ptr<EquationSystemProblem> _problem{nullptr};
 };
