@@ -45,16 +45,6 @@ public:
   [[nodiscard]] virtual mfem::Operator * GetOperator() const = 0;
 };
 
-// /// Base class for a Problem with an EquationSystem.
-// class EquationSystemProblem : public Problem
-// {
-// public:
-//   EquationSystemProblem() = default;
-//   ~EquationSystemProblem() override = default;
-
-//   [[nodiscard]] virtual hephaestus::EquationSystem * GetEquationSystem() const = 0;
-// };
-
 /// Template class for TimeDomainProblem and SteadyStateProblem.
 template <class ProblemOperator>
 class ProblemTemplate : public Problem

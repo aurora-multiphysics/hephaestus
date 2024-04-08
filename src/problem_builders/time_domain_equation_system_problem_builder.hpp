@@ -8,41 +8,6 @@ namespace hephaestus
 using TimeDomainEquationSystemProblem =
     EquationSystemProblemTemplate<TimeDomainEquationSystemProblemOperator>;
 
-// class TimeDomainEquationSystemProblem : public hephaestus::EquationSystemProblem
-// {
-// public:
-//   friend class TimeDomainEquationSystemProblemBuilder;
-
-//   TimeDomainEquationSystemProblem() = default;
-//   ~TimeDomainEquationSystemProblem() override = default;
-
-//   [[nodiscard]] hephaestus::TimeDependentEquationSystem * GetEquationSystem() const override
-//   {
-//     return GetOperator()->GetEquationSystem();
-//   }
-
-//   [[nodiscard]] hephaestus::TimeDomainEquationSystemProblemOperator * GetOperator() const
-//   override
-//   {
-//     if (!_td_operator)
-//     {
-//       MFEM_ABORT("No TimeDomainEquationSystemProblemOperator has been added to "
-//                  "TimeDomainEquationSystemProblem.");
-//     }
-
-//     return _td_operator.get();
-//   }
-
-//   void SetOperator(std::unique_ptr<TimeDomainEquationSystemProblemOperator> new_problem_operator)
-//   {
-//     _td_operator.reset();
-//     _td_operator = std::move(new_problem_operator);
-//   }
-
-// protected:
-//   std::unique_ptr<hephaestus::TimeDomainEquationSystemProblemOperator> _td_operator{nullptr};
-// };
-
 // Builder class of a time-domain EM formulation.
 class TimeDomainEquationSystemProblemBuilder
   : public EquationSystemProblemBuilder<TimeDomainEquationSystemProblem>

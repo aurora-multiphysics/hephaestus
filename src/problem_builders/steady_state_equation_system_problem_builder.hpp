@@ -8,39 +8,6 @@ namespace hephaestus
 using SteadyStateEquationSystemProblem =
     EquationSystemProblemTemplate<EquationSystemProblemOperator>;
 
-// class SteadyStateEquationSystemProblem : public EquationSystemProblem
-// {
-// public:
-//   friend class SteadyStateEquationSystemProblemBuilder;
-
-//   SteadyStateEquationSystemProblem() = default;
-//   ~SteadyStateEquationSystemProblem() override = default;
-
-//   [[nodiscard]] hephaestus::EquationSystem * GetEquationSystem() const override
-//   {
-//     return GetOperator()->GetEquationSystem();
-//   }
-
-//   [[nodiscard]] hephaestus::EquationSystemProblemOperator * GetOperator() const override
-//   {
-//     if (!_ss_operator)
-//     {
-//       MFEM_ABORT("No ProblemOperator has been added to SteadyStateProblem.");
-//     }
-
-//     return _ss_operator.get();
-//   }
-
-//   void SetOperator(std::unique_ptr<EquationSystemProblemOperator> new_problem_operator)
-//   {
-//     _ss_operator.reset();
-//     _ss_operator = std::move(new_problem_operator);
-//   }
-
-// private:
-//   std::unique_ptr<hephaestus::EquationSystemProblemOperator> _ss_operator{nullptr};
-// };
-
 // Builder class of a frequency-domain problem.
 class SteadyStateEquationSystemProblemBuilder
   : public EquationSystemProblemBuilder<SteadyStateEquationSystemProblem>
