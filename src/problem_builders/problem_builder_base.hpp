@@ -73,6 +73,7 @@ protected:
   std::unique_ptr<ProblemOperator> _operator{nullptr};
 };
 
+/// Template class for TimeDomainEquationSystemProblem and SteadyStateEquationSystemProblem.
 template <class EquationSystemProblemOperator>
 class EquationSystemProblemTemplate : public ProblemTemplate<EquationSystemProblemOperator>
 {
