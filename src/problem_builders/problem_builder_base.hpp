@@ -11,7 +11,7 @@
 namespace hephaestus
 {
 
-/// Base class for a Problem with no EquationSystem.
+/// Base problem class.
 class Problem
 {
 public:
@@ -45,7 +45,8 @@ public:
   [[nodiscard]] virtual mfem::Operator * GetOperator() const = 0;
 };
 
-/// Template class for TimeDomainProblem and SteadyStateProblem.
+/// Template class inheriting from base Problem class. Implements @a GetOperator method and stores
+/// a unique-pointer to the problem operator.
 template <class ProblemOperator>
 class ProblemTemplate : public Problem
 {
@@ -73,7 +74,8 @@ protected:
   std::unique_ptr<ProblemOperator> _operator{nullptr};
 };
 
-/// Template class for TimeDomainEquationSystemProblem and SteadyStateEquationSystemProblem.
+/// Template class for problems with an equation system. Extends ProblemTemplate class by
+/// adding a @a GetEquationSystem method.
 template <class EquationSystemProblemOperator>
 class EquationSystemProblemTemplate : public ProblemTemplate<EquationSystemProblemOperator>
 {
@@ -87,7 +89,7 @@ public:
   }
 };
 
-/// ProblemBuilder for a Problem with no EquationSystem.
+/// ProblemBuilder base class.
 class ProblemBuilder
 {
 public:
@@ -138,10 +140,7 @@ public:
   void InitializeAuxSolvers();
   void InitializeOutputs();
 
-  /**
-   * Call to setup a problem. Similar to "ConstructEquationSystemProblem" in the removed
-   * ProblemBuilderSequencer.
-   */
+  /// Call to setup a problem. Similar to @a ConstructEquationSystemProblem in ProblemBuilderSequencer.
   void FinalizeProblem();
 
 protected:
@@ -178,15 +177,19 @@ protected:
                                               ._print_level = GetGlobalPrintLevel(),
                                               ._k_dim = 10});
 
+  /// Returns a pointer to the problem.
   virtual Problem * GetProblem() = 0;
 };
 
+/// Problem builder template class for problems with an equation system.
 template <class EquationSystemProblem>
 class EquationSystemProblemBuilder : public ProblemBuilder
 {
 public:
   EquationSystemProblemBuilder() : _problem{std::make_unique<EquationSystemProblem>()} {}
+  ~EquationSystemProblemBuilder() override = default;
 
+  /// Add a kernel to the problem's equation system.
   template <class T>
   void AddKernel(std::string var_name, std::shared_ptr<hephaestus::Kernel<T>> kernel)
   {
@@ -194,8 +197,10 @@ public:
     GetEquationSystem()->AddKernel(var_name, std::move(kernel));
   }
 
+  /// A unique pointer is returned with the (hopefully constructed) problem.
   virtual std::unique_ptr<EquationSystemProblem> ReturnProblem() { return std::move(_problem); }
 
+  /// Ensures that the equation system is also initialized. Note: "final".
   void InitializeKernels() final
   {
     ProblemBuilder::InitializeKernels();
@@ -207,10 +212,13 @@ public:
   }
 
 protected:
+  /// Returns a pointer to the problem.
   EquationSystemProblem * GetProblem() override { return _problem.get(); }
 
+  /// Returns a pointer to the problem's equation system.
   EquationSystem * GetEquationSystem() { return GetProblem()->GetEquationSystem(); }
 
+  /// Stores a pointer to the problem.
   std::unique_ptr<EquationSystemProblem> _problem{nullptr};
 };
 
