@@ -36,16 +36,6 @@ public:
 
   void ConstructTimestepper() override;
 
-  void InitializeKernels() override
-  {
-    ProblemBuilder::InitializeKernels();
-
-    GetEquationSystem()->Init(GetProblem()->_gridfunctions,
-                              GetProblem()->_fespaces,
-                              GetProblem()->_bc_map,
-                              GetProblem()->_coefficients);
-  }
-
 protected:
   mfem::ConstantCoefficient _one_coef{1.0};
 };

@@ -368,16 +368,4 @@ ProblemBuilder::FinalizeProblem()
   InitializeOutputs();
 }
 
-// template <class EquationSystemProblem>
-// void
-// EquationSystemProblemBuilder<EquationSystemProblem>::InitializeKernels()
-// {
-//   ProblemBuilder::InitializeKernels();
-
-//   GetProblem()->GetEquationSystem()->Init(GetProblem()->_gridfunctions,
-//                                           GetProblem()->_fespaces,
-//                                           GetProblem()->_bc_map,
-//                                           GetProblem()->_coefficients);
-// }
-
 } // namespace hephaestus

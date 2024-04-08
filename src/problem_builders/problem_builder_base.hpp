@@ -196,7 +196,15 @@ public:
 
   virtual std::unique_ptr<EquationSystemProblem> ReturnProblem() { return std::move(_problem); }
 
-  // void InitializeKernels() override;
+  void InitializeKernels() final
+  {
+    ProblemBuilder::InitializeKernels();
+
+    GetEquationSystem()->Init(GetProblem()->_gridfunctions,
+                              GetProblem()->_fespaces,
+                              GetProblem()->_bc_map,
+                              GetProblem()->_coefficients);
+  }
 
 protected:
   EquationSystemProblem * GetProblem() override { return _problem.get(); }
