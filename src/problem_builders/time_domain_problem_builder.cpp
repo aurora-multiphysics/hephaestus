@@ -41,7 +41,7 @@ TimeDomainProblemBuilder::SetOperatorGridFunctions()
 void
 TimeDomainProblemBuilder::ConstructOperator()
 {
-  _problem->SetOperator(std::make_unique<hephaestus::TimeDomainProblemOperator>(*_problem));
+  _problem->ConstructOperator();
 }
 
 void

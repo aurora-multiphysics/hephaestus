@@ -43,50 +43,14 @@ public:
   int _num_procs;
 
   [[nodiscard]] virtual mfem::Operator * GetOperator() const = 0;
+
+  virtual void ConstructOperator() = 0;
 };
 
-/// Template class inheriting from base Problem class. Implements @a GetOperator method and stores
-/// a unique-pointer to the problem operator.
-template <class ProblemOperator>
-class ProblemTemplate : public Problem
+class EquationSystemProblemInterface
 {
 public:
-  ProblemTemplate() = default;
-  ~ProblemTemplate() override = default;
-
-  [[nodiscard]] ProblemOperator * GetOperator() const override
-  {
-    if (!_operator)
-    {
-      MFEM_ABORT("No operator has been added.");
-    }
-
-    return _operator.get();
-  }
-
-  void SetOperator(std::unique_ptr<ProblemOperator> new_problem_operator)
-  {
-    _operator.reset();
-    _operator = std::move(new_problem_operator);
-  }
-
-protected:
-  std::unique_ptr<ProblemOperator> _operator{nullptr};
-};
-
-/// Template class for problems with an equation system. Extends ProblemTemplate class by
-/// adding a @a GetEquationSystem method.
-template <class EquationSystemProblemOperator>
-class EquationSystemProblemTemplate : public ProblemTemplate<EquationSystemProblemOperator>
-{
-public:
-  EquationSystemProblemTemplate() = default;
-  ~EquationSystemProblemTemplate() override = default;
-
-  [[nodiscard]] EquationSystem * GetEquationSystem() const
-  {
-    return ProblemTemplate<EquationSystemProblemOperator>::GetOperator()->GetEquationSystem();
-  }
+  [[nodiscard]] virtual EquationSystem * GetEquationSystem() const = 0;
 };
 
 /// ProblemBuilder base class.

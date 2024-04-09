@@ -4,7 +4,35 @@
 
 namespace hephaestus
 {
-using TimeDomainProblem = ProblemTemplate<TimeDomainProblemOperator>;
+
+class TimeDomainProblem : public Problem
+{
+public:
+  [[nodiscard]] TimeDomainProblemOperator * GetOperator() const override
+  {
+    if (!_problem_operator)
+    {
+      MFEM_ABORT("No operator has been added.");
+    }
+
+    return _problem_operator.get();
+  }
+
+  void SetOperator(std::unique_ptr<TimeDomainProblemOperator> problem_operator)
+  {
+    _problem_operator.reset();
+    _problem_operator = std::move(problem_operator);
+  }
+
+  void ConstructOperator() override
+  {
+    _problem_operator.reset();
+    _problem_operator = std::make_unique<TimeDomainProblemOperator>(*this);
+  }
+
+private:
+  std::unique_ptr<TimeDomainProblemOperator> _problem_operator{nullptr};
+};
 
 class TimeDomainProblemBuilder : public ProblemBuilder
 {
