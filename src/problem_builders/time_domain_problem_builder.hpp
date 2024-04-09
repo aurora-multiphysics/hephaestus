@@ -46,10 +46,7 @@ public:
 
   ~TimeDomainProblemBuilder() override = default;
 
-  virtual std::unique_ptr<hephaestus::TimeDomainProblem> ReturnProblem()
-  {
-    return std::move(_problem);
-  }
+  std::unique_ptr<hephaestus::TimeDomainProblem> ReturnProblem() { return std::move(_problem); }
 
   static std::vector<mfem::ParGridFunction *>
   RegisterTimeDerivatives(std::vector<std::string> gridfunction_names,

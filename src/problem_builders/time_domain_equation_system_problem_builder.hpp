@@ -59,6 +59,18 @@ public:
   RegisterTimeDerivatives(std::vector<std::string> gridfunction_names,
                           hephaestus::GridFunctions & gridfunctions);
 
+  void InitializeKernels() final
+  {
+    ProblemBuilder::InitializeKernels();
+
+    GetEquationSystem()->Init(GetProblem()->_gridfunctions,
+                              GetProblem()->_fespaces,
+                              GetProblem()->_bc_map,
+                              GetProblem()->_coefficients);
+  }
+
+  std::unique_ptr<TimeDomainEquationSystemProblem> ReturnProblem() { return std::move(_problem); }
+
   void RegisterFESpaces() override {}
 
   void RegisterGridFunctions() override;
