@@ -161,7 +161,7 @@ TEST_CASE_METHOD(TestComplexERMESMouse, "TestComplexERMESMouse", "[CheckRun]")
   auto problem = problem_builder->ReturnProblem();
 
   hephaestus::InputParameters exec_params;
-  exec_params.SetParam("Problem", problem.get());
+  exec_params.SetParam("Problem", static_cast<hephaestus::SteadyStateProblem *>(problem.get()));
 
   auto executioner = std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
 

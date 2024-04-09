@@ -29,7 +29,7 @@ public:
 
   void Execute() const override;
 
-  hephaestus::Problem * _problem{nullptr};
+  hephaestus::TimeDomainProblem * _problem{nullptr};
 };
 
 } // namespace hephaestus

@@ -196,7 +196,7 @@ TEST_CASE_METHOD(TestAVFormSource, "TestAVFormSource", "[CheckRun]")
     exec_params.SetParam("StartTime", float(0.00));
     exec_params.SetParam("EndTime", float(0.05));
     exec_params.SetParam("VisualisationSteps", int(1));
-    exec_params.SetParam("Problem", static_cast<hephaestus::Problem *>(problem.get()));
+    exec_params.SetParam("Problem", static_cast<hephaestus::TimeDomainProblem *>(problem.get()));
 
     auto executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
 

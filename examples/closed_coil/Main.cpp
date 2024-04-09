@@ -144,7 +144,7 @@ main(int argc, char * argv[])
   hephaestus::InputParameters exec_params;
   exec_params.SetParam("VisualisationSteps", int(1));
   exec_params.SetParam("UseGLVis", true);
-  exec_params.SetParam("Problem", problem.get());
+  exec_params.SetParam("Problem", static_cast<hephaestus::SteadyStateProblem *>(problem.get()));
 
   auto executioner = std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
 
