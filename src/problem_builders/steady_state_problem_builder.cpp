@@ -6,20 +6,22 @@ namespace hephaestus
 void
 SteadyStateProblemBuilder::SetOperatorGridFunctions()
 {
-  _problem->GetOperator()->SetGridFunctions();
+  GetProblem()->GetOperator()->SetGridFunctions();
 }
 
 void
 SteadyStateProblemBuilder::ConstructOperator()
 {
-  _problem->ConstructOperator();
+  GetProblem()->ConstructOperator();
 }
 
 void
 SteadyStateProblemBuilder::ConstructState()
 {
-  _problem->_f =
-      std::make_unique<mfem::BlockVector>(_problem->GetOperator()->_true_offsets); // Vector of dofs
-  _problem->GetOperator()->Init(*(_problem->_f)); // Set up initial conditions
+  auto problem_operator = GetProblem()->GetOperator();
+
+  GetProblem()->_f =
+      std::make_unique<mfem::BlockVector>(problem_operator->_true_offsets); // Vector of dofs
+  problem_operator->Init(*(GetProblem()->_f)); // Set up initial conditions
 }
 } // namespace hephaestus
