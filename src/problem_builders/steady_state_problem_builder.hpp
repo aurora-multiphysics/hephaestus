@@ -69,8 +69,6 @@ public:
 protected:
   [[nodiscard]] SteadyStateProblem * GetProblem() const override { return _problem.get(); };
 
-  mfem::ConstantCoefficient _one_coef{1.0};
-
 private:
   std::unique_ptr<SteadyStateProblem> _problem{nullptr};
 };

@@ -69,8 +69,6 @@ public:
   void ConstructTimestepper() override;
 
 protected:
-  mfem::ConstantCoefficient _one_coef{1.0};
-
   [[nodiscard]] TimeDomainProblem * GetProblem() const override { return _problem.get(); };
 
 private:

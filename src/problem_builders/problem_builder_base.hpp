@@ -143,6 +143,9 @@ protected:
 
   /// Returns a pointer to the problem.
   [[nodiscard]] virtual Problem * GetProblem() const = 0;
+
+  /// Constant coefficient. Used in some of the derived classes.
+  mfem::ConstantCoefficient _one_coef{1.0};
 };
 
 class EquationSystemProblemBuilderInterface
