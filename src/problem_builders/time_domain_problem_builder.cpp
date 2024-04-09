@@ -25,33 +25,35 @@ void
 TimeDomainProblemBuilder::RegisterGridFunctions()
 {
   std::vector<std::string> gridfunction_names;
-  for (auto const & [name, gf] : _problem->_gridfunctions)
+  for (auto const & [name, gf] : GetProblem()->_gridfunctions)
   {
     gridfunction_names.push_back(name);
   }
-  RegisterTimeDerivatives(gridfunction_names, _problem->_gridfunctions);
+  RegisterTimeDerivatives(gridfunction_names, GetProblem()->_gridfunctions);
 }
 
 void
 TimeDomainProblemBuilder::SetOperatorGridFunctions()
 {
-  _problem->GetOperator()->SetGridFunctions();
+  GetProblem()->GetOperator()->SetGridFunctions();
 }
 
 void
 TimeDomainProblemBuilder::ConstructOperator()
 {
-  _problem->ConstructOperator();
+  GetProblem()->ConstructOperator();
 }
 
 void
 TimeDomainProblemBuilder::ConstructState()
 {
+  auto problem_operator = GetProblem()->GetOperator();
+
   // Vector of dofs.
-  _problem->_f = std::make_unique<mfem::BlockVector>(_problem->GetOperator()->_true_offsets);
-  *(_problem->_f) = 0.0;                          // give initial value
-  _problem->GetOperator()->Init(*(_problem->_f)); // Set up initial conditions
-  _problem->GetOperator()->SetTime(0.0);
+  GetProblem()->_f = std::make_unique<mfem::BlockVector>(problem_operator->_true_offsets);
+  *(GetProblem()->_f) = 0.0;                   // give initial value
+  problem_operator->Init(*(GetProblem()->_f)); // Set up initial conditions
+  problem_operator->SetTime(0.0);
 }
 
 void

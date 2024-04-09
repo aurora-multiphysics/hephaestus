@@ -55,37 +55,9 @@ public:
 
   ~TimeDomainEquationSystemProblemBuilder() override = default;
 
-  static std::vector<mfem::ParGridFunction *>
-  RegisterTimeDerivatives(std::vector<std::string> gridfunction_names,
-                          hephaestus::GridFunctions & gridfunctions);
-
-  void InitializeKernels() final
-  {
-    ProblemBuilder::InitializeKernels();
-
-    GetEquationSystem()->Init(GetProblem()->_gridfunctions,
-                              GetProblem()->_fespaces,
-                              GetProblem()->_bc_map,
-                              GetProblem()->_coefficients);
-  }
+  void InitializeKernels() final;
 
   std::unique_ptr<TimeDomainEquationSystemProblem> ReturnProblem() { return std::move(_problem); }
-
-  void RegisterFESpaces() override {}
-
-  void RegisterGridFunctions() override;
-
-  void RegisterAuxSolvers() override {}
-
-  void RegisterCoefficients() override {}
-
-  void SetOperatorGridFunctions() override;
-
-  void ConstructOperator() override;
-
-  void ConstructState() override;
-
-  void ConstructTimestepper() override;
 
 protected:
   std::unique_ptr<TimeDomainEquationSystemProblem> _problem{nullptr};
