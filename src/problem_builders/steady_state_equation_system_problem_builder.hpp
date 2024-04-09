@@ -45,13 +45,15 @@ private:
   std::unique_ptr<EquationSystemProblemOperator> _problem_operator{nullptr};
 };
 
-// Builder class of a frequency-domain problem.
-class SteadyStateEquationSystemProblemBuilder
-  : public EquationSystemProblemBuilder<SteadyStateEquationSystemProblem>
+class SteadyStateEquationSystemProblemBuilder : public SteadyStateProblemBuilder,
+                                                public EquationSystemProblemBuilderInterface
 {
 public:
-  SteadyStateEquationSystemProblemBuilder() = default;
-  ~SteadyStateEquationSystemProblemBuilder() override = default;
+  SteadyStateEquationSystemProblemBuilder()
+    : SteadyStateProblemBuilder(nullptr),
+      _problem{std::make_unique<SteadyStateEquationSystemProblem>()}
+  {
+  }
 
   void RegisterFESpaces() override {}
 
@@ -70,7 +72,17 @@ public:
   void ConstructTimestepper() override {}
 
 protected:
-  mfem::ConstantCoefficient _one_coef{1.0};
+  std::unique_ptr<SteadyStateEquationSystemProblem> _problem{nullptr};
+
+  [[nodiscard]] SteadyStateEquationSystemProblem * GetProblem() const override
+  {
+    return _problem.get();
+  }
+
+  [[nodiscard]] EquationSystem * GetEquationSystem() const override
+  {
+    return GetProblem()->GetEquationSystem();
+  }
 };
 
 } // namespace hephaestus

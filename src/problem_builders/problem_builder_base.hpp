@@ -142,17 +142,12 @@ protected:
                                               ._k_dim = 10});
 
   /// Returns a pointer to the problem.
-  virtual Problem * GetProblem() = 0;
+  [[nodiscard]] virtual Problem * GetProblem() const = 0;
 };
 
-/// Problem builder template class for problems with an equation system.
-template <class EquationSystemProblem>
-class EquationSystemProblemBuilder : public ProblemBuilder
+class EquationSystemProblemBuilderInterface
 {
 public:
-  EquationSystemProblemBuilder() : _problem{std::make_unique<EquationSystemProblem>()} {}
-  ~EquationSystemProblemBuilder() override = default;
-
   /// Add a kernel to the problem's equation system.
   template <class T>
   void AddKernel(std::string var_name, std::shared_ptr<hephaestus::Kernel<T>> kernel)
@@ -161,29 +156,49 @@ public:
     GetEquationSystem()->AddKernel(var_name, std::move(kernel));
   }
 
-  /// A unique pointer is returned with the (hopefully constructed) problem.
-  virtual std::unique_ptr<EquationSystemProblem> ReturnProblem() { return std::move(_problem); }
-
-  /// Ensures that the equation system is also initialized. Note: "final".
-  void InitializeKernels() final
-  {
-    ProblemBuilder::InitializeKernels();
-
-    GetEquationSystem()->Init(GetProblem()->_gridfunctions,
-                              GetProblem()->_fespaces,
-                              GetProblem()->_bc_map,
-                              GetProblem()->_coefficients);
-  }
-
 protected:
-  /// Returns a pointer to the problem.
-  EquationSystemProblem * GetProblem() override { return _problem.get(); }
-
-  /// Returns a pointer to the problem's equation system.
-  EquationSystem * GetEquationSystem() { return GetProblem()->GetEquationSystem(); }
-
-  /// Stores a pointer to the problem.
-  std::unique_ptr<EquationSystemProblem> _problem{nullptr};
+  [[nodiscard]] virtual EquationSystem * GetEquationSystem() const = 0;
 };
+
+// /// Problem builder template class for problems with an equation system.
+// template <class EquationSystemProblem>
+// class EquationSystemProblemBuilderTemplate : public ProblemBuilder
+// {
+// public:
+//   EquationSystemProblemBuilder() : _problem{std::make_unique<EquationSystemProblem>()} {}
+//   ~EquationSystemProblemBuilder() override = default;
+
+//   /// Add a kernel to the problem's equation system.
+//   template <class T>
+//   void AddKernel(std::string var_name, std::shared_ptr<hephaestus::Kernel<T>> kernel)
+//   {
+//     GetEquationSystem()->AddTrialVariableNameIfMissing(var_name);
+//     GetEquationSystem()->AddKernel(var_name, std::move(kernel));
+//   }
+
+//   /// A unique pointer is returned with the (hopefully constructed) problem.
+//   virtual std::unique_ptr<EquationSystemProblem> ReturnProblem() { return std::move(_problem); }
+
+//   /// Ensures that the equation system is also initialized. Note: "final".
+//   void InitializeKernels() final
+//   {
+//     ProblemBuilder::InitializeKernels();
+
+//     GetEquationSystem()->Init(GetProblem()->_gridfunctions,
+//                               GetProblem()->_fespaces,
+//                               GetProblem()->_bc_map,
+//                               GetProblem()->_coefficients);
+//   }
+
+// protected:
+//   /// Returns a pointer to the problem.
+//   EquationSystemProblem * GetProblem() override { return _problem.get(); }
+
+//   /// Returns a pointer to the problem's equation system.
+//   EquationSystem * GetEquationSystem() { return GetProblem()->GetEquationSystem(); }
+
+//   /// Stores a pointer to the problem.
+//   std::unique_ptr<EquationSystemProblem> _problem{nullptr};
+// };
 
 } // namespace hephaestus

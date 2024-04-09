@@ -43,11 +43,16 @@ private:
 };
 
 // Builder class of a time-domain EM formulation.
-class TimeDomainEquationSystemProblemBuilder
-  : public EquationSystemProblemBuilder<TimeDomainEquationSystemProblem>
+class TimeDomainEquationSystemProblemBuilder : public TimeDomainProblemBuilder,
+                                               public EquationSystemProblemBuilderInterface
 {
 public:
-  TimeDomainEquationSystemProblemBuilder() = default;
+  TimeDomainEquationSystemProblemBuilder()
+    : TimeDomainProblemBuilder(nullptr),
+      _problem{std::make_unique<TimeDomainEquationSystemProblem>()}
+  {
+  }
+
   ~TimeDomainEquationSystemProblemBuilder() override = default;
 
   static std::vector<mfem::ParGridFunction *>
@@ -71,7 +76,17 @@ public:
   void ConstructTimestepper() override;
 
 protected:
-  mfem::ConstantCoefficient _one_coef{1.0};
+  std::unique_ptr<TimeDomainEquationSystemProblem> _problem{nullptr};
+
+  [[nodiscard]] TimeDomainEquationSystemProblem * GetProblem() const override
+  {
+    return _problem.get();
+  }
+
+  [[nodiscard]] TimeDependentEquationSystem * GetEquationSystem() const override
+  {
+    return GetProblem()->GetEquationSystem();
+  }
 };
 
 } // namespace hephaestus

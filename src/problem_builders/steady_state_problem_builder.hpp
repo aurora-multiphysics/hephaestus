@@ -37,9 +37,13 @@ private:
   std::unique_ptr<ProblemOperator> _problem_operator{nullptr};
 };
 
-class SteadyStateProblemBuilder : public hephaestus::ProblemBuilder
+class SteadyStateProblemBuilder : public ProblemBuilder
 {
 public:
+  SteadyStateProblemBuilder(std::unique_ptr<SteadyStateProblem> problem)
+    : _problem{std::move(problem)}
+  {
+  }
   SteadyStateProblemBuilder() : _problem(std::make_unique<hephaestus::SteadyStateProblem>()) {}
 
   ~SteadyStateProblemBuilder() override = default;
@@ -66,10 +70,11 @@ public:
   void ConstructTimestepper() override {}
 
 protected:
-  std::unique_ptr<hephaestus::SteadyStateProblem> _problem{nullptr};
-  mfem::ConstantCoefficient _one_coef{1.0};
+  std::unique_ptr<SteadyStateProblem> _problem{nullptr};
 
-  hephaestus::SteadyStateProblem * GetProblem() override { return _problem.get(); };
+  [[nodiscard]] SteadyStateProblem * GetProblem() const override { return _problem.get(); };
+
+  mfem::ConstantCoefficient _one_coef{1.0};
 };
 
 } // namespace hephaestus

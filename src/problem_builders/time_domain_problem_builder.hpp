@@ -37,6 +37,11 @@ private:
 class TimeDomainProblemBuilder : public ProblemBuilder
 {
 public:
+  TimeDomainProblemBuilder(std::unique_ptr<TimeDomainProblem> problem)
+    : _problem{std::move(problem)}
+  {
+  }
+
   TimeDomainProblemBuilder() : _problem(std::make_unique<hephaestus::TimeDomainProblem>()) {}
 
   ~TimeDomainProblemBuilder() override = default;
@@ -70,7 +75,7 @@ protected:
   std::unique_ptr<TimeDomainProblem> _problem{nullptr};
   mfem::ConstantCoefficient _one_coef{1.0};
 
-  TimeDomainProblem * GetProblem() override { return _problem.get(); };
+  [[nodiscard]] TimeDomainProblem * GetProblem() const override { return _problem.get(); };
 };
 
 } // namespace hephaestus
