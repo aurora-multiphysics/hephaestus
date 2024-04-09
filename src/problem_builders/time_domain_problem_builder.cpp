@@ -59,8 +59,8 @@ TimeDomainProblemBuilder::ConstructState()
 void
 TimeDomainProblemBuilder::ConstructTimestepper()
 {
-  _problem->_ode_solver = std::make_unique<mfem::BackwardEulerSolver>();
-  _problem->_ode_solver->Init(*(_problem->GetOperator()));
+  GetProblem()->_ode_solver = std::make_unique<mfem::BackwardEulerSolver>();
+  GetProblem()->_ode_solver->Init(*(GetProblem()->GetOperator()));
 }
 
 } // namespace hephaestus
