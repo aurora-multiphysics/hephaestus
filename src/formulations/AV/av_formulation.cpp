@@ -57,8 +57,8 @@ AVFormulation::ConstructOperator()
 
   auto equation_system = std::make_unique<hephaestus::AVEquationSystem>(av_system_params);
 
-  _problem->SetOperator(std::make_unique<hephaestus::TimeDomainEquationSystemProblemOperator>(
-      *_problem, std::move(equation_system)));
+  GetProblem()->SetOperator(std::make_unique<hephaestus::TimeDomainEquationSystemProblemOperator>(
+      *GetProblem(), std::move(equation_system)));
 }
 
 void

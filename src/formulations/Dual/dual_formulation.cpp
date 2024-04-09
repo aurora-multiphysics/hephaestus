@@ -62,12 +62,12 @@ void
 DualFormulation::ConstructJacobianPreconditioner()
 {
   auto precond =
-      std::make_shared<mfem::HypreAMS>(_problem->GetEquationSystem()->_test_pfespaces.at(0));
+      std::make_shared<mfem::HypreAMS>(GetProblem()->GetEquationSystem()->_test_pfespaces.at(0));
 
   precond->SetSingularProblem();
   precond->SetPrintLevel(-1);
 
-  _problem->_jacobian_preconditioner = precond;
+  GetProblem()->_jacobian_preconditioner = precond;
 }
 
 void
@@ -87,8 +87,8 @@ DualFormulation::ConstructOperator()
 
   auto equation_system = std::make_unique<hephaestus::WeakCurlEquationSystem>(weak_form_params);
 
-  _problem->SetOperator(
-      std::make_unique<hephaestus::DualOperator>(*_problem, std::move(equation_system)));
+  GetProblem()->SetOperator(
+      std::make_unique<hephaestus::DualOperator>(*GetProblem(), std::move(equation_system)));
 }
 
 void

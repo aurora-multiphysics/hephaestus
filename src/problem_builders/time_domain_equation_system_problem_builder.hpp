@@ -60,8 +60,6 @@ public:
   std::unique_ptr<TimeDomainEquationSystemProblem> ReturnProblem() { return std::move(_problem); }
 
 protected:
-  std::unique_ptr<TimeDomainEquationSystemProblem> _problem{nullptr};
-
   [[nodiscard]] TimeDomainEquationSystemProblem * GetProblem() const override
   {
     return _problem.get();
@@ -71,6 +69,9 @@ protected:
   {
     return GetProblem()->GetEquationSystem();
   }
+
+private:
+  std::unique_ptr<TimeDomainEquationSystemProblem> _problem{nullptr};
 };
 
 } // namespace hephaestus

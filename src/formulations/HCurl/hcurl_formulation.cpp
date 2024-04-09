@@ -62,15 +62,15 @@ HCurlFormulation::ConstructOperator()
 
   auto equation_system = std::make_unique<hephaestus::CurlCurlEquationSystem>(weak_form_params);
 
-  _problem->SetOperator(std::make_unique<hephaestus::TimeDomainEquationSystemProblemOperator>(
-      *_problem, std::move(equation_system)));
+  GetProblem()->SetOperator(std::make_unique<hephaestus::TimeDomainEquationSystemProblemOperator>(
+      *GetProblem(), std::move(equation_system)));
 }
 
 void
 HCurlFormulation::ConstructJacobianPreconditioner()
 {
   auto precond =
-      std::make_shared<mfem::HypreAMS>(_problem->GetEquationSystem()->_test_pfespaces.at(0));
+      std::make_shared<mfem::HypreAMS>(GetProblem()->GetEquationSystem()->_test_pfespaces.at(0));
 
   precond->SetSingularProblem();
   precond->SetPrintLevel(-1);

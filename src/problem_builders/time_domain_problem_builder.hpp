@@ -69,10 +69,12 @@ public:
   void ConstructTimestepper() override;
 
 protected:
-  std::unique_ptr<TimeDomainProblem> _problem{nullptr};
   mfem::ConstantCoefficient _one_coef{1.0};
 
   [[nodiscard]] TimeDomainProblem * GetProblem() const override { return _problem.get(); };
+
+private:
+  std::unique_ptr<TimeDomainProblem> _problem{nullptr};
 };
 
 } // namespace hephaestus

@@ -60,8 +60,6 @@ public:
   std::unique_ptr<SteadyStateEquationSystemProblem> ReturnProblem() { return std::move(_problem); }
 
 protected:
-  std::unique_ptr<SteadyStateEquationSystemProblem> _problem{nullptr};
-
   [[nodiscard]] SteadyStateEquationSystemProblem * GetProblem() const override
   {
     return _problem.get();
@@ -71,6 +69,9 @@ protected:
   {
     return GetProblem()->GetEquationSystem();
   }
+
+private:
+  std::unique_ptr<SteadyStateEquationSystemProblem> _problem{nullptr};
 };
 
 } // namespace hephaestus
