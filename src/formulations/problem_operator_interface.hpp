@@ -3,7 +3,7 @@
 
 namespace hephaestus
 {
-/// Interface inherited by ProblemOperator and TimeDependentProblemOperator. Removes duplicated code in both classes.
+/// Interface inherited by ProblemOperator and TimeDomainProblemOperator. Removes duplicated code in both classes.
 class ProblemOperatorInterface
 {
 public:
@@ -19,6 +19,7 @@ public:
   mfem::OperatorHandle _equation_system_operator;
 
 protected:
+  // Reference to the current problem.
   hephaestus::Problem & _problem;
 
   // Vector of names of state gridfunctions used in formulation, ordered by appearance in block
@@ -27,13 +28,14 @@ protected:
   std::vector<mfem::ParGridFunction *> _trial_variables;
 };
 
-/// Interface inherited by ProblemOperators with an equation system.
+/// Interface inherited by EquationSystemProblemOperator and TimeDomainEquationSystemProblemOperator.
 class EquationSystemProblemOperatorInterface
 {
 public:
   EquationSystemProblemOperatorInterface() = default;
   virtual ~EquationSystemProblemOperatorInterface() = default;
 
+  /// Returns a pointer to the operator's equation system.
   [[nodiscard]] virtual mfem::Operator * GetEquationSystem() const = 0;
 };
 }

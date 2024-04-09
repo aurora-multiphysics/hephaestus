@@ -5,6 +5,7 @@
 
 namespace hephaestus
 {
+/// Time-depent problems with an equation system.
 class TimeDomainEquationSystemProblem : public TimeDomainProblem,
                                         public EquationSystemProblemInterface
 {
@@ -42,11 +43,13 @@ private:
   std::unique_ptr<TimeDomainEquationSystemProblemOperator> _problem_operator{nullptr};
 };
 
-// Builder class of a time-domain EM formulation.
+// Problem-builder for TimeDomainEquationSystemProblem.
 class TimeDomainEquationSystemProblemBuilder : public TimeDomainProblemBuilder,
                                                public EquationSystemProblemBuilderInterface
 {
 public:
+  /// NB: call correct subclass constructor to ensure that the parent class does not create
+  /// a TimeDomainProblem in its shadowed "_problem" member variable.
   TimeDomainEquationSystemProblemBuilder()
     : TimeDomainProblemBuilder(nullptr),
       _problem{std::make_unique<TimeDomainEquationSystemProblem>()}
@@ -55,11 +58,13 @@ public:
 
   ~TimeDomainEquationSystemProblemBuilder() override = default;
 
+  /// NB: - note use of final. Ensure that the equation system is initialized.
   void InitializeKernels() final;
 
   std::unique_ptr<TimeDomainEquationSystemProblem> ReturnProblem() { return std::move(_problem); }
 
 protected:
+  /// NB: ensure @a GetProblem accessor is called in methods rather than using the "_problem" member variable.
   [[nodiscard]] TimeDomainEquationSystemProblem * GetProblem() const override
   {
     return _problem.get();

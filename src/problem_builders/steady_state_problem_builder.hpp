@@ -40,10 +40,14 @@ private:
 class SteadyStateProblemBuilder : public ProblemBuilder
 {
 public:
+  /// NB: Constructor is called by derived classes with problem = nullptr to
+  /// ensure that we don't construct a SteadyStateProblem instance in
+  /// derived classes.
   SteadyStateProblemBuilder(std::unique_ptr<SteadyStateProblem> problem)
     : _problem{std::move(problem)}
   {
   }
+
   SteadyStateProblemBuilder() : _problem(std::make_unique<hephaestus::SteadyStateProblem>()) {}
 
   ~SteadyStateProblemBuilder() override = default;
@@ -67,6 +71,10 @@ public:
   void ConstructTimestepper() override {}
 
 protected:
+  /// NB: it is extremely important that this accessor is used in all member variables since
+  /// derived classes will override this method. This allows us to reuse the methods defined
+  /// here without having to override them in derived classes. Calling "_problem" directly
+  /// will get you into trouble (likely a segfault since it will be NULL if this is a parent class.)
   [[nodiscard]] SteadyStateProblem * GetProblem() const override { return _problem.get(); };
 
 private:

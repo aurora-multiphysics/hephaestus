@@ -11,7 +11,8 @@ std::string GetTimeDerivativeName(const std::string & name);
 
 std::vector<std::string> GetTimeDerivativeNames(std::vector<std::string> gridfunction_names);
 
-/// Specifies output interfaces of a time-domain formulation. No equation-system! This class is not currently fully-implemented.
+/// Problem operator for time-dependent problems with no equation system. The user will need to subclass this since the solve is not
+/// implemented.
 class TimeDomainProblemOperator : public mfem::TimeDependentOperator,
                                   public ProblemOperatorInterface
 {
@@ -24,7 +25,7 @@ public:
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override {}
 };
 
-/// TimeDomainProblemOperator with an equation system.
+/// Problem operator for time-dependent problems with an equation system.
 class TimeDomainEquationSystemProblemOperator : public TimeDomainProblemOperator,
                                                 public EquationSystemProblemOperatorInterface
 {
@@ -45,7 +46,7 @@ public:
   {
     if (!_equation_system)
     {
-      MFEM_ABORT("No equation system has been added to TimeDomainProblemOperator.");
+      MFEM_ABORT("No equation system has been added.");
     }
 
     return _equation_system.get();

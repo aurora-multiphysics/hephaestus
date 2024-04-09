@@ -5,6 +5,7 @@
 namespace hephaestus
 {
 
+/// Time-dependent problems with no equation system.
 class TimeDomainProblem : public Problem
 {
 public:
@@ -34,9 +35,12 @@ private:
   std::unique_ptr<TimeDomainProblemOperator> _problem_operator{nullptr};
 };
 
+/// Problem-builder for TimeDomainProblem.
 class TimeDomainProblemBuilder : public ProblemBuilder
 {
 public:
+  /// NB: constructor called in derived classes to ensure that we do not set the "_problem" member
+  /// variable in this parent class.
   TimeDomainProblemBuilder(std::unique_ptr<TimeDomainProblem> problem)
     : _problem{std::move(problem)}
   {
@@ -69,6 +73,7 @@ public:
   void ConstructTimestepper() override;
 
 protected:
+  /// NB: ensure this accessor is called in methods.
   [[nodiscard]] TimeDomainProblem * GetProblem() const override { return _problem.get(); };
 
 private:

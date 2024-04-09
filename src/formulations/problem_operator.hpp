@@ -26,6 +26,7 @@ class EquationSystemProblemOperator : public ProblemOperator,
 {
 public:
   EquationSystemProblemOperator(hephaestus::Problem &) = delete;
+
   EquationSystemProblemOperator(hephaestus::Problem & problem,
                                 std::unique_ptr<EquationSystem> equation_system)
     : ProblemOperator(problem), _equation_system(std::move(equation_system))

@@ -42,17 +42,21 @@ public:
   int _myid;
   int _num_procs;
 
+  /// Returns a pointer to the operator. See derived classes.
   [[nodiscard]] virtual mfem::Operator * GetOperator() const = 0;
 
+  /// Virtual method to construct the operator. Call for default problems.
   virtual void ConstructOperator() = 0;
 };
 
+/// An interface for all problems with an equation system.
 class EquationSystemProblemInterface
 {
 public:
   EquationSystemProblemInterface() = default;
   virtual ~EquationSystemProblemInterface() = default;
 
+  /// Returns the problem operator's equation system.
   [[nodiscard]] virtual EquationSystem * GetEquationSystem() const = 0;
 };
 
@@ -107,7 +111,7 @@ public:
   void InitializeAuxSolvers();
   void InitializeOutputs();
 
-  /// Call to setup a problem. Similar to @a ConstructEquationSystemProblem in ProblemBuilderSequencer.
+  /// Call to setup a problem. Similar to @a ConstructEquationSystemProblem in @a ProblemBuilderSequencer.
   void FinalizeProblem();
 
 protected:
@@ -121,7 +125,7 @@ protected:
     SUPER_LU
   };
 
-  /// Structure containing default parameters which can be passed to "ConstructJacobianSolverWithOptions".
+  /// Structure containing default parameters which can be passed to @a ConstructJacobianSolverWithOptions.
   /// These will be used if the user has not supplied their own values.
   struct SolverParams
   {
@@ -134,7 +138,7 @@ protected:
     int _k_dim;
   };
 
-  /// Called in "ConstructJacobianSolver". This will create a solver of the chosen type and use the user's input
+  /// Called in @a ConstructJacobianSolver. This will create a solver of the chosen type and use the user's input
   /// parameters if they have been provided.
   void ConstructJacobianSolverWithOptions(SolverType type,
                                           SolverParams default_params = {
@@ -144,13 +148,14 @@ protected:
                                               ._print_level = GetGlobalPrintLevel(),
                                               ._k_dim = 10});
 
-  /// Returns a pointer to the problem.
+  /// Implemented in derived classes.
   [[nodiscard]] virtual Problem * GetProblem() const = 0;
 
-  /// Constant coefficient. Used in some of the derived classes.
+  /// Coefficient used in some derived classes.
   mfem::ConstantCoefficient _one_coef{1.0};
 };
 
+/// Interface for problem builders that are constructing problems with an equation system.
 class EquationSystemProblemBuilderInterface
 {
 public:
@@ -166,6 +171,7 @@ public:
   }
 
 protected:
+  /// Implemented in derived classes. Returns a pointer to the problem operator's equation system.
   [[nodiscard]] virtual EquationSystem * GetEquationSystem() const = 0;
 };
 
