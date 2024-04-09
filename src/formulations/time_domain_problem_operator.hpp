@@ -17,14 +17,11 @@ class TimeDomainProblemOperator : public mfem::TimeDependentOperator,
 {
 public:
   TimeDomainProblemOperator(hephaestus::Problem & problem) : ProblemOperatorInterface(problem) {}
+  ~TimeDomainProblemOperator() override = default;
 
   void SetGridFunctions() override {}
   void Init(mfem::Vector & X) override {}
-
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override {}
-
-protected:
-  std::vector<mfem::ParGridFunction *> _trial_variable_time_derivatives;
 };
 
 /// TimeDomainProblemOperator with an equation system.
@@ -58,6 +55,7 @@ protected:
   void BuildEquationSystemOperator(double dt);
 
 private:
+  std::vector<mfem::ParGridFunction *> _trial_variable_time_derivatives;
   std::unique_ptr<TimeDependentEquationSystem> _equation_system{nullptr};
 };
 

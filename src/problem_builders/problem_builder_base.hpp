@@ -50,6 +50,9 @@ public:
 class EquationSystemProblemInterface
 {
 public:
+  EquationSystemProblemInterface() = default;
+  virtual ~EquationSystemProblemInterface() = default;
+
   [[nodiscard]] virtual EquationSystem * GetEquationSystem() const = 0;
 };
 
@@ -151,6 +154,9 @@ protected:
 class EquationSystemProblemBuilderInterface
 {
 public:
+  EquationSystemProblemBuilderInterface() = default;
+  virtual ~EquationSystemProblemBuilderInterface() = default;
+
   /// Add a kernel to the problem's equation system.
   template <class T>
   void AddKernel(std::string var_name, std::shared_ptr<hephaestus::Kernel<T>> kernel)
