@@ -67,7 +67,7 @@ public:
   /// equation system is initialized.
   void InitializeKernels() final;
 
-  std::unique_ptr<SteadyStateEquationSystemProblem> ReturnProblem() { return std::move(_problem); }
+  std::unique_ptr<SteadyStateProblem> ReturnProblem() override { return std::move(_problem); }
 
 protected:
   [[nodiscard]] SteadyStateEquationSystemProblem * GetProblem() const override

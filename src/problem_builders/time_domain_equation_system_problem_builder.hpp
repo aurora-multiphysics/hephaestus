@@ -61,7 +61,7 @@ public:
   /// NB: - note use of final. Ensure that the equation system is initialized.
   void InitializeKernels() final;
 
-  std::unique_ptr<TimeDomainEquationSystemProblem> ReturnProblem() { return std::move(_problem); }
+  std::unique_ptr<TimeDomainProblem> ReturnProblem() override { return std::move(_problem); }
 
 protected:
   /// NB: ensure @a GetProblem accessor is called in methods rather than using the "_problem" member variable.
