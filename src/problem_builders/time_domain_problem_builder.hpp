@@ -39,8 +39,7 @@ private:
 class TimeDomainProblemBuilder : public ProblemBuilder
 {
 public:
-  /// NB: constructor called in derived classes to ensure that we do not set the "_problem" member
-  /// variable in this parent class.
+  /// NB: constructor called in derived classes. The problem must be a subclass of TimeDomainProblem.
   TimeDomainProblemBuilder(std::unique_ptr<TimeDomainProblem> problem)
     : _problem{std::move(problem)}
   {

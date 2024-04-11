@@ -40,9 +40,7 @@ private:
 class SteadyStateProblemBuilder : public ProblemBuilder
 {
 public:
-  /// NB: Constructor is called by derived classes with problem = nullptr to
-  /// ensure that we don't construct a SteadyStateProblem instance in
-  /// derived classes.
+  /// NB: constructor called in derived classes. The problem must be a subclass of SteadyStateProblem.
   SteadyStateProblemBuilder(std::unique_ptr<SteadyStateProblem> problem)
     : _problem{std::move(problem)}
   {
@@ -52,7 +50,7 @@ public:
 
   ~SteadyStateProblemBuilder() override = default;
 
-  virtual std::unique_ptr<hephaestus::SteadyStateProblem> ReturnProblem() { return std::move(_problem); }
+  std::unique_ptr<hephaestus::SteadyStateProblem> ReturnProblem() { return std::move(_problem); }
 
   void RegisterFESpaces() override {}
 

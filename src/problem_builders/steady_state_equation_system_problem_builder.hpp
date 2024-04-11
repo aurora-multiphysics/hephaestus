@@ -53,11 +53,8 @@ class SteadyStateEquationSystemProblemBuilder : public SteadyStateProblemBuilder
                                                 public EquationSystemProblemBuilderInterface
 {
 public:
-  // NB: pass nullptr to parent class to prevent it constructing a private SteadyStateProblem
-  // instance.
-  SteadyStateEquationSystemProblemBuilder()
-    : SteadyStateProblemBuilder(nullptr),
-      _problem{std::make_unique<SteadyStateEquationSystemProblem>()}
+  /// NB: set "_problem" member variable in parent class.
+  SteadyStateEquationSystemProblemBuilder() : SteadyStateProblemBuilder(std::make_unique<SteadyStateEquationSystemProblem>())
   {
   }
 
@@ -67,21 +64,16 @@ public:
   /// equation system is initialized.
   void InitializeKernels() final;
 
-  std::unique_ptr<SteadyStateProblem> ReturnProblem() override { return std::move(_problem); }
-
 protected:
   [[nodiscard]] SteadyStateEquationSystemProblem * GetProblem() const override
   {
-    return _problem.get();
+    return static_cast<SteadyStateEquationSystemProblem *>(SteadyStateProblemBuilder::GetProblem());
   }
 
   [[nodiscard]] EquationSystem * GetEquationSystem() const override
   {
     return GetProblem()->GetEquationSystem();
   }
-
-private:
-  std::unique_ptr<SteadyStateEquationSystemProblem> _problem{nullptr};
 };
 
 } // namespace hephaestus
