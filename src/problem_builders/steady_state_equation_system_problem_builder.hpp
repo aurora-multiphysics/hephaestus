@@ -27,7 +27,8 @@ public:
   void ConstructOperator() override
   {
     auto equation_system = std::make_unique<EquationSystem>();
-    auto problem_operator = std::make_unique<EquationSystemProblemOperator>(*this, std::move(equation_system));
+    auto problem_operator =
+        std::make_unique<EquationSystemProblemOperator>(*this, std::move(equation_system));
 
     SetOperator(std::move(problem_operator));
   }
@@ -44,7 +45,8 @@ class SteadyStateEquationSystemProblemBuilder : public SteadyStateProblemBuilder
 {
 public:
   /// NB: set "_problem" member variable in parent class.
-  SteadyStateEquationSystemProblemBuilder() : SteadyStateProblemBuilder(std::make_unique<SteadyStateEquationSystemProblem>())
+  SteadyStateEquationSystemProblemBuilder()
+    : SteadyStateProblemBuilder(std::make_unique<SteadyStateEquationSystemProblem>())
   {
   }
 

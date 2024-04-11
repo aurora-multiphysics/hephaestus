@@ -26,7 +26,8 @@ public:
   void ConstructOperator() override
   {
     auto equation_system = std::make_unique<TimeDependentEquationSystem>();
-    auto problem_operator = std::make_unique<TimeDomainEquationSystemProblemOperator>(*this, std::move(equation_system));
+    auto problem_operator = std::make_unique<TimeDomainEquationSystemProblemOperator>(
+        *this, std::move(equation_system));
 
     SetOperator(std::move(problem_operator));
   }
