@@ -10,37 +10,31 @@ class TimeDomainEquationSystemProblem : public TimeDomainProblem,
                                         public EquationSystemProblemInterface
 {
 public:
+  TimeDomainEquationSystemProblem() = default;
+  ~TimeDomainEquationSystemProblem() override = default;
+
   [[nodiscard]] TimeDomainEquationSystemProblemOperator * GetOperator() const override
   {
-    if (!_problem_operator)
-    {
-      MFEM_ABORT("No operator has been added.");
-    }
-
-    return _problem_operator.get();
+    return static_cast<TimeDomainEquationSystemProblemOperator *>(TimeDomainProblem::GetOperator());
   }
 
   void SetOperator(std::unique_ptr<TimeDomainEquationSystemProblemOperator> problem_operator)
   {
-    _problem_operator.reset();
-    _problem_operator = std::move(problem_operator);
+    TimeDomainProblem::SetOperator(std::move(problem_operator));
   }
 
   void ConstructOperator() override
   {
     auto equation_system = std::make_unique<TimeDependentEquationSystem>();
+    auto problem_operator = std::make_unique<TimeDomainEquationSystemProblemOperator>(*this, std::move(equation_system));
 
-    _problem_operator = std::make_unique<TimeDomainEquationSystemProblemOperator>(
-        *this, std::move(equation_system));
+    SetOperator(std::move(problem_operator));
   }
 
   [[nodiscard]] TimeDependentEquationSystem * GetEquationSystem() const override
   {
     return GetOperator()->GetEquationSystem();
   }
-
-private:
-  std::unique_ptr<TimeDomainEquationSystemProblemOperator> _problem_operator{nullptr};
 };
 
 // Problem-builder for TimeDomainEquationSystemProblem.

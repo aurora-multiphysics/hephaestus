@@ -16,36 +16,26 @@ public:
 
   [[nodiscard]] EquationSystemProblemOperator * GetOperator() const override
   {
-    if (!_problem_operator)
-    {
-      MFEM_ABORT("No operator has been added.");
-    }
-
-    return _problem_operator.get();
+    return static_cast<EquationSystemProblemOperator *>(SteadyStateProblem::GetOperator());
   }
 
   void SetOperator(std::unique_ptr<EquationSystemProblemOperator> problem_operator)
   {
-    _problem_operator.reset();
-    _problem_operator = std::move(problem_operator);
+    SteadyStateProblem::SetOperator(std::move(problem_operator));
   }
 
   void ConstructOperator() override
   {
     auto equation_system = std::make_unique<EquationSystem>();
+    auto problem_operator = std::make_unique<EquationSystemProblemOperator>(*this, std::move(equation_system));
 
-    _problem_operator.reset();
-    _problem_operator =
-        std::make_unique<EquationSystemProblemOperator>(*this, std::move(equation_system));
+    SetOperator(std::move(problem_operator));
   }
 
   [[nodiscard]] EquationSystem * GetEquationSystem() const override
   {
     return GetOperator()->GetEquationSystem();
   }
-
-private:
-  std::unique_ptr<EquationSystemProblemOperator> _problem_operator{nullptr};
 };
 
 /// Problem-builder for SteadyStateEquationSystemProblem.
