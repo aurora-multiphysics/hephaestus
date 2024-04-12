@@ -59,11 +59,10 @@ protected:
   const std::string _loss_coef_name;
 };
 
-class ComplexMaxwellOperator : public EquationSystemProblemOperator
+class ComplexMaxwellOperator : public ProblemOperator
 {
 public:
   ComplexMaxwellOperator(hephaestus::Problem & problem,
-                         std::unique_ptr<EquationSystem> equation_system,
                          std::string h_curl_var_complex_name,
                          std::string h_curl_var_real_name,
                          std::string h_curl_var_imag_name,

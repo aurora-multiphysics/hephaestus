@@ -33,17 +33,13 @@ ComplexMaxwellFormulation::ConstructJacobianSolver()
 void
 ComplexMaxwellFormulation::ConstructOperator()
 {
-  auto equation_system = std::make_unique<EquationSystem>();
-
-  auto new_operator =
-      std::make_unique<hephaestus::ComplexMaxwellOperator>(*GetProblem(),
-                                                           std::move(equation_system),
-                                                           _h_curl_var_complex_name,
-                                                           _h_curl_var_real_name,
-                                                           _h_curl_var_imag_name,
-                                                           _alpha_coef_name,
-                                                           _mass_coef_name,
-                                                           _loss_coef_name);
+  auto new_operator = std::make_unique<hephaestus::ComplexMaxwellOperator>(*GetProblem(),
+                                                                           _h_curl_var_complex_name,
+                                                                           _h_curl_var_real_name,
+                                                                           _h_curl_var_imag_name,
+                                                                           _alpha_coef_name,
+                                                                           _mass_coef_name,
+                                                                           _loss_coef_name);
 
   GetProblem()->SetOperator(std::move(new_operator));
 }
@@ -130,14 +126,13 @@ ComplexMaxwellFormulation::RegisterCoefficients()
 }
 
 ComplexMaxwellOperator::ComplexMaxwellOperator(hephaestus::Problem & problem,
-                                               std::unique_ptr<EquationSystem> equation_system,
                                                std::string h_curl_var_complex_name,
                                                std::string h_curl_var_real_name,
                                                std::string h_curl_var_imag_name,
                                                std::string stiffness_coef_name,
                                                std::string mass_coef_name,
                                                std::string loss_coef_name)
-  : EquationSystemProblemOperator(problem, std::move(equation_system)),
+  : ProblemOperator(problem),
     _h_curl_var_complex_name(std::move(h_curl_var_complex_name)),
     _h_curl_var_real_name(std::move(h_curl_var_real_name)),
     _h_curl_var_imag_name(std::move(h_curl_var_imag_name)),
