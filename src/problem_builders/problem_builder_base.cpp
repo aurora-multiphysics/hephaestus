@@ -347,14 +347,18 @@ ProblemBuilder::InitializeOutputs()
 }
 
 void
-ProblemBuilder::FinalizeProblem()
+ProblemBuilder::FinalizeProblem(bool build_operator)
 {
   RegisterFESpaces();
   RegisterGridFunctions();
   RegisterAuxSolvers();
   RegisterCoefficients();
 
-  ConstructOperator();
+  if (build_operator)
+  {
+    ConstructOperator();
+  }
+
   InitializeKernels();
   SetOperatorGridFunctions();
 

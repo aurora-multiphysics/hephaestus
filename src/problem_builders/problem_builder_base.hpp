@@ -111,8 +111,10 @@ public:
   void InitializeAuxSolvers();
   void InitializeOutputs();
 
-  /// Call to setup a problem. Similar to @a ConstructEquationSystemProblem in @a ProblemBuilderSequencer.
-  void FinalizeProblem();
+  /// @brief Call @a FinalizeProblem to setup a problem.
+  /// @param build_operator Skips @a ConstructOperator step if false. Set this to false if the problem
+  /// operator has already been constructed earlier to avoid rebuilding it.
+  void FinalizeProblem(bool build_operator = true);
 
 protected:
   /// Supported Jacobian solver types.
