@@ -1,5 +1,5 @@
 #pragma once
-#include "problem_operator.hpp"
+#include "equation_system_problem_operator.hpp"
 #include "problem_builder_base.hpp"
 #include "steady_state_problem_builder.hpp"
 
