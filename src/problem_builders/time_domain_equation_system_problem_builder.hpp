@@ -1,7 +1,7 @@
 #pragma once
 #include "problem_builder_base.hpp"
 #include "time_domain_problem_builder.hpp"
-#include "time_domain_problem_operator.hpp"
+#include "time_domain_equation_system_problem_operator.hpp"
 
 namespace hephaestus
 {

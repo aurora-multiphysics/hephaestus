@@ -25,39 +25,4 @@ public:
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override {}
 };
 
-/// Problem operator for time-dependent problems with an equation system.
-class TimeDomainEquationSystemProblemOperator : public TimeDomainProblemOperator,
-                                                public EquationSystemProblemOperatorInterface
-{
-public:
-  TimeDomainEquationSystemProblemOperator(hephaestus::Problem &) = delete;
-  TimeDomainEquationSystemProblemOperator(
-      hephaestus::Problem & problem, std::unique_ptr<TimeDependentEquationSystem> equation_system)
-    : TimeDomainProblemOperator(problem), _equation_system{std::move(equation_system)}
-  {
-  }
-
-  void SetGridFunctions() override;
-  void Init(mfem::Vector & X) override;
-
-  void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
-
-  [[nodiscard]] TimeDependentEquationSystem * GetEquationSystem() const override
-  {
-    if (!_equation_system)
-    {
-      MFEM_ABORT("No equation system has been added.");
-    }
-
-    return _equation_system.get();
-  }
-
-protected:
-  void BuildEquationSystemOperator(double dt);
-
-private:
-  std::vector<mfem::ParGridFunction *> _trial_variable_time_derivatives;
-  std::unique_ptr<TimeDependentEquationSystem> _equation_system{nullptr};
-};
-
 } // namespace hephaestus
