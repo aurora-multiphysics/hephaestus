@@ -16,6 +16,8 @@ public:
   {
   }
 
+  void SetGridFunctions() override;
+
   ~EquationSystemProblemOperator() override = default;
 
   [[nodiscard]] EquationSystem * GetEquationSystem() const override

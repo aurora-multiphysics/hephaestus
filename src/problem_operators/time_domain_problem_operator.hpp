@@ -20,7 +20,8 @@ public:
   TimeDomainProblemOperator(hephaestus::Problem & problem) : ProblemOperatorInterface(problem) {}
   ~TimeDomainProblemOperator() override = default;
 
-  void SetGridFunctions() override {}
+  void SetGridFunctions() override;
+
   void Init(mfem::Vector & X) override {}
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override {}
 };

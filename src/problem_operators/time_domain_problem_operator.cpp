@@ -20,4 +20,11 @@ GetTimeDerivativeNames(std::vector<std::string> gridfunction_names)
   return time_derivative_names;
 }
 
+void
+TimeDomainProblemOperator::SetGridFunctions()
+{
+  ProblemOperatorInterface::SetGridFunctions();
+  width = height = _true_offsets[_trial_variables.size()];
+}
+
 } // namespace hephaestus

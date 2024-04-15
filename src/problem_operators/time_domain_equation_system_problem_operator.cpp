@@ -7,31 +7,10 @@ void
 TimeDomainEquationSystemProblemOperator::SetGridFunctions()
 {
   _trial_var_names = GetEquationSystem()->_trial_var_names;
-  _trial_variables = _problem._gridfunctions.Get(GetEquationSystem()->_trial_var_names);
   _trial_variable_time_derivatives =
       _problem._gridfunctions.Get(GetEquationSystem()->_trial_var_time_derivative_names);
 
-  // Set operator size and block structure
-  _block_true_offsets.SetSize(_trial_variables.size() + 1);
-  _block_true_offsets[0] = 0;
-  for (unsigned int ind = 0; ind < _trial_variables.size(); ++ind)
-  {
-    _block_true_offsets[ind + 1] = _trial_variables.at(ind)->ParFESpace()->TrueVSize();
-  }
-  _block_true_offsets.PartialSum();
-
-  _true_offsets.SetSize(_trial_variables.size() + 1);
-  _true_offsets[0] = 0;
-  for (unsigned int ind = 0; ind < _trial_variables.size(); ++ind)
-  {
-    _true_offsets[ind + 1] = _trial_variables.at(ind)->ParFESpace()->GetVSize();
-  }
-  _true_offsets.PartialSum();
-
-  height = _true_offsets[_trial_variables.size()];
-  width = _true_offsets[_trial_variables.size()];
-  _true_x.Update(_block_true_offsets);
-  _true_rhs.Update(_block_true_offsets);
+  TimeDomainProblemOperator::SetGridFunctions();
 }
 
 void

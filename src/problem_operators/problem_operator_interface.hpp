@@ -10,7 +10,7 @@ public:
   ProblemOperatorInterface(hephaestus::Problem & problem) : _problem(problem) {}
   virtual ~ProblemOperatorInterface() = default;
 
-  virtual void SetGridFunctions() = 0;
+  virtual void SetGridFunctions();
   virtual void Init(mfem::Vector & X) = 0;
 
   mfem::Array<int> _true_offsets, _block_true_offsets;
