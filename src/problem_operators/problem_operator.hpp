@@ -14,7 +14,6 @@ public:
   ~ProblemOperator() override = default;
 
   void SetGridFunctions() override;
-  void Init(mfem::Vector & X) override;
 
   virtual void Solve(mfem::Vector & X) {}
   void Mult(const mfem::Vector & x, mfem::Vector & y) const override {}

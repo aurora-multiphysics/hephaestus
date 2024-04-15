@@ -16,13 +16,12 @@ TimeDomainEquationSystemProblemOperator::SetGridFunctions()
 void
 TimeDomainEquationSystemProblemOperator::Init(mfem::Vector & X)
 {
+  TimeDomainProblemOperator::Init(X);
+
   // Define material property coefficients
-  for (unsigned int ind = 0; ind < _trial_variables.size(); ++ind)
+  for (size_t i = 0; i < _trial_variables.size(); ++i)
   {
-    _trial_variables.at(ind)->MakeRef(
-        _trial_variables.at(ind)->ParFESpace(), const_cast<mfem::Vector &>(X), _true_offsets[ind]);
-    *(_trial_variables.at(ind)) = 0.0;
-    *(_trial_variable_time_derivatives.at(ind)) = 0.0;
+    *(_trial_variable_time_derivatives.at(i)) = 0.0;
   }
 
   GetEquationSystem()->BuildEquationSystem(_problem._bc_map, _problem._sources);

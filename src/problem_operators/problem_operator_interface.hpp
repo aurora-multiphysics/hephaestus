@@ -11,7 +11,7 @@ public:
   virtual ~ProblemOperatorInterface() = default;
 
   virtual void SetGridFunctions();
-  virtual void Init(mfem::Vector & X) = 0;
+  virtual void Init(mfem::Vector & X);
 
   mfem::Array<int> _true_offsets, _block_true_offsets;
 

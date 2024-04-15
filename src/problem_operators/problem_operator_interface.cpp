@@ -28,4 +28,16 @@ ProblemOperatorInterface::SetGridFunctions()
   _true_rhs.Update(_block_true_offsets);
 }
 
+void
+ProblemOperatorInterface::Init(mfem::Vector & X)
+{
+  for (size_t i = 0; i < _trial_variables.size(); ++i)
+  {
+    mfem::ParGridFunction * trial_var = _trial_variables.at(i);
+
+    trial_var->MakeRef(trial_var->ParFESpace(), const_cast<mfem::Vector &>(X), _true_offsets[i]);
+    *trial_var = 0.0;
+  }
+}
+
 }
