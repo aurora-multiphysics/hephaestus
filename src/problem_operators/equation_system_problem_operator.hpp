@@ -5,8 +5,7 @@
 namespace hephaestus
 {
 /// Steady-state problem operator with an equation system.
-class EquationSystemProblemOperator : public ProblemOperator,
-                                      public EquationSystemProblemOperatorInterface
+class EquationSystemProblemOperator : public ProblemOperator, public EquationSystemInterface
 {
 public:
   EquationSystemProblemOperator(hephaestus::Problem &) = delete;

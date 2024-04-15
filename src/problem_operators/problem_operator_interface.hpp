@@ -29,11 +29,11 @@ protected:
 };
 
 /// Interface inherited by EquationSystemProblemOperator and TimeDomainEquationSystemProblemOperator.
-class EquationSystemProblemOperatorInterface
+class EquationSystemInterface
 {
 public:
-  EquationSystemProblemOperatorInterface() = default;
-  virtual ~EquationSystemProblemOperatorInterface() = default;
+  EquationSystemInterface() = default;
+  virtual ~EquationSystemInterface() = default;
 
   /// Returns a pointer to the operator's equation system.
   [[nodiscard]] virtual mfem::Operator * GetEquationSystem() const = 0;

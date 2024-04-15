@@ -8,7 +8,7 @@ namespace hephaestus
 
 /// Problem operator for time-dependent problems with an equation system.
 class TimeDomainEquationSystemProblemOperator : public TimeDomainProblemOperator,
-                                                public EquationSystemProblemOperatorInterface
+                                                public EquationSystemInterface
 {
 public:
   TimeDomainEquationSystemProblemOperator(hephaestus::Problem &) = delete;
