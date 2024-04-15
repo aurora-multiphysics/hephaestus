@@ -9,7 +9,7 @@ namespace hephaestus
 class TimeDomainProblem : public Problem
 {
 public:
-  [[nodiscard]] TimeDomainProblemOperator * GetOperator() const override
+  [[nodiscard]] hephaestus::TimeDomainProblemOperator * GetOperator() const override
   {
     if (!_problem_operator)
     {
@@ -19,7 +19,7 @@ public:
     return _problem_operator.get();
   }
 
-  void SetOperator(std::unique_ptr<TimeDomainProblemOperator> problem_operator)
+  void SetOperator(std::unique_ptr<hephaestus::TimeDomainProblemOperator> problem_operator)
   {
     _problem_operator.reset();
     _problem_operator = std::move(problem_operator);
@@ -28,11 +28,11 @@ public:
   void ConstructOperator() override
   {
     _problem_operator.reset();
-    _problem_operator = std::make_unique<TimeDomainProblemOperator>(*this);
+    _problem_operator = std::make_unique<hephaestus::TimeDomainProblemOperator>(*this);
   }
 
 private:
-  std::unique_ptr<TimeDomainProblemOperator> _problem_operator{nullptr};
+  std::unique_ptr<hephaestus::TimeDomainProblemOperator> _problem_operator{nullptr};
 };
 
 /// Problem-builder for TimeDomainProblem.
@@ -40,7 +40,7 @@ class TimeDomainProblemBuilder : public ProblemBuilder
 {
 public:
   /// NB: constructor called in derived classes. The problem must be a subclass of TimeDomainProblem.
-  TimeDomainProblemBuilder(std::unique_ptr<TimeDomainProblem> problem)
+  TimeDomainProblemBuilder(std::unique_ptr<hephaestus::TimeDomainProblem> problem)
     : _problem{std::move(problem)}
   {
   }
@@ -73,10 +73,13 @@ public:
 
 protected:
   /// NB: ensure this accessor is called in methods.
-  [[nodiscard]] TimeDomainProblem * GetProblem() const override { return _problem.get(); };
+  [[nodiscard]] hephaestus::TimeDomainProblem * GetProblem() const override
+  {
+    return _problem.get();
+  };
 
 private:
-  std::unique_ptr<TimeDomainProblem> _problem{nullptr};
+  std::unique_ptr<hephaestus::TimeDomainProblem> _problem{nullptr};
 };
 
 } // namespace hephaestus

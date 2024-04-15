@@ -57,7 +57,7 @@ public:
   virtual ~EquationSystemProblemInterface() = default;
 
   /// Returns the problem operator's equation system.
-  [[nodiscard]] virtual EquationSystem * GetEquationSystem() const = 0;
+  [[nodiscard]] virtual hephaestus::EquationSystem * GetEquationSystem() const = 0;
 };
 
 /// ProblemBuilder base class.
@@ -174,7 +174,7 @@ public:
 
 protected:
   /// Implemented in derived classes. Returns a pointer to the problem operator's equation system.
-  [[nodiscard]] virtual EquationSystem * GetEquationSystem() const = 0;
+  [[nodiscard]] virtual hephaestus::EquationSystem * GetEquationSystem() const = 0;
 };
 
 } // namespace hephaestus

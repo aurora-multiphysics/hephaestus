@@ -21,7 +21,7 @@ public:
 
   ~EquationSystemProblemOperator() override = default;
 
-  [[nodiscard]] EquationSystem * GetEquationSystem() const override
+  [[nodiscard]] hephaestus::EquationSystem * GetEquationSystem() const override
   {
     if (!_equation_system)
     {
@@ -32,7 +32,7 @@ public:
   }
 
 private:
-  std::unique_ptr<EquationSystem> _equation_system{nullptr};
+  std::unique_ptr<hephaestus::EquationSystem> _equation_system{nullptr};
 };
 
 } // namespace hephaestus

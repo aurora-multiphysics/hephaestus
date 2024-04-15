@@ -11,7 +11,7 @@ public:
   SteadyStateProblem() = default;
   ~SteadyStateProblem() override = default;
 
-  [[nodiscard]] ProblemOperator * GetOperator() const override
+  [[nodiscard]] hephaestus::ProblemOperator * GetOperator() const override
   {
     if (!_problem_operator)
     {
@@ -21,7 +21,7 @@ public:
     return _problem_operator.get();
   }
 
-  void SetOperator(std::unique_ptr<ProblemOperator> problem_operator)
+  void SetOperator(std::unique_ptr<hephaestus::ProblemOperator> problem_operator)
   {
     _problem_operator.reset();
     _problem_operator = std::move(problem_operator);
@@ -30,18 +30,18 @@ public:
   void ConstructOperator() override
   {
     _problem_operator.reset();
-    _problem_operator = std::make_unique<ProblemOperator>(*this);
+    _problem_operator = std::make_unique<hephaestus::ProblemOperator>(*this);
   }
 
 private:
-  std::unique_ptr<ProblemOperator> _problem_operator{nullptr};
+  std::unique_ptr<hephaestus::ProblemOperator> _problem_operator{nullptr};
 };
 
 class SteadyStateProblemBuilder : public ProblemBuilder
 {
 public:
   /// NB: constructor called in derived classes. The problem must be a subclass of SteadyStateProblem.
-  SteadyStateProblemBuilder(std::unique_ptr<SteadyStateProblem> problem)
+  SteadyStateProblemBuilder(std::unique_ptr<hephaestus::SteadyStateProblem> problem)
     : _problem{std::move(problem)}
   {
   }
@@ -73,10 +73,13 @@ protected:
   /// derived classes will override this method. This allows us to reuse the methods defined
   /// here without having to override them in derived classes. Calling "_problem" directly
   /// will get you into trouble (likely a segfault since it will be NULL if this is a parent class.)
-  [[nodiscard]] SteadyStateProblem * GetProblem() const override { return _problem.get(); };
+  [[nodiscard]] hephaestus::SteadyStateProblem * GetProblem() const override
+  {
+    return _problem.get();
+  };
 
 private:
-  std::unique_ptr<SteadyStateProblem> _problem{nullptr};
+  std::unique_ptr<hephaestus::SteadyStateProblem> _problem{nullptr};
 };
 
 } // namespace hephaestus

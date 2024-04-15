@@ -13,20 +13,22 @@ public:
   TimeDomainEquationSystemProblem() = default;
   ~TimeDomainEquationSystemProblem() override = default;
 
-  [[nodiscard]] TimeDomainEquationSystemProblemOperator * GetOperator() const override
+  [[nodiscard]] hephaestus::TimeDomainEquationSystemProblemOperator * GetOperator() const override
   {
-    return static_cast<TimeDomainEquationSystemProblemOperator *>(TimeDomainProblem::GetOperator());
+    return static_cast<hephaestus::TimeDomainEquationSystemProblemOperator *>(
+        TimeDomainProblem::GetOperator());
   }
 
-  void SetOperator(std::unique_ptr<TimeDomainEquationSystemProblemOperator> problem_operator)
+  void
+  SetOperator(std::unique_ptr<hephaestus::TimeDomainEquationSystemProblemOperator> problem_operator)
   {
     TimeDomainProblem::SetOperator(std::move(problem_operator));
   }
 
   void ConstructOperator() override
   {
-    auto equation_system = std::make_unique<TimeDependentEquationSystem>();
-    auto problem_operator = std::make_unique<TimeDomainEquationSystemProblemOperator>(
+    auto equation_system = std::make_unique<hephaestus::TimeDependentEquationSystem>();
+    auto problem_operator = std::make_unique<hephaestus::TimeDomainEquationSystemProblemOperator>(
         *this, std::move(equation_system));
 
     SetOperator(std::move(problem_operator));
@@ -45,7 +47,7 @@ class TimeDomainEquationSystemProblemBuilder : public TimeDomainProblemBuilder,
 public:
   /// NB: set "_problem" member variable in parent class.
   TimeDomainEquationSystemProblemBuilder()
-    : TimeDomainProblemBuilder(std::make_unique<TimeDomainEquationSystemProblem>())
+    : TimeDomainProblemBuilder(std::make_unique<hephaestus::TimeDomainEquationSystemProblem>())
   {
   }
 
@@ -56,12 +58,13 @@ public:
 
 protected:
   /// NB: ensure @a GetProblem accessor is called in methods rather than using the "_problem" member variable.
-  [[nodiscard]] TimeDomainEquationSystemProblem * GetProblem() const override
+  [[nodiscard]] hephaestus::TimeDomainEquationSystemProblem * GetProblem() const override
   {
-    return static_cast<TimeDomainEquationSystemProblem *>(TimeDomainProblemBuilder::GetProblem());
+    return static_cast<hephaestus::TimeDomainEquationSystemProblem *>(
+        TimeDomainProblemBuilder::GetProblem());
   }
 
-  [[nodiscard]] TimeDependentEquationSystem * GetEquationSystem() const override
+  [[nodiscard]] hephaestus::TimeDependentEquationSystem * GetEquationSystem() const override
   {
     return GetProblem()->GetEquationSystem();
   }

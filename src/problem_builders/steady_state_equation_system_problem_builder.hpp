@@ -26,14 +26,14 @@ public:
 
   void ConstructOperator() override
   {
-    auto equation_system = std::make_unique<EquationSystem>();
-    auto problem_operator =
-        std::make_unique<EquationSystemProblemOperator>(*this, std::move(equation_system));
+    auto equation_system = std::make_unique<hephaestus::EquationSystem>();
+    auto problem_operator = std::make_unique<hephaestus::EquationSystemProblemOperator>(
+        *this, std::move(equation_system));
 
     SetOperator(std::move(problem_operator));
   }
 
-  [[nodiscard]] EquationSystem * GetEquationSystem() const override
+  [[nodiscard]] hephaestus::EquationSystem * GetEquationSystem() const override
   {
     return GetOperator()->GetEquationSystem();
   }
@@ -57,12 +57,13 @@ public:
   void InitializeKernels() final;
 
 protected:
-  [[nodiscard]] SteadyStateEquationSystemProblem * GetProblem() const override
+  [[nodiscard]] hephaestus::SteadyStateEquationSystemProblem * GetProblem() const override
   {
-    return static_cast<SteadyStateEquationSystemProblem *>(SteadyStateProblemBuilder::GetProblem());
+    return static_cast<hephaestus::SteadyStateEquationSystemProblem *>(
+        SteadyStateProblemBuilder::GetProblem());
   }
 
-  [[nodiscard]] EquationSystem * GetEquationSystem() const override
+  [[nodiscard]] hephaestus::EquationSystem * GetEquationSystem() const override
   {
     return GetProblem()->GetEquationSystem();
   }

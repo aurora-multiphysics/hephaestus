@@ -13,7 +13,8 @@ class TimeDomainEquationSystemProblemOperator : public TimeDomainProblemOperator
 public:
   TimeDomainEquationSystemProblemOperator(hephaestus::Problem &) = delete;
   TimeDomainEquationSystemProblemOperator(
-      hephaestus::Problem & problem, std::unique_ptr<TimeDependentEquationSystem> equation_system)
+      hephaestus::Problem & problem,
+      std::unique_ptr<hephaestus::TimeDependentEquationSystem> equation_system)
     : TimeDomainProblemOperator(problem), _equation_system{std::move(equation_system)}
   {
   }
@@ -23,7 +24,7 @@ public:
 
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
 
-  [[nodiscard]] TimeDependentEquationSystem * GetEquationSystem() const override
+  [[nodiscard]] hephaestus::TimeDependentEquationSystem * GetEquationSystem() const override
   {
     if (!_equation_system)
     {
@@ -38,7 +39,7 @@ protected:
 
 private:
   std::vector<mfem::ParGridFunction *> _trial_variable_time_derivatives;
-  std::unique_ptr<TimeDependentEquationSystem> _equation_system{nullptr};
+  std::unique_ptr<hephaestus::TimeDependentEquationSystem> _equation_system{nullptr};
 };
 
 } // namespace hephaestus
