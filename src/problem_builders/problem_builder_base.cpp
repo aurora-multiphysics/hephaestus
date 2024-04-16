@@ -28,16 +28,11 @@ Problem::Update()
   // 3. Update BCs.
 
   // 4. Update sources.
-  for (const auto & [name, source] : _sources)
-  {
-    source->Init(_gridfunctions, _fespaces, _bc_map, _coefficients);
-  }
+  _sources.Init(_gridfunctions, _fespaces, _bc_map, _coefficients);
 
   // 5. Update the preprocessors and postprocessors.
   _preprocessors.Init(_gridfunctions, _coefficients);
   _postprocessors.Init(_gridfunctions, _coefficients);
-
-  // 5. Additional updates here.
 }
 
 void
