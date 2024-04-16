@@ -23,8 +23,6 @@ public:
   void SetGridFunctions() override;
 
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override {}
-
-  void Update() override {}
 };
 
 } // namespace hephaestus
