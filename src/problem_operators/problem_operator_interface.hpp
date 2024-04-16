@@ -13,6 +13,8 @@ public:
   virtual void SetGridFunctions();
   virtual void Init(mfem::Vector & X);
 
+  virtual void Update() = 0;
+
   mfem::Array<int> _true_offsets, _block_true_offsets;
 
   mfem::BlockVector _true_x, _true_rhs;

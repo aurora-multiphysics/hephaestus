@@ -35,6 +35,12 @@ public:
     return _equation_system.get();
   }
 
+  void Update() override
+  {
+    TimeDomainProblemOperator::Update();
+    // TODO: - Update TimeDependentEquationSystem.
+  }
+
 protected:
   void BuildEquationSystemOperator(double dt);
 

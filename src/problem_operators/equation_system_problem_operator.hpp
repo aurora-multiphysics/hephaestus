@@ -32,6 +32,12 @@ public:
     return _equation_system.get();
   }
 
+  void Update() override
+  {
+    ProblemOperator::Update();
+    // TODO: - update equation system.
+  }
+
 private:
   std::unique_ptr<hephaestus::EquationSystem> _equation_system{nullptr};
 };
