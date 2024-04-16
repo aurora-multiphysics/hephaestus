@@ -35,7 +35,7 @@ public:
   void Update() override
   {
     ProblemOperator::Update();
-    // TODO: - update equation system.
+    GetEquationSystem()->Update();
   }
 
 private:

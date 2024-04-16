@@ -148,6 +148,12 @@ public:
   virtual void UpdateEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);
   mfem::ConstantCoefficient _dt_coef; // Coefficient for timestep scaling
   std::vector<std::string> _trial_var_time_derivative_names;
+
+  void Update() override
+  {
+    EquationSystem::Update();
+    // TODO: - add custom implementation.
+  }
 };
 
 } // namespace hephaestus
