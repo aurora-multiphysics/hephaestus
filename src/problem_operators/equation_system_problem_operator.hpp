@@ -1,6 +1,7 @@
 #pragma once
 #include "problem_operator.hpp"
 #include "problem_operator_interface.hpp"
+#include "equation_system_interface.hpp"
 
 namespace hephaestus
 {

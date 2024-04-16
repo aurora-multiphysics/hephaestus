@@ -2,6 +2,7 @@
 #include "problem_builder_base.hpp"
 #include "time_domain_problem_builder.hpp"
 #include "time_domain_equation_system_problem_operator.hpp"
+#include "equation_system_interface.hpp"
 
 namespace hephaestus
 {

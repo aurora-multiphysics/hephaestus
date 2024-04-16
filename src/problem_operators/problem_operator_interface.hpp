@@ -27,15 +27,4 @@ protected:
   std::vector<std::string> _trial_var_names;
   std::vector<mfem::ParGridFunction *> _trial_variables;
 };
-
-/// Interface inherited by EquationSystemProblemOperator and TimeDomainEquationSystemProblemOperator.
-class EquationSystemInterface
-{
-public:
-  EquationSystemInterface() = default;
-  virtual ~EquationSystemInterface() = default;
-
-  /// Returns a pointer to the operator's equation system.
-  [[nodiscard]] virtual hephaestus::EquationSystem * GetEquationSystem() const = 0;
-};
 }
