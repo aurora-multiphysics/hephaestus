@@ -140,7 +140,7 @@ protected:
                                               ._k_dim = 10});
 
   /// Implemented in derived classes.
-  [[nodiscard]] virtual Problem * GetProblem() const = 0;
+  [[nodiscard]] virtual hephaestus::Problem * GetProblem() const = 0;
 
   /// Coefficient used in some derived classes.
   mfem::ConstantCoefficient _one_coef{1.0};
