@@ -18,6 +18,7 @@ target_include_directories(mesh_refinement PUBLIC ${PROJECT_SOURCE_DIR}/data/)
 
 set_property(TARGET mesh_refinement PROPERTY CXX_STANDARD 17)
 
+target_link_libraries(mesh_refinement spdlog::spdlog)
 target_link_libraries(mesh_refinement ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY} pthread)
 target_link_libraries(mesh_refinement ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lib${PROJECT_NAME}.so)
 target_link_libraries(mesh_refinement ${MFEM_LIBRARIES} ${MFEM_COMMON_LIBRARY} -lrt)
