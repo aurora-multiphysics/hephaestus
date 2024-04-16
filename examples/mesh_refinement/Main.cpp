@@ -4,7 +4,7 @@
 #include <iostream>
 
 using namespace std;
-using namespace mfem;
+using namespace hephaestus;
 
 int
 main(int argc, char * argv[])
@@ -13,7 +13,7 @@ main(int argc, char * argv[])
 
   const char * mesh_file = "../../data/star.mesh";
 
-  Mesh mesh(mesh_file, 1, 1);
+  mfem::Mesh mesh(mesh_file, 1, 1);
   int dim = mesh.Dimension();
   int sdim = mesh.SpaceDimension();
 
@@ -26,35 +26,33 @@ main(int argc, char * argv[])
     mesh.SetCurvature(2);
   }
 
-  hephaestus::SteadyStateProblemBuilder problem_builder;
+  SteadyStateEquationSystemProblemBuilder problem_builder;
 
   auto pmesh = std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mesh);
   problem_builder.SetMesh(pmesh);
 
   problem_builder.AddFESpace("fespace", "H1_3D_P1");
-
   problem_builder.AddGridFunction("gridfunction", "fespace");
 
-  hephaestus::Coefficients coefficients;
-
+  Coefficients coefficients;
   coefficients._scalars.Register("one", std::make_shared<mfem::ConstantCoefficient>(1.0));
   coefficients._scalars.Register("zero", std::make_shared<mfem::ConstantCoefficient>(0.0));
+
   problem_builder.SetCoefficients(coefficients);
 
   problem_builder.ConstructOperator();
-  problem_builder.ConstructEquationSystem();
 
-  hephaestus::InputParameters params_bilinear;
+  InputParameters params_bilinear;
   params_bilinear.SetParam(std::string("CoefficientName"), std::string("one"));
 
-  auto diffusion_kernel = std::make_shared<hephaestus::DiffusionKernel>(params_bilinear);
+  auto diffusion_kernel = std::make_shared<DiffusionKernel>(params_bilinear);
   problem_builder.AddKernel<mfem::ParBilinearForm>(std::string("gridfunction"),
                                                    std::move(diffusion_kernel));
 
-  hephaestus::InputParameters params_linear;
+  InputParameters params_linear;
   params_linear.SetParam(std::string("CoefficientName"), std::string("one"));
 
-  auto linear_kernel = std::make_shared<hephaestus::LinearKernel>(params_linear);
+  auto linear_kernel = std::make_shared<LinearKernel>(params_linear);
   problem_builder.AddKernel<mfem::ParLinearForm>(std::string("gridfunction"),
                                                  std::move(linear_kernel));
 
@@ -62,33 +60,20 @@ main(int argc, char * argv[])
   mfem::Array<int> ess_bdr(pmesh->bdr_attributes.Max());
   ess_bdr = 1;
 
-  auto bc = std::make_shared<hephaestus::ScalarDirichletBC>(
+  auto bc = std::make_shared<ScalarDirichletBC>(
       "gridfunction", ess_bdr, coefficients._scalars.Get("one"));
   problem_builder.AddBoundaryCondition("gridfunction", std::move(bc));
 
-  // Register everything.
-  problem_builder.RegisterFESpaces();
-  problem_builder.RegisterGridFunctions();
-  problem_builder.RegisterAuxSolvers();
-  problem_builder.RegisterCoefficients();
+  problem_builder.FinalizeProblem(false);
 
-  // Initialize.
-  problem_builder.ConstructState();
-  problem_builder.InitializeAuxSolvers();
-  problem_builder.InitializeKernels();
-  problem_builder.InitializeOutputs();
+  auto steady_state_problem = problem_builder.ReturnProblem();
 
-  auto problem = problem_builder.ReturnProblem();
+  auto steady_state_equation_system_problem = std::unique_ptr<SteadyStateEquationSystemProblem>(
+      static_cast<SteadyStateEquationSystemProblem *>(steady_state_problem.release()));
 
-  problem->GetOperator()->SetGridFunctions();
-
-  // Construct eqn system.
-  problem->GetEquationSystem()->Init(
-      problem->_gridfunctions,
-      problem->_fespaces,
-      problem->_bc_map,
-      problem->_coefficients); // Becuase not initialized properly for steady state problems.
-  problem->GetEquationSystem()->BuildEquationSystem(problem->_bc_map, problem->_sources);
+  EquationSystemProblemOperator * problem_operator =
+      steady_state_equation_system_problem->GetOperator();
+  EquationSystem * equation_system = steady_state_equation_system_problem->GetEquationSystem();
 
   const int max_it = 10;
 
@@ -96,16 +81,23 @@ main(int argc, char * argv[])
   {
     std::cout << "Now doing iteration " << it << std::endl;
 
-    problem->GetEquationSystem()->FormLinearSystem(
-        problem->GetOperator()->_equation_system_operator,
-        problem->GetOperator()->_true_x,
-        problem->GetOperator()->_true_rhs);
+    equation_system->FormLinearSystem(problem_operator->_equation_system_operator,
+                                      problem_operator->_true_x,
+                                      problem_operator->_true_rhs);
 
-    // // Solve.
-    // GSSmoother M((SparseMatrix &)(*A));
-    // PCG(*A, M, B, X, 3, 200, 1e-12, 0.0);
+    // Solve.
+    mfem::GSSmoother smoother((mfem::SparseMatrix &)(*problem_operator->_equation_system_operator));
+    mfem::PCG(*problem_operator->_equation_system_operator,
+              smoother,
+              problem_operator->_true_rhs,
+              problem_operator->_true_x,
+              3,
+              200,
+              1e-12,
+              0.0);
 
-    // problem->GetEquationSystem()->RecoverFEMSolution(X, problem->_gridfunctions);
+    equation_system->RecoverFEMSolution(problem_operator->_true_x,
+                                        steady_state_equation_system_problem->_gridfunctions);
 
     // pmesh->UniformRefinement();
 
