@@ -56,6 +56,14 @@ public:
   /// NB: - note use of final. Ensure that the equation system is initialized.
   void InitializeKernels() final;
 
+  auto ReturnProblem()
+  {
+    auto * ptr = static_cast<hephaestus::TimeDomainEquationSystemProblem *>(
+        TimeDomainProblemBuilder::ReturnProblem().release());
+
+    return std::unique_ptr<hephaestus::TimeDomainEquationSystemProblem>(ptr);
+  }
+
 protected:
   /// NB: ensure @a GetProblem accessor is called in methods rather than using the "_problem" member variable.
   [[nodiscard]] hephaestus::TimeDomainEquationSystemProblem * GetProblem() const override

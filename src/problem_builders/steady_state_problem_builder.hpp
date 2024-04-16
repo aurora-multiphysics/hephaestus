@@ -50,7 +50,7 @@ public:
 
   ~SteadyStateProblemBuilder() override = default;
 
-  std::unique_ptr<hephaestus::SteadyStateProblem> ReturnProblem() { return std::move(_problem); }
+  auto ReturnProblem() { return std::move(_problem); }
 
   void RegisterFESpaces() override {}
 
@@ -76,7 +76,7 @@ protected:
   [[nodiscard]] hephaestus::SteadyStateProblem * GetProblem() const override
   {
     return _problem.get();
-  };
+  }
 
 private:
   std::unique_ptr<hephaestus::SteadyStateProblem> _problem{nullptr};

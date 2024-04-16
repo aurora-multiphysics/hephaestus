@@ -56,6 +56,14 @@ public:
   /// equation system is initialized.
   void InitializeKernels() final;
 
+  auto ReturnProblem()
+  {
+    auto * ptr = static_cast<hephaestus::SteadyStateEquationSystemProblem *>(
+        SteadyStateProblemBuilder::ReturnProblem().release());
+
+    return std::unique_ptr<hephaestus::SteadyStateEquationSystemProblem>(ptr);
+  }
+
 protected:
   [[nodiscard]] hephaestus::SteadyStateEquationSystemProblem * GetProblem() const override
   {
