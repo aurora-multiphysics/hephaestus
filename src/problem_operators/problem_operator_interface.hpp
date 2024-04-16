@@ -36,6 +36,6 @@ public:
   virtual ~EquationSystemInterface() = default;
 
   /// Returns a pointer to the operator's equation system.
-  [[nodiscard]] virtual mfem::Operator * GetEquationSystem() const = 0;
+  [[nodiscard]] virtual hephaestus::EquationSystem * GetEquationSystem() const = 0;
 };
 }

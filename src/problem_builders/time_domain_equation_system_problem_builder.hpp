@@ -6,8 +6,7 @@
 namespace hephaestus
 {
 /// Time-depent problems with an equation system.
-class TimeDomainEquationSystemProblem : public TimeDomainProblem,
-                                        public EquationSystemProblemInterface
+class TimeDomainEquationSystemProblem : public TimeDomainProblem, public EquationSystemInterface
 {
 public:
   TimeDomainEquationSystemProblem() = default;

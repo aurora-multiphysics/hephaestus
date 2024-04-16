@@ -7,8 +7,7 @@ namespace hephaestus
 {
 
 /// Steady-state problems with an equation system.
-class SteadyStateEquationSystemProblem : public SteadyStateProblem,
-                                         public EquationSystemProblemInterface
+class SteadyStateEquationSystemProblem : public SteadyStateProblem, public EquationSystemInterface
 {
 public:
   SteadyStateEquationSystemProblem() = default;

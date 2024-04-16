@@ -49,17 +49,6 @@ public:
   virtual void ConstructOperator() = 0;
 };
 
-/// An interface for all problems with an equation system.
-class EquationSystemProblemInterface
-{
-public:
-  EquationSystemProblemInterface() = default;
-  virtual ~EquationSystemProblemInterface() = default;
-
-  /// Returns the problem operator's equation system.
-  [[nodiscard]] virtual hephaestus::EquationSystem * GetEquationSystem() const = 0;
-};
-
 /// ProblemBuilder base class.
 class ProblemBuilder
 {
