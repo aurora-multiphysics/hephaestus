@@ -25,7 +25,15 @@ Problem::Update()
     gridfunc->Update();
   }
 
-  // Additional updates here.
+  // 3. Update BCs.
+
+  // 4. Update sources.
+  for (const auto & [name, source] : _sources)
+  {
+    source->Init(_gridfunctions, _fespaces, _bc_map, _coefficients);
+  }
+
+  // 5. Additional updates here.
 }
 
 void
