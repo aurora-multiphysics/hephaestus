@@ -40,17 +40,11 @@ private:
 class SteadyStateProblemBuilder : public ProblemBuilder
 {
 public:
-  /// NB: constructor called in derived classes. The problem must be a subclass of SteadyStateProblem.
-  SteadyStateProblemBuilder(std::unique_ptr<hephaestus::SteadyStateProblem> problem)
-    : _problem{std::move(problem)}
-  {
-  }
-
-  SteadyStateProblemBuilder() : _problem(std::make_unique<hephaestus::SteadyStateProblem>()) {}
+  SteadyStateProblemBuilder() : ProblemBuilder(new hephaestus::SteadyStateProblem) {}
 
   ~SteadyStateProblemBuilder() override = default;
 
-  auto ReturnProblem() { return std::move(_problem); }
+  auto ReturnProblem() { return ProblemBuilder::ReturnProblem<SteadyStateProblem>(); }
 
   void RegisterFESpaces() override {}
 
@@ -69,17 +63,13 @@ public:
   void ConstructTimestepper() override {}
 
 protected:
-  /// NB: it is extremely important that this accessor is used in all member variables since
-  /// derived classes will override this method. This allows us to reuse the methods defined
-  /// here without having to override them in derived classes. Calling "_problem" directly
-  /// will get you into trouble (likely a segfault since it will be NULL if this is a parent class.)
+  // NB: constructor for derived classes.
+  SteadyStateProblemBuilder(hephaestus::SteadyStateProblem * problem) : ProblemBuilder(problem) {}
+
   [[nodiscard]] hephaestus::SteadyStateProblem * GetProblem() const override
   {
-    return _problem.get();
+    return ProblemBuilder::GetProblem<hephaestus::SteadyStateProblem>();
   }
-
-private:
-  std::unique_ptr<hephaestus::SteadyStateProblem> _problem{nullptr};
 };
 
 } // namespace hephaestus

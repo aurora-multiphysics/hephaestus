@@ -53,10 +53,17 @@ public:
 class ProblemBuilder
 {
 public:
-  ProblemBuilder() = default;
+  /// NB: delete empty constructor to allow only derived classes to be constructed.
+  ProblemBuilder() = delete;
 
   // Virtual destructor required to prevent leaks.
-  virtual ~ProblemBuilder() = default;
+  virtual ~ProblemBuilder()
+  {
+    if (_problem != nullptr)
+    {
+      delete _problem;
+    }
+  }
 
   void SetMesh(std::shared_ptr<mfem::ParMesh> pmesh);
   void SetFESpaces(hephaestus::FESpaces & fespaces);
@@ -106,6 +113,9 @@ public:
   void FinalizeProblem(bool build_operator = true);
 
 protected:
+  /// Protected constructor. Derived classes must call this constructor.
+  ProblemBuilder(hephaestus::Problem * problem) : _problem{problem} {}
+
   /// Supported Jacobian solver types.
   enum class SolverType
   {
@@ -139,11 +149,37 @@ protected:
                                               ._print_level = GetGlobalPrintLevel(),
                                               ._k_dim = 10});
 
-  /// Implemented in derived classes.
+  /// Overridden in derived classes.
   [[nodiscard]] virtual hephaestus::Problem * GetProblem() const = 0;
+
+  /// Helper template getter with safety check.
+  template <class TDerivedProblem>
+  [[nodiscard]] TDerivedProblem * GetProblem() const
+  {
+    if (!_problem)
+    {
+      MFEM_ABORT("hephaestus::Problem instance is NULL.");
+    }
+
+    return static_cast<TDerivedProblem *>(_problem);
+  }
+
+  /// Helper template for returning a unique pointer of the correct class.
+  /// Sets _problem = nullptr to avoid double-free.
+  template <class TDerivedProblem>
+  [[nodiscard]] std::unique_ptr<TDerivedProblem> ReturnProblem()
+  {
+    auto * problem = GetProblem<TDerivedProblem>();
+    _problem = nullptr; // Avoid double-free.
+
+    return std::unique_ptr<TDerivedProblem>(problem);
+  }
 
   /// Coefficient used in some derived classes.
   mfem::ConstantCoefficient _one_coef{1.0};
+
+private:
+  hephaestus::Problem * _problem{nullptr};
 };
 
 /// Interface for problem builders that are constructing problems with an equation system.

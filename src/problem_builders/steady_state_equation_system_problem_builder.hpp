@@ -46,7 +46,7 @@ class SteadyStateEquationSystemProblemBuilder : public SteadyStateProblemBuilder
 public:
   /// NB: set "_problem" member variable in parent class.
   SteadyStateEquationSystemProblemBuilder()
-    : SteadyStateProblemBuilder(std::make_unique<SteadyStateEquationSystemProblem>())
+    : SteadyStateProblemBuilder(new SteadyStateEquationSystemProblem)
   {
   }
 
@@ -56,19 +56,12 @@ public:
   /// equation system is initialized.
   void InitializeKernels() final;
 
-  auto ReturnProblem()
-  {
-    auto * ptr = static_cast<hephaestus::SteadyStateEquationSystemProblem *>(
-        SteadyStateProblemBuilder::ReturnProblem().release());
-
-    return std::unique_ptr<hephaestus::SteadyStateEquationSystemProblem>(ptr);
-  }
+  auto ReturnProblem() { return ProblemBuilder::ReturnProblem<SteadyStateEquationSystemProblem>(); }
 
 protected:
   [[nodiscard]] hephaestus::SteadyStateEquationSystemProblem * GetProblem() const override
   {
-    return static_cast<hephaestus::SteadyStateEquationSystemProblem *>(
-        SteadyStateProblemBuilder::GetProblem());
+    return ProblemBuilder::GetProblem<hephaestus::SteadyStateEquationSystemProblem>();
   }
 
   [[nodiscard]] hephaestus::EquationSystem * GetEquationSystem() const override

@@ -47,7 +47,7 @@ class TimeDomainEquationSystemProblemBuilder : public TimeDomainProblemBuilder,
 public:
   /// NB: set "_problem" member variable in parent class.
   TimeDomainEquationSystemProblemBuilder()
-    : TimeDomainProblemBuilder(std::make_unique<hephaestus::TimeDomainEquationSystemProblem>())
+    : TimeDomainProblemBuilder(new hephaestus::TimeDomainEquationSystemProblem)
   {
   }
 
@@ -56,20 +56,12 @@ public:
   /// NB: - note use of final. Ensure that the equation system is initialized.
   void InitializeKernels() final;
 
-  auto ReturnProblem()
-  {
-    auto * ptr = static_cast<hephaestus::TimeDomainEquationSystemProblem *>(
-        TimeDomainProblemBuilder::ReturnProblem().release());
-
-    return std::unique_ptr<hephaestus::TimeDomainEquationSystemProblem>(ptr);
-  }
+  auto ReturnProblem() { return ProblemBuilder::ReturnProblem<TimeDomainEquationSystemProblem>(); }
 
 protected:
-  /// NB: ensure @a GetProblem accessor is called in methods rather than using the "_problem" member variable.
   [[nodiscard]] hephaestus::TimeDomainEquationSystemProblem * GetProblem() const override
   {
-    return static_cast<hephaestus::TimeDomainEquationSystemProblem *>(
-        TimeDomainProblemBuilder::GetProblem());
+    return ProblemBuilder::GetProblem<hephaestus::TimeDomainEquationSystemProblem>();
   }
 
   [[nodiscard]] hephaestus::TimeDependentEquationSystem * GetEquationSystem() const override

@@ -39,17 +39,11 @@ private:
 class TimeDomainProblemBuilder : public ProblemBuilder
 {
 public:
-  /// NB: constructor called in derived classes. The problem must be a subclass of TimeDomainProblem.
-  TimeDomainProblemBuilder(std::unique_ptr<hephaestus::TimeDomainProblem> problem)
-    : _problem{std::move(problem)}
-  {
-  }
-
-  TimeDomainProblemBuilder() : _problem(std::make_unique<hephaestus::TimeDomainProblem>()) {}
+  TimeDomainProblemBuilder() : ProblemBuilder(new hephaestus::TimeDomainProblem) {}
 
   ~TimeDomainProblemBuilder() override = default;
 
-  auto ReturnProblem() { return std::move(_problem); }
+  auto ReturnProblem() { return ProblemBuilder::ReturnProblem<TimeDomainProblem>(); }
 
   static std::vector<mfem::ParGridFunction *>
   RegisterTimeDerivatives(std::vector<std::string> gridfunction_names,
@@ -72,14 +66,13 @@ public:
   void ConstructTimestepper() override;
 
 protected:
-  /// NB: ensure this accessor is called in methods.
+  /// NB: constructor called in derived classes.
+  TimeDomainProblemBuilder(hephaestus::TimeDomainProblem * problem) : ProblemBuilder(problem) {}
+
   [[nodiscard]] hephaestus::TimeDomainProblem * GetProblem() const override
   {
-    return _problem.get();
+    return ProblemBuilder::GetProblem<hephaestus::TimeDomainProblem>();
   };
-
-private:
-  std::unique_ptr<hephaestus::TimeDomainProblem> _problem{nullptr};
 };
 
 } // namespace hephaestus
