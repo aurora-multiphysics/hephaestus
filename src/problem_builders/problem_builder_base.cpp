@@ -33,6 +33,10 @@ Problem::Update()
     source->Init(_gridfunctions, _fespaces, _bc_map, _coefficients);
   }
 
+  // 5. Update the preprocessors and postprocessors.
+  _preprocessors.Init(_gridfunctions, _coefficients);
+  _postprocessors.Init(_gridfunctions, _coefficients);
+
   // 5. Additional updates here.
 }
 
