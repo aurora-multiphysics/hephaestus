@@ -37,12 +37,6 @@ public:
   {
     return GetOperator()->GetEquationSystem();
   }
-
-  void Update() override
-  {
-    SteadyStateProblem::Update();
-    // TODO: - add implementation.
-  }
 };
 
 /// Problem-builder for SteadyStateEquationSystemProblem.
