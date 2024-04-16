@@ -20,6 +20,7 @@ SteadyExecutioner::Solve() const
   // Output timestep summary to console
   _problem->_outputs.Write();
 }
+
 void
 SteadyExecutioner::Execute() const
 {

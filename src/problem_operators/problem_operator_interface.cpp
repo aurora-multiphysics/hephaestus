@@ -1,10 +1,9 @@
-#include "problem_operator.hpp"
+#include "problem_operator_interface.hpp"
 
 namespace hephaestus
 {
-
 void
-ProblemOperator::SetGridFunctions()
+ProblemOperatorInterface::SetGridFunctions()
 {
   _trial_variables = _problem._gridfunctions.Get(_trial_var_names);
 
@@ -25,21 +24,20 @@ ProblemOperator::SetGridFunctions()
   }
   _true_offsets.PartialSum();
 
-  height = _true_offsets[_trial_variables.size()];
-  width = _true_offsets[_trial_variables.size()];
   _true_x.Update(_block_true_offsets);
   _true_rhs.Update(_block_true_offsets);
-};
+}
 
 void
-ProblemOperator::Init(mfem::Vector & X)
+ProblemOperatorInterface::Init(mfem::Vector & X)
 {
-  // Define material property coefficients
-  for (unsigned int ind = 0; ind < _trial_variables.size(); ++ind)
+  for (size_t i = 0; i < _trial_variables.size(); ++i)
   {
-    _trial_variables.at(ind)->MakeRef(
-        _trial_variables.at(ind)->ParFESpace(), const_cast<mfem::Vector &>(X), _true_offsets[ind]);
+    mfem::ParGridFunction * trial_var = _trial_variables.at(i);
+
+    trial_var->MakeRef(trial_var->ParFESpace(), const_cast<mfem::Vector &>(X), _true_offsets[i]);
+    *trial_var = 0.0;
   }
 }
 
-} // namespace hephaestus
+}

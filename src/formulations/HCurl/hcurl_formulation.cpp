@@ -53,7 +53,7 @@ HCurlFormulation::HCurlFormulation(std::string alpha_coef_name,
 }
 
 void
-HCurlFormulation::ConstructEquationSystem()
+HCurlFormulation::ConstructOperator()
 {
   hephaestus::InputParameters weak_form_params;
   weak_form_params.SetParam("HCurlVarName", _h_curl_var_name);
@@ -62,14 +62,15 @@ HCurlFormulation::ConstructEquationSystem()
 
   auto equation_system = std::make_unique<hephaestus::CurlCurlEquationSystem>(weak_form_params);
 
-  GetProblem()->GetOperator()->SetEquationSystem(std::move(equation_system));
+  GetProblem()->SetOperator(std::make_unique<hephaestus::TimeDomainEquationSystemProblemOperator>(
+      *GetProblem(), std::move(equation_system)));
 }
 
 void
 HCurlFormulation::ConstructJacobianPreconditioner()
 {
   auto precond =
-      std::make_shared<mfem::HypreAMS>(_problem->GetEquationSystem()->_test_pfespaces.at(0));
+      std::make_shared<mfem::HypreAMS>(GetProblem()->GetEquationSystem()->_test_pfespaces.at(0));
 
   precond->SetSingularProblem();
   precond->SetPrintLevel(-1);
@@ -102,12 +103,11 @@ HCurlFormulation::RegisterGridFunctions()
     AddGridFunction(_h_curl_var_name, std::string("_HCurlFESpace"));
   };
   // Register time derivatives
-  TimeDomainProblemBuilder::RegisterGridFunctions();
+  TimeDomainEquationSystemProblemBuilder::RegisterGridFunctions();
 };
 
 CurlCurlEquationSystem::CurlCurlEquationSystem(const hephaestus::InputParameters & params)
-  : TimeDependentEquationSystem(params),
-    _h_curl_var_name(params.GetParam<std::string>("HCurlVarName")),
+  : _h_curl_var_name(params.GetParam<std::string>("HCurlVarName")),
     _alpha_coef_name(params.GetParam<std::string>("AlphaCoefName")),
     _beta_coef_name(params.GetParam<std::string>("BetaCoefName")),
     _dtalpha_coef_name(std::string("dt_") + _alpha_coef_name)

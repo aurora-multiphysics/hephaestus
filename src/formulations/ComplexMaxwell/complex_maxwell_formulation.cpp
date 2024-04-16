@@ -33,7 +33,7 @@ ComplexMaxwellFormulation::ConstructJacobianSolver()
 void
 ComplexMaxwellFormulation::ConstructOperator()
 {
-  auto new_operator = std::make_unique<hephaestus::ComplexMaxwellOperator>(*_problem,
+  auto new_operator = std::make_unique<hephaestus::ComplexMaxwellOperator>(*GetProblem(),
                                                                            _h_curl_var_complex_name,
                                                                            _h_curl_var_real_name,
                                                                            _h_curl_var_imag_name,
@@ -41,7 +41,7 @@ ComplexMaxwellFormulation::ConstructOperator()
                                                                            _mass_coef_name,
                                                                            _loss_coef_name);
 
-  _problem->SetOperator(std::move(new_operator));
+  GetProblem()->SetOperator(std::move(new_operator));
 }
 
 void

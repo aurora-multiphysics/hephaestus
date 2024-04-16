@@ -41,12 +41,12 @@ void
 StaticsFormulation::ConstructJacobianPreconditioner()
 {
   std::shared_ptr<mfem::HypreAMS> precond{std::make_shared<mfem::HypreAMS>(
-      _problem->_gridfunctions.Get(_h_curl_var_name)->ParFESpace())};
+      GetProblem()->_gridfunctions.Get(_h_curl_var_name)->ParFESpace())};
 
   precond->SetSingularProblem();
   precond->SetPrintLevel(-1);
 
-  _problem->_jacobian_preconditioner = precond;
+  GetProblem()->_jacobian_preconditioner = precond;
 }
 
 void
@@ -59,10 +59,10 @@ StaticsFormulation::ConstructJacobianSolver()
 void
 StaticsFormulation::ConstructOperator()
 {
-  auto new_operator =
-      std::make_unique<hephaestus::StaticsOperator>(*_problem, _h_curl_var_name, _alpha_coef_name);
+  auto new_operator = std::make_unique<hephaestus::StaticsOperator>(
+      *GetProblem(), _h_curl_var_name, _alpha_coef_name);
 
-  _problem->SetOperator(std::move(new_operator));
+  GetProblem()->SetOperator(std::move(new_operator));
 }
 
 void

@@ -15,6 +15,7 @@ public:
 
   void Execute() const override;
 
+private:
   hephaestus::SteadyStateProblem * _problem{nullptr};
 };
 

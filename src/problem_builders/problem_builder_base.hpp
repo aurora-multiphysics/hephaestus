@@ -11,6 +11,7 @@
 namespace hephaestus
 {
 
+/// Base problem class.
 class Problem
 {
 public:
@@ -41,21 +42,28 @@ public:
   int _myid;
   int _num_procs;
 
-  [[nodiscard]] virtual bool HasEquationSystem() const = 0;
-  [[nodiscard]] virtual hephaestus::EquationSystem * GetEquationSystem() const = 0;
+  /// Returns a pointer to the operator. See derived classes.
   [[nodiscard]] virtual mfem::Operator * GetOperator() const = 0;
+
+  /// Virtual method to construct the operator. Call for default problems.
+  virtual void ConstructOperator() = 0;
 };
 
+/// ProblemBuilder base class.
 class ProblemBuilder
 {
-private:
-  virtual hephaestus::Problem * GetProblem() = 0;
-
 public:
-  ProblemBuilder() = default;
+  /// NB: delete empty constructor to allow only derived classes to be constructed.
+  ProblemBuilder() = delete;
 
   // Virtual destructor required to prevent leaks.
-  virtual ~ProblemBuilder() = default;
+  virtual ~ProblemBuilder()
+  {
+    if (_problem != nullptr)
+    {
+      delete _problem;
+    }
+  }
 
   void SetMesh(std::shared_ptr<mfem::ParMesh> pmesh);
   void SetFESpaces(hephaestus::FESpaces & fespaces);
@@ -76,13 +84,6 @@ public:
                   int ordering = mfem::Ordering::byNODES);
   void AddGridFunction(std::string gridfunction_name, std::string fespace_name);
 
-  template <class T>
-  void AddKernel(std::string var_name, std::shared_ptr<hephaestus::Kernel<T>> kernel)
-  {
-    GetProblem()->GetEquationSystem()->AddTrialVariableNameIfMissing(var_name);
-    GetProblem()->GetEquationSystem()->AddKernel(var_name, std::move(kernel));
-  }
-
   void AddBoundaryCondition(std::string bc_name, std::shared_ptr<hephaestus::BoundaryCondition> bc);
   void AddAuxSolver(std::string auxsolver_name, std::shared_ptr<hephaestus::AuxSolver> aux);
   void AddPostprocessor(std::string auxsolver_name, std::shared_ptr<hephaestus::AuxSolver> aux);
@@ -93,8 +94,6 @@ public:
   virtual void RegisterAuxSolvers() = 0;
   virtual void RegisterCoefficients() = 0;
 
-  virtual void InitializeKernels() = 0;
-  virtual void ConstructEquationSystem() = 0;
   virtual void SetOperatorGridFunctions() = 0;
   virtual void ConstructJacobianPreconditioner();
   virtual void ConstructJacobianSolver();
@@ -103,10 +102,20 @@ public:
   virtual void ConstructState() = 0;
   virtual void ConstructTimestepper() = 0;
 
+  virtual void InitializeKernels();
+
   void InitializeAuxSolvers();
   void InitializeOutputs();
 
+  /// @brief Call @a FinalizeProblem to setup a problem.
+  /// @param build_operator Skips @a ConstructOperator step if false. Set this to false if the problem
+  /// operator has already been constructed earlier to avoid rebuilding it.
+  void FinalizeProblem(bool build_operator = true);
+
 protected:
+  /// Protected constructor. Derived classes must call this constructor.
+  ProblemBuilder(hephaestus::Problem * problem) : _problem{problem} {}
+
   /// Supported Jacobian solver types.
   enum class SolverType
   {
@@ -117,12 +126,12 @@ protected:
     SUPER_LU
   };
 
-  /// Structure containing default parameters which can be passed to "ConstructJacobianSolverWithOptions".
+  /// Structure containing default parameters which can be passed to @a ConstructJacobianSolverWithOptions.
   /// These will be used if the user has not supplied their own values.
   struct SolverParams
   {
-    float _tolerance;
-    float _abs_tolerance;
+    double _tolerance;
+    double _abs_tolerance;
 
     unsigned int _max_iteration;
 
@@ -130,7 +139,7 @@ protected:
     int _k_dim;
   };
 
-  /// Called in "ConstructJacobianSolver". This will create a solver of the chosen type and use the user's input
+  /// Called in @a ConstructJacobianSolver. This will create a solver of the chosen type and use the user's input
   /// parameters if they have been provided.
   void ConstructJacobianSolverWithOptions(SolverType type,
                                           SolverParams default_params = {
@@ -139,56 +148,58 @@ protected:
                                               ._max_iteration = 1000,
                                               ._print_level = GetGlobalPrintLevel(),
                                               ._k_dim = 10});
+
+  /// Overridden in derived classes.
+  [[nodiscard]] virtual hephaestus::Problem * GetProblem() const = 0;
+
+  /// Helper template getter with safety check.
+  template <class TDerivedProblem>
+  [[nodiscard]] TDerivedProblem * GetProblem() const
+  {
+    if (!_problem)
+    {
+      MFEM_ABORT("hephaestus::Problem instance is NULL.");
+    }
+
+    return static_cast<TDerivedProblem *>(_problem);
+  }
+
+  /// Helper template for returning a unique pointer of the correct class.
+  /// Sets _problem = nullptr to avoid double-free.
+  template <class TDerivedProblem>
+  [[nodiscard]] std::unique_ptr<TDerivedProblem> ReturnProblem()
+  {
+    auto * problem = GetProblem<TDerivedProblem>();
+    _problem = nullptr; // Avoid double-free.
+
+    return std::unique_ptr<TDerivedProblem>(problem);
+  }
+
+  /// Coefficient used in some derived classes.
+  mfem::ConstantCoefficient _one_coef{1.0};
+
+private:
+  hephaestus::Problem * _problem{nullptr};
 };
 
-class ProblemBuildSequencer
+/// Interface for problem builders that are constructing problems with an equation system.
+class EquationSystemProblemBuilderInterface
 {
-  /**
-   * @var Builder
-   */
-private:
-  hephaestus::ProblemBuilder * _problem_builder{nullptr};
-
-  /**
-   * The ProblemBuildSequencer works with any builder instance that the client
-   * code passes to it. This way, the client code may alter the final type of
-   * the newly assembled product.
-   */
-
 public:
-  ProblemBuildSequencer(hephaestus::ProblemBuilder * problem_builder)
-    : _problem_builder{problem_builder}
+  EquationSystemProblemBuilderInterface() = default;
+  virtual ~EquationSystemProblemBuilderInterface() = default;
+
+  /// Add a kernel to the problem's equation system.
+  template <class T>
+  void AddKernel(std::string var_name, std::shared_ptr<hephaestus::Kernel<T>> kernel)
   {
+    GetEquationSystem()->AddTrialVariableNameIfMissing(var_name);
+    GetEquationSystem()->AddKernel(var_name, std::move(kernel));
   }
 
-  /**
-   * The ProblemBuildSequencer can construct variations of Problems using the
-   * same building steps.
-   */
-  void ConstructOperatorProblem() { ConstructEquationSystemProblem(); }
-  void ConstructEquationSystemProblem()
-  {
-    _problem_builder->RegisterFESpaces();
-    _problem_builder->RegisterGridFunctions();
-    _problem_builder->RegisterAuxSolvers();
-    _problem_builder->RegisterCoefficients();
-
-    _problem_builder->ConstructOperator();
-
-    _problem_builder->ConstructEquationSystem();
-    _problem_builder->InitializeKernels();
-
-    _problem_builder->SetOperatorGridFunctions();
-
-    _problem_builder->ConstructJacobianPreconditioner();
-    _problem_builder->ConstructJacobianSolver();
-    _problem_builder->ConstructNonlinearSolver();
-
-    _problem_builder->ConstructState();
-    _problem_builder->ConstructTimestepper();
-    _problem_builder->InitializeAuxSolvers();
-    _problem_builder->InitializeOutputs();
-  }
+protected:
+  /// Implemented in derived classes. Returns a pointer to the problem operator's equation system.
+  [[nodiscard]] virtual hephaestus::EquationSystem * GetEquationSystem() const = 0;
 };
 
 } // namespace hephaestus

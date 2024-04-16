@@ -323,6 +323,17 @@ ProblemBuilder::ConstructNonlinearSolver()
 }
 
 void
+ProblemBuilder::InitializeKernels()
+{
+  GetProblem()->_preprocessors.Init(GetProblem()->_gridfunctions, GetProblem()->_coefficients);
+
+  GetProblem()->_sources.Init(GetProblem()->_gridfunctions,
+                              GetProblem()->_fespaces,
+                              GetProblem()->_bc_map,
+                              GetProblem()->_coefficients);
+}
+
+void
 ProblemBuilder::InitializeAuxSolvers()
 {
   GetProblem()->_preprocessors.Init(GetProblem()->_gridfunctions, GetProblem()->_coefficients);
@@ -333,6 +344,32 @@ void
 ProblemBuilder::InitializeOutputs()
 {
   GetProblem()->_outputs.Init(GetProblem()->_gridfunctions);
+}
+
+void
+ProblemBuilder::FinalizeProblem(bool build_operator)
+{
+  RegisterFESpaces();
+  RegisterGridFunctions();
+  RegisterAuxSolvers();
+  RegisterCoefficients();
+
+  if (build_operator)
+  {
+    ConstructOperator();
+  }
+
+  InitializeKernels();
+  SetOperatorGridFunctions();
+
+  ConstructJacobianPreconditioner();
+  ConstructJacobianSolver();
+  ConstructNonlinearSolver();
+
+  ConstructState();
+  ConstructTimestepper();
+  InitializeAuxSolvers();
+  InitializeOutputs();
 }
 
 } // namespace hephaestus

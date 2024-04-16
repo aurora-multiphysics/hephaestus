@@ -230,13 +230,12 @@ main(int argc, char * argv[])
     solver_options.SetParam("MaxIter", (unsigned int)1000);
     problem_builder->SetSolverOptions(solver_options);
 
-    hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
-    sequencer.ConstructOperatorProblem();
+    problem_builder->FinalizeProblem();
 
     auto problem = problem_builder->ReturnProblem();
 
     hephaestus::InputParameters exec_params;
-    exec_params.SetParam("Problem", problem.get());
+    exec_params.SetParam("Problem", static_cast<hephaestus::SteadyStateProblem *>(problem.get()));
 
     auto executioner = std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
 

@@ -32,7 +32,8 @@ public:
     }
     catch (const std::exception & e)
     {
-      MFEM_ABORT("Exception raised when trying to cast required parameter " << param_name);
+      MFEM_ABORT("Exception raised when trying to cast required parameter '" << param_name
+                                                                             << "': " << e.what());
     }
     return param;
   };

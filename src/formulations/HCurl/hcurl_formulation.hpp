@@ -16,7 +16,7 @@ public:
 
   ~HCurlFormulation() override = default;
 
-  void ConstructEquationSystem() override;
+  void ConstructOperator() override;
 
   void ConstructJacobianPreconditioner() override;
 

@@ -3,19 +3,15 @@
 
 namespace hephaestus
 {
-/// Interface inherited by ProblemOperator and TimeDependentProblemOperator. Removes duplicated code in both classes.
+/// Interface inherited by ProblemOperator and TimeDomainProblemOperator. Removes duplicated code in both classes.
 class ProblemOperatorInterface
 {
 public:
   ProblemOperatorInterface(hephaestus::Problem & problem) : _problem(problem) {}
   virtual ~ProblemOperatorInterface() = default;
 
-  [[nodiscard]] virtual bool HasEquationSystem() const = 0;
-
-  [[nodiscard]] virtual mfem::Operator * GetEquationSystem() const = 0;
-
-  virtual void SetGridFunctions() = 0;
-  virtual void Init(mfem::Vector & X) = 0;
+  virtual void SetGridFunctions();
+  virtual void Init(mfem::Vector & X);
 
   mfem::Array<int> _true_offsets, _block_true_offsets;
 
@@ -23,6 +19,7 @@ public:
   mfem::OperatorHandle _equation_system_operator;
 
 protected:
+  // Reference to the current problem.
   hephaestus::Problem & _problem;
 
   // Vector of names of state gridfunctions used in formulation, ordered by appearance in block

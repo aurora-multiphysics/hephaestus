@@ -187,15 +187,15 @@ TEST_CASE_METHOD(TestEBFormCoupled, "TestEBFormCoupled", "[CheckRun]")
   problem_builder->SetOutputs(outputs);
   problem_builder->SetSolverOptions(solver_options);
 
-  hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
-  sequencer.ConstructEquationSystemProblem();
-  std::unique_ptr<hephaestus::TimeDomainProblem> problem = problem_builder->ReturnProblem();
+  problem_builder->FinalizeProblem();
+
+  auto problem = problem_builder->ReturnProblem();
   hephaestus::InputParameters exec_params;
   exec_params.SetParam("TimeStep", float(0.5));
   exec_params.SetParam("StartTime", float(0.00));
   exec_params.SetParam("EndTime", float(2.5));
   exec_params.SetParam("VisualisationSteps", int(1));
-  exec_params.SetParam("Problem", problem.get());
+  exec_params.SetParam("Problem", static_cast<hephaestus::TimeDomainProblem *>(problem.get()));
 
   auto executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
 

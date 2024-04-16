@@ -174,12 +174,12 @@ TEST_CASE_METHOD(TestComplexIrisWaveguide, "TestComplexIrisWaveguide", "[CheckRu
   problem_builder->SetOutputs(outputs);
   problem_builder->SetSolverOptions(solver_options);
 
-  hephaestus::ProblemBuildSequencer sequencer(problem_builder.get());
-  sequencer.ConstructOperatorProblem();
-  std::unique_ptr<hephaestus::SteadyStateProblem> problem = problem_builder->ReturnProblem();
+  problem_builder->FinalizeProblem();
+
+  auto problem = problem_builder->ReturnProblem();
 
   hephaestus::InputParameters exec_params;
-  exec_params.SetParam("Problem", problem.get());
+  exec_params.SetParam("Problem", static_cast<hephaestus::SteadyStateProblem *>(problem.get()));
 
   auto executioner = std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
 
@@ -189,10 +189,8 @@ TEST_CASE_METHOD(TestComplexIrisWaveguide, "TestComplexIrisWaveguide", "[CheckRu
   zero_vec = 0.0;
   mfem::VectorConstantCoefficient zero_coef(zero_vec);
 
-  double norm_r =
-      executioner->_problem->_gridfunctions.Get("electric_field_real")->ComputeMaxError(zero_coef);
-  double norm_i =
-      executioner->_problem->_gridfunctions.Get("electric_field_imag")->ComputeMaxError(zero_coef);
+  double norm_r = problem->_gridfunctions.Get("electric_field_real")->ComputeMaxError(zero_coef);
+  double norm_i = problem->_gridfunctions.Get("electric_field_imag")->ComputeMaxError(zero_coef);
   REQUIRE_THAT(norm_r, Catch::Matchers::WithinAbs(4896.771, 0.001));
   REQUIRE_THAT(norm_i, Catch::Matchers::WithinAbs(5357.650, 0.001));
 }

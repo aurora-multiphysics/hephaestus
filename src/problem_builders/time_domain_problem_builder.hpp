@@ -5,57 +5,45 @@
 namespace hephaestus
 {
 
-// Stores data required to describe a time domain formulation
-class TimeDomainProblem : public hephaestus::Problem
+/// Time-dependent problems with no equation system.
+class TimeDomainProblem : public Problem
 {
 public:
-  friend class TimeDomainProblemBuilder;
-
-  TimeDomainProblem() = default;
-  ~TimeDomainProblem() override = default;
-
-  [[nodiscard]] bool HasEquationSystem() const override
-  {
-    return GetOperator()->HasEquationSystem();
-  }
-
-  [[nodiscard]] hephaestus::TimeDependentEquationSystem * GetEquationSystem() const override
-  {
-    return GetOperator()->GetEquationSystem();
-  }
-
   [[nodiscard]] hephaestus::TimeDomainProblemOperator * GetOperator() const override
   {
-    if (!_td_operator)
+    if (!_problem_operator)
     {
-      MFEM_ABORT("No TimeDomainProblemOperator has been added to TimeDomainProblem.");
+      MFEM_ABORT("No operator has been added.");
     }
 
-    return _td_operator.get();
+    return _problem_operator.get();
   }
 
-  void SetOperator(std::unique_ptr<TimeDomainProblemOperator> new_problem_operator)
+  void SetOperator(std::unique_ptr<hephaestus::TimeDomainProblemOperator> problem_operator)
   {
-    _td_operator.reset();
-    _td_operator = std::move(new_problem_operator);
+    _problem_operator.reset();
+    _problem_operator = std::move(problem_operator);
   }
 
-protected:
-  std::unique_ptr<hephaestus::TimeDomainProblemOperator> _td_operator{nullptr};
+  void ConstructOperator() override
+  {
+    _problem_operator.reset();
+    _problem_operator = std::make_unique<hephaestus::TimeDomainProblemOperator>(*this);
+  }
+
+private:
+  std::unique_ptr<hephaestus::TimeDomainProblemOperator> _problem_operator{nullptr};
 };
 
-// Builder class of a time-domain EM formulation.
-class TimeDomainProblemBuilder : public hephaestus::ProblemBuilder
+/// Problem-builder for TimeDomainProblem.
+class TimeDomainProblemBuilder : public ProblemBuilder
 {
 public:
-  TimeDomainProblemBuilder() : _problem(std::make_unique<hephaestus::TimeDomainProblem>()) {}
+  TimeDomainProblemBuilder() : ProblemBuilder(new hephaestus::TimeDomainProblem) {}
 
   ~TimeDomainProblemBuilder() override = default;
 
-  virtual std::unique_ptr<hephaestus::TimeDomainProblem> ReturnProblem()
-  {
-    return std::move(_problem);
-  }
+  auto ReturnProblem() { return ProblemBuilder::ReturnProblem<TimeDomainProblem>(); }
 
   static std::vector<mfem::ParGridFunction *>
   RegisterTimeDerivatives(std::vector<std::string> gridfunction_names,
@@ -69,11 +57,7 @@ public:
 
   void RegisterCoefficients() override {}
 
-  void ConstructEquationSystem() override;
-
   void SetOperatorGridFunctions() override;
-
-  void InitializeKernels() override;
 
   void ConstructOperator() override;
 
@@ -82,10 +66,13 @@ public:
   void ConstructTimestepper() override;
 
 protected:
-  std::unique_ptr<hephaestus::TimeDomainProblem> _problem{nullptr};
-  mfem::ConstantCoefficient _one_coef{1.0};
+  /// NB: constructor called in derived classes.
+  TimeDomainProblemBuilder(hephaestus::TimeDomainProblem * problem) : ProblemBuilder(problem) {}
 
-  hephaestus::TimeDomainProblem * GetProblem() override { return _problem.get(); };
+  [[nodiscard]] hephaestus::TimeDomainProblem * GetProblem() const override
+  {
+    return ProblemBuilder::GetProblem<hephaestus::TimeDomainProblem>();
+  };
 };
 
 } // namespace hephaestus
