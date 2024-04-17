@@ -22,6 +22,13 @@ AuxSolvers::Init(const hephaestus::GridFunctions & gridfunctions,
 }
 
 void
+AuxSolvers::Update(const hephaestus::GridFunctions & gridfunctions,
+                   hephaestus::Coefficients & coefficients)
+{
+  Init(gridfunctions, coefficients);
+}
+
+void
 AuxSolvers::Solve(double t)
 {
   for (auto & aux_pair : _aux_queue)

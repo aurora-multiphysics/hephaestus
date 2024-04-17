@@ -26,8 +26,8 @@ Problem::Update()
   _sources.Update(_gridfunctions, _fespaces, _bc_map, _coefficients);
 
   // 5. Update the preprocessors and postprocessors.
-  _preprocessors.Init(_gridfunctions, _coefficients);
-  _postprocessors.Init(_gridfunctions, _coefficients);
+  _preprocessors.Update(_gridfunctions, _coefficients);
+  _postprocessors.Update(_gridfunctions, _coefficients);
 
   // TODO: - need to update Outputs.
 
