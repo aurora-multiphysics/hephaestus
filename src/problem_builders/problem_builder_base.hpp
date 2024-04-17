@@ -1,7 +1,7 @@
 #pragma once
 #include "auxsolvers.hpp"
 #include "equation_system.hpp"
-#include "gridfunctions.hpp"
+#include "hephaestus_containers.hpp"
 #include "inputs.hpp"
 #include "sources.hpp"
 #include <fstream>

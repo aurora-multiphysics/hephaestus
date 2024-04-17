@@ -1,5 +1,5 @@
 #include "auxsolvers.hpp"
-#include "gridfunctions.hpp"
+#include "hephaestus_containers.hpp"
 #include <catch2/catch_test_macros.hpp>
 
 extern const char * DATA_DIR;
