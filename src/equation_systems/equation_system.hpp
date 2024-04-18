@@ -93,9 +93,6 @@ public:
 
   std::vector<mfem::Array<int>> _ess_tdof_lists;
 
-  /// Call on mesh change.
-  virtual void Update();
-
 protected:
   bool VectorContainsName(const std::vector<std::string> & the_vector,
                           const std::string & name) const;
@@ -118,14 +115,6 @@ protected:
       _mblf_kernels_map_map;
 
   mutable mfem::OperatorHandle _jacobian;
-
-private:
-  // NB: temporary:
-  const hephaestus::GridFunctions * _gridfunctions{nullptr};
-  const hephaestus::FESpaces * _fespaces{nullptr};
-  const hephaestus::BCMap * _bc_map{nullptr};
-  const hephaestus::Coefficients * _coefficients{nullptr};
-  const hephaestus::Sources * _sources{nullptr};
 };
 
 /*
@@ -148,12 +137,6 @@ public:
   virtual void UpdateEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);
   mfem::ConstantCoefficient _dt_coef; // Coefficient for timestep scaling
   std::vector<std::string> _trial_var_time_derivative_names;
-
-  void Update() override
-  {
-    EquationSystem::Update();
-    // TODO: - add custom implementation.
-  }
 };
 
 } // namespace hephaestus

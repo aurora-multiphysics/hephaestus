@@ -15,7 +15,7 @@ public:
 
   virtual void Init();
 
-  virtual void Update() { SetGridFunctions(); }
+  virtual void Update() { Init(); }
 
   mfem::Array<int> _true_offsets, _block_true_offsets;
 
