@@ -23,6 +23,8 @@ public:
   void SetGridFunctions() override;
   void Init(mfem::Vector & X) override;
 
+  void Init() override;
+
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
 
   [[nodiscard]] hephaestus::TimeDependentEquationSystem * GetEquationSystem() const override

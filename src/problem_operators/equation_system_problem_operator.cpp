@@ -17,4 +17,13 @@ EquationSystemProblemOperator::Init(mfem::Vector & X)
   GetEquationSystem()->BuildEquationSystem(_problem._bc_map, _problem._sources);
 }
 
+void
+EquationSystemProblemOperator::Init()
+{
+  GetEquationSystem()->Init(
+      _problem._gridfunctions, _problem._fespaces, _problem._bc_map, _problem._coefficients);
+
+  ProblemOperator::Init();
+}
+
 } // namespace hephaestus
