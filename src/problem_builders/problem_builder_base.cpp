@@ -355,7 +355,7 @@ ProblemBuilder::ConstructNonlinearSolver()
 }
 
 void
-ProblemBuilder::InitializeKernels()
+ProblemBuilder::InitializeSources()
 {
   GetProblem()->_sources.Init(GetProblem()->_gridfunctions,
                               GetProblem()->_fespaces,
@@ -390,7 +390,9 @@ ProblemBuilder::FinalizeProblem(bool build_operator)
   }
 
   InitializeAuxSolvers();
-  InitializeKernels();
+  InitializeSources();
+  InitializeEquationSystem();
+
   SetOperatorGridFunctions();
 
   ConstructJacobianPreconditioner();
