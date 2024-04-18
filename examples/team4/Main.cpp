@@ -167,7 +167,7 @@ main(int argc, char * argv[])
   exec_params.SetParam("StartTime", float(0.00));
   exec_params.SetParam("EndTime", float(0.02));
   exec_params.SetParam("VisualisationSteps", int(1));
-  exec_params.SetParam("Problem", problem.get());
+  exec_params.SetParam("Problem", static_cast<hephaestus::TimeDomainProblem *>(problem.get()));
 
   auto executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
 
@@ -188,6 +188,5 @@ main(int argc, char * argv[])
     }
   }
 
-  problem.release();
   MPI_Finalize();
 }
