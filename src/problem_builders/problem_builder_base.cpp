@@ -29,17 +29,8 @@ Problem::Update()
   _preprocessors.Update(_gridfunctions, _coefficients);
   _postprocessors.Update(_gridfunctions, _coefficients);
 
-  // TODO: - need to update Outputs.
-
-  auto * problem_operator = dynamic_cast<ProblemOperatorInterface *>(GetOperator());
-  if (problem_operator)
-  {
-    problem_operator->Update();
-
-    _f = std::make_unique<mfem::BlockVector>(problem_operator->_true_offsets);
-    *_f = 0.0;
-    problem_operator->Init(*_f);
-  }
+  // 6. Rebuild operator (and equation system).
+  GetOperator()->Update();
 }
 
 void
