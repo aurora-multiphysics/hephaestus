@@ -63,8 +63,6 @@ public:
 
   void RegisterCoefficients() override {}
 
-  void SetOperatorGridFunctions() override;
-
   void ConstructOperator() override;
 
   void ConstructState() override;
