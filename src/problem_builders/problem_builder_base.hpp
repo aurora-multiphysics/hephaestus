@@ -12,6 +12,9 @@
 namespace hephaestus
 {
 
+/// Forwards declaration.
+class ProblemOperatorInterface;
+
 /// Base problem class.
 class Problem : public MeshUpdateInterface
 {
@@ -44,7 +47,7 @@ public:
   int _num_procs;
 
   /// Returns a pointer to the operator. See derived classes.
-  [[nodiscard]] virtual mfem::Operator * GetOperator() const = 0;
+  [[nodiscard]] virtual hephaestus::ProblemOperatorInterface * GetOperator() const = 0;
 
   /// Virtual method to construct the operator. Call for default problems.
   virtual void ConstructOperator() = 0;
