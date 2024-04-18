@@ -40,4 +40,15 @@ ProblemOperatorInterface::Init(mfem::Vector & X)
   }
 }
 
+void
+ProblemOperatorInterface::Init()
+{
+  SetGridFunctions();
+
+  _problem._f.reset(); // Vector of dofs.
+  _problem._f = std::make_unique<mfem::BlockVector>(_true_offsets);
+
+  Init(*_problem._f);
+}
+
 }
