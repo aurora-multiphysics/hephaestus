@@ -113,6 +113,8 @@ public:
 
   virtual void InitializeEquationSystem(){};
 
+  virtual void InitializeOperator();
+
   /// @brief Call @a FinalizeProblem to setup a problem.
   /// @param build_operator Skips @a ConstructOperator step if false. Set this to false if the problem
   /// operator has already been constructed earlier to avoid rebuilding it.
