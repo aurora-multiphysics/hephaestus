@@ -64,8 +64,6 @@ public:
 
   void ConstructOperator() override;
 
-  void ConstructState() override;
-
   void ConstructTimestepper() override {}
 
 protected:
