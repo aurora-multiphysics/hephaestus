@@ -43,7 +43,8 @@ ClosedCoilSolver::ClosedCoilSolver(std::string source_efield_gf_name,
     _i_coef_name(std::move(i_coef_name)),
     _cond_coef_name(std::move(cond_coef_name)),
     _electric_field_transfer(std::move(electric_field_transfer)),
-    _coil_domains(std::move(coil_dom))
+    _coil_domains(std::move(coil_dom)),
+    _solver_options(std::move(solver_options))
 {
   _elec_attrs.first = electrode_face;
 }
