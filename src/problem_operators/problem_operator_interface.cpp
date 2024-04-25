@@ -2,30 +2,52 @@
 
 namespace hephaestus
 {
+
+void
+ProblemOperatorInterface::SetTrialVariables()
+{
+  _trial_variables = _problem._gridfunctions.Get(_trial_var_names);
+}
+
+void 
+ProblemOperatorInterface::UpdateOffsets()
+{
+  size_t num_trial_variables = _trial_variables.size();
+
+  _block_true_offsets.SetSize(num_trial_variables + 1);
+  _true_offsets.SetSize(num_trial_variables + 1);
+
+  _block_true_offsets[0] = _true_offsets[0] = 0;
+  for (size_t i = 0; i < _trial_variables.size(); ++i)
+  {
+    mfem::ParFiniteElementSpace * fespace = _trial_variables.at(i)->ParFESpace();
+
+    _block_true_offsets[i + 1] = fespace->TrueVSize();
+    _true_offsets[i + 1] = fespace->GetVSize();
+  }
+
+  // Partial sum over values to calculate offsets.
+  _block_true_offsets.PartialSum();
+  _true_offsets.PartialSum();
+}
+
+void 
+ProblemOperatorInterface::UpdateBlockVectors()
+{
+  _true_x.Update(_block_true_offsets);
+  _true_rhs.Update(_block_true_offsets);
+}
+
 void
 ProblemOperatorInterface::SetGridFunctions()
 {
-  _trial_variables = _problem._gridfunctions.Get(_trial_var_names);
+  SetTrialVariables();
 
-  // Set operator size and block structure
-  _block_true_offsets.SetSize(_trial_variables.size() + 1);
-  _block_true_offsets[0] = 0;
-  for (unsigned int ind = 0; ind < _trial_variables.size(); ++ind)
-  {
-    _block_true_offsets[ind + 1] = _trial_variables.at(ind)->ParFESpace()->TrueVSize();
-  }
-  _block_true_offsets.PartialSum();
+  // Recalculate the offsets from gridfunction trial variables.
+  UpdateOffsets();
 
-  _true_offsets.SetSize(_trial_variables.size() + 1);
-  _true_offsets[0] = 0;
-  for (unsigned int ind = 0; ind < _trial_variables.size(); ++ind)
-  {
-    _true_offsets[ind + 1] = _trial_variables.at(ind)->ParFESpace()->GetVSize();
-  }
-  _true_offsets.PartialSum();
-
-  _true_x.Update(_block_true_offsets);
-  _true_rhs.Update(_block_true_offsets);
+  // Update the block vectors with new offsets.
+  UpdateBlockVectors();
 }
 
 void

@@ -23,6 +23,10 @@ public:
   mfem::OperatorHandle _equation_system_operator;
 
 protected:
+  void SetTrialVariables();
+  void UpdateOffsets();
+  void UpdateBlockVectors();
+
   // Reference to the current problem.
   hephaestus::Problem & _problem;
 
