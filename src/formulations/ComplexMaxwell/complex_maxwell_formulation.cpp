@@ -143,22 +143,11 @@ ComplexMaxwellOperator::ComplexMaxwellOperator(hephaestus::Problem & problem,
 }
 
 void
-ComplexMaxwellOperator::SetTrialVariables()
+ComplexMaxwellOperator::SetTrialVariableNames()
 {
   _trial_var_names.push_back(_h_curl_var_real_name);
   _trial_var_names.push_back(_h_curl_var_imag_name);
-
-  ProblemOperator::SetTrialVariables();
 }
-
-void
-ComplexMaxwellOperator::SetGridFunctions()
-{
-  ProblemOperator::SetGridFunctions();
-
-  _u = std::make_unique<mfem::ParComplexGridFunction>(_trial_variables.at(0)->ParFESpace());
-  *_u = std::complex(0.0, 0.0);
-};
 
 void
 ComplexMaxwellOperator::Init(mfem::BlockVector & X)
@@ -171,6 +160,9 @@ ComplexMaxwellOperator::Init(mfem::BlockVector & X)
     _mass_coef = _problem._coefficients._scalars.Get(_mass_coef_name);
   if (_problem._coefficients._scalars.Has(_loss_coef_name))
     _loss_coef = _problem._coefficients._scalars.Get(_loss_coef_name);
+
+  _u = std::make_unique<mfem::ParComplexGridFunction>(_trial_variables.at(0)->ParFESpace());
+  *_u = std::complex<double>(0.0, 0.0);
 }
 
 void

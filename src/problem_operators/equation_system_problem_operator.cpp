@@ -3,10 +3,9 @@
 namespace hephaestus
 {
 void
-EquationSystemProblemOperator::SetTrialVariables()
+EquationSystemProblemOperator::SetTrialVariableNames()
 {
   _trial_var_names = GetEquationSystem()->_trial_var_names;
-  ProblemOperator::SetTrialVariables();
 }
 
 void

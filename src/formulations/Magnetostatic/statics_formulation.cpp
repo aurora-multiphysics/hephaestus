@@ -105,11 +105,10 @@ StaticsOperator::StaticsOperator(hephaestus::Problem & problem,
 }
 
 void
-StaticsOperator::SetTrialVariables()
+StaticsOperator::SetTrialVariableNames()
 {
   _trial_var_names.push_back(_h_curl_var_name);
-  ProblemOperator::SetTrialVariables();
-};
+}
 
 void
 StaticsOperator::Init(mfem::BlockVector & X)

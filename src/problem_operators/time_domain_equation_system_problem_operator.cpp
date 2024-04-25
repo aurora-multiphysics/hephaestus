@@ -4,13 +4,11 @@ namespace hephaestus
 {
 
 void
-TimeDomainEquationSystemProblemOperator::SetTrialVariables()
+TimeDomainEquationSystemProblemOperator::SetTrialVariableNames()
 {
   _trial_var_names = GetEquationSystem()->_trial_var_names;
   _trial_variable_time_derivatives =
       _problem._gridfunctions.Get(GetEquationSystem()->_trial_var_time_derivative_names);
-
-  TimeDomainProblemOperator::SetTrialVariables();
 }
 
 void
