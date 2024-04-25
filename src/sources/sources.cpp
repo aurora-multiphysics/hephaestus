@@ -27,6 +27,7 @@ Sources::Update(hephaestus::GridFunctions & gridfunctions,
   // For now, call Init on each source.
   for ([[maybe_unused]] const auto & [name, source] : *this)
   {
+    logger.debug("Update called for source '{}'.", name);
     source->Init(gridfunctions, fespaces, bc_map, coefficients);
   }
 }
