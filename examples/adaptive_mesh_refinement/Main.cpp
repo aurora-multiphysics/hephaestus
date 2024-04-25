@@ -97,6 +97,9 @@ main(int argc, char * argv[])
   
   auto estimator = std::make_unique<mfem::LSZienkiewiczZhuEstimator>(*domain_integrator, *gridfunc);
 
+  mfem::ThresholdRefiner refiner(*estimator);
+  refiner.SetTotalErrorGoal(1e-14);
+
   spdlog::stopwatch sw;
 
   for (int it = 0; it < max_iteration; it++)
@@ -127,14 +130,16 @@ main(int argc, char * argv[])
 
     const mfem::Vector & local_errors = estimator->GetLocalErrors();
 
-    for (int ielement = 0; ielement < local_errors.Size(); ielement++)
+    for (int ielement = 0; ielement < mesh.GetNE(); ielement++)
     {
       printf("error on element %d is %.3g\n", ielement, local_errors(ielement));
     }
 
-    sw.reset();
-    pmesh->UniformRefinement();
-    logger.info("UniformRefinement: {} seconds", sw);
+    refiner.Apply(mesh);
+    if (refiner.Refined())
+    {
+      printf("There are now %d elements.\n", mesh.GetNE());
+    }
 
     sw.reset();
     ss_eqn_system_problem->Update();
