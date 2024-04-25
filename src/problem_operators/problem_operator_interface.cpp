@@ -18,9 +18,9 @@ ProblemOperatorInterface::UpdateOffsets()
 void
 ProblemOperatorInterface::UpdateOffsetsWithSize(const size_t soln_vector_size)
 {
-  if (soln_vector_size > _trial_variables.size());
+  if (soln_vector_size > _trial_variables.size())
   {
-    MFEM_ABORT("Solution vector size cannot exceed the number of trial variables.");
+    MFEM_ABORT("Solution vector size (" << soln_vector_size << ") cannot exceed the number of trial variables (" << _trial_variables.size() << ").");
   }
 
   _block_true_offsets.SetSize(soln_vector_size + 1);
