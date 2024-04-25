@@ -3,10 +3,10 @@
 namespace hephaestus
 {
 void
-EquationSystemProblemOperator::SetGridFunctions()
+EquationSystemProblemOperator::SetTrialVariables()
 {
   _trial_var_names = GetEquationSystem()->_trial_var_names;
-  ProblemOperator::SetGridFunctions();
+  ProblemOperator::SetTrialVariables();
 }
 
 void

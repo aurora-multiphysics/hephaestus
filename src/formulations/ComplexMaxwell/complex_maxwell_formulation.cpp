@@ -143,11 +143,17 @@ ComplexMaxwellOperator::ComplexMaxwellOperator(hephaestus::Problem & problem,
 }
 
 void
-ComplexMaxwellOperator::SetGridFunctions()
+ComplexMaxwellOperator::SetTrialVariables()
 {
   _trial_var_names.push_back(_h_curl_var_real_name);
   _trial_var_names.push_back(_h_curl_var_imag_name);
 
+  ProblemOperator::SetTrialVariables();
+}
+
+void
+ComplexMaxwellOperator::SetGridFunctions()
+{
   ProblemOperator::SetGridFunctions();
 
   _u = std::make_unique<mfem::ParComplexGridFunction>(_trial_variables.at(0)->ParFESpace());

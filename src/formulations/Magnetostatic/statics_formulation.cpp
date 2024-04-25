@@ -105,10 +105,10 @@ StaticsOperator::StaticsOperator(hephaestus::Problem & problem,
 }
 
 void
-StaticsOperator::SetGridFunctions()
+StaticsOperator::SetTrialVariables()
 {
   _trial_var_names.push_back(_h_curl_var_name);
-  ProblemOperator::SetGridFunctions();
+  ProblemOperator::SetTrialVariables();
 };
 
 void
