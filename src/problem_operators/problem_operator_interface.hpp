@@ -24,7 +24,10 @@ public:
 
 protected:
   virtual void SetTrialVariables();
-  void UpdateOffsets();
+  virtual void UpdateOffsets();
+
+  void UpdateOffsetsWithSize(size_t soln_vector_size);
+
   void UpdateBlockVectors();
 
   // Reference to the current problem.

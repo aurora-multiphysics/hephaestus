@@ -12,13 +12,22 @@ ProblemOperatorInterface::SetTrialVariables()
 void
 ProblemOperatorInterface::UpdateOffsets()
 {
-  size_t num_trial_variables = _trial_variables.size();
+  return UpdateOffsetsWithSize(_trial_variables.size());
+}
 
-  _block_true_offsets.SetSize(num_trial_variables + 1);
-  _true_offsets.SetSize(num_trial_variables + 1);
+void
+ProblemOperatorInterface::UpdateOffsetsWithSize(const size_t soln_vector_size)
+{
+  if (soln_vector_size > _trial_variables.size());
+  {
+    MFEM_ABORT("Solution vector size cannot exceed the number of trial variables.");
+  }
+
+  _block_true_offsets.SetSize(soln_vector_size + 1);
+  _true_offsets.SetSize(soln_vector_size + 1);
 
   _block_true_offsets[0] = _true_offsets[0] = 0;
-  for (size_t i = 0; i < _trial_variables.size(); ++i)
+  for (size_t i = 0; i < soln_vector_size; ++i)
   {
     mfem::ParFiniteElementSpace * fespace = _trial_variables.at(i)->ParFESpace();
 

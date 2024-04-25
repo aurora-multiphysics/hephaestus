@@ -228,22 +228,11 @@ DualOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vecto
 }
 
 void
-DualOperator::SetGridFunctions()
+DualOperator::UpdateOffsets()
 {
-  TimeDomainEquationSystemProblemOperator::SetGridFunctions();
-  // Blocks for solution vector are smaller than the operator size
-  // for DualOperator, as curl is stored separately.
-  // Block operator only has the HCurl TrueVSize;
-  _block_true_offsets.SetSize(_trial_variables.size());
-  _block_true_offsets[0] = 0;
-  for (unsigned int ind = 0; ind < _trial_variables.size() - 1; ++ind)
-  {
-    _block_true_offsets[ind + 1] = _trial_variables.at(ind)->ParFESpace()->TrueVSize();
-  }
-  _block_true_offsets.PartialSum();
-
-  _true_x.Update(_block_true_offsets);
-  _true_rhs.Update(_block_true_offsets);
+  // Blocks for solution vector are smaller than the operator size for DualOperator,
+  // as curl is stored separately. Block operator only has the HCurl TrueVSize;
+  return UpdateOffsetsWithSize(_trial_variables.size() - 1);
 }
 
 } // namespace hephaestus
