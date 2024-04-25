@@ -94,7 +94,7 @@ main(int argc, char * argv[])
   auto * domain_integrator = (blf->GetDBFI())->Last();
 
   mfem::ParGridFunction * gridfunc = ss_eqn_system_problem->_gridfunctions.Get("gridfunction");
-  
+
   auto estimator = std::make_unique<mfem::LSZienkiewiczZhuEstimator>(*domain_integrator, *gridfunc);
 
   mfem::ThresholdRefiner refiner(*estimator);
