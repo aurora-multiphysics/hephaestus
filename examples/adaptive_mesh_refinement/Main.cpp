@@ -85,7 +85,7 @@ main(int argc, char * argv[])
   params.SetParam("MaxIter", int(100));
   // params.SetParam("PrintLevel", -1);
 
-  hephaestus::logger.set_level(spdlog::level::info);
+  hephaestus::logger.set_level(spdlog::level::debug);
 
   const int max_iteration = 8;
 
