@@ -16,35 +16,34 @@ ProblemOperatorInterface::UpdateOffsets()
 }
 
 void
-ProblemOperatorInterface::UpdateOffsetsWithSize(const size_t soln_vector_size)
+ProblemOperatorInterface::UpdateOffsetsWithSize(const size_t block_vector_size)
 {
-  if (soln_vector_size > _trial_variables.size())
+  if (block_vector_size > _trial_variables.size())
   {
-    MFEM_ABORT("Solution vector size (" << soln_vector_size
+    MFEM_ABORT("Solution vector size (" << block_vector_size
                                         << ") cannot exceed the number of trial variables ("
                                         << _trial_variables.size() << ").");
   }
 
-  _block_true_offsets.SetSize(soln_vector_size + 1);
-  _true_offsets.SetSize(soln_vector_size + 1);
+  _block_true_offsets.SetSize(block_vector_size + 1);
+  _true_offsets.SetSize(_trial_variables.size() + 1);
 
   _block_true_offsets[0] = _true_offsets[0] = 0;
-  for (size_t i = 0; i < soln_vector_size; ++i)
+  for (size_t i = 0; i < _trial_variables.size(); ++i)
   {
     mfem::ParFiniteElementSpace * fespace = _trial_variables.at(i)->ParFESpace();
 
-    _block_true_offsets[i + 1] = fespace->TrueVSize();
+    if (i < block_vector_size)
+      _block_true_offsets[i + 1] = fespace->GetTrueVSize();
+
     _true_offsets[i + 1] = fespace->GetVSize();
   }
 
   // Partial sum over values to calculate offsets.
   _block_true_offsets.PartialSum();
   _true_offsets.PartialSum();
-}
 
-void
-ProblemOperatorInterface::UpdateBlockVectors()
-{
+  // Update block vectors.
   _true_x.Update(_block_true_offsets);
   _true_rhs.Update(_block_true_offsets);
 }
@@ -56,9 +55,6 @@ ProblemOperatorInterface::SetGridFunctions()
 
   // Recalculate the offsets from gridfunction trial variables.
   UpdateOffsets();
-
-  // Update the block vectors with new offsets.
-  UpdateBlockVectors();
 }
 
 void

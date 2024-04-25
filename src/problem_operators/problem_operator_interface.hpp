@@ -28,8 +28,6 @@ protected:
 
   void UpdateOffsetsWithSize(size_t soln_vector_size);
 
-  void UpdateBlockVectors();
-
   // Reference to the current problem.
   hephaestus::Problem & _problem;
 

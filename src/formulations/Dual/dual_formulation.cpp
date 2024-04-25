@@ -232,7 +232,7 @@ DualOperator::UpdateOffsets()
 {
   // Blocks for solution vector are smaller than the operator size for DualOperator,
   // as curl is stored separately. Block operator only has the HCurl TrueVSize;
-  return UpdateOffsetsWithSize(_trial_variables.size() - 1);
+  UpdateOffsetsWithSize(_trial_variables.size() - 1);
 }
 
 } // namespace hephaestus
