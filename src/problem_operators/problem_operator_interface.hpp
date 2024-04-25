@@ -15,7 +15,7 @@ public:
 
   virtual void Init();
 
-  virtual void Update() { Init(); }
+  virtual void Update();
 
   mfem::Array<int> _true_offsets, _block_true_offsets;
 
