@@ -14,7 +14,7 @@ TimeDomainEquationSystemProblemOperator::SetGridFunctions()
 }
 
 void
-TimeDomainEquationSystemProblemOperator::Init(mfem::Vector & X)
+TimeDomainEquationSystemProblemOperator::Init(mfem::BlockVector & X)
 {
   TimeDomainProblemOperator::Init(X);
 

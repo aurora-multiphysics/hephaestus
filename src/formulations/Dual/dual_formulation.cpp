@@ -193,7 +193,7 @@ WeakCurlEquationSystem::AddKernels()
 }
 
 void
-DualOperator::Init(mfem::Vector & X)
+DualOperator::Init(mfem::BlockVector & X)
 {
   TimeDomainEquationSystemProblemOperator::Init(X);
   auto * eqs = dynamic_cast<hephaestus::WeakCurlEquationSystem *>(GetEquationSystem());

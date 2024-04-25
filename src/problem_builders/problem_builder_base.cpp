@@ -240,6 +240,12 @@ ProblemBuilder::ConstructJacobianSolver()
   ConstructJacobianSolverWithOptions(SolverType::HYPRE_GMRES);
 }
 
+void 
+ProblemBuilder::ConstructBlockVector()
+{
+  GetProblem()->_f = std::make_unique<mfem::BlockVector>();
+}
+
 void
 ProblemBuilder::ConstructJacobianSolverWithOptions(SolverType type, SolverParams default_params)
 {
@@ -386,6 +392,8 @@ ProblemBuilder::FinalizeProblem(bool build_operator)
   {
     ConstructOperator();
   }
+
+  ConstructBlockVector();
 
   InitializeAuxSolvers();
   InitializeSources();

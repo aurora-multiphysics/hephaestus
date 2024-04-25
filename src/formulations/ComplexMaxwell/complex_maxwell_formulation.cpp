@@ -155,7 +155,7 @@ ComplexMaxwellOperator::SetGridFunctions()
 };
 
 void
-ComplexMaxwellOperator::Init(mfem::Vector & X)
+ComplexMaxwellOperator::Init(mfem::BlockVector & X)
 {
   ProblemOperator::Init(X);
 
