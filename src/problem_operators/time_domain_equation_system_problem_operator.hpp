@@ -20,9 +20,6 @@ public:
   {
   }
 
-  void SetTrialVariableNames() override;
-  void Init(mfem::BlockVector & X) override;
-
   void Init() override;
 
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
@@ -38,6 +35,9 @@ public:
   }
 
 protected:
+  void SetTrialVariableNames() override;
+  void SetTrialVariables() override;
+
   void BuildEquationSystemOperator(double dt);
 
 private:

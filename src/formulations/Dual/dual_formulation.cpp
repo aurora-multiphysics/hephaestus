@@ -193,9 +193,10 @@ WeakCurlEquationSystem::AddKernels()
 }
 
 void
-DualOperator::Init(mfem::BlockVector & X)
+DualOperator::Init()
 {
-  TimeDomainEquationSystemProblemOperator::Init(X);
+  TimeDomainEquationSystemProblemOperator::Init();
+
   auto * eqs = dynamic_cast<hephaestus::WeakCurlEquationSystem *>(GetEquationSystem());
 
   _h_curl_var_name = eqs->_h_curl_var_name;
