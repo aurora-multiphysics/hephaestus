@@ -111,10 +111,10 @@ StaticsOperator::SetTrialVariableNames()
 }
 
 void
-StaticsOperator::Init(mfem::BlockVector & X)
+StaticsOperator::Init()
 {
-  ProblemOperator::Init(X);
   _stiff_coef = _problem._coefficients._scalars.Get(_stiffness_coef_name);
+  ProblemOperator::Init();
 }
 
 /*
