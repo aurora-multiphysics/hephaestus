@@ -14,7 +14,7 @@ ProblemOperatorInterface::SetTrialVariables()
 void
 ProblemOperatorInterface::UpdateOffsets()
 {
-  return UpdateOffsetsWithSize(_trial_variables.size());
+  UpdateOffsetsWithSize(_trial_variables.size());
 }
 
 void
