@@ -62,7 +62,7 @@ DivFreeSource::Init(hephaestus::GridFunctions & gridfunctions,
 void
 DivFreeSource::Update()
 {
-  // TODO: - add implementation.
+  MFEM_ABORT("Not implemented.");
 }
 
 void

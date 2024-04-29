@@ -129,7 +129,7 @@ OpenCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
 void
 OpenCoilSolver::Update()
 {
-  // TODO: - add implementation.
+  MFEM_ABORT("Not implemented.");
 }
 
 void
