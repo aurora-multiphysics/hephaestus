@@ -37,6 +37,14 @@ TimeDomainEquationSystemProblemOperator::Init()
 }
 
 void
+TimeDomainEquationSystemProblemOperator::Update()
+{
+  GetEquationSystem()->Update(_problem._bc_map, _problem._sources);
+
+  TimeDomainProblemOperator::Update();
+}
+
+void
 TimeDomainEquationSystemProblemOperator::ImplicitSolve(const double dt,
                                                        const mfem::Vector & X,
                                                        mfem::Vector & dX_dt)
