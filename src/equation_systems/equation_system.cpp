@@ -257,6 +257,8 @@ EquationSystem::UpdateKernels()
 void
 EquationSystem::Update(hephaestus::BCMap & bc_map, hephaestus::Sources & sources)
 {
+  UpdateKernels();
+  BuildEquationSystem(bc_map, sources);
 }
 
 void
