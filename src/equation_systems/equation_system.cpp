@@ -222,6 +222,14 @@ EquationSystem::RecoverFEMSolution(mfem::BlockVector & trueX,
 }
 
 void
+EquationSystem::Update(hephaestus::GridFunctions & gridfunctions,
+                       hephaestus::FESpaces & fespaces,
+                       hephaestus::BCMap & bc_map,
+                       hephaestus::Coefficients)
+{
+}
+
+void
 EquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
                      const hephaestus::FESpaces & fespaces,
                      hephaestus::BCMap & bc_map,

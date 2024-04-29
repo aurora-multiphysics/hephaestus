@@ -24,6 +24,8 @@ public:
   {
   }
 
+  void Update() override {}
+
   void Apply(mfem::ParLinearForm * lf) override = 0;
   virtual void SubtractSource(mfem::ParGridFunction * gf) = 0;
 };

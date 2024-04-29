@@ -18,6 +18,11 @@ VectorFEMassKernel::Init(hephaestus::GridFunctions & gridfunctions,
 }
 
 void
+VectorFEMassKernel::Update()
+{
+}
+
+void
 VectorFEMassKernel::Apply(mfem::ParBilinearForm * blf)
 {
   blf->AddDomainIntegrator(new mfem::VectorFEMassIntegrator(*_coef));

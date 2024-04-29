@@ -15,6 +15,9 @@ public:
             const hephaestus::FESpaces & fespaces,
             hephaestus::BCMap & bc_map,
             hephaestus::Coefficients & coefficients) override;
+
+  void Update() override;
+
   void Apply(mfem::ParLinearForm * blf) override;
 
   std::string _coef_name;

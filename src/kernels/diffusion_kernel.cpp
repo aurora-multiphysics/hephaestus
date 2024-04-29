@@ -18,6 +18,11 @@ DiffusionKernel::Init(hephaestus::GridFunctions & gridfunctions,
 }
 
 void
+DiffusionKernel::Update()
+{
+}
+
+void
 DiffusionKernel::Apply(mfem::ParBilinearForm * blf)
 {
   blf->AddDomainIntegrator(new mfem::DiffusionIntegrator(*_coef));
