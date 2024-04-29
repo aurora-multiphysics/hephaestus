@@ -23,7 +23,7 @@ Problem::Update()
   _bc_map.Update(*_pmesh);
 
   // 4. Update sources.
-  _sources.Update(_gridfunctions, _fespaces, _bc_map, _coefficients);
+  _sources.Update();
 
   // 5. Update the preprocessors and postprocessors.
   _preprocessors.Update(_gridfunctions, _coefficients);
