@@ -71,18 +71,18 @@ void
 ProblemOperatorInterface::Init()
 {
   SetTrialVariables();
-
-  // Recalculate the offsets from gridfunction trial variables.
-  UpdateOffsets();
-
-  UpdateBlockVector(*_problem._f);
+  Update();
 }
 
 void
 ProblemOperatorInterface::Update()
 {
   logger.debug("Update called for ProblemOperatorInterface.");
-  Init();
+
+  // Recalculate the offsets from gridfunction trial variables.
+  UpdateOffsets();
+
+  UpdateBlockVector(*_problem._f);
 }
 
 }
