@@ -268,7 +268,8 @@ void
 EquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
                      const hephaestus::FESpaces & fespaces,
                      hephaestus::BCMap & bc_map,
-                     hephaestus::Coefficients & coefficients)
+                     hephaestus::Coefficients & coefficients,
+                     hephaestus::Sources & sources)
 {
   // Clear so we don't add identical fespaces if Init called twice.
   _test_pfespaces.clear();
@@ -328,6 +329,10 @@ EquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
       }
     }
   }
+
+  // Apply weak form components now. We're ready to go! No need to call Update
+  // again unless the mesh changes.
+  Update(bc_map, sources);
 }
 
 void

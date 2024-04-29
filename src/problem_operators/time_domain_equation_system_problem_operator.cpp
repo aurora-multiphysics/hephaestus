@@ -27,9 +27,11 @@ TimeDomainEquationSystemProblemOperator::SetTrialVariables()
 void
 TimeDomainEquationSystemProblemOperator::Init()
 {
-  GetEquationSystem()->Init(
-      _problem._gridfunctions, _problem._fespaces, _problem._bc_map, _problem._coefficients);
-  GetEquationSystem()->Update(_problem._bc_map, _problem._sources);
+  GetEquationSystem()->Init(_problem._gridfunctions,
+                            _problem._fespaces,
+                            _problem._bc_map,
+                            _problem._coefficients,
+                            _problem._sources);
 
   TimeDomainProblemOperator::Init();
 }
