@@ -10,8 +10,6 @@ public:
   ProblemOperatorInterface(hephaestus::Problem & problem) : _problem(problem) {}
   virtual ~ProblemOperatorInterface() = default;
 
-  virtual void Init(mfem::BlockVector & X);
-
   virtual void UpdateOperatorWidthAndHeight() {}
 
   virtual void Init();
@@ -27,6 +25,8 @@ protected:
   virtual void SetTrialVariableNames() {}
   virtual void SetTrialVariables();
   virtual void UpdateOffsets();
+
+  virtual void UpdateBlockVector(mfem::BlockVector & X);
 
   void UpdateOffsetsWithSize(size_t soln_vector_size);
 

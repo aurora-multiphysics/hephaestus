@@ -54,7 +54,7 @@ ProblemOperatorInterface::UpdateOffsetsWithSize(const size_t block_vector_size)
 }
 
 void
-ProblemOperatorInterface::Init(mfem::BlockVector & X)
+ProblemOperatorInterface::UpdateBlockVector(mfem::BlockVector & X)
 {
   X.Update(_true_offsets);
 
@@ -75,7 +75,7 @@ ProblemOperatorInterface::Init()
   // Recalculate the offsets from gridfunction trial variables.
   UpdateOffsets();
 
-  Init(*_problem._f);
+  UpdateBlockVector(*_problem._f);
 }
 
 void
