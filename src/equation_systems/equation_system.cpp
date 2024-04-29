@@ -222,10 +222,40 @@ EquationSystem::RecoverFEMSolution(mfem::BlockVector & trueX,
 }
 
 void
-EquationSystem::Update(hephaestus::GridFunctions & gridfunctions,
-                       hephaestus::FESpaces & fespaces,
-                       hephaestus::BCMap & bc_map,
-                       hephaestus::Coefficients)
+EquationSystem::UpdateKernels()
+{
+  auto update_kernels = [&](auto kernels)
+  {
+    for (auto & kernel : kernels)
+    {
+      kernel->Update();
+    }
+  };
+
+  auto update_kernels_map = [&](auto kernels_map)
+  {
+    for ([[maybe_unused]] const auto & [test_name, kernels_ptr] : kernels_map)
+    {
+      update_kernels(*kernels_ptr);
+    }
+  };
+
+  auto update_kernels_map_map = [&](auto kernels_map_map)
+  {
+    for ([[maybe_unused]] const auto & [test_name, kernels_map_ptr] : kernels_map_map)
+    {
+      update_kernels_map(*kernels_map_ptr);
+    }
+  };
+
+  update_kernels_map(_blf_kernels_map);
+  update_kernels_map(_lf_kernels_map);
+  update_kernels_map(_nlf_kernels_map);
+  update_kernels_map_map(_mblf_kernels_map_map);
+}
+
+void
+EquationSystem::Update(hephaestus::BCMap & bc_map, hephaestus::Sources & sources)
 {
 }
 
