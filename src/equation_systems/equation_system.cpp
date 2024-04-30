@@ -259,6 +259,14 @@ EquationSystem::Update(hephaestus::BCMap & bc_map, hephaestus::Sources & sources
 {
   UpdateKernels();
 
+  // NB: It is not required to rebuild the equation system entirely. In the future,
+  // a separate update method will be added.
+  BuildEquationSystem(bc_map, sources);
+}
+
+void
+EquationSystem::BuildEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sources & sources)
+{
   BuildLinearForms(bc_map, sources);
   BuildBilinearForms();
   BuildMixedBilinearForms();
@@ -294,7 +302,6 @@ EquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
   }
 
   // Initialise bilinear forms
-
   for (const auto & [test_var_name, blf_kernels] : _blf_kernels_map)
   {
     for (auto & i : *blf_kernels)
@@ -331,8 +338,8 @@ EquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
   }
 
   // Apply weak form components now. We're ready to go! No need to call Update
-  // again unless the mesh changes.
-  Update(bc_map, sources);
+  // unless the mesh changes.
+  BuildEquationSystem(bc_map, sources);
 }
 
 void

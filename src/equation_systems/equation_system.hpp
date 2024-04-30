@@ -63,7 +63,10 @@ public:
   // override to add kernels
   virtual void AddKernels() {}
 
-  // Build forms
+  /// Build forms. This should be called once.
+  virtual void BuildEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);
+
+  /// Update called on mesh change.
   virtual void Update(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);
 
   virtual void Init(hephaestus::GridFunctions & gridfunctions,
