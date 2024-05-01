@@ -46,7 +46,7 @@ public:
   hephaestus::GridFunctions * _gridfunctions{nullptr};
   const hephaestus::FESpaces * _fespaces{nullptr};
 
-  std::unique_ptr<mfem::ParBilinearForm> _h_curl_mass;
+  std::unique_ptr<mfem::ParBilinearForm> _h_curl_mass{nullptr};
 
   mfem::VectorCoefficient * _source_vec_coef{nullptr};
 
@@ -57,6 +57,12 @@ public:
   std::shared_ptr<mfem::ParGridFunction> _div_free_src_gf;
 
   mfem::Solver * _solver{nullptr};
+
+protected:
+  /// Called internally in the Update method. This should be called after
+  /// @a BuildHCurlMass. This will call the update method of the gridfunction
+  /// followed by its assemble method.
+  void UpdateHCurlMass();
 };
 
 } // namespace hephaestus
