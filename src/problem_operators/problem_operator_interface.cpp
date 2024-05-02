@@ -71,7 +71,9 @@ void
 ProblemOperatorInterface::Init()
 {
   SetTrialVariables();
-  Update();
+
+  UpdateOffsets();
+  UpdateBlockVector(*_problem._f);
 }
 
 void
