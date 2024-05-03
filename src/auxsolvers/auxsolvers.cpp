@@ -7,13 +7,16 @@ void
 AuxSolvers::Init(const hephaestus::GridFunctions & gridfunctions,
                  hephaestus::Coefficients & coefficients)
 {
+  _aux_queue.clear();
+
   for (const auto & [name, auxsolver] : *this)
   {
     logger.info("Initialising {} AuxSolver", name);
     spdlog::stopwatch sw;
     auxsolver->Init(gridfunctions, coefficients);
-    _aux_queue.emplace_back(std::pair(auxsolver, name));
     logger.info("{} Init: {} seconds", name, sw);
+
+    _aux_queue.emplace_back(std::pair(auxsolver, name));
   }
 
   std::sort(_aux_queue.begin(), _aux_queue.end(), AuxSolver::PriorityComparator);
