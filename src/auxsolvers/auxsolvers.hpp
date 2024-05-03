@@ -19,12 +19,14 @@ namespace hephaestus
 
 class AuxSolvers : public hephaestus::NamedFieldsMap<hephaestus::AuxSolver>
 {
-private:
 public:
-  std::vector<std::pair<std::shared_ptr<hephaestus::AuxSolver>, std::string>> _aux_queue;
   void Init(const hephaestus::GridFunctions & gridfunctions,
             hephaestus::Coefficients & coefficients);
   void Solve(double t = 0.0);
+
+private:
+  using AuxSolverPairType = std::pair<std::shared_ptr<hephaestus::AuxSolver>, std::string>;
+  std::vector<AuxSolverPairType> _aux_queue;
 };
 
 } // namespace hephaestus
