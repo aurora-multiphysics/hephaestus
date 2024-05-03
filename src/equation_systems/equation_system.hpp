@@ -107,7 +107,7 @@ protected:
                           const std::string & name) const;
 
   // gridfunctions for setting Dirichlet BCs
-  std::vector<std::unique_ptr<mfem::ParGridFunction>> _xs;
+  std::vector<mfem::ParGridFunction *> _xs;
 
   mfem::Array2D<mfem::HypreParMatrix *> _h_blocks;
 

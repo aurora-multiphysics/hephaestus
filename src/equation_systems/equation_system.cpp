@@ -259,11 +259,6 @@ EquationSystem::Update(hephaestus::BCMap & bc_map, hephaestus::Sources & sources
 {
   UpdateKernels();
 
-  for (auto & gridfunction : _xs)
-  {
-    gridfunction->Update();
-  }
-
   // NB: It is not required to rebuild the equation system entirely. In the future,
   // a separate update method will be added.
   BuildEquationSystem(bc_map, sources);
@@ -302,8 +297,7 @@ EquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
     // Store pointers to variable FESpaces
     _test_pfespaces.push_back(gridfunctions.Get(test_var_name)->ParFESpace());
     // Create auxiliary gridfunctions for applying Dirichlet conditions
-    _xs.emplace_back(
-        std::make_unique<mfem::ParGridFunction>(gridfunctions.Get(test_var_name)->ParFESpace()));
+    _xs.push_back(gridfunctions.Get(test_var_name));
   }
 
   // Initialise bilinear forms
