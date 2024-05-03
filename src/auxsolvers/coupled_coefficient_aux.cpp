@@ -3,11 +3,6 @@
 namespace hephaestus
 {
 
-CoupledCoefficient::CoupledCoefficient(const hephaestus::InputParameters & params)
-  : _coupled_var_name(params.GetParam<std::string>("CoupledVariableName"))
-{
-}
-
 void
 CoupledCoefficient::Init(const hephaestus::GridFunctions & gridfunctions,
                          hephaestus::Coefficients & coefficients)

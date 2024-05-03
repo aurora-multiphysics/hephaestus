@@ -16,8 +16,11 @@ protected:
   double _scalar_val;
 
 public:
-  CoupledCoefficient(const hephaestus::InputParameters & params);
+  CoupledCoefficient() = delete;
 
+  CoupledCoefficient(std::string coupled_var_name) : _coupled_var_name(std::move(coupled_var_name))
+  {
+  }
   ~CoupledCoefficient() override = default;
 
   void Init(const hephaestus::GridFunctions & gridfunctions,

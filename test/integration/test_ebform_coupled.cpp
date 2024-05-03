@@ -6,8 +6,10 @@ extern const char * DATA_DIR;
 class CopperConductivityCoefficient : public hephaestus::CoupledCoefficient
 {
 public:
-  CopperConductivityCoefficient(const hephaestus::InputParameters & params)
-    : hephaestus::CoupledCoefficient(params){};
+  CopperConductivityCoefficient(std::string coupled_var_name)
+    : CoupledCoefficient(std::move(_coupled_var_name))
+  {
+  }
   double Eval(mfem::ElementTransformation & T, const mfem::IntegrationPoint & ip) override
   {
     return 2.0 * M_PI * 10 + 0.001 * (_gf->GetValue(T, ip));
@@ -46,11 +48,8 @@ protected:
     // materialCopper instances and get property coefs? init can be for
     // all...
     // CoupledCoefficients must also be added to AuxSolvers
-    hephaestus::InputParameters copper_conductivity_params;
-    copper_conductivity_params.SetParam("CoupledVariableName", std::string("temperature"));
-
     std::shared_ptr<hephaestus::CoupledCoefficient> wire_conductivity =
-        std::make_shared<CopperConductivityCoefficient>(copper_conductivity_params);
+        std::make_shared<CopperConductivityCoefficient>("temperature");
 
     hephaestus::Subdomain wire("wire", 1);
     wire._scalar_coefficients.Register("electrical_conductivity", wire_conductivity);
