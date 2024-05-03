@@ -97,6 +97,9 @@ public:
   virtual void RecoverFEMSolution(mfem::BlockVector & trueX,
                                   hephaestus::GridFunctions & gridfunctions);
 
+  /// Returns a reference to the jacobian operator handle.
+  //[[nodiscard]] mfem::OperatorHandle & JacobianOperatorHandle() { return _jacobian; }
+
   std::vector<mfem::Array<int>> _ess_tdof_lists;
 
 protected:
