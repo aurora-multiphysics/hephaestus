@@ -6,7 +6,7 @@ namespace hephaestus
 void
 TimeDomainProblem::Update()
 {
-  // 1. Call superclass. Updates hte offsets and block vector.
+  // 1. Call superclass. Updates the offsets and block vector.
   Problem::Update();
 
   // 2. The dimensions of the problem operator have now changed. We must call
