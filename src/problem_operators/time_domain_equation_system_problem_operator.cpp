@@ -42,6 +42,14 @@ TimeDomainEquationSystemProblemOperator::Update()
   GetEquationSystem()->Update(_problem._bc_map, _problem._sources);
 
   TimeDomainProblemOperator::Update();
+
+  // TODO: - we need to update the size of the jacobian_solver here after the parent class' Update
+  // method is called which ensures that we've updated the _true_x, _true_rhs.
+
+  // GetEquationSystem()->BuildJacobian(_true_x, _true_rhs);
+
+  // auto * matrix = GetEquationSystem()->JacobianOperatorHandle().As<mfem::HypreParMatrix>();
+  // _problem._jacobian_solver->SetOperator(*matrix);
 }
 
 void
@@ -59,6 +67,9 @@ TimeDomainEquationSystemProblemOperator::ImplicitSolve(const double dt,
   }
   _problem._coefficients.SetTime(GetTime());
   BuildEquationSystemOperator(dt);
+
+  // TODO: - We have a problem here on the second ImplicitSolve after an update. This is due to the
+  // jacobian solver being of the incorrect size. Fails mysteriously somewhere in the Mult method.
 
   _problem._nonlinear_solver->SetSolver(*_problem._jacobian_solver);
   _problem._nonlinear_solver->SetOperator(*GetEquationSystem());
