@@ -10,8 +10,6 @@
 namespace hephaestus
 {
 
-class AuxSolver;
-
 class AuxSolver
 {
 public:
