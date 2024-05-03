@@ -18,7 +18,10 @@ AuxSolvers::Init(const hephaestus::GridFunctions & gridfunctions,
     _aux_queue.emplace_back(std::pair(auxsolver, name));
   }
 
-  std::sort(_aux_queue.begin(), _aux_queue.end(), AuxSolver::PriorityComparator);
+  std::sort(_aux_queue.begin(),
+            _aux_queue.end(),
+            [](const AuxSolverPairType & pair1, const AuxSolverPairType & pair2)
+            { return (pair1.first->Priority() < pair2.first->Priority()); });
 }
 
 void
