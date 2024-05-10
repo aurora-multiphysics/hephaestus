@@ -21,4 +21,4 @@ target_link_libraries(regression_tests ${MFEM_LIBRARIES} ${MFEM_COMMON_LIBRARY} 
 
 include(CTest)
 include(Catch)
-catch_discover_tests(regression_tests)
+catch_discover_tests(regression_tests DISCOVERY_MODE PRE_TEST)

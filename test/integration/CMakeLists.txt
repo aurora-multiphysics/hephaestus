@@ -21,4 +21,4 @@ target_link_libraries(integration_tests ${MFEM_LIBRARIES} ${MFEM_COMMON_LIBRARY}
 
 include(CTest)
 include(Catch)
-catch_discover_tests(integration_tests WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
+catch_discover_tests(integration_tests WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/bin" DISCOVERY_MODE PRE_TEST)
