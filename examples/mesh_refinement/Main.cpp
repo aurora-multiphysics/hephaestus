@@ -34,12 +34,13 @@ main(int argc, char * argv[])
   problem_builder.AddFESpace("fespace", "H1_3D_P1");
   problem_builder.AddGridFunction("gridfunction", "fespace");
 
+  // Create useful coefficients and add.
   Coefficients coefficients;
   coefficients._scalars.Register("one", std::make_shared<mfem::ConstantCoefficient>(1.0));
   coefficients._scalars.Register("zero", std::make_shared<mfem::ConstantCoefficient>(0.0));
-
   problem_builder.SetCoefficients(coefficients);
 
+  // Construct the operator so we can add kernels.
   problem_builder.ConstructOperator();
 
   InputParameters params_bilinear;
@@ -56,7 +57,7 @@ main(int argc, char * argv[])
   problem_builder.AddKernel<mfem::ParLinearForm>(std::string("gridfunction"),
                                                  std::move(linear_kernel));
 
-  // 8. All boundary attributes will be used for essential (Dirichlet) BC.
+  // All boundary attributes will be used for essential (Dirichlet) BC.
   mfem::Array<int> ess_bdr(pmesh->bdr_attributes.Max());
   ess_bdr = 1;
 
@@ -64,40 +65,41 @@ main(int argc, char * argv[])
       "gridfunction", ess_bdr, coefficients._scalars.Get("one"));
   problem_builder.AddBoundaryCondition("gridfunction", std::move(bc));
 
+  // Finalize construction and initialization of problem.
   problem_builder.FinalizeProblem(false);
 
-  auto steady_state_problem = problem_builder.ReturnProblem();
+  // Finished building; return problem.
+  auto ss_eqn_system_problem = problem_builder.ReturnProblem();
 
-  auto steady_state_equation_system_problem = std::unique_ptr<SteadyStateEquationSystemProblem>(
-      static_cast<SteadyStateEquationSystemProblem *>(steady_state_problem.release()));
+  auto * problem_operator = ss_eqn_system_problem->GetOperator();
+  auto * equation_system = ss_eqn_system_problem->GetEquationSystem();
 
-  EquationSystemProblemOperator * problem_operator =
-      steady_state_equation_system_problem->GetOperator();
-  EquationSystem * equation_system = steady_state_equation_system_problem->GetEquationSystem();
+  // Setup solver parameters.
+  hephaestus::InputParameters params;
+  params.SetParam("Tolerance", 1.0e-9);
+  params.SetParam("MaxIter", 100);
 
-  const int max_it = 10;
+  const int max_iteration = 10;
 
-  for (int it = 0; it < max_it; it++)
+  for (int it = 0; it < max_iteration; it++)
   {
     std::cout << "Now doing iteration " << it << std::endl;
 
+    // Form linear system AX=B; remove BCs.
     equation_system->FormLinearSystem(problem_operator->_equation_system_operator,
                                       problem_operator->_true_x,
                                       problem_operator->_true_rhs);
 
-    // Solve.
-    mfem::GSSmoother smoother((mfem::SparseMatrix &)(*problem_operator->_equation_system_operator));
-    mfem::PCG(*problem_operator->_equation_system_operator,
-              smoother,
-              problem_operator->_true_rhs,
-              problem_operator->_true_x,
-              3,
-              200,
-              1e-12,
-              0.0);
+    // Covnert operator to hypre matrix A.
+    auto hypre_matrix = problem_operator->_equation_system_operator.As<mfem::HypreParMatrix>();
 
+    // Construct solver; solve:
+    hephaestus::DefaultH1PCGSolver solver(params, *hypre_matrix);
+    solver.Mult(problem_operator->_true_rhs, problem_operator->_true_x);
+
+    // Add back in boundary conditions.
     equation_system->RecoverFEMSolution(problem_operator->_true_x,
-                                        steady_state_equation_system_problem->_gridfunctions);
+                                        ss_eqn_system_problem->_gridfunctions);
 
     // pmesh->UniformRefinement();
 
