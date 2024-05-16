@@ -37,12 +37,6 @@ public:
     return _equation_system.get();
   }
 
-  void Update() override
-  {
-    TimeDomainProblemOperator::Update();
-    GetEquationSystem()->Update();
-  }
-
 protected:
   void BuildEquationSystemOperator(double dt);
 
