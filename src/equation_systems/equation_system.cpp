@@ -351,15 +351,27 @@ EquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
 }
 
 void
+EquationSystem::RegisterLinearForms()
+{
+  int iname = 0;
+  for (const auto & test_var_name : _test_var_names)
+  {
+    mfem::ParFiniteElementSpace * pfes = _test_pfespaces.at(iname);
+
+    auto lf = std::make_shared<mfem::ParLinearForm>(pfes);
+    *lf = 0.0;
+
+    _lfs.Register(test_var_name, std::move(lf));
+
+    iname++;
+  }
+}
+
+void
 EquationSystem::BuildLinearForms(hephaestus::BCMap & bc_map, hephaestus::Sources & sources)
 {
-  // Register linear forms
-  for (int i = 0; i < _test_var_names.size(); i++)
-  {
-    auto test_var_name = _test_var_names.at(i);
-    _lfs.Register(test_var_name, std::make_shared<mfem::ParLinearForm>(_test_pfespaces.at(i)));
-    _lfs.GetRef(test_var_name) = 0.0;
-  }
+  RegisterLinearForms();
+
   // Apply boundary conditions
   ApplyBoundaryConditions(bc_map);
 

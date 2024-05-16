@@ -124,6 +124,9 @@ protected:
   /// Called internally.
   void UpdateWeakFormComponents();
 
+  /// Creates linear forms. Called internally.
+  void RegisterLinearForms();
+
   mutable mfem::OperatorHandle _jacobian;
 };
 
