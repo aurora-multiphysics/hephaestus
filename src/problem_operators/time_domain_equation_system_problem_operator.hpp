@@ -38,7 +38,7 @@ public:
   void Update() override
   {
     TimeDomainProblemOperator::Update();
-    // TODO: - Update TimeDependentEquationSystem.
+    GetEquationSystem()->Update();
   }
 
 protected:
