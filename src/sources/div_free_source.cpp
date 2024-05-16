@@ -60,6 +60,12 @@ DivFreeSource::Init(hephaestus::GridFunctions & gridfunctions,
 }
 
 void
+DivFreeSource::Update()
+{
+  // TODO: - add implementation.
+}
+
+void
 DivFreeSource::BuildHCurlMass()
 {
   _h_curl_mass = std::make_unique<mfem::ParBilinearForm>(_h_curl_fe_space);

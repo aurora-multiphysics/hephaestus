@@ -74,6 +74,11 @@ ScalarPotentialSource::Init(hephaestus::GridFunctions & gridfunctions,
   _b0_tdofs = std::make_unique<mfem::Vector>();
 }
 
+void
+ScalarPotentialSource::Update()
+{
+}
+
 ScalarPotentialSource::~ScalarPotentialSource() = default;
 
 void
