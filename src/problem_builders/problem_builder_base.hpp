@@ -112,8 +112,6 @@ public:
   void InitializeAuxSolvers();
   void InitializeOutputs();
 
-  virtual void InitializeEquationSystem(){};
-
   virtual void InitializeOperator();
 
   /// @brief Call @a FinalizeProblem to setup a problem.

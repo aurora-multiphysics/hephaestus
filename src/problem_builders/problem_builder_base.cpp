@@ -379,8 +379,6 @@ ProblemBuilder::InitializeOutputs()
 void
 ProblemBuilder::InitializeOperator()
 {
-  InitializeEquationSystem();
-
   // Setup initial conditions.
   GetProblem()->GetOperator()->Init();
 }

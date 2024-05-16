@@ -28,6 +28,14 @@ TimeDomainEquationSystemProblemOperator::Init(mfem::Vector & X)
 }
 
 void
+TimeDomainEquationSystemProblemOperator::Init()
+{
+  GetEquationSystem()->Init(
+      _problem._gridfunctions, _problem._fespaces, _problem._bc_map, _problem._coefficients);
+  TimeDomainProblemOperator::Init();
+}
+
+void
 TimeDomainEquationSystemProblemOperator::ImplicitSolve(const double dt,
                                                        const mfem::Vector & X,
                                                        mfem::Vector & dX_dt)

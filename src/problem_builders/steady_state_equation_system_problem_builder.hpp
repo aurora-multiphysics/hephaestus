@@ -52,8 +52,6 @@ public:
 
   ~SteadyStateEquationSystemProblemBuilder() override = default;
 
-  void InitializeEquationSystem() final;
-
   auto ReturnProblem() { return ProblemBuilder::ReturnProblem<SteadyStateEquationSystemProblem>(); }
 
 protected:

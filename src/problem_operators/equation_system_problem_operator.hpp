@@ -20,6 +20,8 @@ public:
   void SetGridFunctions() override;
   void Init(mfem::Vector & X) override;
 
+  void Init() override;
+
   ~EquationSystemProblemOperator() override = default;
 
   [[nodiscard]] hephaestus::EquationSystem * GetEquationSystem() const override
