@@ -71,7 +71,7 @@ void
 TimeDomainEquationSystemProblemOperator::BuildEquationSystemOperator(double dt)
 {
   GetEquationSystem()->SetTimeStep(dt);
-  GetEquationSystem()->Update(_problem._bc_map, _problem._sources);
+  GetEquationSystem()->BuildEquationSystem(_problem._bc_map, _problem._sources);
   GetEquationSystem()->BuildJacobian(_true_x, _true_rhs);
 }
 
