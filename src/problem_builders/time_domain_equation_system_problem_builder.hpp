@@ -38,12 +38,6 @@ public:
   {
     return GetOperator()->GetEquationSystem();
   }
-
-  void Update() override
-  {
-    TimeDomainProblem::Update();
-    // TODO: - add additional implementation.
-  }
 };
 
 // Problem-builder for TimeDomainEquationSystemProblem.

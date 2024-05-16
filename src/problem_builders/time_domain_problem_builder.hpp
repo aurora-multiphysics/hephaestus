@@ -34,7 +34,7 @@ public:
   void Update() override
   {
     Problem::Update();
-    // TODO: - add additional implementation.
+    GetOperator()->Update();
   }
 
 private:
