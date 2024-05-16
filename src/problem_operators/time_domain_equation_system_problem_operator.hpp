@@ -20,7 +20,7 @@ public:
   {
   }
 
-  void SetGridFunctions() override;
+  void SetTrialVariables() override;
   void Init(mfem::BlockVector & X) override;
 
   void Init() override;

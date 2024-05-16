@@ -23,7 +23,7 @@ public:
   mfem::OperatorHandle _equation_system_operator;
 
 protected:
-  void SetTrialVariables();
+  virtual void SetTrialVariables();
   void UpdateOffsets();
   void UpdateBlockVectors();
 
