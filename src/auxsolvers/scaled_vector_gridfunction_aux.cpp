@@ -54,6 +54,28 @@ ScaledVectorGridFunctionAux::Init(const hephaestus::GridFunctions & gridfunction
 }
 
 void
+ScaledVectorGridFunctionAux::Update()
+{
+  // Update a.
+  _a->Update();
+  _a->Assemble();
+  _a->Finalize();
+
+  // Update a_mixed.
+  _a_mixed->Update();
+  _a_mixed->Assemble();
+  _a_mixed->Finalize();
+
+  // Rebuild _a_mat.
+  _a_mat.reset();
+  _a_mat = std::unique_ptr<mfem::HypreParMatrix>(_a->ParallelAssemble());
+
+  // Rebuild solver.
+  _solver.reset();
+  _solver = std::make_unique<hephaestus::DefaultJacobiPCGSolver>(_solver_options, *_a_mat);
+}
+
+void
 ScaledVectorGridFunctionAux::BuildBilinearForm()
 {
   _a = std::make_unique<mfem::ParBilinearForm>(_test_fes);

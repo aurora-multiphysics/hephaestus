@@ -11,7 +11,11 @@ public:
   DummyAuxSolver(std::string & _string_to_append, std::string & _string_modified)
     : _string_to_append(_string_to_append), _string_modified(_string_modified){};
   void Init(const hephaestus::GridFunctions & gridfunctions,
-            hephaestus::Coefficients & coefficients) override{};
+            hephaestus::Coefficients & coefficients) override
+  {
+  }
+
+  void Update() override {}
 
   void Solve(double t = 0.0) override { _string_modified = _string_modified + _string_to_append; };
   std::string & _string_to_append;

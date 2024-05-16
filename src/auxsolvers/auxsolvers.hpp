@@ -27,9 +27,8 @@ public:
 
   void Solve(double t = 0.0);
 
-  /// @brief Update method called on mesh refinement. Calls Init.
-  virtual void Update(const hephaestus::GridFunctions & gridfunctions,
-                      hephaestus::Coefficients & coefficients);
+  /// @brief Calls @a Update  method for each auxsolver.
+  virtual void Update();
 };
 
 } // namespace hephaestus

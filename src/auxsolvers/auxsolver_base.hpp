@@ -23,6 +23,9 @@ public:
   virtual void Init(const hephaestus::GridFunctions & gridfunctions,
                     hephaestus::Coefficients & coefficients) = 0;
 
+  /// @brief Call on mesh change.
+  virtual void Update() = 0;
+
   virtual void Solve(double t = 0.0) = 0;
 
   // Set priority. Lower values are evaluated first.

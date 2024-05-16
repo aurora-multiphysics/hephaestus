@@ -26,8 +26,8 @@ Problem::Update()
   _sources.Update();
 
   // 5. Update the preprocessors and postprocessors.
-  _preprocessors.Update(_gridfunctions, _coefficients);
-  _postprocessors.Update(_gridfunctions, _coefficients);
+  _preprocessors.Update();
+  _postprocessors.Update();
 
   // 6. Rebuild operator (and equation system).
   GetOperator()->Update();

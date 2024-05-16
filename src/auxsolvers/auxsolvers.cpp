@@ -22,17 +22,13 @@ AuxSolvers::Init(const hephaestus::GridFunctions & gridfunctions,
 }
 
 void
-AuxSolvers::Update(const hephaestus::GridFunctions & gridfunctions,
-                   hephaestus::Coefficients & coefficients)
+AuxSolvers::Update()
 {
-  _aux_queue.clear();
-
   for ([[maybe_unused]] const auto & [name, auxsolver] : *this)
   {
     logger.debug("Update called for auxsolver '{}'.", name);
 
-    auxsolver->Init(gridfunctions, coefficients);
-    _aux_queue.emplace_back(auxsolver, name);
+    auxsolver->Update();
   }
 }
 

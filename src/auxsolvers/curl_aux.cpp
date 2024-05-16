@@ -24,6 +24,14 @@ CurlAuxSolver::Init(const hephaestus::GridFunctions & gridfunctions,
 }
 
 void
+CurlAuxSolver::Update()
+{
+  // NB: assume _u, _curl_u already updated earlier in update chain.
+  _curl->Update();
+  _curl->Assemble();
+}
+
+void
 CurlAuxSolver::Solve(double t)
 {
   _curl->Mult(*_u, *_curl_u);
