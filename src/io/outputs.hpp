@@ -5,7 +5,7 @@
 
 #include "logging.hpp"
 #include "../common/pfem_extras.hpp"
-#include "gridfunctions.hpp"
+#include "hephaestus_containers.hpp"
 #include "mesh_extras.hpp"
 #include "named_fields_map.hpp"
 
@@ -20,7 +20,7 @@ public:
   Outputs();
   Outputs(hephaestus::GridFunctions & gridfunctions);
 
-  ~Outputs();
+  ~Outputs() override;
 
   // Set output fields to write out. If output_field_names is empty, all
   // gridfunctions will be written by default.
