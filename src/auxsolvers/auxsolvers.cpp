@@ -7,6 +7,8 @@ void
 AuxSolvers::Init(const hephaestus::GridFunctions & gridfunctions,
                  hephaestus::Coefficients & coefficients)
 {
+  _aux_queue.clear();
+
   for (const auto & [name, auxsolver] : *this)
   {
     logger.info("Initialising {} AuxSolver", name);
