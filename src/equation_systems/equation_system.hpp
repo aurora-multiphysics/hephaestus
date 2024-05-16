@@ -118,7 +118,7 @@ protected:
 
   /// Iterates over all kernels added to the equation system and calls their
   /// Update method. Called internally.
-  void UpdateKernels();
+  virtual void UpdateKernels();
 
   /// Creates linear forms. Called internally.
   void RegisterLinearForms();
