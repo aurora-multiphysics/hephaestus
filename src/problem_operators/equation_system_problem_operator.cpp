@@ -13,10 +13,9 @@ EquationSystemProblemOperator::Init()
 {
   GetEquationSystem()->Init(
       _problem._gridfunctions, _problem._fespaces, _problem._bc_map, _problem._coefficients);
+  GetEquationSystem()->BuildEquationSystem(_problem._bc_map, _problem._sources);
 
   ProblemOperator::Init();
-
-  GetEquationSystem()->BuildEquationSystem(_problem._bc_map, _problem._sources);
 }
 
 } // namespace hephaestus
