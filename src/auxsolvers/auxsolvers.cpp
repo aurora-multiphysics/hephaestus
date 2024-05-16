@@ -14,7 +14,7 @@ AuxSolvers::Init(const hephaestus::GridFunctions & gridfunctions,
     logger.info("Initialising {} AuxSolver", name);
     spdlog::stopwatch sw;
     auxsolver->Init(gridfunctions, coefficients);
-    _aux_queue.emplace_back(std::pair(auxsolver, name));
+    _aux_queue.emplace_back(auxsolver, name);
     logger.info("{} Init: {} seconds", name, sw);
   }
 
@@ -32,8 +32,6 @@ AuxSolvers::Update(const hephaestus::GridFunctions & gridfunctions,
     logger.debug("Update called for auxsolver '{}'.", name);
 
     auxsolver->Init(gridfunctions, coefficients);
-
-    auto pair = std::make_pair(auxsolver, name);
     _aux_queue.emplace_back(auxsolver, name);
   }
 }
