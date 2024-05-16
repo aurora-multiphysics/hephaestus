@@ -18,6 +18,11 @@ MixedVectorGradientKernel::Init(hephaestus::GridFunctions & gridfunctions,
 }
 
 void
+MixedVectorGradientKernel::Update()
+{
+}
+
+void
 MixedVectorGradientKernel::Apply(mfem::ParMixedBilinearForm * mblf)
 {
   mblf->AddDomainIntegrator(new mfem::MixedVectorGradientIntegrator(*_coef));

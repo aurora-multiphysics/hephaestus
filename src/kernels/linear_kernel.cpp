@@ -18,6 +18,11 @@ LinearKernel::Init(hephaestus::GridFunctions & gridfunctions,
 }
 
 void
+LinearKernel::Update()
+{
+}
+
+void
 LinearKernel::Apply(mfem::ParLinearForm * lf)
 {
   lf->AddDomainIntegrator(new mfem::DomainLFIntegrator(*_coef));

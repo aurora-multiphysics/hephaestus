@@ -64,6 +64,11 @@ public:
   virtual void AddKernels() {}
 
   // Build forms
+  virtual void Update(hephaestus::GridFunctions & gridfunctions,
+                      hephaestus::FESpaces & fespaces,
+                      hephaestus::BCMap & bc_map,
+                      hephaestus::Coefficients);
+
   virtual void Init(hephaestus::GridFunctions & gridfunctions,
                     const hephaestus::FESpaces & fespaces,
                     hephaestus::BCMap & bc_map,

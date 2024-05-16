@@ -18,6 +18,11 @@ CurlCurlKernel::Init(hephaestus::GridFunctions & gridfunctions,
 }
 
 void
+CurlCurlKernel::Update()
+{
+}
+
+void
 CurlCurlKernel::Apply(mfem::ParBilinearForm * blf)
 {
   blf->AddDomainIntegrator(new mfem::CurlCurlIntegrator(*_coef));
