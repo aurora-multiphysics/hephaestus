@@ -14,15 +14,6 @@ protected:
            std::log(std::pow(n_imo / static_cast<double>(n_i), 1.0 / dim));
   }
 
-  static double PotentialGround(const mfem::Vector & x, double t) { return 0.0; }
-
-  static void AdotBC(const mfem::Vector & x, double t, mfem::Vector & A)
-  {
-    A(0) = 0; // No time derivatives.
-    A(1) = 0;
-    A(2) = 0;
-  }
-
   /// The desired solution for A. No time-dependence!
   static void AExactExpr(const mfem::Vector & x, double t, mfem::Vector & A_exact)
   {
@@ -57,7 +48,7 @@ protected:
 
     hephaestus::BCMap bc_map;
 
-    // On the surface, I impose the dirichlet BC that A_sf = A_exact.
+    // On the surface, I impose the dirichlet BC s.t. A_{surface} = A_exact.
     auto surface_vec_coef = std::make_shared<mfem::VectorFunctionCoefficient>(3, AExactExpr);
     coefficients._vectors.Register("surface_A", surface_vec_coef);
 
@@ -74,7 +65,7 @@ protected:
 
     hephaestus::Outputs outputs;
     outputs.Register("VisItDataCollection",
-                     std::make_shared<mfem::VisItDataCollection>("AFormVisIt"));
+                     std::make_shared<mfem::VisItDataCollection>("TestMeshUpdatesVisualization"));
 
     hephaestus::InputParameters l2errpostprocparams;
     l2errpostprocparams.SetParam("VariableName", std::string("magnetic_vector_potential"));
@@ -166,33 +157,47 @@ TEST_CASE_METHOD(TestMeshUpdates, "TestMeshUpdates", "[CheckRun]")
 
   exec_params.SetParam("Problem", static_cast<hephaestus::TimeDomainProblem *>(problem.get()));
 
-  for (int i = 0; i < 10; i++)
+  hephaestus::logger.set_level(spdlog::level::info);
+
+  hephaestus::L2ErrorVectorPostprocessor refinement_postprocessor;
+
+  auto l2errpostprocessor =
+      params.GetParam<hephaestus::AuxSolvers>("PostProcessors")
+          .Get<hephaestus::L2ErrorVectorPostprocessor>("L2ErrorPostprocessor");
+
+  // Run solve with executioner multiple times for different refinement levels.
+  // Test that the Update method is working correctly.
+  const int imax_refinement = 10;
+  for (int irefinement = 0; irefinement < imax_refinement; irefinement++)
   {
-    // Create a new executioner to reset stepping. We really want a steady state
-    // problem to solve for this test but the formulation inherits from a
-    // time-dependent formulation.
-    auto executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
+    // Create a new executioner each iteration in order to reset the time cycles
+    // etc. We ideally want a steady-state executioner to do this but the formulation
+    // expects a time-dependent problem.
+    hephaestus::TransientExecutioner executioner(exec_params);
 
-    executioner->Execute();
+    executioner.Execute();
 
-    auto l2errpostprocessor =
-        params.GetParam<hephaestus::AuxSolvers>("PostProcessors")
-            .Get<hephaestus::L2ErrorVectorPostprocessor>("L2ErrorPostprocessor");
-
-    // Check the convergence.
-    double r;
-    for (std::size_t i = 1; i < l2errpostprocessor->_ndofs.Size(); ++i)
-    {
-      r = EstimateConvergenceRate(l2errpostprocessor->_ndofs[i],
-                                  l2errpostprocessor->_ndofs[i - 1],
-                                  l2errpostprocessor->_l2_errs[i],
-                                  l2errpostprocessor->_l2_errs[i - 1],
-                                  3);
-      hephaestus::logger.info("{}", r);
-    }
+    const double l2_error = l2errpostprocessor->_l2_errs.Last();
+    hephaestus::logger.info("l2_error = {}", l2_error);
 
     // Now refine.
     pmesh->UniformRefinement();
     problem->Update();
+  }
+
+  // Check how the convergence changes with each refinement level. We expect the
+  // l2 errors to decrease.
+  double r;
+  for (std::size_t i = 1; i < l2errpostprocessor->_ndofs.Size(); ++i)
+  {
+    r = EstimateConvergenceRate(l2errpostprocessor->_ndofs[i],
+                                l2errpostprocessor->_ndofs[i - 1],
+                                l2errpostprocessor->_l2_errs[i],
+                                l2errpostprocessor->_l2_errs[i - 1],
+                                3);
+
+    hephaestus::logger.info("r = {}", r);
+
+    // TODO: - add REQUIRE statements here to check convergence.
   }
 }
