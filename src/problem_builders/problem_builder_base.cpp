@@ -357,8 +357,6 @@ ProblemBuilder::ConstructNonlinearSolver()
 void
 ProblemBuilder::InitializeKernels()
 {
-  GetProblem()->_preprocessors.Init(GetProblem()->_gridfunctions, GetProblem()->_coefficients);
-
   GetProblem()->_sources.Init(GetProblem()->_gridfunctions,
                               GetProblem()->_fespaces,
                               GetProblem()->_bc_map,
