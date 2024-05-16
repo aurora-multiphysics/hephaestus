@@ -215,6 +215,15 @@ DualOperator::Init()
 }
 
 void
+DualOperator::Update()
+{
+  TimeDomainEquationSystemProblemOperator::Update();
+
+  _curl->Update();
+  _curl->Assemble();
+}
+
+void
 DualOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt)
 {
   spdlog::stopwatch sw;
