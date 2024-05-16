@@ -25,4 +25,18 @@ public:
   virtual void Apply(T * form) = 0;
 };
 
+// Aliases.
+using ParBilinearFormKernel = Kernel<mfem::ParBilinearForm>;
+using ParLinearFormKernel = Kernel<mfem::ParLinearForm>;
+using ParNonlinearFormKernel = Kernel<mfem::ParNonlinearForm>;
+using ParMixedBilinearFormKernel = Kernel<mfem::ParMixedBilinearForm>;
+
+template <typename T>
+using KernelStore = std::vector<std::shared_ptr<T>>;
+
+using ParBilinearFormKernelStore = KernelStore<ParBilinearFormKernel>;
+using ParLinearFormKernelStore = KernelStore<ParLinearFormKernel>;
+using ParNonlinearFormKernelStore = KernelStore<ParNonlinearFormKernel>;
+using ParMixedBilinearFormKernelStore = KernelStore<ParMixedBilinearFormKernel>;
+
 } // namespace hephaestus

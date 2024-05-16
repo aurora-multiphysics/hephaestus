@@ -7,7 +7,7 @@ namespace hephaestus
 /*
 (σ ∇ V, u')
 */
-class MixedVectorGradientKernel : public Kernel<mfem::ParMixedBilinearForm>
+class MixedVectorGradientKernel : public ParMixedBilinearFormKernel
 {
 public:
   MixedVectorGradientKernel(const hephaestus::InputParameters & params);

@@ -7,7 +7,7 @@ namespace hephaestus
 /*
 (σ ∇ V, ∇ V')
 */
-class DiffusionKernel : public Kernel<mfem::ParBilinearForm>
+class DiffusionKernel : public ParBilinearFormKernel
 {
 public:
   DiffusionKernel(const hephaestus::InputParameters & params);

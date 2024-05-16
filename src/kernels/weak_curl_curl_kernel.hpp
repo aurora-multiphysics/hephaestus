@@ -7,7 +7,7 @@ namespace hephaestus
 /*
 (α∇×u_{n}, ∇×u')
 */
-class WeakCurlCurlKernel : public Kernel<mfem::ParLinearForm>
+class WeakCurlCurlKernel : public ParLinearFormKernel
 {
 public:
   WeakCurlCurlKernel(const hephaestus::InputParameters & params);
