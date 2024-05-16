@@ -33,6 +33,12 @@ public:
     _problem_operator = std::make_unique<hephaestus::ProblemOperator>(*this);
   }
 
+  void Update() override
+  {
+    Problem::Update();
+    // TODO: - update ProblemOperator.
+  }
+
 private:
   std::unique_ptr<hephaestus::ProblemOperator> _problem_operator{nullptr};
 };
