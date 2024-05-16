@@ -7,22 +7,21 @@ void
 TimeDomainEquationSystemProblemOperator::SetTrialVariableNames()
 {
   _trial_var_names = GetEquationSystem()->_trial_var_names;
-  _trial_variable_time_derivatives =
-      _problem._gridfunctions.Get(GetEquationSystem()->_trial_var_time_derivative_names);
 }
 
 void
-TimeDomainEquationSystemProblemOperator::Init(mfem::BlockVector & X)
+TimeDomainEquationSystemProblemOperator::SetTrialVariables()
 {
-  TimeDomainProblemOperator::Init(X);
+  TimeDomainProblemOperator::SetTrialVariables();
+
+  _trial_variable_time_derivatives =
+      _problem._gridfunctions.Get(GetEquationSystem()->_trial_var_time_derivative_names);
 
   // Define material property coefficients
   for (size_t i = 0; i < _trial_variables.size(); ++i)
   {
     *(_trial_variable_time_derivatives.at(i)) = 0.0;
   }
-
-  GetEquationSystem()->BuildEquationSystem(_problem._bc_map, _problem._sources);
 }
 
 void
@@ -30,6 +29,8 @@ TimeDomainEquationSystemProblemOperator::Init()
 {
   GetEquationSystem()->Init(
       _problem._gridfunctions, _problem._fespaces, _problem._bc_map, _problem._coefficients);
+  GetEquationSystem()->BuildEquationSystem(_problem._bc_map, _problem._sources);
+
   TimeDomainProblemOperator::Init();
 }
 
