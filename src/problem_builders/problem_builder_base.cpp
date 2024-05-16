@@ -377,6 +377,14 @@ ProblemBuilder::InitializeOutputs()
 }
 
 void
+ProblemBuilder::InitializeOperator()
+{
+  InitializeEquationSystem();
+  SetOperatorGridFunctions();
+  ConstructState();
+}
+
+void
 ProblemBuilder::FinalizeProblem(bool build_operator)
 {
   RegisterFESpaces();
@@ -391,15 +399,12 @@ ProblemBuilder::FinalizeProblem(bool build_operator)
 
   InitializeAuxSolvers();
   InitializeSources();
-  InitializeEquationSystem();
-
-  SetOperatorGridFunctions();
+  InitializeOperator();
 
   ConstructJacobianPreconditioner();
   ConstructJacobianSolver();
   ConstructNonlinearSolver();
 
-  ConstructState();
   ConstructTimestepper();
   InitializeOutputs();
 }
