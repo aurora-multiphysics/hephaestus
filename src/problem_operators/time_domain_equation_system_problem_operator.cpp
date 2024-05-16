@@ -43,32 +43,34 @@ TimeDomainEquationSystemProblemOperator::Update()
 
   TimeDomainProblemOperator::Update();
 
-  //
   // TODO: - we need to update the size of the jacobian_solver here after the parent class' Update
   // method is called which ensures that we've updated the _true_x, _true_rhs. This is a hacky first
-  // attempt to avoid a segfault with the test_mesh_updates. This is very bad code and basically
-  // copies methods from the problem builder used. We need to generalize this.
+  // attempt to avoid a segfault with test_mesh_updates. This is very bad code and basically
+  // copies methods from the AFormulation problem builder used. We need to generalize this.
+  // Note that this approach will only work for this specific problem! Static pointer casts
+  // have been used to ensure that this will fail if used on a different problem.
+  {
+    GetEquationSystem()->BuildJacobian(_true_x, _true_rhs);
 
-  GetEquationSystem()->BuildJacobian(_true_x, _true_rhs);
+    // Rebuild the jacobian preconditioner.
+    auto first_pfespace = GetEquationSystem()->_test_pfespaces.at(0);
 
-  // Rebuild the jacobian preconditioner.
-  auto first_pfespace = GetEquationSystem()->_test_pfespaces.at(0);
+    auto precond = std::make_shared<mfem::HypreAMS>(first_pfespace);
 
-  auto precond = std::make_shared<mfem::HypreAMS>(first_pfespace);
+    precond->SetSingularProblem();
+    precond->SetPrintLevel(-1);
 
-  precond->SetSingularProblem();
-  precond->SetPrintLevel(-1);
+    _problem._jacobian_preconditioner = precond;
 
-  _problem._jacobian_preconditioner = precond;
+    // Set new preconditioner.
+    std::static_pointer_cast<mfem::HyprePCG>(_problem._jacobian_solver)
+        ->SetPreconditioner(
+            *std::static_pointer_cast<mfem::HypreSolver>(_problem._jacobian_preconditioner));
 
-  // Set new preconditioner.
-  std::dynamic_pointer_cast<mfem::HyprePCG>(_problem._jacobian_solver)
-      ->SetPreconditioner(
-          *std::dynamic_pointer_cast<mfem::HypreSolver>(_problem._jacobian_preconditioner));
-
-  // Set Jacobian matrix.
-  auto * matrix = GetEquationSystem()->JacobianOperatorHandle().As<mfem::HypreParMatrix>();
-  _problem._jacobian_solver->SetOperator(*matrix);
+    // Set Jacobian matrix.
+    auto * matrix = GetEquationSystem()->JacobianOperatorHandle().As<mfem::HypreParMatrix>();
+    _problem._jacobian_solver->SetOperator(*matrix);
+  }
 }
 
 void
@@ -86,9 +88,6 @@ TimeDomainEquationSystemProblemOperator::ImplicitSolve(const double dt,
   }
   _problem._coefficients.SetTime(GetTime());
   BuildEquationSystemOperator(dt);
-
-  // TODO: - We have a problem here on the second ImplicitSolve after an update. This is due to the
-  // jacobian solver being of the incorrect size. Fails mysteriously somewhere in the Mult method.
 
   _problem._nonlinear_solver->SetSolver(*_problem._jacobian_solver);
   _problem._nonlinear_solver->SetOperator(*GetEquationSystem());
