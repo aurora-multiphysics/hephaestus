@@ -98,7 +98,7 @@ public:
                                   hephaestus::GridFunctions & gridfunctions);
 
   /// Returns a reference to the jacobian operator handle.
-  //[[nodiscard]] mfem::OperatorHandle & JacobianOperatorHandle() { return _jacobian; }
+  [[nodiscard]] mfem::OperatorHandle & JacobianOperatorHandle() { return _jacobian; }
 
   std::vector<mfem::Array<int>> _ess_tdof_lists;
 
