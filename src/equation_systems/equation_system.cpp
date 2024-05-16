@@ -292,6 +292,23 @@ EquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
 void
 EquationSystem::Update()
 {
+  // This method should have been called:
+  // Problem --> ProblemOperator --> EquationSystem
+
+  // 1. We have already updated the fespaces and gridfunctions so our
+  // _test_pfespaces vector will now contain invalid pointers and the
+  // _xs vector has invalid gridfunctions. Rebuild:
+  _test_pfespaces.clear();
+  _xs.clear();
+
+  // NB: there could be some nasty memory leak side-effects from this...
+  EquationSystem::Init(*const_cast<GridFunctions *>(_gridfunctions),
+                       *_fespaces,
+                       *const_cast<BCMap *>(_bc_map),
+                       *const_cast<Coefficients *>(_coefficients));
+
+  // 2. Rebuild.
+  BuildEquationSystem(*const_cast<BCMap *>(_bc_map), *const_cast<Sources *>(_sources));
 }
 
 void
@@ -400,6 +417,8 @@ EquationSystem::BuildMixedBilinearForms()
 void
 EquationSystem::BuildEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sources & sources)
 {
+  _sources = &sources; // Temporary.
+
   BuildLinearForms(bc_map, sources);
   BuildBilinearForms();
   BuildMixedBilinearForms();

@@ -125,6 +125,7 @@ private:
   const hephaestus::FESpaces * _fespaces{nullptr};
   const hephaestus::BCMap * _bc_map{nullptr};
   const hephaestus::Coefficients * _coefficients{nullptr};
+  const hephaestus::Sources * _sources{nullptr};
 };
 
 /*
