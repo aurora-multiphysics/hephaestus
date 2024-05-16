@@ -105,7 +105,6 @@ public:
   virtual void ConstructJacobianSolver();
   virtual void ConstructNonlinearSolver();
   virtual void ConstructOperator() = 0;
-  virtual void ConstructState();
   virtual void ConstructTimestepper() = 0;
 
   virtual void InitializeSources();

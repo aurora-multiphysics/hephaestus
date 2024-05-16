@@ -65,7 +65,7 @@ public:
 
   void ConstructOperator() override;
 
-  void ConstructState() override;
+  void InitializeOperator() override;
 
   void ConstructTimestepper() override;
 

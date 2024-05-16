@@ -39,9 +39,9 @@ TimeDomainProblemBuilder::ConstructOperator()
 }
 
 void
-TimeDomainProblemBuilder::ConstructState()
+TimeDomainProblemBuilder::InitializeOperator()
 {
-  ProblemBuilder::ConstructState();
+  ProblemBuilder::InitializeOperator();
   GetProblem()->GetOperator()->SetTime(0.0);
 }
 
