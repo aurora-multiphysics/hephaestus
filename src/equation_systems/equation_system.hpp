@@ -93,6 +93,9 @@ public:
 
   std::vector<mfem::Array<int>> _ess_tdof_lists;
 
+  /// Call on mesh change.
+  virtual void Update();
+
 protected:
   bool VectorContainsName(const std::vector<std::string> & the_vector,
                           const std::string & name) const;
@@ -115,6 +118,13 @@ protected:
       _mblf_kernels_map_map;
 
   mutable mfem::OperatorHandle _jacobian;
+
+private:
+  // NB: temporary:
+  const hephaestus::GridFunctions * _gridfunctions{nullptr};
+  const hephaestus::FESpaces * _fespaces{nullptr};
+  const hephaestus::BCMap * _bc_map{nullptr};
+  const hephaestus::Coefficients * _coefficients{nullptr};
 };
 
 /*

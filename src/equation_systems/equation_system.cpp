@@ -227,6 +227,11 @@ EquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
                      hephaestus::BCMap & bc_map,
                      hephaestus::Coefficients & coefficients)
 {
+  // NB: - test code.
+  _gridfunctions = &gridfunctions;
+  _fespaces = &fespaces;
+  _bc_map = &bc_map;
+  _coefficients = &coefficients;
 
   // Add optional kernels to the EquationSystem
   AddKernels();
@@ -282,6 +287,11 @@ EquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
       }
     }
   }
+}
+
+void
+EquationSystem::Update()
+{
 }
 
 void
