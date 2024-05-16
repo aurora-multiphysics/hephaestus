@@ -30,6 +30,8 @@ WeakCurlKernel::Init(hephaestus::GridFunctions & gridfunctions,
 void
 WeakCurlKernel::Update()
 {
+  // NB: we only have ownership of _weak_curl! _u, _v will be updated by the
+  // gridfunctions. Ensure gridfunctions are updated first.
   _weak_curl->Update();
   _weak_curl->Assemble();
 }

@@ -162,7 +162,7 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
 void
 ClosedCoilSolver::Update()
 {
-  // Ensure all optional FE spaces are updated!
+  // TODO: - Ensure all optional FE spaces are updated!
   MFEM_ABORT("Not implemented.");
 }
 
