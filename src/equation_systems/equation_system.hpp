@@ -120,10 +120,6 @@ protected:
   /// Update method. Called internally.
   void UpdateKernels();
 
-  /// Iterates over all weak form components and calls their Update method.
-  /// Called internally.
-  void UpdateWeakFormComponents();
-
   /// Creates linear forms. Called internally.
   void RegisterLinearForms();
 

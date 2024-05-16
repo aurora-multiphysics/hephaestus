@@ -255,31 +255,6 @@ EquationSystem::UpdateKernels()
 }
 
 void
-EquationSystem::UpdateWeakFormComponents()
-{
-  auto update_component_map = [&](auto component_map)
-  {
-    for ([[maybe_unused]] const auto & [test_name, component] : component_map)
-    {
-      component->Update();
-    }
-  };
-
-  auto update_component_map_map = [&](auto component_map_map)
-  {
-    for ([[maybe_unused]] const auto & [test_name, component_map_ptr] : component_map_map)
-    {
-      update_component_map(*component_map_ptr);
-    }
-  };
-
-  update_component_map(_blfs);
-  update_component_map(_lfs);
-  update_component_map(_nlfs);
-  update_component_map_map(_mblfs);
-}
-
-void
 EquationSystem::Update(hephaestus::BCMap & bc_map, hephaestus::Sources & sources)
 {
 }
