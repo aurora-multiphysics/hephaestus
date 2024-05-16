@@ -31,6 +31,8 @@ public:
     _problem_operator = std::make_unique<hephaestus::TimeDomainProblemOperator>(*this);
   }
 
+  void Update() override;
+
 private:
   std::unique_ptr<hephaestus::TimeDomainProblemOperator> _problem_operator{nullptr};
 };
