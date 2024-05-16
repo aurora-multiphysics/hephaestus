@@ -20,7 +20,7 @@ public:
   void SubtractSources(mfem::ParGridFunction * gf);
 
   /// @brief Called on mesh refinement.
-  void Update();
+  virtual void Update();
 };
 
 } // namespace hephaestus
