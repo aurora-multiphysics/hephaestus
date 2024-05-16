@@ -14,24 +14,39 @@ protected:
            std::log(std::pow(n_imo / static_cast<double>(n_i), 1.0 / dim));
   }
 
-  /// The desired solution for A. No time-dependence!
+  static double PotentialGround(const mfem::Vector & x, double t) { return 0.0; }
+
+  static void AdotBC(const mfem::Vector & x, double t, mfem::Vector & A)
+  {
+    A(0) = sin(x(1) * M_PI) * sin(x(2) * M_PI);
+    A(1) = 0;
+    A(2) = 0;
+  }
+
   static void AExactExpr(const mfem::Vector & x, double t, mfem::Vector & A_exact)
   {
-    A_exact(0) = sin(x(1) * M_PI) * sin(x(2) * M_PI);
+    A_exact(0) = sin(x(1) * M_PI) * sin(x(2) * M_PI) * t;
     A_exact(1) = 0;
     A_exact(2) = 0;
   }
-
-  static double MuExpr(const mfem::Vector & x) { return 1.0; }
-
-  /// Source field: \curl{mu\curl{\vb{A}}} = \vb{J} with mu = 1
-  static void SourceField(const mfem::Vector & x, mfem::Vector & f)
+  static double MuExpr(const mfem::Vector & x)
   {
-    f(0) = 2.0 * M_PI * M_PI * sin(M_PI * x(1)) * sin(M_PI * x(2));
-    f(1) = 0;
-    f(2) = 0;
+    double variation_scale = 0.5;
+    double mu = 1.0 / (1.0 + variation_scale * cos(M_PI * x(0)) * cos(M_PI * x(1)));
+    return mu;
   }
-
+  // Source field
+  static void SourceField(const mfem::Vector & x, double t, mfem::Vector & f)
+  {
+    double variation_scale = 0.5;
+    f(0) = t * M_PI * M_PI * sin(M_PI * x(1)) * sin(M_PI * x(2)) *
+               (3 * variation_scale * cos(M_PI * x(0)) * cos(M_PI * x(1)) + 2) +
+           sin(M_PI * x(1)) * sin(M_PI * x(2));
+    f(1) = -variation_scale * M_PI * M_PI * t * sin(M_PI * x(0)) * cos(M_PI * x(1)) *
+           cos(M_PI * x(1)) * sin(M_PI * x(2));
+    f(2) = -0.5 * variation_scale * M_PI * M_PI * t * sin(M_PI * x(0)) * sin(2 * M_PI * x(1)) *
+           cos(M_PI * x(2));
+  }
   hephaestus::InputParameters TestParams()
   {
     hephaestus::Subdomain wire("wire", 1);
@@ -48,15 +63,14 @@ protected:
 
     hephaestus::BCMap bc_map;
 
-    // On the surface, I impose the dirichlet BC s.t. A_{surface} = A_exact.
-    auto surface_vec_coef = std::make_shared<mfem::VectorFunctionCoefficient>(3, AExactExpr);
-    coefficients._vectors.Register("surface_A", surface_vec_coef);
+    auto adot_vec_coef = std::make_shared<mfem::VectorFunctionCoefficient>(3, AdotBC);
+    coefficients._vectors.Register("surface_tangential_dAdt", adot_vec_coef);
 
-    bc_map.Register("surface_A",
+    bc_map.Register("tangential_dAdt",
                     std::make_shared<hephaestus::VectorDirichletBC>(
-                        std::string("magnetic_vector_potential_surface"),
+                        std::string("dmagnetic_vector_potential_dt"),
                         mfem::Array<int>({1, 2, 3}),
-                        surface_vec_coef.get()));
+                        adot_vec_coef.get()));
 
     auto a_exact = std::make_shared<mfem::VectorFunctionCoefficient>(3, AExactExpr);
     coefficients._vectors.Register("a_exact_coeff", a_exact);
@@ -64,9 +78,10 @@ protected:
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./beam-tet.mesh")).c_str(), 1, 1);
 
     hephaestus::Outputs outputs;
-    outputs.Register(
-        "ParaViewDataCollection",
-        std::make_shared<mfem::ParaViewDataCollection>("TestMeshUpdatesVisualization"));
+    outputs.Register("VisItDataCollection",
+                     std::make_shared<mfem::VisItDataCollection>("TestMeshUpdatesVisIt"));
+    outputs.Register("ParaViewDataCollection",
+                     std::make_shared<mfem::ParaViewDataCollection>("TestMeshUpdatesParaview"));
 
     hephaestus::InputParameters l2errpostprocparams;
     l2errpostprocparams.SetParam("VariableName", std::string("magnetic_vector_potential"));
@@ -119,6 +134,7 @@ TEST_CASE_METHOD(TestMeshUpdates, "TestMeshUpdates", "[CheckRun]")
   hephaestus::InputParameters params(TestParams());
 
   auto pmesh = std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
+  pmesh->UniformRefinement(); // Refine to ensure there are sufficient points to start.
 
   auto problem_builder = std::make_unique<hephaestus::AFormulation>("magnetic_reluctivity",
                                                                     "magnetic_permeability",
