@@ -120,6 +120,10 @@ protected:
   /// Update method. Called internally.
   void UpdateKernels();
 
+  /// Iterates over all weak form components and calls their Update method.
+  /// Called internally.
+  void UpdateWeakFormComponents();
+
   mutable mfem::OperatorHandle _jacobian;
 };
 
