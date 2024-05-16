@@ -106,10 +106,12 @@ public:
   virtual void ConstructState() = 0;
   virtual void ConstructTimestepper() = 0;
 
-  virtual void InitializeKernels();
+  virtual void InitializeSources();
 
   void InitializeAuxSolvers();
   void InitializeOutputs();
+
+  virtual void InitializeEquationSystem(){};
 
   /// @brief Call @a FinalizeProblem to setup a problem.
   /// @param build_operator Skips @a ConstructOperator step if false. Set this to false if the problem

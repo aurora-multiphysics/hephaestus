@@ -4,10 +4,8 @@ namespace hephaestus
 {
 
 void
-TimeDomainEquationSystemProblemBuilder::InitializeKernels()
+TimeDomainEquationSystemProblemBuilder::InitializeEquationSystem()
 {
-  ProblemBuilder::InitializeKernels();
-
   GetEquationSystem()->Init(GetProblem()->_gridfunctions,
                             GetProblem()->_fespaces,
                             GetProblem()->_bc_map,
