@@ -5,9 +5,9 @@ namespace hephaestus
 
 /// @brief Simple interface with "Update" method. All classes which need to be
 /// updated on a mesh change should inherit from this interface.
-struct UpdateInterface
+struct MeshUpdateInterface
 {
-  virtual ~UpdateInterface() = default;
+  virtual ~MeshUpdateInterface() = default;
 
   /// @brief Implement in derived classes on mesh change.
   virtual void Update() = 0;
