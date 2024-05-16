@@ -29,13 +29,15 @@ ProblemOperatorInterface::SetGridFunctions()
 }
 
 void
-ProblemOperatorInterface::Init(mfem::Vector & X)
+ProblemOperatorInterface::Init(mfem::BlockVector & X)
 {
+  X.Update(_true_offsets);
+  
   for (size_t i = 0; i < _trial_variables.size(); ++i)
   {
     mfem::ParGridFunction * trial_var = _trial_variables.at(i);
 
-    trial_var->MakeRef(trial_var->ParFESpace(), const_cast<mfem::Vector &>(X), _true_offsets[i]);
+    trial_var->MakeRef(trial_var->ParFESpace(), X, _true_offsets[i]);
     *trial_var = 0.0;
   }
 }
@@ -44,10 +46,6 @@ void
 ProblemOperatorInterface::Init()
 {
   SetGridFunctions();
-
-  _problem._f.reset(); // Vector of dofs.
-  _problem._f = std::make_unique<mfem::BlockVector>(_true_offsets);
-
   Init(*_problem._f);
 }
 

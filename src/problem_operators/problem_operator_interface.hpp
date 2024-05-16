@@ -11,7 +11,7 @@ public:
   virtual ~ProblemOperatorInterface() = default;
 
   virtual void SetGridFunctions();
-  virtual void Init(mfem::Vector & X);
+  virtual void Init(mfem::BlockVector & X);
 
   virtual void Init();
 

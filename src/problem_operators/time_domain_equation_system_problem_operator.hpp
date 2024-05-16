@@ -21,7 +21,7 @@ public:
   }
 
   void SetGridFunctions() override;
-  void Init(mfem::Vector & X) override;
+  void Init(mfem::BlockVector & X) override;
 
   void Init() override;
 

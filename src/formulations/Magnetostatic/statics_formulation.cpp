@@ -112,7 +112,7 @@ StaticsOperator::SetGridFunctions()
 };
 
 void
-StaticsOperator::Init(mfem::Vector & X)
+StaticsOperator::Init(mfem::BlockVector & X)
 {
   ProblemOperator::Init(X);
   _stiff_coef = _problem._coefficients._scalars.Get(_stiffness_coef_name);

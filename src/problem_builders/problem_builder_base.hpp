@@ -104,6 +104,8 @@ public:
   virtual void ConstructJacobianPreconditioner();
   virtual void ConstructJacobianSolver();
   virtual void ConstructNonlinearSolver();
+  virtual void ConstructBlockVector();
+
   virtual void ConstructOperator() = 0;
   virtual void ConstructTimestepper() = 0;
 
