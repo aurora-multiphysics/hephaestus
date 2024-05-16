@@ -51,4 +51,11 @@ ProblemOperatorInterface::Init()
   Init(*_problem._f);
 }
 
+void
+ProblemOperatorInterface::Update()
+{
+  logger.debug("Update called for ProblemOperatorInterface.");
+  Init();
+}
+
 }
