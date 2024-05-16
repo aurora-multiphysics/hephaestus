@@ -153,13 +153,14 @@ void
 WeakCurlEquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
                              const hephaestus::FESpaces & fespaces,
                              hephaestus::BCMap & bc_map,
-                             hephaestus::Coefficients & coefficients)
+                             hephaestus::Coefficients & coefficients,
+                             hephaestus::Sources & sources)
 {
   coefficients._scalars.Register(
       _dtalpha_coef_name,
       std::make_shared<mfem::TransformedCoefficient>(
           &_dt_coef, coefficients._scalars.Get(_alpha_coef_name), prodFunc));
-  TimeDependentEquationSystem::Init(gridfunctions, fespaces, bc_map, coefficients);
+  TimeDependentEquationSystem::Init(gridfunctions, fespaces, bc_map, coefficients, sources);
 }
 
 void
