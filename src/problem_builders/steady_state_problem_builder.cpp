@@ -4,12 +4,6 @@ namespace hephaestus
 {
 
 void
-SteadyStateProblemBuilder::SetOperatorGridFunctions()
-{
-  GetProblem()->GetOperator()->SetGridFunctions();
-}
-
-void
 SteadyStateProblemBuilder::ConstructOperator()
 {
   GetProblem()->ConstructOperator();

@@ -101,7 +101,7 @@ public:
   virtual void RegisterAuxSolvers() = 0;
   virtual void RegisterCoefficients() = 0;
 
-  virtual void SetOperatorGridFunctions() = 0;
+  virtual void SetOperatorGridFunctions();
   virtual void ConstructJacobianPreconditioner();
   virtual void ConstructJacobianSolver();
   virtual void ConstructNonlinearSolver();

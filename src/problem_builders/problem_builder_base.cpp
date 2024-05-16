@@ -395,6 +395,12 @@ ProblemBuilder::InitializeOperator()
 }
 
 void
+ProblemBuilder::SetOperatorGridFunctions()
+{
+  GetProblem()->GetOperator()->SetGridFunctions();
+}
+
+void
 ProblemBuilder::FinalizeProblem(bool build_operator)
 {
   RegisterFESpaces();
