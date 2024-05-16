@@ -11,6 +11,24 @@ Problem::~Problem()
 }
 
 void
+Problem::Update()
+{
+  // 1. Update the fespaces.
+  for (const auto & [name, fespace] : _fespaces)
+  {
+    fespace->Update();
+  }
+
+  // 2. Update the gridfunctions.
+  for (const auto & [name, gridfunc] : _gridfunctions)
+  {
+    gridfunc->Update();
+  }
+
+  // Additional updates here.
+}
+
+void
 ProblemBuilder::SetMesh(std::shared_ptr<mfem::ParMesh> pmesh)
 {
   logger.info("Setting Mesh");

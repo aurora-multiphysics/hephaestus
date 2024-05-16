@@ -47,6 +47,9 @@ public:
 
   /// Virtual method to construct the operator. Call for default problems.
   virtual void ConstructOperator() = 0;
+
+  /// Call to update on mesh change.
+  virtual void Update();
 };
 
 /// ProblemBuilder base class.
