@@ -166,6 +166,13 @@ ComplexMaxwellOperator::Init()
 }
 
 void
+ComplexMaxwellOperator::Update()
+{
+  _u->Update();
+  ProblemOperator::Update();
+}
+
+void
 ComplexMaxwellOperator::Solve(mfem::Vector & X)
 {
   mfem::OperatorHandle jac;
