@@ -389,6 +389,7 @@ ProblemBuilder::FinalizeProblem(bool build_operator)
     ConstructOperator();
   }
 
+  InitializeAuxSolvers();
   InitializeKernels();
   SetOperatorGridFunctions();
 
@@ -398,7 +399,6 @@ ProblemBuilder::FinalizeProblem(bool build_operator)
 
   ConstructState();
   ConstructTimestepper();
-  InitializeAuxSolvers();
   InitializeOutputs();
 }
 
