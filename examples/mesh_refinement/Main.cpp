@@ -78,32 +78,47 @@ main(int argc, char * argv[])
   hephaestus::InputParameters params;
   params.SetParam("Tolerance", 1.0e-9);
   params.SetParam("MaxIter", 100);
+  params.SetParam("PrintLevel", -1);
 
-  const int max_iteration = 10;
+  hephaestus::logger.set_level(spdlog::level::info);
+
+  const int max_iteration = 8;
+
+  spdlog::stopwatch sw;
 
   for (int it = 0; it < max_iteration; it++)
   {
-    std::cout << "Now doing iteration " << it << std::endl;
+    logger.info("Starting iteration {}", it + 1);
 
     // Form linear system AX=B; remove BCs.
+    sw.reset();
     equation_system->FormLinearSystem(problem_operator->_equation_system_operator,
                                       problem_operator->_true_x,
                                       problem_operator->_true_rhs);
+    logger.info("FormLinearSystem: {} seconds", sw);
 
-    // Covnert operator to hypre matrix A.
+    // Convert operator to hypre matrix A.
     auto hypre_matrix = problem_operator->_equation_system_operator.As<mfem::HypreParMatrix>();
-
-    // Construct solver; solve:
     hephaestus::DefaultH1PCGSolver solver(params, *hypre_matrix);
+
+    // Solve.
+    sw.reset();
     solver.Mult(problem_operator->_true_rhs, problem_operator->_true_x);
+    logger.info("Solver.Mult: {} seconds", sw);
 
     // Add back in boundary conditions.
+    sw.reset();
     equation_system->RecoverFEMSolution(problem_operator->_true_x,
                                         ss_eqn_system_problem->_gridfunctions);
+    logger.info("RecoverFEMSolution: {} seconds", sw);
 
-    // pmesh->UniformRefinement();
+    sw.reset();
+    pmesh->UniformRefinement();
+    logger.info("UniformRefinement: {} seconds", sw);
 
-    // Call update methods, etc, rebuild equation system, update boundary conditions.
+    sw.reset();
+    ss_eqn_system_problem->Update();
+    logger.info("Update: {} seconds", sw);
   }
 
   MPI_Finalize();
