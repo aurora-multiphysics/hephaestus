@@ -258,7 +258,10 @@ void
 EquationSystem::Update(hephaestus::BCMap & bc_map, hephaestus::Sources & sources)
 {
   UpdateKernels();
-  BuildEquationSystem(bc_map, sources);
+
+  BuildLinearForms(bc_map, sources);
+  BuildBilinearForms();
+  BuildMixedBilinearForms();
 }
 
 void
@@ -442,14 +445,6 @@ EquationSystem::BuildMixedBilinearForms()
   }
 }
 
-void
-EquationSystem::BuildEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sources & sources)
-{
-  BuildLinearForms(bc_map, sources);
-  BuildBilinearForms();
-  BuildMixedBilinearForms();
-}
-
 TimeDependentEquationSystem::TimeDependentEquationSystem() : _dt_coef(1.0) {}
 
 void
@@ -478,15 +473,6 @@ TimeDependentEquationSystem::SetTimeStep(double dt)
       blf->Assemble();
     }
   }
-}
-
-void
-TimeDependentEquationSystem::UpdateEquationSystem(hephaestus::BCMap & bc_map,
-                                                  hephaestus::Sources & sources)
-{
-  BuildLinearForms(bc_map, sources);
-  BuildBilinearForms();
-  BuildMixedBilinearForms();
 }
 
 } // namespace hephaestus

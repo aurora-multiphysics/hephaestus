@@ -29,7 +29,7 @@ TimeDomainEquationSystemProblemOperator::Init()
 {
   GetEquationSystem()->Init(
       _problem._gridfunctions, _problem._fespaces, _problem._bc_map, _problem._coefficients);
-  GetEquationSystem()->BuildEquationSystem(_problem._bc_map, _problem._sources);
+  GetEquationSystem()->Update(_problem._bc_map, _problem._sources);
 
   TimeDomainProblemOperator::Init();
 }
@@ -61,7 +61,7 @@ void
 TimeDomainEquationSystemProblemOperator::BuildEquationSystemOperator(double dt)
 {
   GetEquationSystem()->SetTimeStep(dt);
-  GetEquationSystem()->UpdateEquationSystem(_problem._bc_map, _problem._sources);
+  GetEquationSystem()->Update(_problem._bc_map, _problem._sources);
   GetEquationSystem()->BuildJacobian(_true_x, _true_rhs);
 }
 
