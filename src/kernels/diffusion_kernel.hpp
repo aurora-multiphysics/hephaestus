@@ -19,7 +19,7 @@ public:
             hephaestus::BCMap & bc_map,
             hephaestus::Coefficients & coefficients) override;
 
-  void Update() override;
+  void Update() override {}
 
   void Apply(mfem::ParBilinearForm * blf) override;
 

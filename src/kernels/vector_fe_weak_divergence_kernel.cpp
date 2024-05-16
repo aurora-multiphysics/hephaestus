@@ -19,14 +19,9 @@ VectorFEWeakDivergenceKernel::Init(hephaestus::GridFunctions & gridfunctions,
 }
 
 void
-VectorFEWeakDivergenceKernel::Update()
-{
-}
-
-void
 VectorFEWeakDivergenceKernel::Apply(mfem::ParMixedBilinearForm * mblf)
 {
   mblf->AddDomainIntegrator(new mfem::VectorFEWeakDivergenceIntegrator(*_coef));
-};
+}
 
 } // namespace hephaestus
