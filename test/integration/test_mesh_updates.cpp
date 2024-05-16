@@ -183,15 +183,12 @@ TEST_CASE_METHOD(TestMeshUpdates, "TestMeshUpdates", "[CheckRun]")
           .Get<hephaestus::L2ErrorVectorPostprocessor>("L2ErrorPostprocessor");
 
   // Run solve with executioner multiple times for different refinement levels.
-  // Test that the Update method is working correctly.
   spdlog::stopwatch sw;
 
   const int imax_refinement = 3;
   for (int irefinement = 0; irefinement < imax_refinement; irefinement++)
   {
-    // Create a new executioner each iteration in order to reset the time cycles
-    // etc. We ideally want a steady-state executioner to do this but the formulation
-    // expects a time-dependent problem.
+    // Create a new executioner each iteration in order to reset the time cycles.
     hephaestus::TransientExecutioner executioner(exec_params);
 
     sw.reset();
@@ -226,7 +223,7 @@ TEST_CASE_METHOD(TestMeshUpdates, "TestMeshUpdates", "[CheckRun]")
                                 3);
 
     hephaestus::logger.info("r = {}", r);
-
-    // TODO: - add REQUIRE statements here to check convergence.
+    REQUIRE(r > 2 - 0.15);
+    REQUIRE(r < 2 + 1.0);
   }
 }
