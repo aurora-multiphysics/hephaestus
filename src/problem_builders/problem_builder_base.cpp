@@ -14,16 +14,10 @@ void
 Problem::Update()
 {
   // 1. Update the fespaces.
-  for (const auto & [name, fespace] : _fespaces)
-  {
-    fespace->Update();
-  }
+  _fespaces.Update();
 
   // 2. Update the gridfunctions.
-  for (const auto & [name, gridfunc] : _gridfunctions)
-  {
-    gridfunc->Update();
-  }
+  _gridfunctions.Update();
 
   // 3. Update BCs.
 
