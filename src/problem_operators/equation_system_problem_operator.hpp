@@ -21,6 +21,8 @@ public:
 
   void Init() override;
 
+  void Update() override;
+
   ~EquationSystemProblemOperator() override = default;
 
   [[nodiscard]] hephaestus::EquationSystem * GetEquationSystem() const override

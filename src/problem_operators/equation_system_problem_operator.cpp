@@ -20,4 +20,12 @@ EquationSystemProblemOperator::Init()
   ProblemOperator::Init();
 }
 
+void
+EquationSystemProblemOperator::Update()
+{
+  GetEquationSystem()->Update(_problem._bc_map, _problem._sources);
+
+  ProblemOperator::Update();
+}
+
 } // namespace hephaestus
