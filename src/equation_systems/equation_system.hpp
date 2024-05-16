@@ -64,10 +64,7 @@ public:
   virtual void AddKernels() {}
 
   // Build forms
-  virtual void Update(hephaestus::GridFunctions & gridfunctions,
-                      hephaestus::FESpaces & fespaces,
-                      hephaestus::BCMap & bc_map,
-                      hephaestus::Coefficients);
+  virtual void Update(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);
 
   virtual void Init(hephaestus::GridFunctions & gridfunctions,
                     const hephaestus::FESpaces & fespaces,
@@ -118,6 +115,10 @@ protected:
   hephaestus::NamedFieldsMap<
       hephaestus::NamedFieldsMap<std::vector<std::shared_ptr<ParMixedBilinearFormKernel>>>>
       _mblf_kernels_map_map;
+
+  /// Iterates over all kernels added to the equation system and calls their
+  /// Update method. Called internally.
+  void UpdateKernels();
 
   mutable mfem::OperatorHandle _jacobian;
 };
