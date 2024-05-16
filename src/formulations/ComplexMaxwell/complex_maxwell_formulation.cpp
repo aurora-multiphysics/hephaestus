@@ -150,9 +150,9 @@ ComplexMaxwellOperator::SetTrialVariableNames()
 }
 
 void
-ComplexMaxwellOperator::Init(mfem::BlockVector & X)
+ComplexMaxwellOperator::Init()
 {
-  ProblemOperator::Init(X);
+  ProblemOperator::Init();
 
   _stiff_coef = _problem._coefficients._scalars.Get(_stiffness_coef_name);
 
