@@ -45,12 +45,30 @@ TimeDomainEquationSystemProblemOperator::Update()
 
   //
   // TODO: - we need to update the size of the jacobian_solver here after the parent class' Update
-  // method is called which ensures that we've updated the _true_x, _true_rhs.
+  // method is called which ensures that we've updated the _true_x, _true_rhs. This is a hacky first
+  // attempt to avoid a segfault with the test_mesh_updates. This is very bad code and basically
+  // copies methods from the problem builder used. We need to generalize this.
 
-  // GetEquationSystem()->BuildJacobian(_true_x, _true_rhs);
+  GetEquationSystem()->BuildJacobian(_true_x, _true_rhs);
 
-  // auto * matrix = GetEquationSystem()->JacobianOperatorHandle().As<mfem::HypreParMatrix>();
-  // _problem._jacobian_solver->SetOperator(*matrix);
+  // Rebuild the jacobian preconditioner.
+  auto first_pfespace = GetEquationSystem()->_test_pfespaces.at(0);
+
+  auto precond = std::make_shared<mfem::HypreAMS>(first_pfespace);
+
+  precond->SetSingularProblem();
+  precond->SetPrintLevel(-1);
+
+  _problem._jacobian_preconditioner = precond;
+
+  // Set new preconditioner.
+  std::dynamic_pointer_cast<mfem::HyprePCG>(_problem._jacobian_solver)
+      ->SetPreconditioner(
+          *std::dynamic_pointer_cast<mfem::HypreSolver>(_problem._jacobian_preconditioner));
+
+  // Set Jacobian matrix.
+  auto * matrix = GetEquationSystem()->JacobianOperatorHandle().As<mfem::HypreParMatrix>();
+  _problem._jacobian_solver->SetOperator(*matrix);
 }
 
 void
