@@ -167,6 +167,8 @@ TEST_CASE_METHOD(TestMeshUpdates, "TestMeshUpdates", "[CheckRun]")
 
   // Run solve with executioner multiple times for different refinement levels.
   // Test that the Update method is working correctly.
+  spdlog::stopwatch sw;
+
   const int imax_refinement = 10;
   for (int irefinement = 0; irefinement < imax_refinement; irefinement++)
   {
@@ -175,14 +177,24 @@ TEST_CASE_METHOD(TestMeshUpdates, "TestMeshUpdates", "[CheckRun]")
     // expects a time-dependent problem.
     hephaestus::TransientExecutioner executioner(exec_params);
 
+    sw.reset();
     executioner.Execute();
+    hephaestus::logger.info("Execute: {} seconds", sw);
 
     const double l2_error = l2errpostprocessor->_l2_errs.Last();
-    hephaestus::logger.info("l2_error = {}", l2_error);
+    hephaestus::logger.info("L2 Error: {}", l2_error);
 
-    // Now refine.
-    pmesh->UniformRefinement();
-    problem->Update();
+    // Now refine if we have another iteration after this.
+    if (irefinement != (imax_refinement - 1))
+    {
+      sw.reset();
+      pmesh->UniformRefinement();
+      hephaestus::logger.info("Mesh Uniform Refinement: {} seconds", sw);
+
+      sw.reset();
+      problem->Update();
+      hephaestus::logger.info("Problem Update: {} seconds", sw);
+    }
   }
 
   // Check how the convergence changes with each refinement level. We expect the
