@@ -17,6 +17,8 @@ public:
 
   virtual void Solve(mfem::Vector & X) {}
   void Mult(const mfem::Vector & x, mfem::Vector & y) const override {}
+
+  void Update() override {}
 };
 
 } // namespace hephaestus
