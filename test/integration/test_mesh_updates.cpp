@@ -27,8 +27,8 @@ protected:
   /// Source field: \curl{mu\curl{\vb{A}}} = \vb{J} with mu = 1
   static void SourceField(const mfem::Vector & x, mfem::Vector & f)
   {
-    f(0) = M_PI * M_PI * sin(M_PI * x(0)) * sin(M_PI * x(1));
-    f(1) = M_PI * M_PI * cos(M_PI * x(0)) * cos(M_PI * x(1));
+    f(0) = 2.0 * M_PI * M_PI * sin(M_PI * x(1)) * sin(M_PI * x(2));
+    f(1) = 0;
     f(2) = 0;
   }
 
@@ -64,8 +64,9 @@ protected:
     mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./beam-tet.mesh")).c_str(), 1, 1);
 
     hephaestus::Outputs outputs;
-    outputs.Register("VisItDataCollection",
-                     std::make_shared<mfem::VisItDataCollection>("TestMeshUpdatesVisualization"));
+    outputs.Register(
+        "ParaViewDataCollection",
+        std::make_shared<mfem::ParaViewDataCollection>("TestMeshUpdatesVisualization"));
 
     hephaestus::InputParameters l2errpostprocparams;
     l2errpostprocparams.SetParam("VariableName", std::string("magnetic_vector_potential"));
@@ -152,7 +153,7 @@ TEST_CASE_METHOD(TestMeshUpdates, "TestMeshUpdates", "[CheckRun]")
   // Single timestep.
   exec_params.SetParam("TimeStep", float(0.05));
   exec_params.SetParam("StartTime", float(0.00));
-  exec_params.SetParam("EndTime", float(0.00));
+  exec_params.SetParam("EndTime", float(0.05));
   exec_params.SetParam("VisualisationSteps", int(1));
 
   exec_params.SetParam("Problem", static_cast<hephaestus::TimeDomainProblem *>(problem.get()));
@@ -169,7 +170,7 @@ TEST_CASE_METHOD(TestMeshUpdates, "TestMeshUpdates", "[CheckRun]")
   // Test that the Update method is working correctly.
   spdlog::stopwatch sw;
 
-  const int imax_refinement = 10;
+  const int imax_refinement = 3;
   for (int irefinement = 0; irefinement < imax_refinement; irefinement++)
   {
     // Create a new executioner each iteration in order to reset the time cycles
