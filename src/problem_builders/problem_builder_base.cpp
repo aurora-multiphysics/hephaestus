@@ -240,7 +240,7 @@ ProblemBuilder::ConstructJacobianSolver()
   ConstructJacobianSolverWithOptions(SolverType::HYPRE_GMRES);
 }
 
-void 
+void
 ProblemBuilder::ConstructBlockVector()
 {
   GetProblem()->_f = std::make_unique<mfem::BlockVector>();

@@ -3,7 +3,7 @@
 namespace hephaestus
 {
 
-void 
+void
 TimeDomainEquationSystemProblemOperator::SetTrialVariables()
 {
   _trial_var_names = GetEquationSystem()->_trial_var_names;

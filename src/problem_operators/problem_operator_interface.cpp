@@ -9,7 +9,7 @@ ProblemOperatorInterface::SetTrialVariables()
   _trial_variables = _problem._gridfunctions.Get(_trial_var_names);
 }
 
-void 
+void
 ProblemOperatorInterface::UpdateOffsets()
 {
   size_t num_trial_variables = _trial_variables.size();
@@ -31,7 +31,7 @@ ProblemOperatorInterface::UpdateOffsets()
   _true_offsets.PartialSum();
 }
 
-void 
+void
 ProblemOperatorInterface::UpdateBlockVectors()
 {
   _true_x.Update(_block_true_offsets);
@@ -54,7 +54,7 @@ void
 ProblemOperatorInterface::Init(mfem::BlockVector & X)
 {
   X.Update(_true_offsets);
-  
+
   for (size_t i = 0; i < _trial_variables.size(); ++i)
   {
     mfem::ParGridFunction * trial_var = _trial_variables.at(i);
