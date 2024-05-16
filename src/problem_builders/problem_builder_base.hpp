@@ -2,7 +2,6 @@
 #include "auxsolvers.hpp"
 #include "equation_system.hpp"
 #include "hephaestus_containers.hpp"
-#include "update_interface.hpp"
 #include "inputs.hpp"
 #include "sources.hpp"
 #include <fstream>
@@ -16,11 +15,11 @@ namespace hephaestus
 class ProblemOperatorInterface;
 
 /// Base problem class.
-class Problem : public MeshUpdateInterface
+class Problem
 {
 public:
   Problem() = default;
-  ~Problem() override;
+  virtual ~Problem();
 
   std::shared_ptr<mfem::ParMesh> _pmesh{nullptr};
   hephaestus::BCMap _bc_map;
@@ -53,7 +52,7 @@ public:
   virtual void ConstructOperator() = 0;
 
   /// Call to update on mesh change.
-  void Update() override;
+  virtual void Update();
 };
 
 /// ProblemBuilder base class.
