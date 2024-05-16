@@ -20,6 +20,7 @@ Problem::Update()
   _gridfunctions.Update();
 
   // 3. Update BCs.
+  _bc_map.Update(*_pmesh);
 
   // 4. Update sources.
   _sources.Init(_gridfunctions, _fespaces, _bc_map, _coefficients);

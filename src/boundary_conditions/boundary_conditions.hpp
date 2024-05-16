@@ -31,6 +31,13 @@ public:
   void ApplyIntegratedBCs(const std::string & name_,
                           mfem::ParSesquilinearForm & clf,
                           mfem::Mesh * mesh_);
+
+  /// @brief Updates boundary conditions after a mesh refinement. This will
+  /// iterate over all stored boundary conditions in the container and call
+  /// their Update methods which will update the boundary attributes since each
+  /// boundary element has been split into additional elements. The Apply BCs
+  /// methods should then be called.
+  void Update(mfem::Mesh & mesh);
 };
 
 } // namespace hephaestus
