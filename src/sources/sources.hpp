@@ -20,10 +20,7 @@ public:
   void SubtractSources(mfem::ParGridFunction * gf);
 
   /// @brief Called on mesh refinement.
-  void Update(hephaestus::GridFunctions & gridfunctions,
-              const hephaestus::FESpaces & fespaces,
-              hephaestus::BCMap & bc_map,
-              hephaestus::Coefficients & coefficients);
+  void Update();
 };
 
 } // namespace hephaestus
