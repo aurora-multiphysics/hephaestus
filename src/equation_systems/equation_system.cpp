@@ -259,6 +259,11 @@ EquationSystem::Update(hephaestus::BCMap & bc_map, hephaestus::Sources & sources
 {
   UpdateKernels();
 
+  for (auto & gridfunction : _xs)
+  {
+    gridfunction->Update();
+  }
+
   // NB: It is not required to rebuild the equation system entirely. In the future,
   // a separate update method will be added.
   BuildEquationSystem(bc_map, sources);
