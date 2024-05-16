@@ -65,6 +65,11 @@ main(int argc, char * argv[])
       "gridfunction", ess_bdr, coefficients._scalars.Get("one"));
   problem_builder.AddBoundaryCondition("gridfunction", std::move(bc));
 
+  hephaestus::Outputs outputs;
+  outputs.Register("ParaViewDataCollection",
+                   std::make_shared<mfem::ParaViewDataCollection>("MeshRefinementParaView"));
+  problem_builder.SetOutputs(outputs);
+
   // Finalize construction and initialization of problem.
   problem_builder.FinalizeProblem(false);
 
@@ -76,9 +81,9 @@ main(int argc, char * argv[])
 
   // Setup solver parameters.
   hephaestus::InputParameters params;
-  params.SetParam("Tolerance", 1.0e-9);
-  params.SetParam("MaxIter", 100);
-  params.SetParam("PrintLevel", -1);
+  params.SetParam("Tolerance", float(1.0e-9));
+  params.SetParam("MaxIter", int(100));
+  // params.SetParam("PrintLevel", -1);
 
   hephaestus::logger.set_level(spdlog::level::info);
 
@@ -119,6 +124,8 @@ main(int argc, char * argv[])
     sw.reset();
     ss_eqn_system_problem->Update();
     logger.info("Update: {} seconds", sw);
+
+    outputs.Write(it);
   }
 
   MPI_Finalize();
