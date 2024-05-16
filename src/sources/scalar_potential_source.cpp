@@ -77,6 +77,7 @@ ScalarPotentialSource::Init(hephaestus::GridFunctions & gridfunctions,
 void
 ScalarPotentialSource::Update()
 {
+  MFEM_ABORT("Not implemented.");
 }
 
 ScalarPotentialSource::~ScalarPotentialSource() = default;
