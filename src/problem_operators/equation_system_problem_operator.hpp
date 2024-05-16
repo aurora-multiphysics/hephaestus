@@ -17,7 +17,7 @@ public:
   {
   }
 
-  void SetTrialVariables() override;
+  void SetTrialVariableNames() override;
   void Init(mfem::BlockVector & X) override;
 
   void Init() override;

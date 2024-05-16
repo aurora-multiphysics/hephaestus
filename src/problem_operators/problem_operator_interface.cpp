@@ -6,6 +6,8 @@ namespace hephaestus
 void
 ProblemOperatorInterface::SetTrialVariables()
 {
+  SetTrialVariableNames();
+
   _trial_variables = _problem._gridfunctions.Get(_trial_var_names);
 }
 
@@ -46,15 +48,9 @@ ProblemOperatorInterface::UpdateOffsetsWithSize(const size_t block_vector_size)
   // Update block vectors.
   _true_x.Update(_block_true_offsets);
   _true_rhs.Update(_block_true_offsets);
-}
 
-void
-ProblemOperatorInterface::SetGridFunctions()
-{
-  SetTrialVariables();
-
-  // Recalculate the offsets from gridfunction trial variables.
-  UpdateOffsets();
+  // Set width and height member variables.
+  UpdateOperatorWidthAndHeight();
 }
 
 void
@@ -74,7 +70,11 @@ ProblemOperatorInterface::Init(mfem::BlockVector & X)
 void
 ProblemOperatorInterface::Init()
 {
-  SetGridFunctions();
+  SetTrialVariables();
+
+  // Recalculate the offsets from gridfunction trial variables.
+  UpdateOffsets();
+
   Init(*_problem._f);
 }
 

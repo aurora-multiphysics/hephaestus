@@ -38,7 +38,7 @@ public:
 
   ~StaticsOperator() override = default;
 
-  void SetTrialVariables() override;
+  void SetTrialVariableNames() override;
   void Init(mfem::BlockVector & X) override;
   void Solve(mfem::Vector & X) override;
 

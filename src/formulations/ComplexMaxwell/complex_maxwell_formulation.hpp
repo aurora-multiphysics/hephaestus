@@ -72,8 +72,7 @@ public:
 
   ~ComplexMaxwellOperator() override = default;
 
-  void SetTrialVariables() override;
-  void SetGridFunctions() override;
+  void SetTrialVariableNames() override;
   void Init(mfem::BlockVector & X) override;
   void Solve(mfem::Vector & X) override;
 
