@@ -17,9 +17,4 @@ BoundaryCondition::GetMarkers(mfem::Mesh & mesh)
   return _markers;
 }
 
-void
-BoundaryCondition::Update(mfem::Mesh & mesh)
-{
-}
-
 } // namespace hephaestus

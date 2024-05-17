@@ -19,17 +19,14 @@ Problem::Update()
   // 2. Update the gridfunctions.
   _gridfunctions.Update();
 
-  // 3. Update BCs.
-  _bc_map.Update(*_pmesh);
-
-  // 4. Update sources.
+  // 3. Update sources.
   _sources.Update();
 
-  // 5. Update the preprocessors and postprocessors.
+  // 4. Update the preprocessors and postprocessors.
   _preprocessors.Update();
   _postprocessors.Update();
 
-  // 6. Rebuild operator (and equation system).
+  // 5. Rebuild operator (and equation system).
   GetOperator()->Update();
 }
 

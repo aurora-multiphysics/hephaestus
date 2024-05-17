@@ -2,16 +2,6 @@
 
 namespace hephaestus
 {
-
-void
-BCMap::Update(mfem::Mesh & mesh)
-{
-  for ([[maybe_unused]] const auto & [name, bc] : *this)
-  {
-    bc->Update(mesh);
-  }
-}
-
 mfem::Array<int>
 BCMap::GetEssentialBdrMarkers(const std::string & name_, mfem::Mesh * mesh_)
 {
