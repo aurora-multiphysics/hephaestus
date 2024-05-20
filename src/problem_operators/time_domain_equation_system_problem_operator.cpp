@@ -50,13 +50,8 @@ TimeDomainEquationSystemProblemOperator::Update()
   // preconditioner correctly later without requiring the ProblemBuilder again. Care must be taken
   // with this approach since the ProblemBuilder may not exist!
   {
-    if (!_problem._handle_jacobian_update)
-    {
-      MFEM_ABORT("No implementation found for handling the Jacobian update!");
-    }
-
     GetEquationSystem()->BuildJacobian(_true_x, _true_rhs);
-    _problem._handle_jacobian_update(&_problem);
+    _problem.HandleJacobianUpdate();
   }
 }
 

@@ -54,9 +54,17 @@ public:
   /// Call to update on mesh change.
   virtual void Update();
 
-public: // TODO: - make private!
-  /// @brief Call this function with @a this argument in order to update the
-  /// jacobian solver following a mesh update.
+  /// @brief Call this method to update the Jacobian following a mesh change.
+  virtual void HandleJacobianUpdate();
+
+  /// @brief Set the Jacobian update implementation.
+  /// @param update_implementation A lambda for updating the Jacobian solver.
+  void SetHandleJacobianUpdate(std::function<void(hephaestus::Problem *)> update_implementation)
+  {
+    _handle_jacobian_update = update_implementation;
+  }
+
+private:
   std::function<void(hephaestus::Problem *)> _handle_jacobian_update{nullptr};
 };
 

@@ -117,7 +117,7 @@ HCurlFormulation::ImplementHandleJacobianUpdate()
     solver->SetOperator(*matrix);
   };
 
-  GetProblem()->_handle_jacobian_update = handle_jacobian_update;
+  GetProblem()->SetHandleJacobianUpdate(handle_jacobian_update);
 }
 
 void

@@ -31,6 +31,17 @@ Problem::Update()
 }
 
 void
+Problem::HandleJacobianUpdate()
+{
+  if (!_handle_jacobian_update)
+  {
+    MFEM_ABORT("No implementation provided for handling Jacobian updates.");
+  }
+
+  _handle_jacobian_update(this);
+}
+
+void
 ProblemBuilder::SetMesh(std::shared_ptr<mfem::ParMesh> pmesh)
 {
   logger.info("Setting Mesh");
