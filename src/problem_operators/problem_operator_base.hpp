@@ -25,6 +25,9 @@ public:
   /// Returns a reference to the Jacobian preconditioner which allows it to be set.
   std::shared_ptr<mfem::Solver> & JacobianPreconditioner() { return _jacobian_preconditioner; }
 
+  /// Returns a reference to the non-linear solver which allows it to be set.
+  std::shared_ptr<mfem::NewtonSolver> & NonlinearSolver() { return _nonlinear_solver; }
+
 protected:
   /// Use of protected constructor to only allow construction by derived classes.
   /// All problem operator classes are built on-top of this class and it should not
@@ -71,6 +74,9 @@ protected:
 
   /// Store the Jacobian solver.
   std::shared_ptr<mfem::Solver> _jacobian_solver{nullptr};
+
+  /// Store the non-linear solver.
+  std::shared_ptr<mfem::NewtonSolver> _nonlinear_solver{nullptr};
 
 private:
   /// Update the block vectors and offsets after a mesh change.

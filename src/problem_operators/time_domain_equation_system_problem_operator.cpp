@@ -88,9 +88,9 @@ TimeDomainEquationSystemProblemOperator::ImplicitSolve(const double dt,
   _problem._coefficients.SetTime(GetTime());
   BuildEquationSystemOperator(dt);
 
-  _problem._nonlinear_solver->SetSolver(*_jacobian_solver);
-  _problem._nonlinear_solver->SetOperator(*GetEquationSystem());
-  _problem._nonlinear_solver->Mult(_true_rhs, _true_x);
+  _nonlinear_solver->SetSolver(*_jacobian_solver);
+  _nonlinear_solver->SetOperator(*GetEquationSystem());
+  _nonlinear_solver->Mult(_true_rhs, _true_x);
 
   GetEquationSystem()->RecoverFEMSolution(_true_x, _problem._gridfunctions);
 }

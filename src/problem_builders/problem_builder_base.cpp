@@ -345,7 +345,7 @@ ProblemBuilder::ConstructNonlinearSolver()
   nl_solver->SetAbsTol(0.0);
   nl_solver->SetMaxIter(1);
 
-  GetProblem()->_nonlinear_solver = nl_solver;
+  GetProblem()->GetOperator()->NonlinearSolver() = nl_solver;
 }
 
 void
