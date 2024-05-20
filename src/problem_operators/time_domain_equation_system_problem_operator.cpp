@@ -60,12 +60,11 @@ TimeDomainEquationSystemProblemOperator::Update()
     precond->SetSingularProblem();
     precond->SetPrintLevel(-1);
 
-    _problem._jacobian_preconditioner = precond;
+    _jacobian_preconditioner = precond;
 
     // Set new preconditioner.
     std::static_pointer_cast<mfem::HyprePCG>(_jacobian_solver)
-        ->SetPreconditioner(
-            *std::static_pointer_cast<mfem::HypreSolver>(_problem._jacobian_preconditioner));
+        ->SetPreconditioner(*std::static_pointer_cast<mfem::HypreSolver>(_jacobian_preconditioner));
 
     // Set Jacobian matrix.
     auto * matrix = GetEquationSystem()->JacobianOperatorHandle().As<mfem::HypreParMatrix>();

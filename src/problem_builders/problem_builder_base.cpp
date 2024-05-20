@@ -99,7 +99,7 @@ ProblemBuilder::SetSolverOptions(hephaestus::InputParameters & solver_options)
 void
 ProblemBuilder::SetJacobianPreconditioner(std::shared_ptr<mfem::Solver> preconditioner)
 {
-  GetProblem()->_jacobian_preconditioner = preconditioner;
+  GetProblem()->GetOperator()->JacobianPreconditioner() = preconditioner;
 }
 
 void
@@ -228,7 +228,7 @@ ProblemBuilder::ConstructJacobianPreconditioner()
   auto precond = std::make_shared<mfem::HypreBoomerAMG>();
   precond->SetPrintLevel(GetGlobalPrintLevel());
 
-  GetProblem()->_jacobian_preconditioner = precond;
+  GetProblem()->GetOperator()->JacobianPreconditioner() = precond;
 }
 
 void
@@ -258,8 +258,8 @@ ProblemBuilder::ConstructJacobianSolverWithOptions(SolverType type, SolverParams
       solver_options.GetOptionalParam<int>("PrintLevel", default_params._print_level);
   const auto k_dim = solver_options.GetOptionalParam<unsigned int>("KDim", default_params._k_dim);
 
-  auto preconditioner =
-      std::dynamic_pointer_cast<mfem::HypreSolver>(GetProblem()->_jacobian_preconditioner);
+  auto preconditioner = std::dynamic_pointer_cast<mfem::HypreSolver>(
+      GetProblem()->GetOperator()->JacobianPreconditioner());
 
   switch (type)
   {

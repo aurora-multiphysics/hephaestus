@@ -75,7 +75,7 @@ HCurlFormulation::ConstructJacobianPreconditioner()
   precond->SetSingularProblem();
   precond->SetPrintLevel(-1);
 
-  GetProblem()->_jacobian_preconditioner = precond;
+  GetProblem()->GetOperator()->JacobianPreconditioner() = precond;
 }
 
 void

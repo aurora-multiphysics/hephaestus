@@ -22,6 +22,9 @@ public:
   /// Returns a reference to the Jacobian solver which allows it to be set. NB: bad code!
   std::shared_ptr<mfem::Solver> & JacobianSolver() { return _jacobian_solver; }
 
+  /// Returns a reference to the Jacobian preconditioner which allows it to be set.
+  std::shared_ptr<mfem::Solver> & JacobianPreconditioner() { return _jacobian_preconditioner; }
+
 protected:
   /// Use of protected constructor to only allow construction by derived classes.
   /// All problem operator classes are built on-top of this class and it should not
@@ -62,6 +65,9 @@ protected:
 
   /// Block vectors.
   mfem::BlockVector _true_x, _true_rhs;
+
+  /// Store the Jacobian preconditioner.
+  std::shared_ptr<mfem::Solver> _jacobian_preconditioner{nullptr};
 
   /// Store the Jacobian solver.
   std::shared_ptr<mfem::Solver> _jacobian_solver{nullptr};
