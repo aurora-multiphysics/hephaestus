@@ -152,8 +152,8 @@ StaticsOperator::Solve(mfem::Vector & X)
 
   // Define and apply a parallel FGMRES solver for AX=B with the AMS
   // preconditioner from hypre.
-  _problem._jacobian_solver->SetOperator(curl_mu_inv_curl);
-  _problem._jacobian_solver->Mult(rhs_tdofs, sol_tdofs);
+  _jacobian_solver->SetOperator(curl_mu_inv_curl);
+  _jacobian_solver->Mult(rhs_tdofs, sol_tdofs);
   blf.RecoverFEMSolution(sol_tdofs, lf, gf);
 
   logger.info("{} Solve: {} seconds", typeid(this).name(), sw);

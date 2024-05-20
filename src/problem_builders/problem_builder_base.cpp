@@ -105,7 +105,7 @@ ProblemBuilder::SetJacobianPreconditioner(std::shared_ptr<mfem::Solver> precondi
 void
 ProblemBuilder::SetJacobianSolver(std::shared_ptr<mfem::Solver> jacobian_solver)
 {
-  GetProblem()->_jacobian_solver = jacobian_solver;
+  GetProblem()->GetOperator()->JacobianSolver() = jacobian_solver;
 }
 
 void
@@ -275,7 +275,7 @@ ProblemBuilder::ConstructJacobianSolverWithOptions(SolverType type, SolverParams
       if (preconditioner)
         solver->SetPreconditioner(*preconditioner);
 
-      GetProblem()->_jacobian_solver = solver;
+      GetProblem()->GetOperator()->JacobianSolver() = solver;
       break;
     }
     case SolverType::HYPRE_GMRES:
@@ -291,7 +291,7 @@ ProblemBuilder::ConstructJacobianSolverWithOptions(SolverType type, SolverParams
       if (preconditioner)
         solver->SetPreconditioner(*preconditioner);
 
-      GetProblem()->_jacobian_solver = solver;
+      GetProblem()->GetOperator()->JacobianSolver() = solver;
       break;
     }
     case SolverType::HYPRE_FGMRES:
@@ -306,7 +306,7 @@ ProblemBuilder::ConstructJacobianSolverWithOptions(SolverType type, SolverParams
       if (preconditioner)
         solver->SetPreconditioner(*preconditioner);
 
-      GetProblem()->_jacobian_solver = solver;
+      GetProblem()->GetOperator()->JacobianSolver() = solver;
       break;
     }
     case SolverType::HYPRE_AMG:
@@ -317,14 +317,14 @@ ProblemBuilder::ConstructJacobianSolverWithOptions(SolverType type, SolverParams
       solver->SetMaxIter(max_iter);
       solver->SetPrintLevel(print_level);
 
-      GetProblem()->_jacobian_solver = solver;
+      GetProblem()->GetOperator()->JacobianSolver() = solver;
       break;
     }
     case SolverType::SUPER_LU:
     {
       auto solver = std::make_shared<hephaestus::SuperLUSolver>(GetProblem()->_comm);
 
-      GetProblem()->_jacobian_solver = solver;
+      GetProblem()->GetOperator()->JacobianSolver() = solver;
       break;
     }
     default:

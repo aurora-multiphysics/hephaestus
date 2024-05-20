@@ -218,8 +218,8 @@ ComplexMaxwellOperator::Solve(mfem::Vector & X)
 
   auto * jac_z = jac.As<mfem::ComplexHypreParMatrix>()->GetSystemMatrix();
 
-  _problem._jacobian_solver->SetOperator(*jac_z);
-  _problem._jacobian_solver->Mult(rhs, u);
+  _jacobian_solver->SetOperator(*jac_z);
+  _jacobian_solver->Mult(rhs, u);
   sqlf.RecoverFEMSolution(u, lf, *_u);
 
   _problem._gridfunctions.GetRef(_trial_var_names.at(0)) = _u->real();

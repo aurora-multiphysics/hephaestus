@@ -19,6 +19,9 @@ public:
   /// Update the problem operator after a mesh change.
   virtual void Update();
 
+  /// Returns a reference to the Jacobian solver which allows it to be set. NB: bad code!
+  std::shared_ptr<mfem::Solver> & JacobianSolver() { return _jacobian_solver; }
+
 protected:
   /// Use of protected constructor to only allow construction by derived classes.
   /// All problem operator classes are built on-top of this class and it should not
@@ -59,6 +62,9 @@ protected:
 
   /// Block vectors.
   mfem::BlockVector _true_x, _true_rhs;
+
+  /// Store the Jacobian solver.
+  std::shared_ptr<mfem::Solver> _jacobian_solver{nullptr};
 
 private:
   /// Update the block vectors and offsets after a mesh change.
