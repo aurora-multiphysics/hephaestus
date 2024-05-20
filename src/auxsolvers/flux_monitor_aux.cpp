@@ -90,6 +90,13 @@ FluxMonitorAux::Init(const hephaestus::GridFunctions & gridfunctions,
 }
 
 void
+FluxMonitorAux::Reset()
+{
+  _times.DeleteAll();
+  _fluxes.DeleteAll();
+}
+
+void
 FluxMonitorAux::Solve(double t)
 {
   double flux;
