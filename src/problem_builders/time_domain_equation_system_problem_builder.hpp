@@ -53,9 +53,6 @@ public:
 
   ~TimeDomainEquationSystemProblemBuilder() override = default;
 
-  /// NB: - note use of final. Ensure that the equation system is initialized.
-  void InitializeKernels() final;
-
   auto ReturnProblem() { return ProblemBuilder::ReturnProblem<TimeDomainEquationSystemProblem>(); }
 
 protected:

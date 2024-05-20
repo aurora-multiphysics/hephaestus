@@ -42,7 +42,8 @@ public:
   void Init(hephaestus::GridFunctions & gridfunctions,
             const hephaestus::FESpaces & fespaces,
             hephaestus::BCMap & bc_map,
-            hephaestus::Coefficients & coefficients) override;
+            hephaestus::Coefficients & coefficients,
+            hephaestus::Sources & sources) override;
   void AddKernels() override;
 
   std::string _h_curl_var_name, _h_div_var_name, _alpha_coef_name, _beta_coef_name,
@@ -58,10 +59,11 @@ public:
   {
   }
 
-  void Init(mfem::Vector & X) override;
+  void Init() override;
+
+  void Update() override;
 
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
-  void SetGridFunctions() override;
 
   mfem::ParFiniteElementSpace * _h_curl_fe_space{nullptr};
   mfem::ParFiniteElementSpace * _h_div_fe_space{nullptr};
@@ -72,6 +74,8 @@ public:
   mfem::ParGridFunction * _dv{nullptr}; // HDiv vector field
 
 protected:
+  void UpdateOffsets() override;
+
   std::unique_ptr<mfem::ParDiscreteLinearOperator> _curl;
 };
 } // namespace hephaestus

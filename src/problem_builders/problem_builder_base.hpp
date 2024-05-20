@@ -1,7 +1,7 @@
 #pragma once
 #include "auxsolvers.hpp"
 #include "equation_system.hpp"
-#include "gridfunctions.hpp"
+#include "hephaestus_containers.hpp"
 #include "inputs.hpp"
 #include "sources.hpp"
 #include <fstream>
@@ -10,6 +10,9 @@
 
 namespace hephaestus
 {
+
+/// Forwards declaration.
+class ProblemOperatorInterface;
 
 /// Base problem class.
 class Problem
@@ -43,10 +46,13 @@ public:
   int _num_procs;
 
   /// Returns a pointer to the operator. See derived classes.
-  [[nodiscard]] virtual mfem::Operator * GetOperator() const = 0;
+  [[nodiscard]] virtual hephaestus::ProblemOperatorInterface * GetOperator() const = 0;
 
   /// Virtual method to construct the operator. Call for default problems.
   virtual void ConstructOperator() = 0;
+
+  /// Call to update on mesh change.
+  virtual void Update();
 };
 
 /// ProblemBuilder base class.
@@ -94,18 +100,20 @@ public:
   virtual void RegisterAuxSolvers() = 0;
   virtual void RegisterCoefficients() = 0;
 
-  virtual void SetOperatorGridFunctions() = 0;
   virtual void ConstructJacobianPreconditioner();
   virtual void ConstructJacobianSolver();
   virtual void ConstructNonlinearSolver();
+  virtual void ConstructBlockVector();
+
   virtual void ConstructOperator() = 0;
-  virtual void ConstructState() = 0;
   virtual void ConstructTimestepper() = 0;
 
-  virtual void InitializeKernels();
+  virtual void InitializeSources();
 
   void InitializeAuxSolvers();
   void InitializeOutputs();
+
+  virtual void InitializeOperator();
 
   /// @brief Call @a FinalizeProblem to setup a problem.
   /// @param build_operator Skips @a ConstructOperator step if false. Set this to false if the problem

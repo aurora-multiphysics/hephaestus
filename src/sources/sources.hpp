@@ -15,8 +15,12 @@ public:
             const hephaestus::FESpaces & fespaces,
             hephaestus::BCMap & bc_map,
             hephaestus::Coefficients & coefficients);
+
   void Apply(mfem::ParLinearForm * lf);
   void SubtractSources(mfem::ParGridFunction * gf);
+
+  /// @brief Called on mesh refinement.
+  virtual void Update();
 };
 
 } // namespace hephaestus

@@ -10,8 +10,11 @@ public:
   ProblemOperatorInterface(hephaestus::Problem & problem) : _problem(problem) {}
   virtual ~ProblemOperatorInterface() = default;
 
-  virtual void SetGridFunctions();
-  virtual void Init(mfem::Vector & X);
+  virtual void UpdateOperatorWidthAndHeight() {}
+
+  virtual void Init();
+
+  virtual void Update();
 
   mfem::Array<int> _true_offsets, _block_true_offsets;
 
@@ -19,6 +22,14 @@ public:
   mfem::OperatorHandle _equation_system_operator;
 
 protected:
+  virtual void SetTrialVariableNames() {}
+  virtual void SetTrialVariables();
+  virtual void UpdateOffsets();
+
+  virtual void UpdateBlockVector(mfem::BlockVector & X);
+
+  void UpdateOffsetsWithSize(size_t soln_vector_size);
+
   // Reference to the current problem.
   hephaestus::Problem & _problem;
 

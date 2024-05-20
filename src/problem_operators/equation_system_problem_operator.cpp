@@ -3,18 +3,31 @@
 namespace hephaestus
 {
 void
-EquationSystemProblemOperator::SetGridFunctions()
+EquationSystemProblemOperator::SetTrialVariableNames()
 {
   _trial_var_names = GetEquationSystem()->_trial_var_names;
-  ProblemOperator::SetGridFunctions();
 }
 
 void
-EquationSystemProblemOperator::Init(mfem::Vector & X)
+EquationSystemProblemOperator::Init()
 {
-  ProblemOperator::Init(X);
+  GetEquationSystem()->Init(_problem._gridfunctions,
+                            _problem._fespaces,
+                            _problem._bc_map,
+                            _problem._coefficients,
+                            _problem._sources);
 
-  GetEquationSystem()->BuildEquationSystem(_problem._bc_map, _problem._sources);
+  ProblemOperator::Init();
+}
+
+void
+EquationSystemProblemOperator::Update()
+{
+  GetEquationSystem()->Update(_problem._bc_map, _problem._sources);
+
+  // TODO: - rebuild jacobian, jacobian_solver, etc...
+
+  ProblemOperator::Update();
 }
 
 } // namespace hephaestus

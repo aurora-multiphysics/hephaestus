@@ -13,6 +13,8 @@ public:
                const hephaestus::FESpaces & fespaces,
                hephaestus::BCMap & bc_map);
 
+  virtual void Update();
+
   void SetForms();
   void SetGrad();
   void SetBCs();

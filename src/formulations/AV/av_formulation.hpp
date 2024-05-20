@@ -42,7 +42,8 @@ public:
   void Init(hephaestus::GridFunctions & gridfunctions,
             const hephaestus::FESpaces & fespaces,
             hephaestus::BCMap & bc_map,
-            hephaestus::Coefficients & coefficients) override;
+            hephaestus::Coefficients & coefficients,
+            hephaestus::Sources & sources) override;
   void AddKernels() override;
 
   std::string _a_name, _v_name, _coupled_variable_name, _alpha_coef_name, _beta_coef_name,

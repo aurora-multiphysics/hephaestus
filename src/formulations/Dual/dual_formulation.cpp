@@ -153,13 +153,14 @@ void
 WeakCurlEquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
                              const hephaestus::FESpaces & fespaces,
                              hephaestus::BCMap & bc_map,
-                             hephaestus::Coefficients & coefficients)
+                             hephaestus::Coefficients & coefficients,
+                             hephaestus::Sources & sources)
 {
   coefficients._scalars.Register(
       _dtalpha_coef_name,
       std::make_shared<mfem::TransformedCoefficient>(
           &_dt_coef, coefficients._scalars.Get(_alpha_coef_name), prodFunc));
-  TimeDependentEquationSystem::Init(gridfunctions, fespaces, bc_map, coefficients);
+  TimeDependentEquationSystem::Init(gridfunctions, fespaces, bc_map, coefficients, sources);
 }
 
 void
@@ -193,9 +194,10 @@ WeakCurlEquationSystem::AddKernels()
 }
 
 void
-DualOperator::Init(mfem::Vector & X)
+DualOperator::Init()
 {
-  TimeDomainEquationSystemProblemOperator::Init(X);
+  TimeDomainEquationSystemProblemOperator::Init();
+
   auto * eqs = dynamic_cast<hephaestus::WeakCurlEquationSystem *>(GetEquationSystem());
 
   _h_curl_var_name = eqs->_h_curl_var_name;
@@ -209,6 +211,15 @@ DualOperator::Init(mfem::Vector & X)
 
   _curl = std::make_unique<mfem::ParDiscreteLinearOperator>(_h_curl_fe_space, _h_div_fe_space);
   _curl->AddDomainInterpolator(new mfem::CurlInterpolator);
+  _curl->Assemble();
+}
+
+void
+DualOperator::Update()
+{
+  TimeDomainEquationSystemProblemOperator::Update();
+
+  _curl->Update();
   _curl->Assemble();
 }
 
@@ -228,22 +239,11 @@ DualOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vecto
 }
 
 void
-DualOperator::SetGridFunctions()
+DualOperator::UpdateOffsets()
 {
-  TimeDomainEquationSystemProblemOperator::SetGridFunctions();
-  // Blocks for solution vector are smaller than the operator size
-  // for DualOperator, as curl is stored separately.
-  // Block operator only has the HCurl TrueVSize;
-  _block_true_offsets.SetSize(_trial_variables.size());
-  _block_true_offsets[0] = 0;
-  for (unsigned int ind = 0; ind < _trial_variables.size() - 1; ++ind)
-  {
-    _block_true_offsets[ind + 1] = _trial_variables.at(ind)->ParFESpace()->TrueVSize();
-  }
-  _block_true_offsets.PartialSum();
-
-  _true_x.Update(_block_true_offsets);
-  _true_rhs.Update(_block_true_offsets);
+  // Blocks for solution vector are smaller than the operator size for DualOperator,
+  // as curl is stored separately. Block operator only has the HCurl TrueVSize;
+  return UpdateOffsetsWithSize(_trial_variables.size() - 1);
 }
 
 } // namespace hephaestus

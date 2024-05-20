@@ -21,7 +21,7 @@ public:
   NamedFieldsMap() = default;
 
   /// Destructor.
-  ~NamedFieldsMap() { DeregisterAll(); }
+  virtual ~NamedFieldsMap() { DeregisterAll(); }
 
   /// Construct new field with name field_name and register.
   template <class FieldType, class... FieldArgs>

@@ -127,6 +127,12 @@ OpenCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
 }
 
 void
+OpenCoilSolver::Update()
+{
+  MFEM_ABORT("Not implemented.");
+}
+
+void
 OpenCoilSolver::Apply(mfem::ParLinearForm * lf)
 {
 

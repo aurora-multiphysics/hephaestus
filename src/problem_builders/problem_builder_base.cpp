@@ -11,6 +11,26 @@ Problem::~Problem()
 }
 
 void
+Problem::Update()
+{
+  // 1. Update the fespaces.
+  _fespaces.Update();
+
+  // 2. Update the gridfunctions.
+  _gridfunctions.Update();
+
+  // 3. Update sources.
+  _sources.Update();
+
+  // 4. Update the preprocessors and postprocessors.
+  _preprocessors.Update();
+  _postprocessors.Update();
+
+  // 5. Rebuild operator (and equation system).
+  GetOperator()->Update();
+}
+
+void
 ProblemBuilder::SetMesh(std::shared_ptr<mfem::ParMesh> pmesh)
 {
   logger.info("Setting Mesh");
@@ -218,6 +238,12 @@ ProblemBuilder::ConstructJacobianSolver()
 }
 
 void
+ProblemBuilder::ConstructBlockVector()
+{
+  GetProblem()->_f = std::make_unique<mfem::BlockVector>();
+}
+
+void
 ProblemBuilder::ConstructJacobianSolverWithOptions(SolverType type, SolverParams default_params)
 {
   const auto & solver_options = GetProblem()->_solver_options;
@@ -323,10 +349,8 @@ ProblemBuilder::ConstructNonlinearSolver()
 }
 
 void
-ProblemBuilder::InitializeKernels()
+ProblemBuilder::InitializeSources()
 {
-  GetProblem()->_preprocessors.Init(GetProblem()->_gridfunctions, GetProblem()->_coefficients);
-
   GetProblem()->_sources.Init(GetProblem()->_gridfunctions,
                               GetProblem()->_fespaces,
                               GetProblem()->_bc_map,
@@ -347,6 +371,13 @@ ProblemBuilder::InitializeOutputs()
 }
 
 void
+ProblemBuilder::InitializeOperator()
+{
+  // Setup initial conditions.
+  GetProblem()->GetOperator()->Init();
+}
+
+void
 ProblemBuilder::FinalizeProblem(bool build_operator)
 {
   RegisterFESpaces();
@@ -359,16 +390,17 @@ ProblemBuilder::FinalizeProblem(bool build_operator)
     ConstructOperator();
   }
 
-  InitializeKernels();
-  SetOperatorGridFunctions();
+  ConstructBlockVector();
+
+  InitializeAuxSolvers();
+  InitializeSources();
+  InitializeOperator();
 
   ConstructJacobianPreconditioner();
   ConstructJacobianSolver();
   ConstructNonlinearSolver();
 
-  ConstructState();
   ConstructTimestepper();
-  InitializeAuxSolvers();
   InitializeOutputs();
 }
 

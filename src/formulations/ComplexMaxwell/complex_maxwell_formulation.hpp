@@ -72,8 +72,9 @@ public:
 
   ~ComplexMaxwellOperator() override = default;
 
-  void SetGridFunctions() override;
-  void Init(mfem::Vector & X) override;
+  void SetTrialVariableNames() override;
+  void Init() override;
+  void Update() override;
   void Solve(mfem::Vector & X) override;
 
   std::string _h_curl_var_complex_name, _h_curl_var_real_name, _h_curl_var_imag_name,
