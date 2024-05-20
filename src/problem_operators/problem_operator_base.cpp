@@ -11,31 +11,37 @@ ProblemOperatorBase::SetTrialVariables()
   _trial_variables = _problem._gridfunctions.Get(_trial_var_names);
 }
 
-void
-ProblemOperatorBase::UpdateOffsets()
+int
+ProblemOperatorBase::GetSolutionVectorSize() const
 {
-  UpdateOffsetsWithSize(_trial_variables.size());
+  return static_cast<int>(GetTrialVariablesSize());
+}
+
+int
+ProblemOperatorBase::GetTrialVariablesSize() const
+{
+  return static_cast<int>(_trial_variables.size());
 }
 
 void
-ProblemOperatorBase::UpdateOffsetsWithSize(const size_t block_vector_size)
+ProblemOperatorBase::UpdateOffsets()
 {
-  if (block_vector_size > _trial_variables.size())
+  if (GetSolutionVectorSize() > GetTrialVariablesSize())
   {
-    MFEM_ABORT("Solution vector size (" << block_vector_size
+    MFEM_ABORT("Solution vector size (" << GetSolutionVectorSize()
                                         << ") cannot exceed the number of trial variables ("
-                                        << _trial_variables.size() << ").");
+                                        << GetTrialVariablesSize() << ").");
   }
 
-  _block_true_offsets.SetSize(block_vector_size + 1);
-  _true_offsets.SetSize(_trial_variables.size() + 1);
+  _block_true_offsets.SetSize(GetSolutionVectorSize() + 1);
+  _true_offsets.SetSize(GetTrialVariablesSize() + 1);
 
   _block_true_offsets[0] = _true_offsets[0] = 0;
-  for (size_t i = 0; i < _trial_variables.size(); ++i)
+  for (int i = 0; i < GetTrialVariablesSize(); ++i)
   {
     mfem::ParFiniteElementSpace * fespace = _trial_variables.at(i)->ParFESpace();
 
-    if (i < block_vector_size)
+    if (i < GetSolutionVectorSize())
       _block_true_offsets[i + 1] = fespace->GetTrueVSize();
 
     _true_offsets[i + 1] = fespace->GetVSize();
@@ -58,7 +64,7 @@ ProblemOperatorBase::UpdateBlockVector(mfem::BlockVector & X)
 {
   X.Update(_true_offsets);
 
-  for (size_t i = 0; i < _trial_variables.size(); ++i)
+  for (int i = 0; i < GetTrialVariablesSize(); ++i)
   {
     mfem::ParGridFunction * trial_var = _trial_variables.at(i);
 
