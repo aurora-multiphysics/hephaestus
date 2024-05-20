@@ -19,9 +19,11 @@ public:
   TimeDomainProblemOperator(hephaestus::Problem & problem) : ProblemOperatorBase(problem) {}
   ~TimeDomainProblemOperator() override = default;
 
-  void UpdateOperatorWidthAndHeight() final;
-
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override {}
+
+protected:
+  int & Width() final { return mfem::TimeDependentOperator::width; }
+  int & Height() final { return mfem::TimeDependentOperator::height; }
 };
 
 } // namespace hephaestus

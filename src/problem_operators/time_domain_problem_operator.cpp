@@ -20,10 +20,4 @@ GetTimeDerivativeNames(std::vector<std::string> gridfunction_names)
   return time_derivative_names;
 }
 
-void
-TimeDomainProblemOperator::UpdateOperatorWidthAndHeight()
-{
-  width = height = _true_offsets.Last();
-}
-
 } // namespace hephaestus

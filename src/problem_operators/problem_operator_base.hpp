@@ -9,8 +9,6 @@ public:
   ProblemOperatorBase(hephaestus::Problem & problem) : _problem(problem) {}
   ~ProblemOperatorBase() override = default;
 
-  void UpdateOperatorWidthAndHeight() override {}
-
   void Init() override;
 
   void Update() override;

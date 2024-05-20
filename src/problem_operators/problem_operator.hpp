@@ -16,7 +16,9 @@ public:
   virtual void Solve(mfem::Vector & X) {}
   void Mult(const mfem::Vector & x, mfem::Vector & y) const override {}
 
-  void UpdateOperatorWidthAndHeight() final;
+protected:
+  int & Width() final { return mfem::Operator::width; }
+  int & Height() final { return mfem::Operator::height; }
 };
 
 } // namespace hephaestus
