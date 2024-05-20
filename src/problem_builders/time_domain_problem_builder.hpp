@@ -72,7 +72,7 @@ protected:
   [[nodiscard]] hephaestus::TimeDomainProblem * GetProblem() const override
   {
     return ProblemBuilder::GetProblem<hephaestus::TimeDomainProblem>();
-  };
+  }
 };
 
 } // namespace hephaestus
