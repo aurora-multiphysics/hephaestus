@@ -258,8 +258,7 @@ ProblemBuilder::ConstructJacobianSolverWithOptions(SolverType type, SolverParams
       solver_options.GetOptionalParam<int>("PrintLevel", default_params._print_level);
   const auto k_dim = solver_options.GetOptionalParam<unsigned int>("KDim", default_params._k_dim);
 
-  auto preconditioner =
-      dynamic_cast<mfem::HypreSolver *>(GetProblem()->GetOperator()->JacobianPreconditioner());
+  auto preconditioner = GetProblem()->GetOperator()->JacobianPreconditioner<mfem::HypreSolver>();
 
   switch (type)
   {

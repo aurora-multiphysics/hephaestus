@@ -63,8 +63,8 @@ TimeDomainEquationSystemProblemOperator::Update()
     _jacobian_preconditioner = std::move(precond);
 
     // Set new preconditioner.
-    static_cast<mfem::HyprePCG *>(JacobianSolver())
-        ->SetPreconditioner(*static_cast<mfem::HypreSolver *>(JacobianPreconditioner()));
+    static_cast<mfem::HyprePCG *>(_jacobian_solver.get())
+        ->SetPreconditioner(*static_cast<mfem::HypreSolver *>(_jacobian_preconditioner.get()));
 
     // Set Jacobian matrix.
     auto * matrix = GetEquationSystem()->JacobianOperatorHandle().As<mfem::HypreParMatrix>();

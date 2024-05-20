@@ -19,24 +19,30 @@ public:
   /// Update the problem operator after a mesh change.
   virtual void Update();
 
+  /// Set the Jacobian preconditioner.
   void SetJacobianPreconditioner(std::unique_ptr<mfem::Solver> preconditioner)
   {
     _jacobian_preconditioner = std::move(preconditioner);
   }
 
+  /// Set the Jacobian solver.
   void SetJacobianSolver(std::unique_ptr<mfem::Solver> solver)
   {
     _jacobian_solver = std::move(solver);
   }
 
+  /// Set the nonlinear solver.
   void SetNonlinearSolver(std::unique_ptr<mfem::NewtonSolver> nl_solver)
   {
     _nonlinear_solver = std::move(nl_solver);
   }
 
-  inline mfem::Solver * JacobianPreconditioner() const { return _jacobian_preconditioner.get(); }
-  inline mfem::Solver * JacobianSolver() const { return _jacobian_solver.get(); }
-  inline mfem::NewtonSolver * NonlinearSolver() const { return _nonlinear_solver.get(); }
+  /// Accessor for Jacobian preconditioner.
+  template <class TSolver>
+  TSolver * JacobianPreconditioner() const
+  {
+    return static_cast<TSolver *>(_jacobian_preconditioner.get());
+  }
 
 protected:
   /// Use of protected constructor to only allow construction by derived classes.
