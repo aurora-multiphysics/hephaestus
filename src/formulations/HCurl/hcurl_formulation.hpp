@@ -20,8 +20,6 @@ public:
 
   void ConstructJacobianPreconditioner() override;
 
-  void ImplementHandleJacobianUpdate() override;
-
   void ConstructJacobianSolver() override;
 
   void RegisterGridFunctions() override;
@@ -29,6 +27,8 @@ public:
   void RegisterCoefficients() override;
 
 protected:
+  void ImplementHandleJacobianUpdate() override;
+
   const std::string _alpha_coef_name;
   const std::string _beta_coef_name;
   const std::string _h_curl_var_name;

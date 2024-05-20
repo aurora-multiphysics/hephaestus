@@ -113,12 +113,6 @@ public:
   virtual void RegisterAuxSolvers() = 0;
   virtual void RegisterCoefficients() = 0;
 
-  /// @brief Sets std::function in Problem base class. Instructs the problem
-  /// class on how to rebuild the jacobian solver (and preconditioner if present)
-  /// following a mesh change. At this point the problem will not have access to
-  /// the original ProblemBuilder!
-  virtual void ImplementHandleJacobianUpdate() { MFEM_ABORT("Not implemented."); }
-
   virtual void ConstructJacobianPreconditioner();
   virtual void ConstructJacobianSolver();
   virtual void ConstructNonlinearSolver();
@@ -175,6 +169,12 @@ protected:
                                               ._max_iteration = 1000,
                                               ._print_level = GetGlobalPrintLevel(),
                                               ._k_dim = 10});
+
+  /// @brief Sets std::function in Problem base class. Instructs the problem
+  /// class on how to rebuild the jacobian solver (and preconditioner if present)
+  /// following a mesh change. At this point the problem will not have access to
+  /// the original ProblemBuilder!
+  virtual void ImplementHandleJacobianUpdate() { MFEM_ABORT("Not implemented."); }
 
   /// Overridden in derived classes.
   [[nodiscard]] virtual hephaestus::Problem * GetProblem() const = 0;
