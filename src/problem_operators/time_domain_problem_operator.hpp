@@ -2,7 +2,7 @@
 #include "../common/pfem_extras.hpp"
 #include "hephaestus_solvers.hpp"
 #include "problem_builder_base.hpp"
-#include "problem_operator_interface.hpp"
+#include "problem_operator_base.hpp"
 
 namespace hephaestus
 {
@@ -13,11 +13,10 @@ std::vector<std::string> GetTimeDerivativeNames(std::vector<std::string> gridfun
 
 /// Problem operator for time-dependent problems with no equation system. The user will need to subclass this since the solve is not
 /// implemented.
-class TimeDomainProblemOperator : public mfem::TimeDependentOperator,
-                                  public ProblemOperatorInterface
+class TimeDomainProblemOperator : public mfem::TimeDependentOperator, public ProblemOperatorBase
 {
 public:
-  TimeDomainProblemOperator(hephaestus::Problem & problem) : ProblemOperatorInterface(problem) {}
+  TimeDomainProblemOperator(hephaestus::Problem & problem) : ProblemOperatorBase(problem) {}
   ~TimeDomainProblemOperator() override = default;
 
   void UpdateOperatorWidthAndHeight() final;

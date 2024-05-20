@@ -2,15 +2,15 @@
 #include "../common/pfem_extras.hpp"
 #include "hephaestus_solvers.hpp"
 #include "problem_builder_base.hpp"
-#include "problem_operator_interface.hpp"
+#include "problem_operator_base.hpp"
 
 namespace hephaestus
 {
 /// Steady-state problem operator with no equation system.
-class ProblemOperator : public mfem::Operator, public ProblemOperatorInterface
+class ProblemOperator : public mfem::Operator, public ProblemOperatorBase
 {
 public:
-  ProblemOperator(hephaestus::Problem & problem) : ProblemOperatorInterface(problem) {}
+  ProblemOperator(hephaestus::Problem & problem) : ProblemOperatorBase(problem) {}
   ~ProblemOperator() override = default;
 
   virtual void Solve(mfem::Vector & X) {}
