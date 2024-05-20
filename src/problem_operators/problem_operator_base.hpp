@@ -1,30 +1,39 @@
 #pragma once
-#include "problem_operator_interface.hpp"
+#include "mfem.hpp"
+#include "problem_builder_base.hpp"
+#include <vector>
+#include <string>
 
 namespace hephaestus
 {
-class ProblemOperatorBase : public ProblemOperatorInterface
+class ProblemOperatorBase
 {
 public:
   ProblemOperatorBase(hephaestus::Problem & problem) : _problem(problem) {}
-  ~ProblemOperatorBase() override = default;
+  virtual ~ProblemOperatorBase() = default;
 
-  void Init() override;
+  virtual void Init();
 
-  void Update() override;
+  virtual void Update();
 
   mfem::Array<int> _true_offsets, _block_true_offsets;
 
   mfem::BlockVector _true_x, _true_rhs;
 
 protected:
-  void SetTrialVariableNames() override {}
-  void SetTrialVariables() override;
-  void UpdateOffsets() override;
+  virtual void SetTrialVariableNames() {}
+  virtual void SetTrialVariables();
+  virtual void UpdateOffsets();
 
-  void UpdateBlockVector(mfem::BlockVector & X) override;
+  virtual void UpdateBlockVector(mfem::BlockVector & X);
 
-  void UpdateOffsetsWithSize(size_t soln_vector_size) override;
+  virtual void UpdateOffsetsWithSize(size_t soln_vector_size);
+
+  /// Returns a reference to the operator's width.
+  virtual int & Width() = 0;
+
+  /// Returns a reference to the operator's height.
+  virtual int & Height() = 0;
 
   // Reference to the current problem.
   hephaestus::Problem & _problem;
