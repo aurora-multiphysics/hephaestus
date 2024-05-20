@@ -19,12 +19,6 @@ public:
   /// Update the problem operator after a mesh change.
   virtual void Update();
 
-  /// Arrays of offsets.
-  mfem::Array<int> _true_offsets, _block_true_offsets;
-
-  /// Block vectors.
-  mfem::BlockVector _true_x, _true_rhs;
-
 protected:
   /// Use of protected constructor to only allow construction by derived classes.
   /// All problem operator classes are built on-top of this class and it should not
@@ -43,14 +37,14 @@ protected:
   /// Update a block vector. Should be called after the offsets have been updated.
   virtual void UpdateBlockVector(mfem::BlockVector & X);
 
-  /// Called by UpdateOffsets.
-  virtual void UpdateOffsetsWithSize(size_t soln_vector_size);
-
   /// Returns a reference to the operator's width.
   virtual int & Width() = 0;
 
   /// Returns a reference to the operator's height.
   virtual int & Height() = 0;
+
+  /// Called by UpdateOffsets.
+  void UpdateOffsetsWithSize(size_t soln_vector_size);
 
   // Reference to the current problem.
   hephaestus::Problem & _problem;
@@ -61,5 +55,11 @@ protected:
 
   /// Vector of trial variables set by SetTrialVariables.
   std::vector<mfem::ParGridFunction *> _trial_variables;
+
+  /// Arrays of offsets.
+  mfem::Array<int> _true_offsets, _block_true_offsets;
+
+  /// Block vectors.
+  mfem::BlockVector _true_x, _true_rhs;
 };
 }
