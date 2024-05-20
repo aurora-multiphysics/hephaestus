@@ -40,13 +40,13 @@ StaticsFormulation::StaticsFormulation(std::string alpha_coef_name, std::string 
 void
 StaticsFormulation::ConstructJacobianPreconditioner()
 {
-  std::shared_ptr<mfem::HypreAMS> precond{std::make_shared<mfem::HypreAMS>(
-      GetProblem()->_gridfunctions.Get(_h_curl_var_name)->ParFESpace())};
+  auto precond = std::make_unique<mfem::HypreAMS>(
+      GetProblem()->_gridfunctions.Get(_h_curl_var_name)->ParFESpace());
 
   precond->SetSingularProblem();
   precond->SetPrintLevel(-1);
 
-  GetProblem()->GetOperator()->JacobianPreconditioner() = precond;
+  GetProblem()->GetOperator()->SetJacobianPreconditioner(std::move(precond));
 }
 
 void

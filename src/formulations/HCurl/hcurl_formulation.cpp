@@ -70,12 +70,12 @@ void
 HCurlFormulation::ConstructJacobianPreconditioner()
 {
   auto precond =
-      std::make_shared<mfem::HypreAMS>(GetProblem()->GetEquationSystem()->_test_pfespaces.at(0));
+      std::make_unique<mfem::HypreAMS>(GetProblem()->GetEquationSystem()->_test_pfespaces.at(0));
 
   precond->SetSingularProblem();
   precond->SetPrintLevel(-1);
 
-  GetProblem()->GetOperator()->JacobianPreconditioner() = precond;
+  GetProblem()->GetOperator()->SetJacobianPreconditioner(std::move(precond));
 }
 
 void

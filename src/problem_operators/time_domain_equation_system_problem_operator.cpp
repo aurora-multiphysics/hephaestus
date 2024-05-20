@@ -55,16 +55,16 @@ TimeDomainEquationSystemProblemOperator::Update()
     // Rebuild the jacobian preconditioner.
     auto first_pfespace = GetEquationSystem()->_test_pfespaces.at(0);
 
-    auto precond = std::make_shared<mfem::HypreAMS>(first_pfespace);
+    auto precond = std::make_unique<mfem::HypreAMS>(first_pfespace);
 
     precond->SetSingularProblem();
     precond->SetPrintLevel(-1);
 
-    _jacobian_preconditioner = precond;
+    _jacobian_preconditioner = std::move(precond);
 
     // Set new preconditioner.
-    std::static_pointer_cast<mfem::HyprePCG>(_jacobian_solver)
-        ->SetPreconditioner(*std::static_pointer_cast<mfem::HypreSolver>(_jacobian_preconditioner));
+    static_cast<mfem::HyprePCG *>(JacobianSolver())
+        ->SetPreconditioner(*static_cast<mfem::HypreSolver *>(JacobianPreconditioner()));
 
     // Set Jacobian matrix.
     auto * matrix = GetEquationSystem()->JacobianOperatorHandle().As<mfem::HypreParMatrix>();

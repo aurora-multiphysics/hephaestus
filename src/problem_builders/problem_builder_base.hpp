@@ -76,8 +76,8 @@ public:
   void SetSources(hephaestus::Sources & sources);
   void SetOutputs(hephaestus::Outputs & outputs);
   void SetSolverOptions(hephaestus::InputParameters & solver_options);
-  void SetJacobianPreconditioner(std::shared_ptr<mfem::Solver> preconditioner);
-  void SetJacobianSolver(std::shared_ptr<mfem::Solver> solver);
+  void SetJacobianPreconditioner(std::unique_ptr<mfem::Solver> preconditioner);
+  void SetJacobianSolver(std::unique_ptr<mfem::Solver> solver);
   void SetCoefficients(hephaestus::Coefficients & coefficients);
 
   void AddFESpace(std::string fespace_name,

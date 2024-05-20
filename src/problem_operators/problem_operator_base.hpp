@@ -19,14 +19,24 @@ public:
   /// Update the problem operator after a mesh change.
   virtual void Update();
 
-  /// Returns a reference to the Jacobian solver which allows it to be set. NB: bad code!
-  std::shared_ptr<mfem::Solver> & JacobianSolver() { return _jacobian_solver; }
+  void SetJacobianPreconditioner(std::unique_ptr<mfem::Solver> preconditioner)
+  {
+    _jacobian_preconditioner = std::move(preconditioner);
+  }
 
-  /// Returns a reference to the Jacobian preconditioner which allows it to be set.
-  std::shared_ptr<mfem::Solver> & JacobianPreconditioner() { return _jacobian_preconditioner; }
+  void SetJacobianSolver(std::unique_ptr<mfem::Solver> solver)
+  {
+    _jacobian_solver = std::move(solver);
+  }
 
-  /// Returns a reference to the non-linear solver which allows it to be set.
-  std::shared_ptr<mfem::NewtonSolver> & NonlinearSolver() { return _nonlinear_solver; }
+  void SetNonlinearSolver(std::unique_ptr<mfem::NewtonSolver> nl_solver)
+  {
+    _nonlinear_solver = std::move(nl_solver);
+  }
+
+  inline mfem::Solver * JacobianPreconditioner() const { return _jacobian_preconditioner.get(); }
+  inline mfem::Solver * JacobianSolver() const { return _jacobian_solver.get(); }
+  inline mfem::NewtonSolver * NonlinearSolver() const { return _nonlinear_solver.get(); }
 
 protected:
   /// Use of protected constructor to only allow construction by derived classes.
@@ -70,13 +80,13 @@ protected:
   mfem::BlockVector _true_x, _true_rhs;
 
   /// Store the Jacobian preconditioner.
-  std::shared_ptr<mfem::Solver> _jacobian_preconditioner{nullptr};
+  std::unique_ptr<mfem::Solver> _jacobian_preconditioner{nullptr};
 
   /// Store the Jacobian solver.
-  std::shared_ptr<mfem::Solver> _jacobian_solver{nullptr};
+  std::unique_ptr<mfem::Solver> _jacobian_solver{nullptr};
 
   /// Store the non-linear solver.
-  std::shared_ptr<mfem::NewtonSolver> _nonlinear_solver{nullptr};
+  std::unique_ptr<mfem::NewtonSolver> _nonlinear_solver{nullptr};
 
 private:
   /// Update the block vectors and offsets after a mesh change.
