@@ -20,6 +20,8 @@ public:
 
   void ConstructJacobianPreconditioner() override;
 
+  void ImplementHandleJacobianUpdate() override;
+
   void ConstructJacobianSolver() override;
 
   void RegisterGridFunctions() override;

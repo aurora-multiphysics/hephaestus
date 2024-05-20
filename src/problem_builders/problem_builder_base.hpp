@@ -53,6 +53,11 @@ public:
 
   /// Call to update on mesh change.
   virtual void Update();
+
+public: // TODO: - make private!
+  /// @brief Call this function with @a this argument in order to update the
+  /// jacobian solver following a mesh update.
+  std::function<void(hephaestus::Problem *)> _handle_jacobian_update{nullptr};
 };
 
 /// ProblemBuilder base class.
@@ -99,6 +104,12 @@ public:
   virtual void RegisterGridFunctions() = 0;
   virtual void RegisterAuxSolvers() = 0;
   virtual void RegisterCoefficients() = 0;
+
+  /// @brief Sets std::function in Problem base class. Instructs the problem
+  /// class on how to rebuild the jacobian solver (and preconditioner if present)
+  /// following a mesh change. At this point the problem will not have access to
+  /// the original ProblemBuilder!
+  virtual void ImplementHandleJacobianUpdate() { MFEM_ABORT("Not implemented."); }
 
   virtual void ConstructJacobianPreconditioner();
   virtual void ConstructJacobianSolver();

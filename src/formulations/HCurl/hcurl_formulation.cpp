@@ -82,6 +82,42 @@ void
 HCurlFormulation::ConstructJacobianSolver()
 {
   ConstructJacobianSolverWithOptions(SolverType::HYPRE_PCG);
+
+  ImplementHandleJacobianUpdate(); // MARK: - Test code...
+}
+
+void
+HCurlFormulation::ImplementHandleJacobianUpdate()
+{
+  auto handle_jacobian_update = [](hephaestus::Problem * problem)
+  {
+    // 1. Cast Problem to correct derived class. NB: static_cast!
+    auto casted_problem = static_cast<hephaestus::TimeDomainEquationSystemProblem *>(problem);
+    auto eqn_system = casted_problem->GetEquationSystem();
+
+    // 2. Create a new preconditioner.
+    auto first_pfespace = eqn_system->_test_pfespaces.at(0);
+    auto precond = std::make_shared<mfem::HypreAMS>(first_pfespace);
+
+    precond->SetSingularProblem();
+    precond->SetPrintLevel(-1);
+
+    // 3. Set new preconditioner.
+    casted_problem->_jacobian_preconditioner.reset();
+    casted_problem->_jacobian_preconditioner = precond;
+
+    // 4. Cast solver to correct type.
+    auto solver = static_cast<mfem::HyprePCG *>(casted_problem->_jacobian_solver.get());
+
+    // 5. Set new preconditioner.
+    solver->SetPreconditioner(*precond);
+
+    // 6. Set Jacobian matrix.
+    auto matrix = eqn_system->JacobianOperatorHandle().As<mfem::HypreParMatrix>();
+    solver->SetOperator(*matrix);
+  };
+
+  GetProblem()->_handle_jacobian_update = handle_jacobian_update;
 }
 
 void

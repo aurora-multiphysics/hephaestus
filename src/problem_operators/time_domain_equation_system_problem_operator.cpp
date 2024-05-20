@@ -44,32 +44,19 @@ TimeDomainEquationSystemProblemOperator::Update()
   TimeDomainProblemOperator::Update();
 
   // TODO: - we need to update the size of the jacobian_solver here after the parent class' Update
-  // method is called which ensures that we've updated the _true_x, _true_rhs. This is a hacky first
-  // attempt to avoid a segfault with test_mesh_updates. This is very bad code and basically
-  // copies methods from the AFormulation problem builder used. We need to generalize this.
-  // Note that this approach will only work for this specific problem! Static pointer casts
-  // have been used to ensure that this will fail if used on a different problem.
+  // method is called which ensures that we've updated the _true_x, _true_rhs. This is the first
+  // attempt to generalize this update. We need to have set a std::function in the Problem base
+  // class using the ProblemBuilder. This allows us to then update the jacobian solver and its
+  // preconditioner correctly later without requiring the ProblemBuilder again. Care must be taken
+  // with this approach since the ProblemBuilder may not exist!
   {
+    if (!_problem._handle_jacobian_update)
+    {
+      MFEM_ABORT("No implementation found for handling the Jacobian update!");
+    }
+
     GetEquationSystem()->BuildJacobian(_true_x, _true_rhs);
-
-    // Rebuild the jacobian preconditioner.
-    auto first_pfespace = GetEquationSystem()->_test_pfespaces.at(0);
-
-    auto precond = std::make_shared<mfem::HypreAMS>(first_pfespace);
-
-    precond->SetSingularProblem();
-    precond->SetPrintLevel(-1);
-
-    _problem._jacobian_preconditioner = precond;
-
-    // Set new preconditioner.
-    std::static_pointer_cast<mfem::HyprePCG>(_problem._jacobian_solver)
-        ->SetPreconditioner(
-            *std::static_pointer_cast<mfem::HypreSolver>(_problem._jacobian_preconditioner));
-
-    // Set Jacobian matrix.
-    auto * matrix = GetEquationSystem()->JacobianOperatorHandle().As<mfem::HypreParMatrix>();
-    _problem._jacobian_solver->SetOperator(*matrix);
+    _problem._handle_jacobian_update(&_problem);
   }
 }
 
