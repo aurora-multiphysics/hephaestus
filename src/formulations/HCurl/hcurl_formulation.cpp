@@ -75,9 +75,16 @@ HCurlFormulation::ConstructJacobianSolver()
   precond->SetSingularProblem();
   precond->SetPrintLevel(-1);
 
-  GetProblem()->GetOperator()->SetJacobianPreconditioner(std::move(precond));
+  auto solver = std::make_unique<mfem::HyprePCG>(GetProblem()->_comm);
 
-  ConstructJacobianSolverWithOptions(SolverType::HYPRE_PCG);
+  solver->SetTol(1e-16);
+  solver->SetAbsTol(1e-16);
+  solver->SetMaxIter(1000);
+  solver->SetPrintLevel(GetGlobalPrintLevel());
+  solver->SetPreconditioner(*precond);
+
+  GetProblem()->GetOperator()->SetJacobianPreconditioner(std::move(precond));
+  GetProblem()->GetOperator()->SetJacobianSolver(std::move(solver));
 }
 
 void
