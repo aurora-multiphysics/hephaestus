@@ -9,6 +9,25 @@ ProblemOperatorBase::ProblemOperatorBase(hephaestus::Problem & problem) : _probl
 }
 
 void
+ProblemOperatorBase::ConstructJacobianSolver()
+{
+  auto precond = std::make_unique<mfem::HypreBoomerAMG>();
+  precond->SetPrintLevel(GetGlobalPrintLevel());
+
+  auto solver = std::make_unique<mfem::HypreGMRES>(_problem._comm);
+
+  solver->SetTol(1e-16);
+  solver->SetAbsTol(1e-16);
+  solver->SetMaxIter(1000);
+  solver->SetKDim(10);
+  solver->SetPrintLevel(GetGlobalPrintLevel());
+  solver->SetPreconditioner(*precond);
+
+  _jacobian_preconditioner = std::move(precond);
+  _jacobian_solver = std::move(solver);
+}
+
+void
 ProblemOperatorBase::SetTrialVariables()
 {
   SetTrialVariableNames();

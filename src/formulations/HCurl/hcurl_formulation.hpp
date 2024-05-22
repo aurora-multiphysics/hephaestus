@@ -30,6 +30,17 @@ protected:
   const std::string _h_curl_var_name;
 };
 
+class HCurlProblemOperator : public TimeDomainEquationSystemProblemOperator
+{
+public:
+  HCurlProblemOperator(hephaestus::Problem & problem,
+                       std::unique_ptr<hephaestus::TimeDependentEquationSystem> equation_system)
+    : TimeDomainEquationSystemProblemOperator(problem, std::move(equation_system))
+  {
+  }
+  void ConstructJacobianSolver() override;
+};
+
 class CurlCurlEquationSystem : public TimeDependentEquationSystem
 {
 public:

@@ -61,6 +61,8 @@ public:
 
   void Update() override;
 
+  void ConstructJacobianSolver() override;
+
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
 
   mfem::ParFiniteElementSpace * _h_curl_fe_space{nullptr};

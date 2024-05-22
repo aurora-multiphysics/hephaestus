@@ -61,15 +61,7 @@ DualFormulation::DualFormulation(std::string alpha_coef_name,
 void
 DualFormulation::ConstructJacobianSolver()
 {
-  auto precond =
-      std::make_unique<mfem::HypreAMS>(GetProblem()->GetEquationSystem()->_test_pfespaces.at(0));
-
-  precond->SetSingularProblem();
-  precond->SetPrintLevel(-1);
-
-  GetProblem()->GetOperator()->SetJacobianPreconditioner(std::move(precond));
-
-  ConstructJacobianSolverWithOptions(SolverType::HYPRE_PCG, {._max_iteration = 1000});
+  GetProblem()->GetOperator()->ConstructJacobianSolver();
 }
 
 void
@@ -217,6 +209,26 @@ DualOperator::Update()
 
   _curl->Update();
   _curl->Assemble();
+}
+
+void
+DualOperator::ConstructJacobianSolver()
+{
+  auto precond = std::make_unique<mfem::HypreAMS>(GetEquationSystem()->_test_pfespaces.at(0));
+
+  precond->SetSingularProblem();
+  precond->SetPrintLevel(-1);
+
+  auto solver = std::make_unique<mfem::HyprePCG>(_problem._comm);
+
+  solver->SetTol(1e-16);
+  solver->SetAbsTol(1e-16);
+  solver->SetMaxIter(1000);
+  solver->SetPrintLevel(GetGlobalPrintLevel());
+  solver->SetPreconditioner(*precond);
+
+  _jacobian_preconditioner = std::move(precond);
+  _jacobian_solver = std::move(solver);
 }
 
 void

@@ -27,7 +27,7 @@ ComplexMaxwellFormulation::ComplexMaxwellFormulation(std::string alpha_coef_name
 void
 ComplexMaxwellFormulation::ConstructJacobianSolver()
 {
-  ConstructJacobianSolverWithOptions(SolverType::SUPER_LU);
+  GetProblem()->GetOperator()->ConstructJacobianSolver();
 }
 
 void
@@ -224,6 +224,12 @@ ComplexMaxwellOperator::Solve(mfem::Vector & X)
 
   _problem._gridfunctions.GetRef(_trial_var_names.at(0)) = _u->real();
   _problem._gridfunctions.GetRef(_trial_var_names.at(1)) = _u->imag();
+}
+
+void
+ComplexMaxwellOperator::ConstructJacobianSolver()
+{
+  _jacobian_solver = std::make_unique<hephaestus::SuperLUSolver>(_problem._comm);
 }
 
 } // namespace hephaestus
