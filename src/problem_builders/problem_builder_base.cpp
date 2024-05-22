@@ -204,19 +204,6 @@ ProblemBuilder::AddSource(std::string source_name, std::shared_ptr<hephaestus::S
 }
 
 void
-ProblemBuilder::ConstructNonlinearSolver()
-{
-  auto nl_solver = std::make_unique<mfem::NewtonSolver>(GetProblem()->_comm);
-
-  // Defaults to one iteration, without further nonlinear iterations
-  nl_solver->SetRelTol(0.0);
-  nl_solver->SetAbsTol(0.0);
-  nl_solver->SetMaxIter(1);
-
-  GetProblem()->GetOperator()->SetNonlinearSolver(std::move(nl_solver));
-}
-
-void
 ProblemBuilder::InitializeSources()
 {
   GetProblem()->_sources.Init(GetProblem()->_gridfunctions,
@@ -261,9 +248,6 @@ ProblemBuilder::FinalizeProblem(bool build_operator)
   InitializeAuxSolvers();
   InitializeSources();
   InitializeOperator();
-
-  ConstructNonlinearSolver();
-
   InitializeOutputs();
 }
 

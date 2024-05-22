@@ -42,6 +42,10 @@ protected:
   /// constructor.
   virtual void ConstructJacobianSolver();
 
+  /// Override in derived classes to construct the non-linear solver. Called in
+  /// the constructor.
+  virtual void ConstructNonlinearSolver();
+
   /// Set trial variables names. Override in derived classes.
   virtual void SetTrialVariableNames() {}
 

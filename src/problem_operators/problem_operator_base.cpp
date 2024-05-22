@@ -25,6 +25,17 @@ ProblemOperatorBase::ConstructJacobianSolver()
 }
 
 void
+ProblemOperatorBase::ConstructNonlinearSolver()
+{
+  _nonlinear_solver = std::make_unique<mfem::NewtonSolver>(_problem._comm);
+
+  // Defaults to one iteration, without further nonlinear iterations
+  _nonlinear_solver->SetRelTol(0.0);
+  _nonlinear_solver->SetAbsTol(0.0);
+  _nonlinear_solver->SetMaxIter(1);
+}
+
+void
 ProblemOperatorBase::SetTrialVariables()
 {
   SetTrialVariableNames();
@@ -99,6 +110,7 @@ ProblemOperatorBase::Init()
 {
   _block_vector = std::make_unique<mfem::BlockVector>();
   ConstructJacobianSolver();
+  ConstructNonlinearSolver();
 
   SetTrialVariables();
 
