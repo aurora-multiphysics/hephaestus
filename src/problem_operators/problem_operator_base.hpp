@@ -19,12 +19,6 @@ public:
   /// Update the problem operator after a mesh change.
   virtual void Update();
 
-  /// Set the nonlinear solver.
-  void SetNonlinearSolver(std::unique_ptr<mfem::NewtonSolver> nl_solver)
-  {
-    _nonlinear_solver = std::move(nl_solver);
-  }
-
   /// Accessor for Jacobian preconditioner.
   template <class TSolver>
   TSolver * JacobianPreconditioner() const
