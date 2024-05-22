@@ -90,18 +90,6 @@ ProblemBuilder::SetSolverOptions(hephaestus::InputParameters & solver_options)
 }
 
 void
-ProblemBuilder::SetJacobianPreconditioner(std::unique_ptr<mfem::Solver> preconditioner)
-{
-  GetProblem()->GetOperator()->SetJacobianPreconditioner(std::move(preconditioner));
-}
-
-void
-ProblemBuilder::SetJacobianSolver(std::unique_ptr<mfem::Solver> jacobian_solver)
-{
-  GetProblem()->GetOperator()->SetJacobianSolver(std::move(jacobian_solver));
-}
-
-void
 ProblemBuilder::SetCoefficients(hephaestus::Coefficients & coefficients)
 {
   logger.info("Setting Coefficients");
