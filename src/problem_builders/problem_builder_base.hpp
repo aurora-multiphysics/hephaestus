@@ -30,7 +30,6 @@ public:
   hephaestus::Outputs _outputs;
   hephaestus::InputParameters _solver_options;
 
-  std::unique_ptr<mfem::ODESolver> _ode_solver{nullptr};
   std::unique_ptr<mfem::BlockVector> _f{nullptr};
 
   hephaestus::FECollections _fecs;

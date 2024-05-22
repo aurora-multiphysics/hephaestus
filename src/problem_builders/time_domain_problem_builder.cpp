@@ -3,17 +3,6 @@
 namespace hephaestus
 {
 
-void
-TimeDomainProblem::Update()
-{
-  // 1. Call superclass. Updates the offsets and block vector.
-  Problem::Update();
-
-  // 2. The dimensions of the problem operator have now changed. We must call
-  // the ode solver's Init method to resize its internal vector.
-  _ode_solver->Init(*GetOperator());
-}
-
 std::vector<mfem::ParGridFunction *>
 TimeDomainProblemBuilder::RegisterTimeDerivatives(std::vector<std::string> gridfunction_names,
                                                   hephaestus::GridFunctions & gridfunctions)
@@ -59,8 +48,10 @@ TimeDomainProblemBuilder::InitializeOperator()
 void
 TimeDomainProblemBuilder::ConstructTimestepper()
 {
-  GetProblem()->_ode_solver = std::make_unique<mfem::BackwardEulerSolver>();
-  GetProblem()->_ode_solver->Init(*(GetProblem()->GetOperator()));
+  auto ode_solver = std::make_unique<mfem::BackwardEulerSolver>();
+  ode_solver->Init(*GetProblem()->GetOperator());
+
+  GetProblem()->GetOperator()->SetODESolver(std::move(ode_solver));
 }
 
 } // namespace hephaestus
