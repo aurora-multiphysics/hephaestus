@@ -13,6 +13,8 @@ public:
   ProblemOperator(hephaestus::Problem & problem) : ProblemOperatorBase(problem) {}
   ~ProblemOperator() override = default;
 
+  virtual void Solve() { Solve(*_block_vector); }
+
   virtual void Solve(mfem::Vector & X) {}
   void Mult(const mfem::Vector & x, mfem::Vector & y) const override {}
 

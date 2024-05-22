@@ -19,7 +19,7 @@ class Problem
 {
 public:
   Problem() = default;
-  virtual ~Problem();
+  virtual ~Problem() = default;
 
   std::shared_ptr<mfem::ParMesh> _pmesh{nullptr};
   hephaestus::BCMap _bc_map;
@@ -29,8 +29,6 @@ public:
   hephaestus::Sources _sources;
   hephaestus::Outputs _outputs;
   hephaestus::InputParameters _solver_options;
-
-  std::unique_ptr<mfem::BlockVector> _f{nullptr};
 
   hephaestus::FECollections _fecs;
   hephaestus::FESpaces _fespaces;
@@ -98,7 +96,6 @@ public:
   virtual void ConstructJacobianPreconditioner();
   virtual void ConstructJacobianSolver();
   virtual void ConstructNonlinearSolver();
-  virtual void ConstructBlockVector();
 
   virtual void ConstructOperator() = 0;
   virtual void ConstructTimestepper() = 0;

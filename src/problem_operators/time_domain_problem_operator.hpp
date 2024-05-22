@@ -27,6 +27,12 @@ public:
     _ode_solver = std::move(ode_solver);
   }
 
+  /// Wrapper around the ODE solver's Step method using the block vector.
+  virtual void Step(mfem::real_t & t, mfem::real_t & dt)
+  {
+    _ode_solver->Step(*_block_vector, t, dt);
+  }
+
   /// Returns a pointer to the ODE solver.
   mfem::ODESolver * ODESolver() const { return _ode_solver.get(); }
 

@@ -13,7 +13,7 @@ SteadyExecutioner::Solve() const
 {
   // Advance time step.
   _problem->_preprocessors.Solve();
-  _problem->GetOperator()->Solve(*(_problem->_f));
+  _problem->GetOperator()->Solve();
   _problem->_postprocessors.Solve();
 
   // Output data

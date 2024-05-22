@@ -48,7 +48,7 @@ protected:
   /// Use of protected constructor to only allow construction by derived classes.
   /// All problem operator classes are built on-top of this class and it should not
   /// be possible to use directly.
-  explicit ProblemOperatorBase(hephaestus::Problem & problem) : _problem(problem) {}
+  explicit ProblemOperatorBase(hephaestus::Problem & problem);
 
   /// Set trial variables names. Override in derived classes.
   virtual void SetTrialVariableNames() {}
@@ -93,6 +93,9 @@ protected:
 
   /// Store the non-linear solver.
   std::unique_ptr<mfem::NewtonSolver> _nonlinear_solver{nullptr};
+
+  /// Store the block vector.
+  std::unique_ptr<mfem::BlockVector> _block_vector{nullptr};
 
 private:
   /// Update the block vectors and offsets after a mesh change.

@@ -3,12 +3,6 @@
 namespace hephaestus
 {
 
-Problem::~Problem()
-{
-  // Ensure that all owned memory is properly freed!
-  _f.reset();
-}
-
 void
 Problem::Update()
 {
@@ -237,12 +231,6 @@ ProblemBuilder::ConstructJacobianSolver()
 }
 
 void
-ProblemBuilder::ConstructBlockVector()
-{
-  GetProblem()->_f = std::make_unique<mfem::BlockVector>();
-}
-
-void
 ProblemBuilder::ConstructJacobianSolverWithOptions(SolverType type, SolverParams default_params)
 {
   const auto & solver_options = GetProblem()->_solver_options;
@@ -387,8 +375,6 @@ ProblemBuilder::FinalizeProblem(bool build_operator)
   {
     ConstructOperator();
   }
-
-  ConstructBlockVector();
 
   InitializeAuxSolvers();
   InitializeSources();
