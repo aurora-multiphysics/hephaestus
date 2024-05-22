@@ -219,20 +219,102 @@ void
 ProblemBuilder::ConstructJacobianSolver()
 {
   auto precond = std::make_unique<mfem::HypreBoomerAMG>();
-
   precond->SetPrintLevel(GetGlobalPrintLevel());
 
-  auto solver = std::make_unique<mfem::HypreGMRES>(GetProblem()->_comm);
-
-  solver->SetTol(1e-16);
-  solver->SetAbsTol(1e-16);
-  solver->SetMaxIter(1000);
-  solver->SetKDim(10);
-  solver->SetPrintLevel(GetGlobalPrintLevel());
-  solver->SetPreconditioner(*precond);
-
   GetProblem()->GetOperator()->SetJacobianPreconditioner(std::move(precond));
-  GetProblem()->GetOperator()->SetJacobianSolver(std::move(solver));
+
+  ConstructJacobianSolverWithOptions(SolverType::HYPRE_GMRES);
+}
+
+void
+ProblemBuilder::ConstructJacobianSolverWithOptions(SolverType type, SolverParams default_params)
+{
+  const auto & solver_options = GetProblem()->_solver_options;
+
+  const auto tolerance =
+      solver_options.GetOptionalParam<float>("Tolerance", default_params._tolerance);
+  const auto abs_tolerance =
+      solver_options.GetOptionalParam<float>("AbsTolerance", default_params._abs_tolerance);
+  const auto max_iter =
+      solver_options.GetOptionalParam<unsigned int>("MaxIter", default_params._max_iteration);
+  const auto print_level =
+      solver_options.GetOptionalParam<int>("PrintLevel", default_params._print_level);
+  const auto k_dim = solver_options.GetOptionalParam<unsigned int>("KDim", default_params._k_dim);
+
+  auto preconditioner = GetProblem()->GetOperator()->JacobianPreconditioner<mfem::HypreSolver>();
+
+  switch (type)
+  {
+    case SolverType::HYPRE_PCG:
+    {
+      auto solver = std::make_unique<mfem::HyprePCG>(GetProblem()->_comm);
+
+      solver->SetTol(tolerance);
+      solver->SetAbsTol(abs_tolerance);
+      solver->SetMaxIter(max_iter);
+      solver->SetPrintLevel(print_level);
+
+      if (preconditioner)
+        solver->SetPreconditioner(*preconditioner);
+
+      GetProblem()->GetOperator()->SetJacobianSolver(std::move(solver));
+      break;
+    }
+    case SolverType::HYPRE_GMRES:
+    {
+      auto solver = std::make_unique<mfem::HypreGMRES>(GetProblem()->_comm);
+
+      solver->SetTol(tolerance);
+      solver->SetAbsTol(abs_tolerance);
+      solver->SetMaxIter(max_iter);
+      solver->SetKDim(k_dim);
+      solver->SetPrintLevel(print_level);
+
+      if (preconditioner)
+        solver->SetPreconditioner(*preconditioner);
+
+      GetProblem()->GetOperator()->SetJacobianSolver(std::move(solver));
+      break;
+    }
+    case SolverType::HYPRE_FGMRES:
+    {
+      auto solver = std::make_unique<mfem::HypreFGMRES>(GetProblem()->_comm);
+
+      solver->SetTol(tolerance);
+      solver->SetMaxIter(max_iter);
+      solver->SetKDim(k_dim);
+      solver->SetPrintLevel(print_level);
+
+      if (preconditioner)
+        solver->SetPreconditioner(*preconditioner);
+
+      GetProblem()->GetOperator()->SetJacobianSolver(std::move(solver));
+      break;
+    }
+    case SolverType::HYPRE_AMG:
+    {
+      auto solver = std::make_unique<mfem::HypreBoomerAMG>();
+
+      solver->SetTol(tolerance);
+      solver->SetMaxIter(max_iter);
+      solver->SetPrintLevel(print_level);
+
+      GetProblem()->GetOperator()->SetJacobianSolver(std::move(solver));
+      break;
+    }
+    case SolverType::SUPER_LU:
+    {
+      auto solver = std::make_unique<hephaestus::SuperLUSolver>(GetProblem()->_comm);
+
+      GetProblem()->GetOperator()->SetJacobianSolver(std::move(solver));
+      break;
+    }
+    default:
+    {
+      MFEM_ABORT("Unsupported solver type specified.");
+      break;
+    }
+  }
 }
 
 void
