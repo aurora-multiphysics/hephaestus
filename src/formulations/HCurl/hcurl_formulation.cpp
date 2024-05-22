@@ -67,12 +67,6 @@ HCurlFormulation::ConstructOperator()
 }
 
 void
-HCurlFormulation::ConstructJacobianSolver()
-{
-  GetProblem()->GetOperator()->ConstructJacobianSolver();
-}
-
-void
 HCurlFormulation::RegisterGridFunctions()
 {
   int & myid = GetProblem()->_myid;

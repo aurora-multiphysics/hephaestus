@@ -93,7 +93,6 @@ public:
   virtual void RegisterAuxSolvers() = 0;
   virtual void RegisterCoefficients() = 0;
 
-  virtual void ConstructJacobianSolver();
   virtual void ConstructNonlinearSolver();
 
   virtual void ConstructOperator() = 0;

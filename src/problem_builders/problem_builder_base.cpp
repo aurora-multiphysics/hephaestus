@@ -216,12 +216,6 @@ ProblemBuilder::AddSource(std::string source_name, std::shared_ptr<hephaestus::S
 }
 
 void
-ProblemBuilder::ConstructJacobianSolver()
-{
-  GetProblem()->GetOperator()->ConstructJacobianSolver();
-}
-
-void
 ProblemBuilder::ConstructNonlinearSolver()
 {
   auto nl_solver = std::make_unique<mfem::NewtonSolver>(GetProblem()->_comm);
@@ -280,7 +274,6 @@ ProblemBuilder::FinalizeProblem(bool build_operator)
   InitializeSources();
   InitializeOperator();
 
-  ConstructJacobianSolver();
   ConstructNonlinearSolver();
 
   ConstructTimestepper();

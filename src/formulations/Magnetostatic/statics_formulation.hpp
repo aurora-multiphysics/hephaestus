@@ -14,8 +14,6 @@ public:
 
   ~StaticsFormulation() override = default;
 
-  void ConstructJacobianSolver() override;
-
   void ConstructOperator() override;
 
   void RegisterGridFunctions() override;

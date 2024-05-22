@@ -44,14 +44,15 @@ public:
     return static_cast<TSolver *>(_jacobian_preconditioner.get());
   }
 
-  /// Override in derived classes to construct the Jacobian solver.
-  virtual void ConstructJacobianSolver();
-
 protected:
   /// Use of protected constructor to only allow construction by derived classes.
   /// All problem operator classes are built on-top of this class and it should not
   /// be possible to use directly.
   explicit ProblemOperatorBase(hephaestus::Problem & problem);
+
+  /// Override in derived classes to construct the Jacobian solver. Called in the
+  /// constructor.
+  virtual void ConstructJacobianSolver();
 
   /// Set trial variables names. Override in derived classes.
   virtual void SetTrialVariableNames() {}

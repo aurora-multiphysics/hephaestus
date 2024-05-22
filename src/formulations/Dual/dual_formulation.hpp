@@ -16,8 +16,6 @@ public:
 
   ~DualFormulation() override = default;
 
-  void ConstructJacobianSolver() override;
-
   void ConstructOperator() override;
 
   void RegisterGridFunctions() override;

@@ -38,12 +38,6 @@ StaticsFormulation::StaticsFormulation(std::string alpha_coef_name, std::string 
 }
 
 void
-StaticsFormulation::ConstructJacobianSolver()
-{
-  GetProblem()->GetOperator()->ConstructJacobianSolver();
-}
-
-void
 StaticsFormulation::ConstructOperator()
 {
   auto new_operator = std::make_unique<hephaestus::StaticsOperator>(

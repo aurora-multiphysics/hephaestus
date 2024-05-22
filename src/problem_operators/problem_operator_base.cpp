@@ -3,10 +3,7 @@
 namespace hephaestus
 {
 
-ProblemOperatorBase::ProblemOperatorBase(hephaestus::Problem & problem) : _problem{problem}
-{
-  _block_vector = std::make_unique<mfem::BlockVector>();
-}
+ProblemOperatorBase::ProblemOperatorBase(hephaestus::Problem & problem) : _problem{problem} {}
 
 void
 ProblemOperatorBase::ConstructJacobianSolver()
@@ -100,6 +97,9 @@ ProblemOperatorBase::UpdateBlockVector(mfem::BlockVector & X)
 void
 ProblemOperatorBase::Init()
 {
+  _block_vector = std::make_unique<mfem::BlockVector>();
+  ConstructJacobianSolver();
+
   SetTrialVariables();
 
   UpdateOffsets();

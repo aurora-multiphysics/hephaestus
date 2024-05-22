@@ -25,12 +25,6 @@ ComplexMaxwellFormulation::ComplexMaxwellFormulation(std::string alpha_coef_name
 }
 
 void
-ComplexMaxwellFormulation::ConstructJacobianSolver()
-{
-  GetProblem()->GetOperator()->ConstructJacobianSolver();
-}
-
-void
 ComplexMaxwellFormulation::ConstructOperator()
 {
   auto new_operator = std::make_unique<hephaestus::ComplexMaxwellOperator>(*GetProblem(),

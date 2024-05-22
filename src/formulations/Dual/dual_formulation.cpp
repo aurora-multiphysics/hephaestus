@@ -59,12 +59,6 @@ DualFormulation::DualFormulation(std::string alpha_coef_name,
 }
 
 void
-DualFormulation::ConstructJacobianSolver()
-{
-  GetProblem()->GetOperator()->ConstructJacobianSolver();
-}
-
-void
 DualFormulation::ConstructOperator()
 {
   hephaestus::InputParameters weak_form_params;
