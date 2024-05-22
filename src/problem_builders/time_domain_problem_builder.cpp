@@ -45,13 +45,4 @@ TimeDomainProblemBuilder::InitializeOperator()
   GetProblem()->GetOperator()->SetTime(0.0);
 }
 
-void
-TimeDomainProblemBuilder::ConstructTimestepper()
-{
-  auto ode_solver = std::make_unique<mfem::BackwardEulerSolver>();
-  ode_solver->Init(*GetProblem()->GetOperator());
-
-  GetProblem()->GetOperator()->SetODESolver(std::move(ode_solver));
-}
-
 } // namespace hephaestus

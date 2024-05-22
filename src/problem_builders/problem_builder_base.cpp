@@ -264,7 +264,6 @@ ProblemBuilder::FinalizeProblem(bool build_operator)
 
   ConstructNonlinearSolver();
 
-  ConstructTimestepper();
   InitializeOutputs();
 }
 

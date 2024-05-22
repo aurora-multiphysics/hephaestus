@@ -56,8 +56,6 @@ public:
 
   void ConstructOperator() override;
 
-  void ConstructTimestepper() override {}
-
 protected:
   // NB: constructor for derived classes.
   SteadyStateProblemBuilder(hephaestus::SteadyStateProblem * problem) : ProblemBuilder(problem) {}

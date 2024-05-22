@@ -61,8 +61,6 @@ public:
 
   void InitializeOperator() override;
 
-  void ConstructTimestepper() override;
-
 protected:
   /// NB: constructor called in derived classes.
   TimeDomainProblemBuilder(hephaestus::TimeDomainProblem * problem) : ProblemBuilder(problem) {}

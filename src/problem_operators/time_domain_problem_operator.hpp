@@ -16,16 +16,10 @@ std::vector<std::string> GetTimeDerivativeNames(std::vector<std::string> gridfun
 class TimeDomainProblemOperator : public mfem::TimeDependentOperator, public ProblemOperatorBase
 {
 public:
-  TimeDomainProblemOperator(hephaestus::Problem & problem) : ProblemOperatorBase(problem) {}
+  TimeDomainProblemOperator(hephaestus::Problem & problem);
   ~TimeDomainProblemOperator() override = default;
 
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override {}
-
-  /// Set the ODE solver.
-  void SetODESolver(std::unique_ptr<mfem::ODESolver> ode_solver)
-  {
-    _ode_solver = std::move(ode_solver);
-  }
 
   /// Wrapper around the ODE solver's Step method using the block vector.
   virtual void Step(mfem::real_t & t, mfem::real_t & dt)
@@ -33,11 +27,16 @@ public:
     _ode_solver->Step(*_block_vector, t, dt);
   }
 
+  void Init() override;
+
   void Update() override;
 
 protected:
   int & Width() final { return mfem::TimeDependentOperator::width; }
   int & Height() final { return mfem::TimeDependentOperator::height; }
+
+  /// Construct the ODE solver. Called in constructor. Override in derived classes.
+  virtual void ConstructTimestepper();
 
 private:
   /// Store the ODE solver.
