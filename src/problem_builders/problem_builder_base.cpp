@@ -216,17 +216,13 @@ ProblemBuilder::AddSource(std::string source_name, std::shared_ptr<hephaestus::S
 }
 
 void
-ProblemBuilder::ConstructJacobianPreconditioner()
+ProblemBuilder::ConstructJacobianSolver()
 {
   auto precond = std::make_unique<mfem::HypreBoomerAMG>();
   precond->SetPrintLevel(GetGlobalPrintLevel());
 
   GetProblem()->GetOperator()->SetJacobianPreconditioner(std::move(precond));
-}
 
-void
-ProblemBuilder::ConstructJacobianSolver()
-{
   ConstructJacobianSolverWithOptions(SolverType::HYPRE_GMRES);
 }
 
@@ -380,7 +376,6 @@ ProblemBuilder::FinalizeProblem(bool build_operator)
   InitializeSources();
   InitializeOperator();
 
-  ConstructJacobianPreconditioner();
   ConstructJacobianSolver();
   ConstructNonlinearSolver();
 

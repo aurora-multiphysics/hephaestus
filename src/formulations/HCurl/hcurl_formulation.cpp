@@ -67,7 +67,7 @@ HCurlFormulation::ConstructOperator()
 }
 
 void
-HCurlFormulation::ConstructJacobianPreconditioner()
+HCurlFormulation::ConstructJacobianSolver()
 {
   auto precond =
       std::make_unique<mfem::HypreAMS>(GetProblem()->GetEquationSystem()->_test_pfespaces.at(0));
@@ -76,11 +76,7 @@ HCurlFormulation::ConstructJacobianPreconditioner()
   precond->SetPrintLevel(-1);
 
   GetProblem()->GetOperator()->SetJacobianPreconditioner(std::move(precond));
-}
 
-void
-HCurlFormulation::ConstructJacobianSolver()
-{
   ConstructJacobianSolverWithOptions(SolverType::HYPRE_PCG);
 }
 

@@ -16,8 +16,6 @@ public:
 
   ~DualFormulation() override = default;
 
-  void ConstructJacobianPreconditioner() override;
-
   void ConstructJacobianSolver() override;
 
   void ConstructOperator() override;

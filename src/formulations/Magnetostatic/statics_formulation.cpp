@@ -38,7 +38,7 @@ StaticsFormulation::StaticsFormulation(std::string alpha_coef_name, std::string 
 }
 
 void
-StaticsFormulation::ConstructJacobianPreconditioner()
+StaticsFormulation::ConstructJacobianSolver()
 {
   auto precond = std::make_unique<mfem::HypreAMS>(
       GetProblem()->_gridfunctions.Get(_h_curl_var_name)->ParFESpace());
@@ -47,11 +47,7 @@ StaticsFormulation::ConstructJacobianPreconditioner()
   precond->SetPrintLevel(-1);
 
   GetProblem()->GetOperator()->SetJacobianPreconditioner(std::move(precond));
-}
 
-void
-StaticsFormulation::ConstructJacobianSolver()
-{
   ConstructJacobianSolverWithOptions(SolverType::HYPRE_FGMRES,
                                      {._max_iteration = 100, ._k_dim = 10});
 }
