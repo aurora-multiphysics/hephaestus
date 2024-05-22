@@ -55,21 +55,20 @@ TimeDomainEquationSystemProblemOperator::Update()
     // Rebuild the jacobian preconditioner.
     auto first_pfespace = GetEquationSystem()->_test_pfespaces.at(0);
 
-    auto precond = std::make_shared<mfem::HypreAMS>(first_pfespace);
+    auto precond = std::make_unique<mfem::HypreAMS>(first_pfespace);
 
     precond->SetSingularProblem();
     precond->SetPrintLevel(-1);
 
-    _problem._jacobian_preconditioner = precond;
+    _jacobian_preconditioner = std::move(precond);
 
     // Set new preconditioner.
-    std::static_pointer_cast<mfem::HyprePCG>(_problem._jacobian_solver)
-        ->SetPreconditioner(
-            *std::static_pointer_cast<mfem::HypreSolver>(_problem._jacobian_preconditioner));
+    static_cast<mfem::HyprePCG *>(_jacobian_solver.get())
+        ->SetPreconditioner(*static_cast<mfem::HypreSolver *>(_jacobian_preconditioner.get()));
 
     // Set Jacobian matrix.
     auto * matrix = GetEquationSystem()->JacobianOperatorHandle().As<mfem::HypreParMatrix>();
-    _problem._jacobian_solver->SetOperator(*matrix);
+    _jacobian_solver->SetOperator(*matrix);
   }
 }
 
@@ -89,9 +88,9 @@ TimeDomainEquationSystemProblemOperator::ImplicitSolve(const double dt,
   _problem._coefficients.SetTime(GetTime());
   BuildEquationSystemOperator(dt);
 
-  _problem._nonlinear_solver->SetSolver(*_problem._jacobian_solver);
-  _problem._nonlinear_solver->SetOperator(*GetEquationSystem());
-  _problem._nonlinear_solver->Mult(_true_rhs, _true_x);
+  _nonlinear_solver->SetSolver(*_jacobian_solver);
+  _nonlinear_solver->SetOperator(*GetEquationSystem());
+  _nonlinear_solver->Mult(_true_rhs, _true_x);
 
   GetEquationSystem()->RecoverFEMSolution(_true_x, _problem._gridfunctions);
 }

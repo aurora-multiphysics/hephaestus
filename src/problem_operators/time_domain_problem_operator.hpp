@@ -21,9 +21,27 @@ public:
 
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override {}
 
+  /// Set the ODE solver.
+  void SetODESolver(std::unique_ptr<mfem::ODESolver> ode_solver)
+  {
+    _ode_solver = std::move(ode_solver);
+  }
+
+  /// Wrapper around the ODE solver's Step method using the block vector.
+  virtual void Step(mfem::real_t & t, mfem::real_t & dt)
+  {
+    _ode_solver->Step(*_block_vector, t, dt);
+  }
+
+  void Update() override;
+
 protected:
   int & Width() final { return mfem::TimeDependentOperator::width; }
   int & Height() final { return mfem::TimeDependentOperator::height; }
+
+private:
+  /// Store the ODE solver.
+  std::unique_ptr<mfem::ODESolver> _ode_solver{nullptr};
 };
 
 } // namespace hephaestus

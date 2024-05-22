@@ -18,8 +18,6 @@ public:
 
   void ConstructOperator() override;
 
-  void ConstructJacobianPreconditioner() override;
-
   void ConstructJacobianSolver() override;
 
   void RegisterGridFunctions() override;

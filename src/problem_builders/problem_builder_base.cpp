@@ -3,13 +3,6 @@
 namespace hephaestus
 {
 
-Problem::~Problem()
-{
-  // Ensure that all owned memory is properly freed!
-  _f.reset();
-  _ode_solver.reset();
-}
-
 void
 Problem::Update()
 {
@@ -97,15 +90,15 @@ ProblemBuilder::SetSolverOptions(hephaestus::InputParameters & solver_options)
 }
 
 void
-ProblemBuilder::SetJacobianPreconditioner(std::shared_ptr<mfem::Solver> preconditioner)
+ProblemBuilder::SetJacobianPreconditioner(std::unique_ptr<mfem::Solver> preconditioner)
 {
-  GetProblem()->_jacobian_preconditioner = preconditioner;
+  GetProblem()->GetOperator()->SetJacobianPreconditioner(std::move(preconditioner));
 }
 
 void
-ProblemBuilder::SetJacobianSolver(std::shared_ptr<mfem::Solver> jacobian_solver)
+ProblemBuilder::SetJacobianSolver(std::unique_ptr<mfem::Solver> jacobian_solver)
 {
-  GetProblem()->_jacobian_solver = jacobian_solver;
+  GetProblem()->GetOperator()->SetJacobianSolver(std::move(jacobian_solver));
 }
 
 void
@@ -223,24 +216,14 @@ ProblemBuilder::AddSource(std::string source_name, std::shared_ptr<hephaestus::S
 }
 
 void
-ProblemBuilder::ConstructJacobianPreconditioner()
-{
-  auto precond = std::make_shared<mfem::HypreBoomerAMG>();
-  precond->SetPrintLevel(GetGlobalPrintLevel());
-
-  GetProblem()->_jacobian_preconditioner = precond;
-}
-
-void
 ProblemBuilder::ConstructJacobianSolver()
 {
-  ConstructJacobianSolverWithOptions(SolverType::HYPRE_GMRES);
-}
+  auto precond = std::make_unique<mfem::HypreBoomerAMG>();
+  precond->SetPrintLevel(GetGlobalPrintLevel());
 
-void
-ProblemBuilder::ConstructBlockVector()
-{
-  GetProblem()->_f = std::make_unique<mfem::BlockVector>();
+  GetProblem()->GetOperator()->SetJacobianPreconditioner(std::move(precond));
+
+  ConstructJacobianSolverWithOptions(SolverType::HYPRE_GMRES);
 }
 
 void
@@ -258,14 +241,13 @@ ProblemBuilder::ConstructJacobianSolverWithOptions(SolverType type, SolverParams
       solver_options.GetOptionalParam<int>("PrintLevel", default_params._print_level);
   const auto k_dim = solver_options.GetOptionalParam<unsigned int>("KDim", default_params._k_dim);
 
-  auto preconditioner =
-      std::dynamic_pointer_cast<mfem::HypreSolver>(GetProblem()->_jacobian_preconditioner);
+  auto preconditioner = GetProblem()->GetOperator()->JacobianPreconditioner<mfem::HypreSolver>();
 
   switch (type)
   {
     case SolverType::HYPRE_PCG:
     {
-      auto solver = std::make_shared<mfem::HyprePCG>(GetProblem()->_comm);
+      auto solver = std::make_unique<mfem::HyprePCG>(GetProblem()->_comm);
 
       solver->SetTol(tolerance);
       solver->SetAbsTol(abs_tolerance);
@@ -275,12 +257,12 @@ ProblemBuilder::ConstructJacobianSolverWithOptions(SolverType type, SolverParams
       if (preconditioner)
         solver->SetPreconditioner(*preconditioner);
 
-      GetProblem()->_jacobian_solver = solver;
+      GetProblem()->GetOperator()->SetJacobianSolver(std::move(solver));
       break;
     }
     case SolverType::HYPRE_GMRES:
     {
-      auto solver = std::make_shared<mfem::HypreGMRES>(GetProblem()->_comm);
+      auto solver = std::make_unique<mfem::HypreGMRES>(GetProblem()->_comm);
 
       solver->SetTol(tolerance);
       solver->SetAbsTol(abs_tolerance);
@@ -291,12 +273,12 @@ ProblemBuilder::ConstructJacobianSolverWithOptions(SolverType type, SolverParams
       if (preconditioner)
         solver->SetPreconditioner(*preconditioner);
 
-      GetProblem()->_jacobian_solver = solver;
+      GetProblem()->GetOperator()->SetJacobianSolver(std::move(solver));
       break;
     }
     case SolverType::HYPRE_FGMRES:
     {
-      auto solver = std::make_shared<mfem::HypreFGMRES>(GetProblem()->_comm);
+      auto solver = std::make_unique<mfem::HypreFGMRES>(GetProblem()->_comm);
 
       solver->SetTol(tolerance);
       solver->SetMaxIter(max_iter);
@@ -306,25 +288,25 @@ ProblemBuilder::ConstructJacobianSolverWithOptions(SolverType type, SolverParams
       if (preconditioner)
         solver->SetPreconditioner(*preconditioner);
 
-      GetProblem()->_jacobian_solver = solver;
+      GetProblem()->GetOperator()->SetJacobianSolver(std::move(solver));
       break;
     }
     case SolverType::HYPRE_AMG:
     {
-      auto solver = std::make_shared<mfem::HypreBoomerAMG>();
+      auto solver = std::make_unique<mfem::HypreBoomerAMG>();
 
       solver->SetTol(tolerance);
       solver->SetMaxIter(max_iter);
       solver->SetPrintLevel(print_level);
 
-      GetProblem()->_jacobian_solver = solver;
+      GetProblem()->GetOperator()->SetJacobianSolver(std::move(solver));
       break;
     }
     case SolverType::SUPER_LU:
     {
-      auto solver = std::make_shared<hephaestus::SuperLUSolver>(GetProblem()->_comm);
+      auto solver = std::make_unique<hephaestus::SuperLUSolver>(GetProblem()->_comm);
 
-      GetProblem()->_jacobian_solver = solver;
+      GetProblem()->GetOperator()->SetJacobianSolver(std::move(solver));
       break;
     }
     default:
@@ -338,14 +320,14 @@ ProblemBuilder::ConstructJacobianSolverWithOptions(SolverType type, SolverParams
 void
 ProblemBuilder::ConstructNonlinearSolver()
 {
-  auto nl_solver = std::make_shared<mfem::NewtonSolver>(GetProblem()->_comm);
+  auto nl_solver = std::make_unique<mfem::NewtonSolver>(GetProblem()->_comm);
 
   // Defaults to one iteration, without further nonlinear iterations
   nl_solver->SetRelTol(0.0);
   nl_solver->SetAbsTol(0.0);
   nl_solver->SetMaxIter(1);
 
-  GetProblem()->_nonlinear_solver = nl_solver;
+  GetProblem()->GetOperator()->SetNonlinearSolver(std::move(nl_solver));
 }
 
 void
@@ -390,13 +372,10 @@ ProblemBuilder::FinalizeProblem(bool build_operator)
     ConstructOperator();
   }
 
-  ConstructBlockVector();
-
   InitializeAuxSolvers();
   InitializeSources();
   InitializeOperator();
 
-  ConstructJacobianPreconditioner();
   ConstructJacobianSolver();
   ConstructNonlinearSolver();
 

@@ -67,20 +67,16 @@ HCurlFormulation::ConstructOperator()
 }
 
 void
-HCurlFormulation::ConstructJacobianPreconditioner()
+HCurlFormulation::ConstructJacobianSolver()
 {
   auto precond =
-      std::make_shared<mfem::HypreAMS>(GetProblem()->GetEquationSystem()->_test_pfespaces.at(0));
+      std::make_unique<mfem::HypreAMS>(GetProblem()->GetEquationSystem()->_test_pfespaces.at(0));
 
   precond->SetSingularProblem();
   precond->SetPrintLevel(-1);
 
-  GetProblem()->_jacobian_preconditioner = precond;
-}
+  GetProblem()->GetOperator()->SetJacobianPreconditioner(std::move(precond));
 
-void
-HCurlFormulation::ConstructJacobianSolver()
-{
   ConstructJacobianSolverWithOptions(SolverType::HYPRE_PCG);
 }
 

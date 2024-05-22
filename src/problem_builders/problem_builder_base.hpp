@@ -19,7 +19,7 @@ class Problem
 {
 public:
   Problem() = default;
-  virtual ~Problem();
+  virtual ~Problem() = default;
 
   std::shared_ptr<mfem::ParMesh> _pmesh{nullptr};
   hephaestus::BCMap _bc_map;
@@ -29,13 +29,6 @@ public:
   hephaestus::Sources _sources;
   hephaestus::Outputs _outputs;
   hephaestus::InputParameters _solver_options;
-
-  std::unique_ptr<mfem::ODESolver> _ode_solver{nullptr};
-  std::unique_ptr<mfem::BlockVector> _f{nullptr};
-
-  std::shared_ptr<mfem::Solver> _jacobian_preconditioner{nullptr};
-  std::shared_ptr<mfem::Solver> _jacobian_solver{nullptr};
-  std::shared_ptr<mfem::NewtonSolver> _nonlinear_solver{nullptr};
 
   hephaestus::FECollections _fecs;
   hephaestus::FESpaces _fespaces;
@@ -80,8 +73,8 @@ public:
   void SetSources(hephaestus::Sources & sources);
   void SetOutputs(hephaestus::Outputs & outputs);
   void SetSolverOptions(hephaestus::InputParameters & solver_options);
-  void SetJacobianPreconditioner(std::shared_ptr<mfem::Solver> preconditioner);
-  void SetJacobianSolver(std::shared_ptr<mfem::Solver> solver);
+  void SetJacobianPreconditioner(std::unique_ptr<mfem::Solver> preconditioner);
+  void SetJacobianSolver(std::unique_ptr<mfem::Solver> solver);
   void SetCoefficients(hephaestus::Coefficients & coefficients);
 
   void AddFESpace(std::string fespace_name,
@@ -100,10 +93,8 @@ public:
   virtual void RegisterAuxSolvers() = 0;
   virtual void RegisterCoefficients() = 0;
 
-  virtual void ConstructJacobianPreconditioner();
   virtual void ConstructJacobianSolver();
   virtual void ConstructNonlinearSolver();
-  virtual void ConstructBlockVector();
 
   virtual void ConstructOperator() = 0;
   virtual void ConstructTimestepper() = 0;

@@ -3,6 +3,11 @@
 namespace hephaestus
 {
 
+ProblemOperatorBase::ProblemOperatorBase(hephaestus::Problem & problem) : _problem{problem}
+{
+  _block_vector = std::make_unique<mfem::BlockVector>();
+}
+
 void
 ProblemOperatorBase::SetTrialVariables()
 {
@@ -79,7 +84,7 @@ ProblemOperatorBase::Init()
   SetTrialVariables();
 
   UpdateOffsets();
-  UpdateBlockVector(*_problem._f);
+  UpdateBlockVector(*_block_vector);
 }
 
 void
@@ -90,7 +95,7 @@ ProblemOperatorBase::Update()
   // Recalculate the offsets from gridfunction trial variables.
   UpdateOffsets();
 
-  UpdateBlockVector(*_problem._f);
+  UpdateBlockVector(*_block_vector);
 }
 
 }
