@@ -23,7 +23,6 @@ GetTimeDerivativeNames(std::vector<std::string> gridfunction_names)
 TimeDomainProblemOperator::TimeDomainProblemOperator(hephaestus::Problem & problem)
   : ProblemOperatorBase(problem)
 {
-  ConstructTimestepper();
 }
 
 void
@@ -37,7 +36,7 @@ void
 TimeDomainProblemOperator::Init()
 {
   ProblemOperatorBase::Init();
-  _ode_solver->Init(*this);
+  ConstructTimestepper();
 }
 
 void
