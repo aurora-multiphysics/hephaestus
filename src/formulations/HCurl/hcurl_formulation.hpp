@@ -36,6 +36,8 @@ public:
     : TimeDomainEquationSystemProblemOperator(problem, std::move(equation_system))
   {
   }
+
+protected:
   void ConstructJacobianSolver() override;
 };
 

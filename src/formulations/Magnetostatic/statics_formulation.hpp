@@ -38,6 +38,7 @@ public:
   void Init() override;
   void Solve(mfem::Vector & X) override;
 
+protected:
   void ConstructJacobianSolver() override;
 
 private:
