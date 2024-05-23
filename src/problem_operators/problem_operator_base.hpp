@@ -48,11 +48,11 @@ protected:
   explicit ProblemOperatorBase(hephaestus::Problem & problem);
 
   /// Override in derived classes to construct the Jacobian solver. Called in the
-  /// constructor.
+  /// Init method.
   virtual void ConstructJacobianSolver();
 
   /// Override in derived classes to construct the non-linear solver. Called in
-  /// the constructor.
+  /// the Init method.
   virtual void ConstructNonlinearSolver();
 
   /// Set trial variables names. Override in derived classes.
