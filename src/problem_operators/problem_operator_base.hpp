@@ -26,6 +26,21 @@ public:
     return static_cast<TSolver *>(_jacobian_preconditioner.get());
   }
 
+  /// A structure for setting solver options. Defaults have been set.
+  struct SolverOptions
+  {
+    double _tolerance{1e-16};
+    double _abs_tolerance{1e-16};
+
+    unsigned int _max_iteration{1000};
+
+    int _print_level{GetGlobalPrintLevel()};
+    int _k_dim{10};
+  };
+
+  /// Sets the solver's options. Override in derived classes.
+  virtual void SetSolverOptions(SolverOptions & options);
+
 protected:
   /// Use of protected constructor to only allow construction by derived classes.
   /// All problem operator classes are built on-top of this class and it should not
