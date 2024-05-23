@@ -40,9 +40,6 @@ public:
   /// Returns a pointer to the operator. See derived classes.
   [[nodiscard]] virtual hephaestus::ProblemOperatorBase * GetOperator() const = 0;
 
-  /// Virtual method to construct the operator. Call for default problems.
-  virtual void ConstructOperator() = 0;
-
   /// Call to update on mesh change.
   virtual void Update();
 };

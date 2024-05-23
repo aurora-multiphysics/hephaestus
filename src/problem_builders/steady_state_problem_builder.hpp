@@ -27,12 +27,6 @@ public:
     _problem_operator = std::move(problem_operator);
   }
 
-  void ConstructOperator() override
-  {
-    _problem_operator.reset();
-    _problem_operator = std::make_unique<hephaestus::ProblemOperator>(*this);
-  }
-
 private:
   std::unique_ptr<hephaestus::ProblemOperator> _problem_operator{nullptr};
 };
