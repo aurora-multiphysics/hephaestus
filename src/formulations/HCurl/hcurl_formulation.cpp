@@ -117,6 +117,32 @@ HCurlProblemOperator::ConstructJacobianSolver()
   SetSolverOptions(default_options);
 }
 
+void
+HCurlProblemOperator::Update()
+{
+  // 0. Call superclass' update method.
+  TimeDomainEquationSystemProblemOperator::Update();
+
+  // 1. Rebuild jacobian preconditioner.
+  auto precond = std::make_unique<mfem::HypreAMS>(GetEquationSystem()->_test_pfespaces.at(0));
+
+  precond->SetSingularProblem();
+  precond->SetPrintLevel(-1);
+
+  // 2. Set new preconditioner.
+  auto & solver = static_cast<mfem::HyprePCG &>(*_jacobian_solver);
+  solver.SetPreconditioner(*precond);
+
+  // 3. Rebuild jacobian matrix and set.
+  GetEquationSystem()->BuildJacobian(_true_x, _true_rhs);
+
+  auto * matrix = GetEquationSystem()->JacobianOperatorHandle().As<mfem::HypreParMatrix>();
+  solver.SetOperator(*matrix);
+
+  // 4. Set preconditioner.
+  _jacobian_preconditioner = std::move(precond);
+}
+
 CurlCurlEquationSystem::CurlCurlEquationSystem(const hephaestus::InputParameters & params)
   : _h_curl_var_name(params.GetParam<std::string>("HCurlVarName")),
     _alpha_coef_name(params.GetParam<std::string>("AlphaCoefName")),

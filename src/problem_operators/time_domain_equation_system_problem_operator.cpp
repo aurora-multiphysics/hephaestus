@@ -43,33 +43,7 @@ TimeDomainEquationSystemProblemOperator::Update()
 
   TimeDomainProblemOperator::Update();
 
-  // TODO: - we need to update the size of the jacobian_solver here after the parent class' Update
-  // method is called which ensures that we've updated the _true_x, _true_rhs. This is a hacky first
-  // attempt to avoid a segfault with test_mesh_updates. This is very bad code and basically
-  // copies methods from the AFormulation problem builder used. We need to generalize this.
-  // Note that this approach will only work for this specific problem! Static pointer casts
-  // have been used to ensure that this will fail if used on a different problem.
-  {
-    GetEquationSystem()->BuildJacobian(_true_x, _true_rhs);
-
-    // Rebuild the jacobian preconditioner.
-    auto first_pfespace = GetEquationSystem()->_test_pfespaces.at(0);
-
-    auto precond = std::make_unique<mfem::HypreAMS>(first_pfespace);
-
-    precond->SetSingularProblem();
-    precond->SetPrintLevel(-1);
-
-    _jacobian_preconditioner = std::move(precond);
-
-    // Set new preconditioner.
-    static_cast<mfem::HyprePCG *>(_jacobian_solver.get())
-        ->SetPreconditioner(*static_cast<mfem::HypreSolver *>(_jacobian_preconditioner.get()));
-
-    // Set Jacobian matrix.
-    auto * matrix = GetEquationSystem()->JacobianOperatorHandle().As<mfem::HypreParMatrix>();
-    _jacobian_solver->SetOperator(*matrix);
-  }
+  // NB: derived classes should update Jacobian solver and preconditioner here.
 }
 
 void

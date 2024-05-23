@@ -39,6 +39,9 @@ public:
 
   void SetSolverOptions(SolverOptions options) override;
 
+  /// Provide a custom update method for chosen solvers.
+  void Update() override;
+
 protected:
   void ConstructJacobianSolver() override;
 };
