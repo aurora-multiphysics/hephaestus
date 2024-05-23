@@ -61,6 +61,8 @@ public:
 
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
 
+  void SetSolverOptions(SolverOptions & options) override;
+
   mfem::ParFiniteElementSpace * _h_curl_fe_space{nullptr};
   mfem::ParFiniteElementSpace * _h_div_fe_space{nullptr};
 

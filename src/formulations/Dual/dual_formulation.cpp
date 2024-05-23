@@ -214,15 +214,24 @@ DualOperator::ConstructJacobianSolver()
   precond->SetPrintLevel(-1);
 
   auto solver = std::make_unique<mfem::HyprePCG>(_problem._comm);
-
-  solver->SetTol(1e-16);
-  solver->SetAbsTol(1e-16);
-  solver->SetMaxIter(1000);
-  solver->SetPrintLevel(GetGlobalPrintLevel());
   solver->SetPreconditioner(*precond);
 
   _jacobian_preconditioner = std::move(precond);
   _jacobian_solver = std::move(solver);
+
+  SolverOptions default_options;
+  SetSolverOptions(default_options);
+}
+
+void
+DualOperator::SetSolverOptions(SolverOptions & options)
+{
+  auto & solver = static_cast<mfem::HyprePCG &>(*_jacobian_solver);
+
+  solver.SetTol(options._tolerance);
+  solver.SetAbsTol(options._abs_tolerance);
+  solver.SetMaxIter(options._max_iteration);
+  solver.SetPrintLevel(options._print_level);
 }
 
 void
