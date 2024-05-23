@@ -153,15 +153,13 @@ main(int argc, char * argv[])
   fluxmonitor->SetPriority(2);
   problem_builder->AddPostprocessor("FluxMonitor", fluxmonitor);
 
-  hephaestus::InputParameters solver_options;
-  solver_options.SetParam("AbsTolerance", float(1.0e-20));
-  solver_options.SetParam("Tolerance", float(1.0e-20));
-  solver_options.SetParam("MaxIter", (unsigned int)500);
-  problem_builder->SetSolverOptions(solver_options);
-
   problem_builder->FinalizeProblem();
 
   auto problem = problem_builder->ReturnProblem();
+
+  problem->GetOperator()->SetSolverOptions(
+      {._tolerance = 1.0e-20, ._abs_tolerance = 1.0e-20, ._max_iteration = 500});
+
   hephaestus::InputParameters exec_params;
   exec_params.SetParam("TimeStep", float(0.001));
   exec_params.SetParam("StartTime", float(0.00));

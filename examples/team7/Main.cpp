@@ -214,14 +214,12 @@ main(int argc, char * argv[])
     linesamplerwriter->SetPriority(5);
     problem_builder->AddPostprocessor("LineSamplerWriter", linesamplerwriter);
 
-    hephaestus::InputParameters solver_options;
-    solver_options.SetParam("Tolerance", float(1.0e-16));
-    solver_options.SetParam("MaxIter", (unsigned int)1000);
-    problem_builder->SetSolverOptions(solver_options);
-
     problem_builder->FinalizeProblem();
 
     auto problem = problem_builder->ReturnProblem();
+
+    problem->GetOperator()->SetSolverOptions({._tolerance = 1.0e-16, ._max_iteration = 1000});
+
     hephaestus::InputParameters exec_params;
     exec_params.SetParam("TimeStep", float(0.001));
     exec_params.SetParam("StartTime", float(0.00));
