@@ -39,11 +39,9 @@ TimeDomainEquationSystemProblemOperator::Init()
 void
 TimeDomainEquationSystemProblemOperator::Update()
 {
-  GetEquationSystem()->Update(_problem._bc_map, _problem._sources);
-
   TimeDomainProblemOperator::Update();
 
-  // NB: derived classes should update Jacobian solver and preconditioner here.
+  GetEquationSystem()->Update(_problem._bc_map, _problem._sources);
 }
 
 void
