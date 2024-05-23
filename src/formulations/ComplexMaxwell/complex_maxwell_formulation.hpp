@@ -75,6 +75,8 @@ public:
   void Update() override;
   void Solve(mfem::Vector & X) override;
 
+  void SetSolverOptions(SolverOptions & options) override {}
+
   std::string _h_curl_var_complex_name, _h_curl_var_real_name, _h_curl_var_imag_name,
       _stiffness_coef_name, _mass_coef_name, _loss_coef_name;
 
