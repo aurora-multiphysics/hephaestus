@@ -118,8 +118,6 @@ TEST_CASE_METHOD(TestAVFormRod, "TestAVFormRod", "[CheckRun]")
   auto postprocessors(params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
   auto sources(params.GetParam<hephaestus::Sources>("Sources"));
   auto outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
-  auto solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
-      "SolverOptions", hephaestus::InputParameters()));
 
   problem_builder->SetMesh(pmesh);
   problem_builder->SetBoundaryConditions(bc_map);
@@ -128,7 +126,6 @@ TEST_CASE_METHOD(TestAVFormRod, "TestAVFormRod", "[CheckRun]")
   problem_builder->SetPostprocessors(postprocessors);
   problem_builder->SetSources(sources);
   problem_builder->SetOutputs(outputs);
-  problem_builder->SetSolverOptions(solver_options);
 
   problem_builder->FinalizeProblem();
 
