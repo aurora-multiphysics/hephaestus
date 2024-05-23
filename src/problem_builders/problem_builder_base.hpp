@@ -28,7 +28,6 @@ public:
   hephaestus::AuxSolvers _postprocessors;
   hephaestus::Sources _sources;
   hephaestus::Outputs _outputs;
-  hephaestus::InputParameters _solver_options;
 
   hephaestus::FECollections _fecs;
   hephaestus::FESpaces _fespaces;
@@ -72,7 +71,6 @@ public:
   void SetPostprocessors(hephaestus::AuxSolvers & postprocessors);
   void SetSources(hephaestus::Sources & sources);
   void SetOutputs(hephaestus::Outputs & outputs);
-  void SetSolverOptions(hephaestus::InputParameters & solver_options);
   void SetCoefficients(hephaestus::Coefficients & coefficients);
 
   void AddFESpace(std::string fespace_name,

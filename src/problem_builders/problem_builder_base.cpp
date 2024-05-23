@@ -83,13 +83,6 @@ ProblemBuilder::SetOutputs(hephaestus::Outputs & outputs)
 }
 
 void
-ProblemBuilder::SetSolverOptions(hephaestus::InputParameters & solver_options)
-{
-  logger.info("Setting Solver Options");
-  GetProblem()->_solver_options = solver_options;
-}
-
-void
 ProblemBuilder::SetCoefficients(hephaestus::Coefficients & coefficients)
 {
   logger.info("Setting Coefficients");
