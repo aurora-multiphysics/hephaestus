@@ -19,13 +19,6 @@ public:
   /// Update the problem operator after a mesh change.
   virtual void Update();
 
-  /// Accessor for Jacobian preconditioner.
-  template <class TSolver>
-  TSolver * JacobianPreconditioner() const
-  {
-    return static_cast<TSolver *>(_jacobian_preconditioner.get());
-  }
-
   /// A structure for setting solver options. Defaults have been set.
   struct SolverOptions
   {
