@@ -162,8 +162,8 @@ ComplexMaxwellOperator::Init()
 void
 ComplexMaxwellOperator::Update()
 {
-  _u->Update();
   ProblemOperator::Update();
+  _u->Update();
 }
 
 void
