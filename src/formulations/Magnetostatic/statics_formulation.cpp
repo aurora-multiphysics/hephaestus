@@ -113,8 +113,7 @@ StaticsOperator::ConstructJacobianSolver()
   _jacobian_preconditioner = std::move(precond);
   _jacobian_solver = std::move(solver);
 
-  SolverOptions default_options = {._max_iteration = 100};
-  SetSolverOptions(default_options);
+  SetSolverOptions(_solver_options);
 }
 
 void
@@ -126,6 +125,8 @@ StaticsOperator::SetSolverOptions(SolverOptions options)
   solver.SetMaxIter(options._max_iteration);
   solver.SetKDim(options._k_dim);
   solver.SetPrintLevel(options._print_level);
+
+  _solver_options = options;
 }
 
 /*

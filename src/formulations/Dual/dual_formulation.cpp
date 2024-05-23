@@ -202,26 +202,6 @@ DualOperator::Update()
   // 0. Call superclass' update method.
   TimeDomainEquationSystemProblemOperator::Update();
 
-  // 1. Rebuild jacobian preconditioner.
-  auto precond = std::make_unique<mfem::HypreAMS>(GetEquationSystem()->_test_pfespaces.at(0));
-
-  precond->SetSingularProblem();
-  precond->SetPrintLevel(-1);
-
-  // 2. Set new preconditioner.
-  auto & solver = static_cast<mfem::HyprePCG &>(*_jacobian_solver);
-  solver.SetPreconditioner(*precond);
-
-  // 3. Rebuild jacobian matrix and set.
-  GetEquationSystem()->BuildJacobian(_true_x, _true_rhs);
-
-  auto * matrix = GetEquationSystem()->JacobianOperatorHandle().As<mfem::HypreParMatrix>();
-  solver.SetOperator(*matrix);
-
-  // 4. Set preconditioner.
-  _jacobian_preconditioner = std::move(precond);
-
-  // 5. Update curl.
   _curl->Update();
   _curl->Assemble();
 }
@@ -240,8 +220,7 @@ DualOperator::ConstructJacobianSolver()
   _jacobian_preconditioner = std::move(precond);
   _jacobian_solver = std::move(solver);
 
-  SolverOptions default_options;
-  SetSolverOptions(default_options);
+  SetSolverOptions(_solver_options);
 }
 
 void
@@ -253,6 +232,8 @@ DualOperator::SetSolverOptions(SolverOptions options)
   solver.SetAbsTol(options._abs_tolerance);
   solver.SetMaxIter(options._max_iteration);
   solver.SetPrintLevel(options._print_level);
+
+  _solver_options = options;
 }
 
 void

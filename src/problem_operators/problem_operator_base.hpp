@@ -102,6 +102,9 @@ protected:
   /// Store the block vector.
   std::unique_ptr<mfem::BlockVector> _block_vector{nullptr};
 
+  /// The current solver options.
+  SolverOptions _solver_options;
+
 private:
   /// Update the block vectors and offsets after a mesh change.
   void UpdateOffsets();

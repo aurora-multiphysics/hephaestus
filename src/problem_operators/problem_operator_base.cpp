@@ -17,8 +17,8 @@ ProblemOperatorBase::ConstructJacobianSolver()
   _jacobian_preconditioner = std::move(precond);
   _jacobian_solver = std::move(solver);
 
-  SolverOptions default_options;
-  SetSolverOptions(default_options);
+  // Set default options or user-options if available.
+  SetSolverOptions(_solver_options);
 }
 
 void
@@ -31,6 +31,9 @@ ProblemOperatorBase::SetSolverOptions(SolverOptions options)
   solver.SetMaxIter(options._max_iteration);
   solver.SetKDim(options._k_dim);
   solver.SetPrintLevel(options._print_level);
+
+  // Store the options for future.
+  _solver_options = options;
 }
 
 void
@@ -136,6 +139,9 @@ ProblemOperatorBase::Update()
   UpdateOffsets();
 
   UpdateBlockVector(*_block_vector);
+
+  // Update the Jacobian solver.
+  ConstructJacobianSolver();
 }
 
 }
