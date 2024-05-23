@@ -39,7 +39,7 @@ public:
   };
 
   /// Sets the solver's options. Override in derived classes.
-  virtual void SetSolverOptions(SolverOptions & options);
+  virtual void SetSolverOptions(SolverOptions options);
 
 protected:
   /// Use of protected constructor to only allow construction by derived classes.

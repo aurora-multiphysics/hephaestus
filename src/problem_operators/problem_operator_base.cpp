@@ -22,7 +22,7 @@ ProblemOperatorBase::ConstructJacobianSolver()
 }
 
 void
-ProblemOperatorBase::SetSolverOptions(SolverOptions & options)
+ProblemOperatorBase::SetSolverOptions(SolverOptions options)
 {
   auto & solver = static_cast<mfem::HypreGMRES &>(*_jacobian_solver);
 

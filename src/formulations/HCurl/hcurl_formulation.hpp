@@ -37,7 +37,7 @@ public:
   {
   }
 
-  void SetSolverOptions(SolverOptions & options) override;
+  void SetSolverOptions(SolverOptions options) override;
 
 protected:
   void ConstructJacobianSolver() override;

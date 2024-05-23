@@ -118,7 +118,7 @@ StaticsOperator::ConstructJacobianSolver()
 }
 
 void
-StaticsOperator::SetSolverOptions(SolverOptions & options)
+StaticsOperator::SetSolverOptions(SolverOptions options)
 {
   auto & solver = static_cast<mfem::HypreFGMRES &>(*_jacobian_solver);
 

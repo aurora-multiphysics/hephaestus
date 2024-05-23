@@ -89,7 +89,7 @@ HCurlFormulation::RegisterGridFunctions()
 };
 
 void
-HCurlProblemOperator::SetSolverOptions(SolverOptions & options)
+HCurlProblemOperator::SetSolverOptions(SolverOptions options)
 {
   auto & solver = static_cast<mfem::HyprePCG &>(*_jacobian_solver);
 

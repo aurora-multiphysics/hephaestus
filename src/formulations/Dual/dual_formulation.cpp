@@ -224,7 +224,7 @@ DualOperator::ConstructJacobianSolver()
 }
 
 void
-DualOperator::SetSolverOptions(SolverOptions & options)
+DualOperator::SetSolverOptions(SolverOptions options)
 {
   auto & solver = static_cast<mfem::HyprePCG &>(*_jacobian_solver);
 
