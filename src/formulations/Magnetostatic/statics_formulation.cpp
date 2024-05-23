@@ -108,15 +108,24 @@ StaticsOperator::ConstructJacobianSolver()
   precond->SetPrintLevel(-1);
 
   auto solver = std::make_unique<mfem::HypreFGMRES>(_problem._comm);
-
-  solver->SetTol(1e-16);
-  solver->SetMaxIter(100);
-  solver->SetKDim(10);
-  solver->SetPrintLevel(GetGlobalPrintLevel());
   solver->SetPreconditioner(*precond);
 
   _jacobian_preconditioner = std::move(precond);
   _jacobian_solver = std::move(solver);
+
+  SolverOptions default_options = {._max_iteration = 100};
+  SetSolverOptions(default_options);
+}
+
+void
+StaticsOperator::SetSolverOptions(SolverOptions & options)
+{
+  auto & solver = static_cast<mfem::HypreFGMRES &>(*_jacobian_solver);
+
+  solver.SetTol(options._tolerance);
+  solver.SetMaxIter(options._max_iteration);
+  solver.SetKDim(options._k_dim);
+  solver.SetPrintLevel(options._print_level);
 }
 
 /*
