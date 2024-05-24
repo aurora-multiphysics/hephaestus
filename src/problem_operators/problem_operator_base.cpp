@@ -26,24 +26,33 @@ ProblemOperatorBase::ConstructJacobianSolver()
 
   _jacobian_preconditioner = std::move(precond);
   _jacobian_solver = std::move(solver);
+}
 
-  // Set default options or user-options if available.
-  SetSolverOptions(_solver_options);
+void
+ProblemOperatorBase::ConstructJacobianSolverAndApplyOptions()
+{
+  ConstructJacobianSolver();
+  ApplySolverOptions();
 }
 
 void
 ProblemOperatorBase::SetSolverOptions(SolverOptions options)
 {
+  // Store the options for future.
+  _solver_options = std::move(options);
+  ApplySolverOptions();
+}
+
+void
+ProblemOperatorBase::ApplySolverOptions()
+{
   auto & solver = static_cast<mfem::HypreGMRES &>(*_jacobian_solver);
 
-  solver.SetTol(options._tolerance);
-  solver.SetAbsTol(options._abs_tolerance);
-  solver.SetMaxIter(options._max_iteration);
-  solver.SetKDim(options._k_dim);
-  solver.SetPrintLevel(options._print_level);
-
-  // Store the options for future.
-  _solver_options = options;
+  solver.SetTol(_solver_options._tolerance);
+  solver.SetAbsTol(_solver_options._abs_tolerance);
+  solver.SetMaxIter(_solver_options._max_iteration);
+  solver.SetKDim(_solver_options._k_dim);
+  solver.SetPrintLevel(_solver_options._print_level);
 }
 
 void
@@ -133,6 +142,7 @@ ProblemOperatorBase::Init()
   _block_vector = std::make_unique<mfem::BlockVector>();
   _solver_options = DefaultSolverOptions();
 
+  ConstructJacobianSolverAndApplyOptions();
   ConstructNonlinearSolver();
 
   SetTrialVariables();
@@ -152,7 +162,7 @@ ProblemOperatorBase::Update()
   UpdateBlockVector(*_block_vector);
 
   // Update the Jacobian solver.
-  ConstructJacobianSolver();
+  ConstructJacobianSolverAndApplyOptions();
 }
 
 }

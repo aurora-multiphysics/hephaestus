@@ -31,8 +31,8 @@ public:
     int _k_dim;
   };
 
-  /// Sets the solver's options. Override in derived classes.
-  virtual void SetSolverOptions(SolverOptions options);
+  /// Sets the solver's options. Then calls ApplySolverOptions.
+  void SetSolverOptions(SolverOptions options);
 
 protected:
   /// Use of protected constructor to only allow construction by derived classes.
@@ -43,6 +43,9 @@ protected:
   /// Override in derived classes to set default solver options. These will be
   /// applied following solver construction.
   virtual SolverOptions DefaultSolverOptions() const;
+
+  /// Applies the current solver options. Override in derived classes.
+  virtual void ApplySolverOptions();
 
   /// Override in derived classes to construct the Jacobian solver. Called in the
   /// Init method.
@@ -103,6 +106,10 @@ protected:
   SolverOptions _solver_options;
 
 private:
+  /// Calls ConstructJacobianSolver followed by ApplySolverOptions. This ensures
+  /// that ApplySolverOptions is always called!
+  void ConstructJacobianSolverAndApplyOptions();
+
   /// Update the block vectors and offsets after a mesh change.
   void UpdateOffsets();
 

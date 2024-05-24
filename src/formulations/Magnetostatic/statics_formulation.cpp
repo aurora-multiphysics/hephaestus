@@ -112,21 +112,17 @@ StaticsOperator::ConstructJacobianSolver()
 
   _jacobian_preconditioner = std::move(precond);
   _jacobian_solver = std::move(solver);
-
-  SetSolverOptions(_solver_options);
 }
 
 void
-StaticsOperator::SetSolverOptions(SolverOptions options)
+StaticsOperator::ApplySolverOptions()
 {
   auto & solver = static_cast<mfem::HypreFGMRES &>(*_jacobian_solver);
 
-  solver.SetTol(options._tolerance);
-  solver.SetMaxIter(options._max_iteration);
-  solver.SetKDim(options._k_dim);
-  solver.SetPrintLevel(options._print_level);
-
-  _solver_options = options;
+  solver.SetTol(_solver_options._tolerance);
+  solver.SetMaxIter(_solver_options._max_iteration);
+  solver.SetKDim(_solver_options._k_dim);
+  solver.SetPrintLevel(_solver_options._print_level);
 }
 
 /*

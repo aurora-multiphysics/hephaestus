@@ -219,21 +219,17 @@ DualOperator::ConstructJacobianSolver()
 
   _jacobian_preconditioner = std::move(precond);
   _jacobian_solver = std::move(solver);
-
-  SetSolverOptions(_solver_options);
 }
 
 void
-DualOperator::SetSolverOptions(SolverOptions options)
+DualOperator::ApplySolverOptions()
 {
   auto & solver = static_cast<mfem::HyprePCG &>(*_jacobian_solver);
 
-  solver.SetTol(options._tolerance);
-  solver.SetAbsTol(options._abs_tolerance);
-  solver.SetMaxIter(options._max_iteration);
-  solver.SetPrintLevel(options._print_level);
-
-  _solver_options = options;
+  solver.SetTol(_solver_options._tolerance);
+  solver.SetAbsTol(_solver_options._abs_tolerance);
+  solver.SetMaxIter(_solver_options._max_iteration);
+  solver.SetPrintLevel(_solver_options._print_level);
 }
 
 void
