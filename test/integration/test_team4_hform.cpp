@@ -286,7 +286,7 @@ TEST_CASE_METHOD(TestTEAM4HForm, "TestTEAM4HFormMeshUpdates", "[CheckRun]")
 
     if (irefinement != (imax_refinement - 1))
     {
-      mesh.UniformRefinement();
+      pmesh->UniformRefinement();
       problem->Update();
     }
   }
