@@ -25,8 +25,6 @@ EquationSystemProblemOperator::Update()
 {
   GetEquationSystem()->Update(_problem._bc_map, _problem._sources);
 
-  // TODO: - rebuild jacobian, jacobian_solver, etc...
-
   ProblemOperator::Update();
 }
 
