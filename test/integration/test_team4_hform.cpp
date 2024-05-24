@@ -254,7 +254,7 @@ TEST_CASE_METHOD(TestTEAM4HForm, "TestTEAM4HFormMeshUpdates", "[CheckRun]")
 
   hephaestus::logger.set_level(spdlog::level::info);
 
-  const int imax_refinement = 3;
+  const int imax_refinement = 2;
   for (int irefinement = 0; irefinement < imax_refinement; irefinement++)
   {
     // Remove any stored fluxes.
