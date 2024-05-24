@@ -74,6 +74,9 @@ protected:
   /// Returns the number of trial variables.
   int GetTrialVariablesSize() const;
 
+  /// Solver options accessor.
+  const SolverOptions & GetSolverOptions() const { return _solver_options; }
+
   // Reference to the current problem.
   hephaestus::Problem & _problem;
 
@@ -102,9 +105,6 @@ protected:
   /// Store the block vector.
   std::unique_ptr<mfem::BlockVector> _block_vector{nullptr};
 
-  /// The current solver options.
-  SolverOptions _solver_options;
-
 private:
   /// Calls ConstructJacobianSolver followed by ApplySolverOptions. This ensures
   /// that ApplySolverOptions is always called!
@@ -115,5 +115,8 @@ private:
 
   /// Update a block vector. Should be called after the offsets have been updated.
   void UpdateBlockVector(mfem::BlockVector & X);
+
+  /// The current solver options.
+  SolverOptions _solver_options;
 };
 }

@@ -119,10 +119,10 @@ StaticsOperator::ApplySolverOptions()
 {
   auto & solver = static_cast<mfem::HypreFGMRES &>(*_jacobian_solver);
 
-  solver.SetTol(_solver_options._tolerance);
-  solver.SetMaxIter(_solver_options._max_iteration);
-  solver.SetKDim(_solver_options._k_dim);
-  solver.SetPrintLevel(_solver_options._print_level);
+  solver.SetTol(GetSolverOptions()._tolerance);
+  solver.SetMaxIter(GetSolverOptions()._max_iteration);
+  solver.SetKDim(GetSolverOptions()._k_dim);
+  solver.SetPrintLevel(GetSolverOptions()._print_level);
 }
 
 /*

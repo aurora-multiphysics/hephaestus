@@ -226,10 +226,10 @@ DualOperator::ApplySolverOptions()
 {
   auto & solver = static_cast<mfem::HyprePCG &>(*_jacobian_solver);
 
-  solver.SetTol(_solver_options._tolerance);
-  solver.SetAbsTol(_solver_options._abs_tolerance);
-  solver.SetMaxIter(_solver_options._max_iteration);
-  solver.SetPrintLevel(_solver_options._print_level);
+  solver.SetTol(GetSolverOptions()._tolerance);
+  solver.SetAbsTol(GetSolverOptions()._abs_tolerance);
+  solver.SetMaxIter(GetSolverOptions()._max_iteration);
+  solver.SetPrintLevel(GetSolverOptions()._print_level);
 }
 
 void
