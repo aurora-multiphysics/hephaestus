@@ -28,7 +28,6 @@ public:
   hephaestus::AuxSolvers _postprocessors;
   hephaestus::Sources _sources;
   hephaestus::Outputs _outputs;
-  hephaestus::InputParameters _solver_options;
 
   hephaestus::FECollections _fecs;
   hephaestus::FESpaces _fespaces;
@@ -40,9 +39,6 @@ public:
 
   /// Returns a pointer to the operator. See derived classes.
   [[nodiscard]] virtual hephaestus::ProblemOperatorBase * GetOperator() const = 0;
-
-  /// Virtual method to construct the operator. Call for default problems.
-  virtual void ConstructOperator() = 0;
 
   /// Call to update on mesh change.
   virtual void Update();
@@ -72,9 +68,6 @@ public:
   void SetPostprocessors(hephaestus::AuxSolvers & postprocessors);
   void SetSources(hephaestus::Sources & sources);
   void SetOutputs(hephaestus::Outputs & outputs);
-  void SetSolverOptions(hephaestus::InputParameters & solver_options);
-  void SetJacobianPreconditioner(std::unique_ptr<mfem::Solver> preconditioner);
-  void SetJacobianSolver(std::unique_ptr<mfem::Solver> solver);
   void SetCoefficients(hephaestus::Coefficients & coefficients);
 
   void AddFESpace(std::string fespace_name,
@@ -93,11 +86,7 @@ public:
   virtual void RegisterAuxSolvers() = 0;
   virtual void RegisterCoefficients() = 0;
 
-  virtual void ConstructJacobianSolver();
-  virtual void ConstructNonlinearSolver();
-
   virtual void ConstructOperator() = 0;
-  virtual void ConstructTimestepper() = 0;
 
   virtual void InitializeSources();
 
@@ -114,39 +103,6 @@ public:
 protected:
   /// Protected constructor. Derived classes must call this constructor.
   ProblemBuilder(hephaestus::Problem * problem) : _problem{problem} {}
-
-  /// Supported Jacobian solver types.
-  enum class SolverType
-  {
-    HYPRE_PCG,
-    HYPRE_GMRES,
-    HYPRE_FGMRES,
-    HYPRE_AMG,
-    SUPER_LU
-  };
-
-  /// Structure containing default parameters which can be passed to @a ConstructJacobianSolverWithOptions.
-  /// These will be used if the user has not supplied their own values.
-  struct SolverParams
-  {
-    double _tolerance;
-    double _abs_tolerance;
-
-    unsigned int _max_iteration;
-
-    int _print_level;
-    int _k_dim;
-  };
-
-  /// Called in @a ConstructJacobianSolver. This will create a solver of the chosen type and use the user's input
-  /// parameters if they have been provided.
-  void ConstructJacobianSolverWithOptions(SolverType type,
-                                          SolverParams default_params = {
-                                              ._tolerance = 1e-16,
-                                              ._abs_tolerance = 1e-16,
-                                              ._max_iteration = 1000,
-                                              ._print_level = GetGlobalPrintLevel(),
-                                              ._k_dim = 10});
 
   /// Overridden in derived classes.
   [[nodiscard]] virtual hephaestus::Problem * GetProblem() const = 0;

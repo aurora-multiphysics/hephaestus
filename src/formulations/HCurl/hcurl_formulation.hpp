@@ -18,8 +18,6 @@ public:
 
   void ConstructOperator() override;
 
-  void ConstructJacobianSolver() override;
-
   void RegisterGridFunctions() override;
 
   void RegisterCoefficients() override;
@@ -28,6 +26,21 @@ protected:
   const std::string _alpha_coef_name;
   const std::string _beta_coef_name;
   const std::string _h_curl_var_name;
+};
+
+class HCurlProblemOperator : public TimeDomainEquationSystemProblemOperator
+{
+public:
+  HCurlProblemOperator(hephaestus::Problem & problem,
+                       std::unique_ptr<hephaestus::TimeDependentEquationSystem> equation_system)
+    : TimeDomainEquationSystemProblemOperator(problem, std::move(equation_system))
+  {
+  }
+
+protected:
+  void ApplySolverOptions() override;
+
+  void ConstructJacobianSolver() override;
 };
 
 class CurlCurlEquationSystem : public TimeDependentEquationSystem

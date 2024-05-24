@@ -35,7 +35,8 @@ TimeDomainProblemBuilder::RegisterGridFunctions()
 void
 TimeDomainProblemBuilder::ConstructOperator()
 {
-  GetProblem()->ConstructOperator();
+  auto problem_operator = std::make_unique<hephaestus::TimeDomainProblemOperator>(*GetProblem());
+  GetProblem()->SetOperator(std::move(problem_operator));
 }
 
 void
@@ -43,15 +44,6 @@ TimeDomainProblemBuilder::InitializeOperator()
 {
   ProblemBuilder::InitializeOperator();
   GetProblem()->GetOperator()->SetTime(0.0);
-}
-
-void
-TimeDomainProblemBuilder::ConstructTimestepper()
-{
-  auto ode_solver = std::make_unique<mfem::BackwardEulerSolver>();
-  ode_solver->Init(*GetProblem()->GetOperator());
-
-  GetProblem()->GetOperator()->SetODESolver(std::move(ode_solver));
 }
 
 } // namespace hephaestus

@@ -27,12 +27,6 @@ public:
     _problem_operator = std::move(problem_operator);
   }
 
-  void ConstructOperator() override
-  {
-    _problem_operator.reset();
-    _problem_operator = std::make_unique<hephaestus::ProblemOperator>(*this);
-  }
-
 private:
   std::unique_ptr<hephaestus::ProblemOperator> _problem_operator{nullptr};
 };
@@ -55,8 +49,6 @@ public:
   void RegisterCoefficients() override {}
 
   void ConstructOperator() override;
-
-  void ConstructTimestepper() override {}
 
 protected:
   // NB: constructor for derived classes.

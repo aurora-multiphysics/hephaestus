@@ -38,8 +38,6 @@ public:
 
   ~ComplexMaxwellFormulation() override = default;
 
-  void ConstructJacobianSolver() override;
-
   void ConstructOperator() override;
 
   void RegisterGridFunctions() override;
@@ -88,6 +86,11 @@ public:
   mfem::Coefficient * _loss_coef{nullptr};  // omega sigma
 
   mfem::Array<int> _ess_bdr_tdofs;
+
+protected:
+  void ApplySolverOptions() override {}
+
+  void ConstructJacobianSolver() override;
 };
 
 } // namespace hephaestus

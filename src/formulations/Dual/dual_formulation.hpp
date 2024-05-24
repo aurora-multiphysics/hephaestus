@@ -16,8 +16,6 @@ public:
 
   ~DualFormulation() override = default;
 
-  void ConstructJacobianSolver() override;
-
   void ConstructOperator() override;
 
   void RegisterGridFunctions() override;
@@ -72,6 +70,10 @@ public:
   mfem::ParGridFunction * _dv{nullptr}; // HDiv vector field
 
 protected:
+  void ConstructJacobianSolver() override;
+
+  void ApplySolverOptions() override;
+
   int GetSolutionVectorSize() const override;
 
   std::unique_ptr<mfem::ParDiscreteLinearOperator> _curl;

@@ -135,10 +135,6 @@ protected:
         std::make_shared<hephaestus::DivFreeSource>(
             "source", "source", "HCurl", "H1", "electric_potential", current_solver_options));
 
-    hephaestus::InputParameters solver_options;
-    solver_options.SetParam("Tolerance", float(1.0e-16));
-    solver_options.SetParam("MaxIter", (unsigned int)1000);
-
     hephaestus::InputParameters params;
     params.SetParam("UseGLVis", true);
 
@@ -147,7 +143,6 @@ protected:
     params.SetParam("Coefficients", coefficients);
     params.SetParam("Outputs", outputs);
     params.SetParam("Sources", sources);
-    params.SetParam("SolverOptions", solver_options);
     hephaestus::logger.info("Created params ");
     return params;
   }
@@ -166,8 +161,6 @@ TEST_CASE_METHOD(TestComplexTeam7, "TestComplexTeam7", "[CheckRun]")
   auto coefficients(params.GetParam<hephaestus::Coefficients>("Coefficients"));
   auto sources(params.GetParam<hephaestus::Sources>("Sources"));
   auto outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
-  auto solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
-      "SolverOptions", hephaestus::InputParameters()));
 
   auto problem_builder =
       std::make_unique<hephaestus::ComplexAFormulation>("magnetic_reluctivity",
@@ -192,7 +185,6 @@ TEST_CASE_METHOD(TestComplexTeam7, "TestComplexTeam7", "[CheckRun]")
   problem_builder->SetCoefficients(coefficients);
   problem_builder->SetSources(sources);
   problem_builder->SetOutputs(outputs);
-  problem_builder->SetSolverOptions(solver_options);
 
   // Call LineSampler to save values
   std::string gridfunction_name("magnetic_flux_density_real");
@@ -219,6 +211,8 @@ TEST_CASE_METHOD(TestComplexTeam7, "TestComplexTeam7", "[CheckRun]")
   problem_builder->FinalizeProblem();
 
   auto problem = problem_builder->ReturnProblem();
+
+  problem->GetOperator()->SetSolverOptions({._tolerance = 1.0e-16, ._max_iteration = 1000});
 
   hephaestus::InputParameters exec_params;
   exec_params.SetParam("Problem", static_cast<hephaestus::SteadyStateProblem *>(problem.get()));

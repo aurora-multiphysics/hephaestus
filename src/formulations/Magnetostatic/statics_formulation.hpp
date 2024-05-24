@@ -14,8 +14,6 @@ public:
 
   ~StaticsFormulation() override = default;
 
-  void ConstructJacobianSolver() override;
-
   void ConstructOperator() override;
 
   void RegisterGridFunctions() override;
@@ -39,6 +37,11 @@ public:
   void SetTrialVariableNames() override;
   void Init() override;
   void Solve(mfem::Vector & X) override;
+
+protected:
+  void ApplySolverOptions() override;
+
+  void ConstructJacobianSolver() override;
 
 private:
   std::string _h_curl_var_name, _stiffness_coef_name;

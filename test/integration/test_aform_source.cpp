@@ -110,10 +110,6 @@ protected:
                                                                  current_solver_options,
                                                                  false));
 
-    hephaestus::InputParameters solver_options;
-    solver_options.SetParam("Tolerance", float(1.0e-16));
-    solver_options.SetParam("MaxIter", (unsigned int)1000);
-
     hephaestus::InputParameters params;
     params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
     params.SetParam("BoundaryConditions", bc_map);
@@ -121,7 +117,6 @@ protected:
     params.SetParam("PostProcessors", postprocessors);
     params.SetParam("Outputs", outputs);
     params.SetParam("Sources", sources);
-    params.SetParam("SolverOptions", solver_options);
 
     return params;
   }
@@ -156,8 +151,6 @@ TEST_CASE_METHOD(TestAFormSource, "TestAForm", "[CheckRun]")
     auto postprocessors(params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
     auto sources(params.GetParam<hephaestus::Sources>("Sources"));
     auto outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
-    auto solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
-        "SolverOptions", hephaestus::InputParameters()));
 
     problem_builder->SetMesh(pmesh);
     problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P2"));
@@ -169,11 +162,12 @@ TEST_CASE_METHOD(TestAFormSource, "TestAForm", "[CheckRun]")
     problem_builder->SetPostprocessors(postprocessors);
     problem_builder->SetSources(sources);
     problem_builder->SetOutputs(outputs);
-    problem_builder->SetSolverOptions(solver_options);
 
     problem_builder->FinalizeProblem();
 
     auto problem = problem_builder->ReturnProblem();
+
+    problem->GetOperator()->SetSolverOptions({._tolerance = 1.0e-16, ._max_iteration = 1000});
 
     hephaestus::InputParameters exec_params;
     exec_params.SetParam("TimeStep", float(0.05));

@@ -6,7 +6,8 @@ namespace hephaestus
 void
 SteadyStateProblemBuilder::ConstructOperator()
 {
-  GetProblem()->ConstructOperator();
+  auto problem_operator = std::make_unique<hephaestus::ProblemOperator>(*GetProblem());
+  GetProblem()->SetOperator(std::move(problem_operator));
 }
 
 } // namespace hephaestus

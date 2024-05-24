@@ -38,21 +38,6 @@ StaticsFormulation::StaticsFormulation(std::string alpha_coef_name, std::string 
 }
 
 void
-StaticsFormulation::ConstructJacobianSolver()
-{
-  auto precond = std::make_unique<mfem::HypreAMS>(
-      GetProblem()->_gridfunctions.Get(_h_curl_var_name)->ParFESpace());
-
-  precond->SetSingularProblem();
-  precond->SetPrintLevel(-1);
-
-  GetProblem()->GetOperator()->SetJacobianPreconditioner(std::move(precond));
-
-  ConstructJacobianSolverWithOptions(SolverType::HYPRE_FGMRES,
-                                     {._max_iteration = 100, ._k_dim = 10});
-}
-
-void
 StaticsFormulation::ConstructOperator()
 {
   auto new_operator = std::make_unique<hephaestus::StaticsOperator>(
@@ -111,6 +96,33 @@ StaticsOperator::Init()
 {
   _stiff_coef = _problem._coefficients._scalars.Get(_stiffness_coef_name);
   ProblemOperator::Init();
+}
+
+void
+StaticsOperator::ConstructJacobianSolver()
+{
+  auto precond =
+      std::make_unique<mfem::HypreAMS>(_problem._gridfunctions.Get(_h_curl_var_name)->ParFESpace());
+
+  precond->SetSingularProblem();
+  precond->SetPrintLevel(-1);
+
+  auto solver = std::make_unique<mfem::HypreFGMRES>(_problem._comm);
+  solver->SetPreconditioner(*precond);
+
+  _jacobian_preconditioner = std::move(precond);
+  _jacobian_solver = std::move(solver);
+}
+
+void
+StaticsOperator::ApplySolverOptions()
+{
+  auto & solver = static_cast<mfem::HypreFGMRES &>(*_jacobian_solver);
+
+  solver.SetTol(GetSolverOptions()._tolerance);
+  solver.SetMaxIter(GetSolverOptions()._max_iteration);
+  solver.SetKDim(GetSolverOptions()._k_dim);
+  solver.SetPrintLevel(GetSolverOptions()._print_level);
 }
 
 /*

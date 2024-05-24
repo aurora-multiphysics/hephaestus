@@ -3,9 +3,67 @@
 namespace hephaestus
 {
 
-ProblemOperatorBase::ProblemOperatorBase(hephaestus::Problem & problem) : _problem{problem}
+ProblemOperatorBase::ProblemOperatorBase(hephaestus::Problem & problem) : _problem{problem} {}
+
+ProblemOperatorBase::SolverOptions
+ProblemOperatorBase::DefaultSolverOptions() const
 {
-  _block_vector = std::make_unique<mfem::BlockVector>();
+  return {._tolerance = 1e-16,
+          ._abs_tolerance = 1e-16,
+          ._max_iteration = 1000,
+          ._print_level = GetGlobalPrintLevel(),
+          ._k_dim = 10};
+}
+
+void
+ProblemOperatorBase::ConstructJacobianSolver()
+{
+  auto precond = std::make_unique<mfem::HypreBoomerAMG>();
+  precond->SetPrintLevel(GetGlobalPrintLevel());
+
+  auto solver = std::make_unique<mfem::HypreGMRES>(_problem._comm);
+  solver->SetPreconditioner(*precond);
+
+  _jacobian_preconditioner = std::move(precond);
+  _jacobian_solver = std::move(solver);
+}
+
+void
+ProblemOperatorBase::ConstructJacobianSolverAndApplyOptions()
+{
+  ConstructJacobianSolver();
+  ApplySolverOptions();
+}
+
+void
+ProblemOperatorBase::SetSolverOptions(SolverOptions options)
+{
+  // Store the options for future.
+  _solver_options = std::move(options);
+  ApplySolverOptions();
+}
+
+void
+ProblemOperatorBase::ApplySolverOptions()
+{
+  auto & solver = static_cast<mfem::HypreGMRES &>(*_jacobian_solver);
+
+  solver.SetTol(GetSolverOptions()._tolerance);
+  solver.SetAbsTol(GetSolverOptions()._abs_tolerance);
+  solver.SetMaxIter(GetSolverOptions()._max_iteration);
+  solver.SetKDim(GetSolverOptions()._k_dim);
+  solver.SetPrintLevel(GetSolverOptions()._print_level);
+}
+
+void
+ProblemOperatorBase::ConstructNonlinearSolver()
+{
+  _nonlinear_solver = std::make_unique<mfem::NewtonSolver>(_problem._comm);
+
+  // Defaults to one iteration, without further nonlinear iterations
+  _nonlinear_solver->SetRelTol(0.0);
+  _nonlinear_solver->SetAbsTol(0.0);
+  _nonlinear_solver->SetMaxIter(1);
 }
 
 void
@@ -81,6 +139,12 @@ ProblemOperatorBase::UpdateBlockVector(mfem::BlockVector & X)
 void
 ProblemOperatorBase::Init()
 {
+  _block_vector = std::make_unique<mfem::BlockVector>();
+  _solver_options = DefaultSolverOptions();
+
+  ConstructJacobianSolverAndApplyOptions();
+  ConstructNonlinearSolver();
+
   SetTrialVariables();
 
   UpdateOffsets();
@@ -96,6 +160,9 @@ ProblemOperatorBase::Update()
   UpdateOffsets();
 
   UpdateBlockVector(*_block_vector);
+
+  // Update the Jacobian solver.
+  ConstructJacobianSolverAndApplyOptions();
 }
 
 }

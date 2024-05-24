@@ -159,15 +159,13 @@ main(int argc, char * argv[])
   hephaestus::Outputs outputs = defineOutputs();
   problem_builder->SetOutputs(outputs);
 
-  hephaestus::InputParameters solver_options;
-  solver_options.SetParam("Tolerance", float(1.0e-10));
-  solver_options.SetParam("AbsTolerance", float(1.0e-10));
-  solver_options.SetParam("MaxIter", (unsigned int)1000);
-  problem_builder->SetSolverOptions(solver_options);
-
   problem_builder->FinalizeProblem();
 
   auto problem = problem_builder->ReturnProblem();
+
+  problem->GetOperator()->SetSolverOptions(
+      {._tolerance = 1.0e-10, ._abs_tolerance = 1.0e-10, ._max_iteration = 1000});
+
   hephaestus::InputParameters exec_params;
   exec_params.SetParam("VisualisationSteps", int(1));
   exec_params.SetParam("UseGLVis", true);

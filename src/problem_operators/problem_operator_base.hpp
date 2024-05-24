@@ -19,36 +19,41 @@ public:
   /// Update the problem operator after a mesh change.
   virtual void Update();
 
-  /// Set the Jacobian preconditioner.
-  void SetJacobianPreconditioner(std::unique_ptr<mfem::Solver> preconditioner)
+  /// A structure for setting solver options.
+  struct SolverOptions
   {
-    _jacobian_preconditioner = std::move(preconditioner);
-  }
+    double _tolerance;
+    double _abs_tolerance;
 
-  /// Set the Jacobian solver.
-  void SetJacobianSolver(std::unique_ptr<mfem::Solver> solver)
-  {
-    _jacobian_solver = std::move(solver);
-  }
+    unsigned int _max_iteration;
 
-  /// Set the nonlinear solver.
-  void SetNonlinearSolver(std::unique_ptr<mfem::NewtonSolver> nl_solver)
-  {
-    _nonlinear_solver = std::move(nl_solver);
-  }
+    int _print_level;
+    int _k_dim;
+  };
 
-  /// Accessor for Jacobian preconditioner.
-  template <class TSolver>
-  TSolver * JacobianPreconditioner() const
-  {
-    return static_cast<TSolver *>(_jacobian_preconditioner.get());
-  }
+  /// Sets the solver's options. Then calls ApplySolverOptions.
+  void SetSolverOptions(SolverOptions options);
 
 protected:
   /// Use of protected constructor to only allow construction by derived classes.
   /// All problem operator classes are built on-top of this class and it should not
   /// be possible to use directly.
   explicit ProblemOperatorBase(hephaestus::Problem & problem);
+
+  /// Override in derived classes to set default solver options. These will be
+  /// applied following solver construction.
+  virtual SolverOptions DefaultSolverOptions() const;
+
+  /// Applies the current solver options. Override in derived classes.
+  virtual void ApplySolverOptions();
+
+  /// Override in derived classes to construct the Jacobian solver. Called in the
+  /// Init method.
+  virtual void ConstructJacobianSolver();
+
+  /// Override in derived classes to construct the non-linear solver. Called in
+  /// the Init method.
+  virtual void ConstructNonlinearSolver();
 
   /// Set trial variables names. Override in derived classes.
   virtual void SetTrialVariableNames() {}
@@ -68,6 +73,9 @@ protected:
 
   /// Returns the number of trial variables.
   int GetTrialVariablesSize() const;
+
+  /// Solver options accessor.
+  const SolverOptions & GetSolverOptions() const { return _solver_options; }
 
   // Reference to the current problem.
   hephaestus::Problem & _problem;
@@ -98,10 +106,17 @@ protected:
   std::unique_ptr<mfem::BlockVector> _block_vector{nullptr};
 
 private:
+  /// Calls ConstructJacobianSolver followed by ApplySolverOptions. This ensures
+  /// that ApplySolverOptions is always called!
+  void ConstructJacobianSolverAndApplyOptions();
+
   /// Update the block vectors and offsets after a mesh change.
   void UpdateOffsets();
 
   /// Update a block vector. Should be called after the offsets have been updated.
   void UpdateBlockVector(mfem::BlockVector & X);
+
+  /// The current solver options.
+  SolverOptions _solver_options;
 };
 }

@@ -20,6 +20,25 @@ GetTimeDerivativeNames(std::vector<std::string> gridfunction_names)
   return time_derivative_names;
 }
 
+TimeDomainProblemOperator::TimeDomainProblemOperator(hephaestus::Problem & problem)
+  : ProblemOperatorBase(problem)
+{
+}
+
+void
+TimeDomainProblemOperator::ConstructTimestepper()
+{
+  _ode_solver = std::make_unique<mfem::BackwardEulerSolver>();
+  _ode_solver->Init(*this);
+}
+
+void
+TimeDomainProblemOperator::Init()
+{
+  ProblemOperatorBase::Init();
+  ConstructTimestepper();
+}
+
 void
 TimeDomainProblemOperator::Update()
 {
@@ -27,10 +46,7 @@ TimeDomainProblemOperator::Update()
 
   // The dimensions of the problem operator have now changed. We must call the
   // ODE solver's Init method to resize its internal vector.
-  if (_ode_solver)
-  {
-    _ode_solver->Init(*this);
-  }
+  _ode_solver->Init(*this);
 }
 
 } // namespace hephaestus

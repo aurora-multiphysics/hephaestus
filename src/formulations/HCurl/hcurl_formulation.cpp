@@ -62,22 +62,8 @@ HCurlFormulation::ConstructOperator()
 
   auto equation_system = std::make_unique<hephaestus::CurlCurlEquationSystem>(weak_form_params);
 
-  GetProblem()->SetOperator(std::make_unique<hephaestus::TimeDomainEquationSystemProblemOperator>(
+  GetProblem()->SetOperator(std::make_unique<hephaestus::HCurlProblemOperator>(
       *GetProblem(), std::move(equation_system)));
-}
-
-void
-HCurlFormulation::ConstructJacobianSolver()
-{
-  auto precond =
-      std::make_unique<mfem::HypreAMS>(GetProblem()->GetEquationSystem()->_test_pfespaces.at(0));
-
-  precond->SetSingularProblem();
-  precond->SetPrintLevel(-1);
-
-  GetProblem()->GetOperator()->SetJacobianPreconditioner(std::move(precond));
-
-  ConstructJacobianSolverWithOptions(SolverType::HYPRE_PCG);
 }
 
 void
@@ -101,6 +87,32 @@ HCurlFormulation::RegisterGridFunctions()
   // Register time derivatives
   TimeDomainEquationSystemProblemBuilder::RegisterGridFunctions();
 };
+
+void
+HCurlProblemOperator::ApplySolverOptions()
+{
+  auto & solver = static_cast<mfem::HyprePCG &>(*_jacobian_solver);
+
+  solver.SetTol(GetSolverOptions()._tolerance);
+  solver.SetAbsTol(GetSolverOptions()._abs_tolerance);
+  solver.SetMaxIter(GetSolverOptions()._max_iteration);
+  solver.SetPrintLevel(GetSolverOptions()._print_level);
+}
+
+void
+HCurlProblemOperator::ConstructJacobianSolver()
+{
+  auto precond = std::make_unique<mfem::HypreAMS>(GetEquationSystem()->_test_pfespaces.at(0));
+
+  precond->SetSingularProblem();
+  precond->SetPrintLevel(-1);
+
+  auto solver = std::make_unique<mfem::HyprePCG>(_problem._comm);
+  solver->SetPreconditioner(*precond);
+
+  _jacobian_preconditioner = std::move(precond);
+  _jacobian_solver = std::move(solver);
+}
 
 CurlCurlEquationSystem::CurlCurlEquationSystem(const hephaestus::InputParameters & params)
   : _h_curl_var_name(params.GetParam<std::string>("HCurlVarName")),

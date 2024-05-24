@@ -25,12 +25,6 @@ public:
     _problem_operator = std::move(problem_operator);
   }
 
-  void ConstructOperator() override
-  {
-    _problem_operator.reset();
-    _problem_operator = std::make_unique<hephaestus::TimeDomainProblemOperator>(*this);
-  }
-
 private:
   std::unique_ptr<hephaestus::TimeDomainProblemOperator> _problem_operator{nullptr};
 };
@@ -60,8 +54,6 @@ public:
   void ConstructOperator() override;
 
   void InitializeOperator() override;
-
-  void ConstructTimestepper() override;
 
 protected:
   /// NB: constructor called in derived classes.

@@ -24,15 +24,6 @@ public:
     SteadyStateProblem::SetOperator(std::move(problem_operator));
   }
 
-  void ConstructOperator() override
-  {
-    auto equation_system = std::make_unique<hephaestus::EquationSystem>();
-    auto problem_operator = std::make_unique<hephaestus::EquationSystemProblemOperator>(
-        *this, std::move(equation_system));
-
-    SetOperator(std::move(problem_operator));
-  }
-
   [[nodiscard]] hephaestus::EquationSystem * GetEquationSystem() const override
   {
     return GetOperator()->GetEquationSystem();
@@ -53,6 +44,8 @@ public:
   ~SteadyStateEquationSystemProblemBuilder() override = default;
 
   auto ReturnProblem() { return ProblemBuilder::ReturnProblem<SteadyStateEquationSystemProblem>(); }
+
+  void ConstructOperator() override;
 
 protected:
   [[nodiscard]] hephaestus::SteadyStateEquationSystemProblem * GetProblem() const override

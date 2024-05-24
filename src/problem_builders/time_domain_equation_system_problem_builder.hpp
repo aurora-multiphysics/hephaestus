@@ -25,15 +25,6 @@ public:
     TimeDomainProblem::SetOperator(std::move(problem_operator));
   }
 
-  void ConstructOperator() override
-  {
-    auto equation_system = std::make_unique<hephaestus::TimeDependentEquationSystem>();
-    auto problem_operator = std::make_unique<hephaestus::TimeDomainEquationSystemProblemOperator>(
-        *this, std::move(equation_system));
-
-    SetOperator(std::move(problem_operator));
-  }
-
   [[nodiscard]] TimeDependentEquationSystem * GetEquationSystem() const override
   {
     return GetOperator()->GetEquationSystem();
@@ -54,6 +45,8 @@ public:
   ~TimeDomainEquationSystemProblemBuilder() override = default;
 
   auto ReturnProblem() { return ProblemBuilder::ReturnProblem<TimeDomainEquationSystemProblem>(); }
+
+  void ConstructOperator() override;
 
 protected:
   [[nodiscard]] hephaestus::TimeDomainEquationSystemProblem * GetProblem() const override
