@@ -5,6 +5,16 @@ namespace hephaestus
 
 ProblemOperatorBase::ProblemOperatorBase(hephaestus::Problem & problem) : _problem{problem} {}
 
+ProblemOperatorBase::SolverOptions
+ProblemOperatorBase::DefaultSolverOptions() const
+{
+  return {._tolerance = 1e-16,
+          ._abs_tolerance = 1e-16,
+          ._max_iteration = 1000,
+          ._print_level = GetGlobalPrintLevel(),
+          ._k_dim = 10};
+}
+
 void
 ProblemOperatorBase::ConstructJacobianSolver()
 {
@@ -121,7 +131,8 @@ void
 ProblemOperatorBase::Init()
 {
   _block_vector = std::make_unique<mfem::BlockVector>();
-  ConstructJacobianSolver();
+  _solver_options = DefaultSolverOptions();
+
   ConstructNonlinearSolver();
 
   SetTrialVariables();

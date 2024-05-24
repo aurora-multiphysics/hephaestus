@@ -19,16 +19,16 @@ public:
   /// Update the problem operator after a mesh change.
   virtual void Update();
 
-  /// A structure for setting solver options. Defaults have been set.
+  /// A structure for setting solver options.
   struct SolverOptions
   {
-    double _tolerance{1e-16};
-    double _abs_tolerance{1e-16};
+    double _tolerance;
+    double _abs_tolerance;
 
-    unsigned int _max_iteration{1000};
+    unsigned int _max_iteration;
 
-    int _print_level{GetGlobalPrintLevel()};
-    int _k_dim{10};
+    int _print_level;
+    int _k_dim;
   };
 
   /// Sets the solver's options. Override in derived classes.
@@ -39,6 +39,10 @@ protected:
   /// All problem operator classes are built on-top of this class and it should not
   /// be possible to use directly.
   explicit ProblemOperatorBase(hephaestus::Problem & problem);
+
+  /// Override in derived classes to set default solver options. These will be
+  /// applied following solver construction.
+  virtual SolverOptions DefaultSolverOptions() const;
 
   /// Override in derived classes to construct the Jacobian solver. Called in the
   /// Init method.
