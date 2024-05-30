@@ -211,18 +211,24 @@ protected:
     REQUIRE(peak_current_time > min_peak_current_time);
     REQUIRE(peak_current_time < max_peak_current_time);
   }
+
+  /// Calls Reset method of FluxMonitorAux.
+  void ResetFluxMonitor(const hephaestus::TimeDomainProblem & problem)
+  {
+    auto fluxmonitor = problem._postprocessors.Get<hephaestus::FluxMonitorAux>("FluxMonitor");
+
+    fluxmonitor->Reset();
+  }
 };
 
 TEST_CASE_METHOD(TestTEAM4HForm, "TestTEAM4HForm", "[CheckRun]")
 {
   auto problem_builder = ConfigureProblem();
-
   auto problem = problem_builder->ReturnProblem();
 
   hephaestus::InputParameters exec_params = DefineExecutionerParameters(*problem);
 
   auto executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
-
   executioner->Execute();
 
   double peak_current, peak_current_time;
@@ -235,22 +241,24 @@ TEST_CASE_METHOD(TestTEAM4HForm, "TestTEAM4HForm", "[CheckRun]")
 TEST_CASE_METHOD(TestTEAM4HForm, "TestTEAM4HFormMeshUpdates", "[CheckRun][!benchmark]")
 {
   auto problem_builder = ConfigureProblem();
-
   auto problem = problem_builder->ReturnProblem();
 
-  auto fluxmonitor = problem->_postprocessors.Get<hephaestus::FluxMonitorAux>("FluxMonitor");
-
   hephaestus::InputParameters exec_params = DefineExecutionerParameters(*problem);
-
   hephaestus::logger.set_level(spdlog::level::info);
 
   const int imax_refinement = 2;
   for (int irefinement = 0; irefinement < imax_refinement; irefinement++)
   {
-    // Remove any stored fluxes.
-    fluxmonitor->Reset();
+    // Refine and reset flux monitor on subsequent runs.
+    if (irefinement != 0)
+    {
+      problem->_pmesh->UniformRefinement();
+      problem->Update();
 
-    // Reconstruct executioner each time we start.
+      ResetFluxMonitor(*problem);
+    }
+
+    // Create a new executioner.
     hephaestus::TransientExecutioner executioner(exec_params);
     executioner.Execute();
 
@@ -263,12 +271,5 @@ TEST_CASE_METHOD(TestTEAM4HForm, "TestTEAM4HFormMeshUpdates", "[CheckRun][!bench
                             peak_current_time);
 
     VerifyPeakCurrentAndTimeWithinTolerances(peak_current, peak_current_time);
-
-    // Refine if we have another iteration.
-    if (irefinement != (imax_refinement - 1))
-    {
-      problem->_pmesh->UniformRefinement();
-      problem->Update();
-    }
   }
 }
