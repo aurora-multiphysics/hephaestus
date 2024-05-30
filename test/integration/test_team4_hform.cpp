@@ -193,6 +193,21 @@ protected:
       }
     }
   }
+
+  void VerifyPeakCurrentAndTimeWithinTolerances(double & peak_current, double & peak_current_time)
+  {
+    const double min_peak_current = 3.2e3;
+    const double max_peak_current = 3.6e3;
+
+    const double min_peak_current_time = 0.010;
+    const double max_peak_current_time = 0.012;
+
+    REQUIRE(peak_current > min_peak_current);
+    REQUIRE(peak_current < max_peak_current);
+
+    REQUIRE(peak_current_time > min_peak_current_time);
+    REQUIRE(peak_current_time < max_peak_current_time);
+  }
 };
 
 TEST_CASE_METHOD(TestTEAM4HForm, "TestTEAM4HForm", "[CheckRun]")
@@ -211,10 +226,7 @@ TEST_CASE_METHOD(TestTEAM4HForm, "TestTEAM4HForm", "[CheckRun]")
   double peak_current, peak_current_time;
   ExtractPeakCurrentAndTime(*problem, peak_current, peak_current_time);
 
-  REQUIRE(peak_current > 3.2e3);
-  REQUIRE(peak_current < 3.6e3);
-  REQUIRE(peak_current_time < 0.012);
-  REQUIRE(peak_current_time > 0.01);
+  VerifyPeakCurrentAndTimeWithinTolerances(peak_current, peak_current_time);
 }
 
 /// Test case for checking "Updates" work as expected following a mesh refinement.
@@ -248,10 +260,7 @@ TEST_CASE_METHOD(TestTEAM4HForm, "TestTEAM4HFormMeshUpdates", "[CheckRun][!bench
                             peak_current,
                             peak_current_time);
 
-    REQUIRE(peak_current > 3.2e3);
-    REQUIRE(peak_current < 3.6e3);
-    REQUIRE(peak_current_time < 0.012);
-    REQUIRE(peak_current_time > 0.01);
+    VerifyPeakCurrentAndTimeWithinTolerances(peak_current, peak_current_time);
 
     if (irefinement != (imax_refinement - 1))
     {
