@@ -170,6 +170,29 @@ protected:
                      std::make_shared<mfem::ParaViewDataCollection>("Team4ParaView"));
     return outputs;
   }
+
+  void ExtractPeakCurrentAndTime(hephaestus::TimeDomainProblem & problem,
+                                 double & peak_current,
+                                 double & peak_current_time)
+  {
+    auto flux_monitor = problem._postprocessors.Get<hephaestus::FluxMonitorAux>("FluxMonitor");
+
+    const mfem::real_t min_flux = flux_monitor->_fluxes.Min();
+
+    peak_current = -2.0 * min_flux;
+    peak_current_time = 0.0;
+
+    for (int i = 0; i < flux_monitor->_times.Size(); i++)
+    {
+      const mfem::real_t flux = flux_monitor->_fluxes[i];
+      const mfem::real_t flux_time = flux_monitor->_times[i];
+
+      if (flux == min_flux)
+      {
+        peak_current_time = flux_time;
+      }
+    }
+  }
 };
 
 TEST_CASE_METHOD(TestTEAM4HForm, "TestTEAM4HForm", "[CheckRun]")
@@ -179,23 +202,14 @@ TEST_CASE_METHOD(TestTEAM4HForm, "TestTEAM4HForm", "[CheckRun]")
 
   auto problem = problem_builder->ReturnProblem();
 
-  auto fluxmonitor = problem->_postprocessors.Get<hephaestus::FluxMonitorAux>("FluxMonitor");
-
   hephaestus::InputParameters exec_params = DefineExecutionerParameters(*problem);
 
   auto executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
 
   executioner->Execute();
 
-  double peak_current = -2 * fluxmonitor->_fluxes.Min();
-  double peak_current_time;
-  for (std::size_t i = 0; i < fluxmonitor->_times.Size(); ++i)
-  {
-    if (fluxmonitor->_fluxes[i] == fluxmonitor->_fluxes.Min())
-    {
-      peak_current_time = fluxmonitor->_times[i];
-    }
-  }
+  double peak_current, peak_current_time;
+  ExtractPeakCurrentAndTime(*problem, peak_current, peak_current_time);
 
   REQUIRE(peak_current > 3.2e3);
   REQUIRE(peak_current < 3.6e3);
@@ -226,15 +240,8 @@ TEST_CASE_METHOD(TestTEAM4HForm, "TestTEAM4HFormMeshUpdates", "[CheckRun][!bench
     hephaestus::TransientExecutioner executioner(exec_params);
     executioner.Execute();
 
-    double peak_current = -2 * fluxmonitor->_fluxes.Min();
-    double peak_current_time;
-    for (std::size_t i = 0; i < fluxmonitor->_times.Size(); ++i)
-    {
-      if (fluxmonitor->_fluxes[i] == fluxmonitor->_fluxes.Min())
-      {
-        peak_current_time = fluxmonitor->_times[i];
-      }
-    }
+    double peak_current, peak_current_time;
+    ExtractPeakCurrentAndTime(*problem, peak_current, peak_current_time);
 
     hephaestus::logger.info("Refinement Level: {}, Peak current: {}, Time: {} seconds",
                             irefinement,
