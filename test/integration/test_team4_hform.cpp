@@ -184,7 +184,7 @@ TEST_CASE_METHOD(TestTEAM4HForm, "TestTEAM4HForm", "[CheckRun]")
 }
 
 /// Test case for checking "Updates" work as expected following a mesh refinement.
-TEST_CASE_METHOD(TestTEAM4HForm, "TestTEAM4HFormMeshUpdates", "[CheckRun]")
+TEST_CASE_METHOD(TestTEAM4HForm, "TestTEAM4HFormMeshUpdates", "[CheckRun][!benchmark]")
 {
   // Create Formulation
   auto problem_builder = std::make_unique<hephaestus::HFormulation>(
