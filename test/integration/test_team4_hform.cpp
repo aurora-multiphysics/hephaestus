@@ -43,6 +43,7 @@ protected:
     dh_dt(2) = 0.0;
   }
 
+  /// Returns a unique pointer to the constructed problem builder.
   std::unique_ptr<hephaestus::HFormulation> ConfigureProblem()
   {
     // Create Formulation
@@ -171,6 +172,7 @@ protected:
     return outputs;
   }
 
+  /// Sets the peak current and time using the flux monitor.
   void ExtractPeakCurrentAndTime(hephaestus::TimeDomainProblem & problem,
                                  double & peak_current,
                                  double & peak_current_time)
@@ -194,6 +196,7 @@ protected:
     }
   }
 
+  /// Checks peak current and time are within expected range.
   void VerifyPeakCurrentAndTimeWithinTolerances(double & peak_current, double & peak_current_time)
   {
     const double min_peak_current = 3.2e3;
@@ -212,7 +215,6 @@ protected:
 
 TEST_CASE_METHOD(TestTEAM4HForm, "TestTEAM4HForm", "[CheckRun]")
 {
-  // Create Formulation
   auto problem_builder = ConfigureProblem();
 
   auto problem = problem_builder->ReturnProblem();
@@ -262,6 +264,7 @@ TEST_CASE_METHOD(TestTEAM4HForm, "TestTEAM4HFormMeshUpdates", "[CheckRun][!bench
 
     VerifyPeakCurrentAndTimeWithinTolerances(peak_current, peak_current_time);
 
+    // Refine if we have another iteration.
     if (irefinement != (imax_refinement - 1))
     {
       problem->_pmesh->UniformRefinement();
