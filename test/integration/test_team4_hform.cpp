@@ -43,6 +43,70 @@ protected:
     dh_dt(2) = 0.0;
   }
 
+  std::unique_ptr<hephaestus::HFormulation> ConfigureProblem()
+  {
+    // Create Formulation
+    auto problem_builder = std::make_unique<hephaestus::HFormulation>(
+        "electric_resistivity", "electric_conductivity", "magnetic_permeability", "magnetic_field");
+    // Set Mesh
+    mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team4_symmetrized.g")).c_str(), 1, 1);
+    auto pmesh = std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mesh);
+
+    problem_builder->SetMesh(pmesh);
+    problem_builder->AddFESpace("H1", "H1_3D_P1");
+    problem_builder->AddFESpace("HCurl", "ND_3D_P1");
+    problem_builder->AddFESpace("HDiv", "RT_3D_P0");
+    problem_builder->AddFESpace("Scalar_L2", "L2_3D_P0");
+    problem_builder->AddFESpace("Vector_L2", "L2_3D_P0", 3);
+    problem_builder->AddGridFunction("magnetic_field", "HCurl");
+
+    problem_builder->AddGridFunction("dmagnetic_potential_dt", "H1");
+    problem_builder->AddGridFunction("magnetic_flux_density", "HDiv");
+    problem_builder->RegisterMagneticFluxDensityAux("magnetic_flux_density");
+
+    problem_builder->AddGridFunction("current_density", "HDiv");
+    problem_builder->RegisterCurrentDensityAux("current_density");
+
+    problem_builder->AddGridFunction("electric_field", "HCurl");
+    problem_builder->RegisterElectricFieldAux("electric_field");
+
+    hephaestus::Coefficients coefficients = DefineCoefficients();
+    problem_builder->SetCoefficients(coefficients);
+
+    hephaestus::Sources sources = DefineSources();
+    problem_builder->SetSources(sources);
+
+    hephaestus::Outputs outputs = DefineOutputs();
+    problem_builder->SetOutputs(outputs);
+
+    problem_builder->AddBoundaryCondition(
+        "tangential_dhdt_bc",
+        std::make_shared<hephaestus::VectorDirichletBC>(
+            "dmagnetic_field_dt",
+            mfem::Array<int>({1, 2, 5, 6}),
+            coefficients._vectors.Get("surface_tangential_dHdt")));
+    problem_builder->AddBoundaryCondition(
+        "magnetic_potential_bc",
+        std::make_shared<hephaestus::ScalarDirichletBC>(
+            "dmagnetic_potential_dt",
+            mfem::Array<int>({1, 2}),
+            coefficients._scalars.Get("magnetic_potential_time_derivative")));
+
+    auto fluxmonitor = std::make_shared<hephaestus::FluxMonitorAux>("current_density", 3);
+    fluxmonitor->SetPriority(2);
+    problem_builder->AddPostprocessor("FluxMonitor", fluxmonitor);
+
+    hephaestus::InputParameters solver_options;
+    solver_options.SetParam("AbsTolerance", float(1.0e-20));
+    solver_options.SetParam("Tolerance", float(1.0e-20));
+    solver_options.SetParam("MaxIter", (unsigned int)500);
+    problem_builder->SetSolverOptions(solver_options);
+
+    problem_builder->FinalizeProblem();
+
+    return problem_builder;
+  }
+
   hephaestus::Coefficients DefineCoefficients()
   {
     hephaestus::Subdomain brick("brick", 1);
@@ -98,64 +162,12 @@ protected:
 TEST_CASE_METHOD(TestTEAM4HForm, "TestTEAM4HForm", "[CheckRun]")
 {
   // Create Formulation
-  auto problem_builder = std::make_unique<hephaestus::HFormulation>(
-      "electric_resistivity", "electric_conductivity", "magnetic_permeability", "magnetic_field");
-  // Set Mesh
-  mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team4_symmetrized.g")).c_str(), 1, 1);
-  auto pmesh = std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mesh);
-
-  problem_builder->SetMesh(pmesh);
-  problem_builder->AddFESpace("H1", "H1_3D_P1");
-  problem_builder->AddFESpace("HCurl", "ND_3D_P1");
-  problem_builder->AddFESpace("HDiv", "RT_3D_P0");
-  problem_builder->AddFESpace("Scalar_L2", "L2_3D_P0");
-  problem_builder->AddFESpace("Vector_L2", "L2_3D_P0", 3);
-  problem_builder->AddGridFunction("magnetic_field", "HCurl");
-
-  problem_builder->AddGridFunction("dmagnetic_potential_dt", "H1");
-  problem_builder->AddGridFunction("magnetic_flux_density", "HDiv");
-  problem_builder->RegisterMagneticFluxDensityAux("magnetic_flux_density");
-
-  problem_builder->AddGridFunction("current_density", "HDiv");
-  problem_builder->RegisterCurrentDensityAux("current_density");
-
-  problem_builder->AddGridFunction("electric_field", "HCurl");
-  problem_builder->RegisterElectricFieldAux("electric_field");
-
-  hephaestus::Coefficients coefficients = DefineCoefficients();
-  problem_builder->SetCoefficients(coefficients);
-
-  hephaestus::Sources sources = DefineSources();
-  problem_builder->SetSources(sources);
-
-  hephaestus::Outputs outputs = DefineOutputs();
-  problem_builder->SetOutputs(outputs);
-
-  problem_builder->AddBoundaryCondition("tangential_dhdt_bc",
-                                        std::make_shared<hephaestus::VectorDirichletBC>(
-                                            "dmagnetic_field_dt",
-                                            mfem::Array<int>({1, 2, 5, 6}),
-                                            coefficients._vectors.Get("surface_tangential_dHdt")));
-  problem_builder->AddBoundaryCondition(
-      "magnetic_potential_bc",
-      std::make_shared<hephaestus::ScalarDirichletBC>(
-          "dmagnetic_potential_dt",
-          mfem::Array<int>({1, 2}),
-          coefficients._scalars.Get("magnetic_potential_time_derivative")));
-
-  auto fluxmonitor = std::make_shared<hephaestus::FluxMonitorAux>("current_density", 3);
-  fluxmonitor->SetPriority(2);
-  problem_builder->AddPostprocessor("FluxMonitor", fluxmonitor);
-
-  hephaestus::InputParameters solver_options;
-  solver_options.SetParam("AbsTolerance", float(1.0e-20));
-  solver_options.SetParam("Tolerance", float(1.0e-20));
-  solver_options.SetParam("MaxIter", (unsigned int)500);
-  problem_builder->SetSolverOptions(solver_options);
-
-  problem_builder->FinalizeProblem();
+  auto problem_builder = ConfigureProblem();
 
   auto problem = problem_builder->ReturnProblem();
+
+  auto fluxmonitor = problem->_postprocessors.Get<hephaestus::FluxMonitorAux>("FluxMonitor");
+
   hephaestus::InputParameters exec_params;
   exec_params.SetParam("TimeStep", float(0.001));
   exec_params.SetParam("StartTime", float(0.00));
@@ -186,65 +198,12 @@ TEST_CASE_METHOD(TestTEAM4HForm, "TestTEAM4HForm", "[CheckRun]")
 /// Test case for checking "Updates" work as expected following a mesh refinement.
 TEST_CASE_METHOD(TestTEAM4HForm, "TestTEAM4HFormMeshUpdates", "[CheckRun][!benchmark]")
 {
-  // Create Formulation
-  auto problem_builder = std::make_unique<hephaestus::HFormulation>(
-      "electric_resistivity", "electric_conductivity", "magnetic_permeability", "magnetic_field");
-  // Set Mesh
-  mfem::Mesh mesh((std::string(DATA_DIR) + std::string("./team4_symmetrized.g")).c_str(), 1, 1);
-  auto pmesh = std::make_shared<mfem::ParMesh>(MPI_COMM_WORLD, mesh);
-
-  problem_builder->SetMesh(pmesh);
-  problem_builder->AddFESpace("H1", "H1_3D_P1");
-  problem_builder->AddFESpace("HCurl", "ND_3D_P1");
-  problem_builder->AddFESpace("HDiv", "RT_3D_P0");
-  problem_builder->AddFESpace("Scalar_L2", "L2_3D_P0");
-  problem_builder->AddFESpace("Vector_L2", "L2_3D_P0", 3);
-  problem_builder->AddGridFunction("magnetic_field", "HCurl");
-
-  problem_builder->AddGridFunction("dmagnetic_potential_dt", "H1");
-  problem_builder->AddGridFunction("magnetic_flux_density", "HDiv");
-  problem_builder->RegisterMagneticFluxDensityAux("magnetic_flux_density");
-
-  problem_builder->AddGridFunction("current_density", "HDiv");
-  problem_builder->RegisterCurrentDensityAux("current_density");
-
-  problem_builder->AddGridFunction("electric_field", "HCurl");
-  problem_builder->RegisterElectricFieldAux("electric_field");
-
-  hephaestus::Coefficients coefficients = DefineCoefficients();
-  problem_builder->SetCoefficients(coefficients);
-
-  hephaestus::Sources sources = DefineSources();
-  problem_builder->SetSources(sources);
-
-  hephaestus::Outputs outputs = DefineOutputs();
-  problem_builder->SetOutputs(outputs);
-
-  problem_builder->AddBoundaryCondition("tangential_dhdt_bc",
-                                        std::make_shared<hephaestus::VectorDirichletBC>(
-                                            "dmagnetic_field_dt",
-                                            mfem::Array<int>({1, 2, 5, 6}),
-                                            coefficients._vectors.Get("surface_tangential_dHdt")));
-  problem_builder->AddBoundaryCondition(
-      "magnetic_potential_bc",
-      std::make_shared<hephaestus::ScalarDirichletBC>(
-          "dmagnetic_potential_dt",
-          mfem::Array<int>({1, 2}),
-          coefficients._scalars.Get("magnetic_potential_time_derivative")));
-
-  auto fluxmonitor = std::make_shared<hephaestus::FluxMonitorAux>("current_density", 3);
-  fluxmonitor->SetPriority(2);
-  problem_builder->AddPostprocessor("FluxMonitor", fluxmonitor);
-
-  hephaestus::InputParameters solver_options;
-  solver_options.SetParam("AbsTolerance", float(1.0e-20));
-  solver_options.SetParam("Tolerance", float(1.0e-20));
-  solver_options.SetParam("MaxIter", (unsigned int)500);
-  problem_builder->SetSolverOptions(solver_options);
-
-  problem_builder->FinalizeProblem();
+  auto problem_builder = ConfigureProblem();
 
   auto problem = problem_builder->ReturnProblem();
+
+  auto fluxmonitor = problem->_postprocessors.Get<hephaestus::FluxMonitorAux>("FluxMonitor");
+
   hephaestus::InputParameters exec_params;
   exec_params.SetParam("TimeStep", float(0.001));
   exec_params.SetParam("StartTime", float(0.00));
@@ -286,7 +245,7 @@ TEST_CASE_METHOD(TestTEAM4HForm, "TestTEAM4HFormMeshUpdates", "[CheckRun][!bench
 
     if (irefinement != (imax_refinement - 1))
     {
-      pmesh->UniformRefinement();
+      problem->_pmesh->UniformRefinement();
       problem->Update();
     }
   }
