@@ -107,6 +107,19 @@ protected:
     return problem_builder;
   }
 
+  hephaestus::InputParameters DefineExecutionerParameters(hephaestus::TimeDomainProblem & problem)
+  {
+    hephaestus::InputParameters exec_params;
+
+    exec_params.SetParam("TimeStep", float(0.001));
+    exec_params.SetParam("StartTime", float(0.00));
+    exec_params.SetParam("EndTime", float(0.015));
+    exec_params.SetParam("VisualisationSteps", int(1));
+    exec_params.SetParam("Problem", &problem);
+
+    return exec_params;
+  }
+
   hephaestus::Coefficients DefineCoefficients()
   {
     hephaestus::Subdomain brick("brick", 1);
@@ -168,12 +181,7 @@ TEST_CASE_METHOD(TestTEAM4HForm, "TestTEAM4HForm", "[CheckRun]")
 
   auto fluxmonitor = problem->_postprocessors.Get<hephaestus::FluxMonitorAux>("FluxMonitor");
 
-  hephaestus::InputParameters exec_params;
-  exec_params.SetParam("TimeStep", float(0.001));
-  exec_params.SetParam("StartTime", float(0.00));
-  exec_params.SetParam("EndTime", float(0.015));
-  exec_params.SetParam("VisualisationSteps", int(1));
-  exec_params.SetParam("Problem", static_cast<hephaestus::TimeDomainProblem *>(problem.get()));
+  hephaestus::InputParameters exec_params = DefineExecutionerParameters(*problem);
 
   auto executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
 
@@ -204,12 +212,7 @@ TEST_CASE_METHOD(TestTEAM4HForm, "TestTEAM4HFormMeshUpdates", "[CheckRun][!bench
 
   auto fluxmonitor = problem->_postprocessors.Get<hephaestus::FluxMonitorAux>("FluxMonitor");
 
-  hephaestus::InputParameters exec_params;
-  exec_params.SetParam("TimeStep", float(0.001));
-  exec_params.SetParam("StartTime", float(0.00));
-  exec_params.SetParam("EndTime", float(0.015));
-  exec_params.SetParam("VisualisationSteps", int(1));
-  exec_params.SetParam("Problem", static_cast<hephaestus::TimeDomainProblem *>(problem.get()));
+  hephaestus::InputParameters exec_params = DefineExecutionerParameters(*problem);
 
   hephaestus::logger.set_level(spdlog::level::info);
 
