@@ -228,8 +228,8 @@ TEST_CASE_METHOD(TestTEAM4HForm, "TestTEAM4HForm", "[CheckRun]")
 
   hephaestus::InputParameters exec_params = DefineExecutionerParameters(*problem);
 
-  auto executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
-  executioner->Execute();
+  hephaestus::TransientExecutioner executioner(exec_params);
+  executioner.Execute();
 
   double peak_current, peak_current_time;
   ExtractPeakCurrentAndTime(*problem, peak_current, peak_current_time);
