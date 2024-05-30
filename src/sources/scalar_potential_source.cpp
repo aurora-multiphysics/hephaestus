@@ -131,11 +131,8 @@ ScalarPotentialSource::Apply(mfem::ParLinearForm * lf)
   _a0->FormLinearSystem(
       poisson_ess_tdof_list, phi_gf, *_b0, *_diffusion_mat, *_p_tdofs, *_b0_tdofs);
 
-  if (_a0_solver == nullptr)
-  {
-    _a0_solver = std::make_unique<hephaestus::DefaultH1PCGSolver>(_solver_options, *_diffusion_mat);
-  }
   // Solve
+  _a0_solver = std::make_unique<hephaestus::DefaultH1PCGSolver>(_solver_options, *_diffusion_mat);
   _a0_solver->Mult(*_b0_tdofs, *_p_tdofs);
 
   // "undo" the static condensation saving result in grid function dP
