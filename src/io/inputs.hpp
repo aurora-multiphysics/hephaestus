@@ -16,8 +16,7 @@ class InputParameters
 {
 public:
   InputParameters() = default;
-
-  InputParameters(std::map<std::string, std::any> _params) : _params(std::move(_params)) {}
+  InputParameters(std::map<std::string, std::any> params) : _params(std::move(params)) {}
 
   void SetParam(std::string param_name, std::any value) { _params[param_name] = value; }
 
@@ -35,6 +34,7 @@ public:
       MFEM_ABORT("Exception raised when trying to cast required parameter '" << param_name
                                                                              << "': " << e.what());
     }
+
     return param;
   }
 
@@ -51,6 +51,7 @@ public:
     {
       param = value;
     }
+
     return param;
   }
 
