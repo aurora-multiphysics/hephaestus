@@ -50,10 +50,10 @@ void
 AVFormulation::ConstructOperator()
 {
   hephaestus::InputParameters av_system_params;
-  av_system_params.SetParam("VectorPotentialName", _vector_potential_name);
-  av_system_params.SetParam("ScalarPotentialName", _scalar_potential_name);
-  av_system_params.SetParam("AlphaCoefName", _alpha_coef_name);
-  av_system_params.SetParam("BetaCoefName", _beta_coef_name);
+  av_system_params.Set("VectorPotentialName", _vector_potential_name);
+  av_system_params.Set("ScalarPotentialName", _scalar_potential_name);
+  av_system_params.Set("AlphaCoefName", _alpha_coef_name);
+  av_system_params.Set("BetaCoefName", _beta_coef_name);
 
   auto equation_system = std::make_unique<hephaestus::AVEquationSystem>(av_system_params);
 
@@ -158,35 +158,35 @@ AVEquationSystem::AddKernels()
 
   // (α∇×A_{n}, ∇×dA'/dt)
   hephaestus::InputParameters weak_curl_curl_params;
-  weak_curl_curl_params.SetParam("CoupledVariableName", _a_name);
-  weak_curl_curl_params.SetParam("CoefficientName", _alpha_coef_name);
+  weak_curl_curl_params.Set("CoupledVariableName", _a_name);
+  weak_curl_curl_params.Set("CoefficientName", _alpha_coef_name);
   AddKernel(da_dt_name, std::make_shared<hephaestus::WeakCurlCurlKernel>(weak_curl_curl_params));
 
   // (αdt∇×dA/dt_{n+1}, ∇×dA'/dt)
   hephaestus::InputParameters curl_curl_params;
-  curl_curl_params.SetParam("CoefficientName", _dtalpha_coef_name);
+  curl_curl_params.Set("CoefficientName", _dtalpha_coef_name);
   AddKernel(da_dt_name, std::make_shared<hephaestus::CurlCurlKernel>(curl_curl_params));
 
   // (βdA/dt_{n+1}, dA'/dt)
   hephaestus::InputParameters vector_fe_mass_params;
-  vector_fe_mass_params.SetParam("CoefficientName", _beta_coef_name);
+  vector_fe_mass_params.Set("CoefficientName", _beta_coef_name);
   AddKernel(da_dt_name, std::make_shared<hephaestus::VectorFEMassKernel>(vector_fe_mass_params));
 
   // (σ ∇ V, dA'/dt)
   hephaestus::InputParameters mixed_vector_gradient_params;
-  mixed_vector_gradient_params.SetParam("CoefficientName", _beta_coef_name);
+  mixed_vector_gradient_params.Set("CoefficientName", _beta_coef_name);
   AddKernel(_v_name,
             da_dt_name,
             std::make_shared<hephaestus::MixedVectorGradientKernel>(mixed_vector_gradient_params));
 
   // (σ ∇ V, ∇ V')
   hephaestus::InputParameters diffusion_params;
-  diffusion_params.SetParam("CoefficientName", _beta_coef_name);
+  diffusion_params.Set("CoefficientName", _beta_coef_name);
   AddKernel(_v_name, std::make_shared<hephaestus::DiffusionKernel>(diffusion_params));
 
   // (σdA/dt, ∇ V')
   hephaestus::InputParameters vector_fe_weak_divergence_params;
-  vector_fe_weak_divergence_params.SetParam("CoefficientName", _beta_coef_name);
+  vector_fe_weak_divergence_params.Set("CoefficientName", _beta_coef_name);
   AddKernel(
       da_dt_name,
       _v_name,

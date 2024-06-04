@@ -70,8 +70,8 @@ protected:
   hephaestus::Sources DefineSources()
   {
     hephaestus::InputParameters source_solver_options;
-    source_solver_options.SetParam("Tolerance", float(1.0e-20));
-    source_solver_options.SetParam("MaxIter", (unsigned int)2000);
+    source_solver_options.Set("Tolerance", float(1.0e-20));
+    source_solver_options.Set("MaxIter", (unsigned int)2000);
 
     hephaestus::Sources sources;
     sources.Register("source",
@@ -148,20 +148,20 @@ TEST_CASE_METHOD(TestTEAM4HForm, "TestTEAM4HForm", "[CheckRun]")
   problem_builder->AddPostprocessor("FluxMonitor", fluxmonitor);
 
   hephaestus::InputParameters solver_options;
-  solver_options.SetParam("AbsTolerance", float(1.0e-20));
-  solver_options.SetParam("Tolerance", float(1.0e-20));
-  solver_options.SetParam("MaxIter", (unsigned int)500);
+  solver_options.Set("AbsTolerance", float(1.0e-20));
+  solver_options.Set("Tolerance", float(1.0e-20));
+  solver_options.Set("MaxIter", (unsigned int)500);
   problem_builder->SetSolverOptions(solver_options);
 
   problem_builder->FinalizeProblem();
 
   auto problem = problem_builder->ReturnProblem();
   hephaestus::InputParameters exec_params;
-  exec_params.SetParam("TimeStep", float(0.001));
-  exec_params.SetParam("StartTime", float(0.00));
-  exec_params.SetParam("EndTime", float(0.015));
-  exec_params.SetParam("VisualisationSteps", int(1));
-  exec_params.SetParam("Problem", static_cast<hephaestus::TimeDomainProblem *>(problem.get()));
+  exec_params.Set("TimeStep", float(0.001));
+  exec_params.Set("StartTime", float(0.00));
+  exec_params.Set("EndTime", float(0.015));
+  exec_params.Set("VisualisationSteps", int(1));
+  exec_params.Set("Problem", static_cast<hephaestus::TimeDomainProblem *>(problem.get()));
 
   auto executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
 

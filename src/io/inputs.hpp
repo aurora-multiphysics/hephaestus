@@ -26,11 +26,11 @@ public:
   template <typename T>
   void Set(const std::string & name, T & value)
   {
-    SetParam(name, std::any(value));
+    Set(name, std::any(value));
   }
 
   /// Sets an existing parameter.
-  void SetParam(const std::string & name, std::any value) { _params[name] = value; }
+  void Set(const std::string & name, std::any value) { _params[name] = value; }
 
   /// Returns a copy of the stored parameter.
   template <typename T>

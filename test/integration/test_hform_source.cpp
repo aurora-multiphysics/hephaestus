@@ -90,8 +90,8 @@ protected:
                      std::make_shared<mfem::ParaViewDataCollection>("HFormParaView"));
 
     hephaestus::InputParameters l2errpostprocparams;
-    l2errpostprocparams.SetParam("VariableName", std::string("magnetic_field"));
-    l2errpostprocparams.SetParam("VectorCoefficientName", std::string("h_exact_coeff"));
+    l2errpostprocparams.Set("VariableName", std::string("magnetic_field"));
+    l2errpostprocparams.Set("VectorCoefficientName", std::string("h_exact_coeff"));
     hephaestus::AuxSolvers postprocessors;
     postprocessors.Register(
         "L2ErrorPostprocessor",
@@ -104,8 +104,8 @@ protected:
 
     hephaestus::Sources sources;
     hephaestus::InputParameters current_solver_options;
-    current_solver_options.SetParam("Tolerance", float(1.0e-12));
-    current_solver_options.SetParam("MaxIter", (unsigned int)200);
+    current_solver_options.Set("Tolerance", float(1.0e-12));
+    current_solver_options.Set("MaxIter", (unsigned int)200);
 
     sources.Register("source",
                      std::make_shared<hephaestus::DivFreeSource>("source",
@@ -117,24 +117,24 @@ protected:
                                                                  false));
 
     hephaestus::InputParameters solver_options;
-    solver_options.SetParam("Tolerance", float(1.0e-16));
-    solver_options.SetParam("MaxIter", (unsigned int)1000);
+    solver_options.Set("Tolerance", float(1.0e-16));
+    solver_options.Set("MaxIter", (unsigned int)1000);
 
     hephaestus::InputParameters params;
-    params.SetParam("TimeStep", float(0.05));
-    params.SetParam("StartTime", float(0.00));
-    params.SetParam("EndTime", float(0.05));
-    params.SetParam("VisualisationSteps", int(1));
-    params.SetParam("UseGLVis", true);
+    params.Set("TimeStep", float(0.05));
+    params.Set("StartTime", float(0.00));
+    params.Set("EndTime", float(0.05));
+    params.Set("VisualisationSteps", int(1));
+    params.Set("UseGLVis", true);
 
-    params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
-    params.SetParam("BoundaryConditions", bc_map);
-    params.SetParam("Coefficients", coefficients);
-    params.SetParam("PreProcessors", preprocessors);
-    params.SetParam("PostProcessors", postprocessors);
-    params.SetParam("Sources", sources);
-    params.SetParam("Outputs", outputs);
-    params.SetParam("SolverOptions", solver_options);
+    params.Set("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
+    params.Set("BoundaryConditions", bc_map);
+    params.Set("Coefficients", coefficients);
+    params.Set("PreProcessors", preprocessors);
+    params.Set("PostProcessors", postprocessors);
+    params.Set("Sources", sources);
+    params.Set("Outputs", outputs);
+    params.Set("SolverOptions", solver_options);
 
     return params;
   }
@@ -191,11 +191,11 @@ TEST_CASE_METHOD(TestHFormSource, "TestHFormSource", "[CheckRun]")
     auto problem = problem_builder->ReturnProblem();
 
     hephaestus::InputParameters exec_params;
-    exec_params.SetParam("TimeStep", float(0.05));
-    exec_params.SetParam("StartTime", float(0.00));
-    exec_params.SetParam("EndTime", float(0.05));
-    exec_params.SetParam("VisualisationSteps", int(1));
-    exec_params.SetParam("Problem", static_cast<hephaestus::TimeDomainProblem *>(problem.get()));
+    exec_params.Set("TimeStep", float(0.05));
+    exec_params.Set("StartTime", float(0.00));
+    exec_params.Set("EndTime", float(0.05));
+    exec_params.Set("VisualisationSteps", int(1));
+    exec_params.Set("Problem", static_cast<hephaestus::TimeDomainProblem *>(problem.get()));
 
     auto executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
 

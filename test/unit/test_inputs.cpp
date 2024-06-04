@@ -7,13 +7,13 @@ TEST_CASE("InputParametersTest", "[CheckData]")
 {
   hephaestus::InputParameters params;
   int example_int = 5;
-  params.SetParam("IntegerParam", example_int);
+  params.Set("IntegerParam", example_int);
 
   std::string example_string("ExampleString");
-  params.SetParam("StringParam", example_string);
+  params.Set("StringParam", example_string);
 
   mfem::Array<int> example_array({1, 2, 3});
-  params.SetParam("ArrayParam", example_array);
+  params.Set("ArrayParam", example_array);
 
   REQUIRE(params.Get<int>("IntegerParam") == example_int);
 

@@ -86,15 +86,15 @@ protected:
     hephaestus::Sources sources;
 
     hephaestus::InputParameters params;
-    params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
-    params.SetParam("BoundaryConditions", bc_map);
-    params.SetParam("Coefficients", coefficients);
-    params.SetParam("FESpaces", fespaces);
-    params.SetParam("GridFunctions", gridfunctions);
-    params.SetParam("PreProcessors", preprocessors);
-    params.SetParam("PostProcessors", postprocessors);
-    params.SetParam("Outputs", outputs);
-    params.SetParam("Sources", sources);
+    params.Set("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
+    params.Set("BoundaryConditions", bc_map);
+    params.Set("Coefficients", coefficients);
+    params.Set("FESpaces", fespaces);
+    params.Set("GridFunctions", gridfunctions);
+    params.Set("PreProcessors", preprocessors);
+    params.Set("PostProcessors", postprocessors);
+    params.Set("Outputs", outputs);
+    params.Set("Sources", sources);
 
     return params;
   }
@@ -135,11 +135,11 @@ TEST_CASE_METHOD(TestAVFormRod, "TestAVFormRod", "[CheckRun]")
   auto problem = problem_builder->ReturnProblem();
 
   hephaestus::InputParameters exec_params;
-  exec_params.SetParam("TimeStep", float(0.5));
-  exec_params.SetParam("StartTime", float(0.00));
-  exec_params.SetParam("EndTime", float(2.5));
-  exec_params.SetParam("VisualisationSteps", int(1));
-  exec_params.SetParam("Problem", static_cast<hephaestus::TimeDomainProblem *>(problem.get()));
+  exec_params.Set("TimeStep", float(0.5));
+  exec_params.Set("StartTime", float(0.00));
+  exec_params.Set("EndTime", float(2.5));
+  exec_params.Set("VisualisationSteps", int(1));
+  exec_params.Set("Problem", static_cast<hephaestus::TimeDomainProblem *>(problem.get()));
 
   auto executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
 

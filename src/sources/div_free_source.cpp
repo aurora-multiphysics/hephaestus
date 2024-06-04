@@ -94,10 +94,10 @@ DivFreeSource::Apply(mfem::ParLinearForm * lf)
   {
 
     hephaestus::InputParameters projector_pars;
-    projector_pars.SetParam("VectorGridFunctionName", _src_gf_name);
-    projector_pars.SetParam("ScalarGridFunctionName", _potential_gf_name);
-    projector_pars.SetParam("H1FESpaceName", _h1_fespace_name);
-    projector_pars.SetParam("HCurlFESpaceName", _hcurl_fespace_name);
+    projector_pars.Set("VectorGridFunctionName", _src_gf_name);
+    projector_pars.Set("ScalarGridFunctionName", _potential_gf_name);
+    projector_pars.Set("H1FESpaceName", _h1_fespace_name);
+    projector_pars.Set("HCurlFESpaceName", _hcurl_fespace_name);
 
     hephaestus::BCMap bcs;
 

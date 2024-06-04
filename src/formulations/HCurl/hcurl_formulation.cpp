@@ -56,9 +56,9 @@ void
 HCurlFormulation::ConstructOperator()
 {
   hephaestus::InputParameters weak_form_params;
-  weak_form_params.SetParam("HCurlVarName", _h_curl_var_name);
-  weak_form_params.SetParam("AlphaCoefName", _alpha_coef_name);
-  weak_form_params.SetParam("BetaCoefName", _beta_coef_name);
+  weak_form_params.Set("HCurlVarName", _h_curl_var_name);
+  weak_form_params.Set("AlphaCoefName", _alpha_coef_name);
+  weak_form_params.Set("BetaCoefName", _beta_coef_name);
 
   auto equation_system = std::make_unique<hephaestus::CurlCurlEquationSystem>(weak_form_params);
 
@@ -137,19 +137,19 @@ CurlCurlEquationSystem::AddKernels()
 
   // (α∇×u_{n}, ∇×u')
   hephaestus::InputParameters weak_curl_curl_params;
-  weak_curl_curl_params.SetParam("CoupledVariableName", _h_curl_var_name);
-  weak_curl_curl_params.SetParam("CoefficientName", _alpha_coef_name);
+  weak_curl_curl_params.Set("CoupledVariableName", _h_curl_var_name);
+  weak_curl_curl_params.Set("CoefficientName", _alpha_coef_name);
   AddKernel(dh_curl_var_dt,
             std::make_shared<hephaestus::WeakCurlCurlKernel>(weak_curl_curl_params));
 
   // (αdt∇×du/dt_{n+1}, ∇×u')
   hephaestus::InputParameters curl_curl_params;
-  curl_curl_params.SetParam("CoefficientName", _dtalpha_coef_name);
+  curl_curl_params.Set("CoefficientName", _dtalpha_coef_name);
   AddKernel(dh_curl_var_dt, std::make_shared<hephaestus::CurlCurlKernel>(curl_curl_params));
 
   // (βdu/dt_{n+1}, u')
   hephaestus::InputParameters vector_fe_mass_params;
-  vector_fe_mass_params.SetParam("CoefficientName", _beta_coef_name);
+  vector_fe_mass_params.Set("CoefficientName", _beta_coef_name);
   AddKernel(dh_curl_var_dt,
             std::make_shared<hephaestus::VectorFEMassKernel>(vector_fe_mass_params));
 

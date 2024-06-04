@@ -93,8 +93,8 @@ protected:
                      std::make_shared<mfem::VisItDataCollection>("AVFormVisIt"));
 
     hephaestus::InputParameters l2errpostprocparams;
-    l2errpostprocparams.SetParam("VariableName", std::string("magnetic_vector_potential"));
-    l2errpostprocparams.SetParam("VectorCoefficientName", std::string("a_exact_coeff"));
+    l2errpostprocparams.Set("VariableName", std::string("magnetic_vector_potential"));
+    l2errpostprocparams.Set("VectorCoefficientName", std::string("a_exact_coeff"));
     hephaestus::AuxSolvers postprocessors;
     postprocessors.Register(
         "L2ErrorPostprocessor",
@@ -121,19 +121,19 @@ protected:
                                                                  false));
 
     hephaestus::InputParameters params;
-    params.SetParam("TimeStep", float(0.05));
-    params.SetParam("StartTime", float(0.00));
-    params.SetParam("EndTime", float(0.05));
-    params.SetParam("VisualisationSteps", int(1));
-    params.SetParam("UseGLVis", true);
+    params.Set("TimeStep", float(0.05));
+    params.Set("StartTime", float(0.00));
+    params.Set("EndTime", float(0.05));
+    params.Set("VisualisationSteps", int(1));
+    params.Set("UseGLVis", true);
 
-    params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
-    params.SetParam("BoundaryConditions", bc_map);
-    params.SetParam("Coefficients", coefficients);
-    params.SetParam("PreProcessors", preprocessors);
-    params.SetParam("PostProcessors", postprocessors);
-    params.SetParam("Outputs", outputs);
-    params.SetParam("Sources", sources);
+    params.Set("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
+    params.Set("BoundaryConditions", bc_map);
+    params.Set("Coefficients", coefficients);
+    params.Set("PreProcessors", preprocessors);
+    params.Set("PostProcessors", postprocessors);
+    params.Set("Outputs", outputs);
+    params.Set("Sources", sources);
 
     return params;
   }
@@ -192,11 +192,11 @@ TEST_CASE_METHOD(TestAVFormSource, "TestAVFormSource", "[CheckRun]")
     auto problem = problem_builder->ReturnProblem();
 
     hephaestus::InputParameters exec_params;
-    exec_params.SetParam("TimeStep", float(0.05));
-    exec_params.SetParam("StartTime", float(0.00));
-    exec_params.SetParam("EndTime", float(0.05));
-    exec_params.SetParam("VisualisationSteps", int(1));
-    exec_params.SetParam("Problem", static_cast<hephaestus::TimeDomainProblem *>(problem.get()));
+    exec_params.Set("TimeStep", float(0.05));
+    exec_params.Set("StartTime", float(0.00));
+    exec_params.Set("EndTime", float(0.05));
+    exec_params.Set("VisualisationSteps", int(1));
+    exec_params.Set("Problem", static_cast<hephaestus::TimeDomainProblem *>(problem.get()));
 
     auto executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
 
