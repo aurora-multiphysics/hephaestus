@@ -149,7 +149,7 @@ TEST_CASE_METHOD(TestComplexAFormRod, "TestComplexAFormRod", "[CheckRun]")
   auto postprocessors(params.Get<hephaestus::AuxSolvers>("PostProcessors"));
   auto sources(params.Get<hephaestus::Sources>("Sources"));
   auto outputs(params.Get<hephaestus::Outputs>("Outputs"));
-  auto solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
+  auto solver_options(params.GetOptional<hephaestus::InputParameters>(
       "SolverOptions", hephaestus::InputParameters()));
 
   problem_builder->SetMesh(pmesh);

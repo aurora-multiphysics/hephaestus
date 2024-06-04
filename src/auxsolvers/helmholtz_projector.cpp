@@ -4,10 +4,10 @@ namespace hephaestus
 {
 
 HelmholtzProjector::HelmholtzProjector(const hephaestus::InputParameters & params)
-  : _h1_fespace_name(params.GetOptionalParam<std::string>("H1FESpaceName", "H1FES_Name")),
-    _hcurl_fespace_name(params.GetOptionalParam<std::string>("HCurlFESpaceName", "HCurlFES_Name")),
+  : _h1_fespace_name(params.GetOptional<std::string>("H1FESpaceName", "H1FES_Name")),
+    _hcurl_fespace_name(params.GetOptional<std::string>("HCurlFESpaceName", "HCurlFES_Name")),
     _gf_grad_name(params.Get<std::string>("VectorGridFunctionName")),
-    _gf_name(params.GetOptionalParam<std::string>("ScalarGridFunctionName", "ScalarGF_Name")),
+    _gf_name(params.GetOptional<std::string>("ScalarGridFunctionName", "ScalarGF_Name")),
 
     _g(nullptr),
 
@@ -23,8 +23,7 @@ HelmholtzProjector::HelmholtzProjector(const hephaestus::InputParameters & param
   default_pars.Set("MaxIter", (unsigned int)1000);
   default_pars.Set("PrintLevel", GetGlobalPrintLevel());
 
-  _solver_options =
-      params.GetOptionalParam<hephaestus::InputParameters>("SolverOptions", default_pars);
+  _solver_options = params.GetOptional<hephaestus::InputParameters>("SolverOptions", default_pars);
 }
 
 void

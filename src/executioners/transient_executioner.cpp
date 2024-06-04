@@ -11,7 +11,7 @@ TransientExecutioner::TransientExecutioner(const hephaestus::InputParameters & p
     _t_final(params.Get<float>("EndTime")),
     _t(_t_initial),
     _it(0),
-    _vis_steps(params.GetOptionalParam<int>("VisualisationSteps", 1)),
+    _vis_steps(params.GetOptional<int>("VisualisationSteps", 1)),
     _last_step(false)
 {
 }

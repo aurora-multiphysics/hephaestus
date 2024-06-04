@@ -43,7 +43,7 @@ public:
 
   /// Returns the stored parameter or a default if not found.
   template <typename T>
-  [[nodiscard]] T GetOptionalParam(const std::string & name, T default_value) const
+  [[nodiscard]] T GetOptional(const std::string & name, T default_value) const
   {
     return Has(name) ? Get<T>(name) : default_value;
   }

@@ -166,7 +166,7 @@ TEST_CASE_METHOD(TestComplexTeam7, "TestComplexTeam7", "[CheckRun]")
   auto coefficients(params.Get<hephaestus::Coefficients>("Coefficients"));
   auto sources(params.Get<hephaestus::Sources>("Sources"));
   auto outputs(params.Get<hephaestus::Outputs>("Outputs"));
-  auto solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
+  auto solver_options(params.GetOptional<hephaestus::InputParameters>(
       "SolverOptions", hephaestus::InputParameters()));
 
   auto problem_builder =

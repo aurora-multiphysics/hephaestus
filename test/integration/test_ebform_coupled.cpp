@@ -161,7 +161,7 @@ TEST_CASE_METHOD(TestEBFormCoupled, "TestEBFormCoupled", "[CheckRun]")
   auto postprocessors(params.Get<hephaestus::AuxSolvers>("PostProcessors"));
   auto sources(params.Get<hephaestus::Sources>("Sources"));
   auto outputs(params.Get<hephaestus::Outputs>("Outputs"));
-  auto solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
+  auto solver_options(params.GetOptional<hephaestus::InputParameters>(
       "SolverOptions", hephaestus::InputParameters()));
 
   std::shared_ptr<mfem::ParMesh> pmesh =
