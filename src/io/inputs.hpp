@@ -22,13 +22,24 @@ public:
   template <typename T>
   void AddParam(const std::string & name, T & value)
   {
+    CheckForDuplicateParam(name);
+
     _params[name] = std::any(value);
+  }
+
+  /// Sets an existing parameter.
+  template <typename T>
+  void Set(const std::string & name, T & value)
+  {
+    Set<T>(name) = value;
   }
 
   /// Returns a reference to the parameter matching the name.
   template <typename T>
   [[nodiscard]] T & Set(const std::string & name)
   {
+    CheckForMissingParam(name);
+
     return std::any_cast<T &>(_params.at(name));
   }
 
@@ -36,6 +47,8 @@ public:
   template <typename T>
   [[nodiscard]] const T & Get(const std::string & name) const
   {
+    CheckForMissingParam(name);
+
     return std::any_cast<const T &>(_params.at(name));
   }
 
@@ -84,6 +97,24 @@ public:
   }
 
 protected:
+  /// Performs a check for an existing parameter to avoid overwriting it.
+  void CheckForDuplicateParam(const std::string & name) const
+  {
+    if (Has(name))
+    {
+      MFEM_ABORT("Duplicate parameter with name '" << name << "'.");
+    }
+  }
+
+  /// Checks for a missing parameter.
+  void CheckForMissingParam(const std::string & name) const
+  {
+    if (!Has(name))
+    {
+      MFEM_ABORT("No parameter with name '" << name << "'.");
+    }
+  }
+
   std::map<std::string, std::any> _params;
 };
 
