@@ -18,6 +18,27 @@ public:
   InputParameters() = default;
   InputParameters(std::map<std::string, std::any> params) : _params(std::move(params)) {}
 
+  /// Adds a new parameter matching the name.
+  template <typename T>
+  void AddParam(const std::string & name, T & value)
+  {
+    _params[name] = std::any(value);
+  }
+
+  /// Returns a reference to the parameter matching the name.
+  template <typename T>
+  [[nodiscard]] T & Set(const std::string & name)
+  {
+    return std::any_cast<T &>(_params.at(name));
+  }
+
+  /// Returns true if there exists a parameter matching the name.
+  [[nodiscard]] bool Has(const std::string & name) const
+  {
+    auto it = _params.find(name);
+    return (it != _params.end());
+  }
+
   void SetParam(std::string param_name, std::any value) { _params[param_name] = value; }
 
   template <typename T>
