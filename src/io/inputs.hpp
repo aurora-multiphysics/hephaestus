@@ -34,7 +34,7 @@ public:
 
   /// Returns a non-writable reference to the parameter.
   template <typename T>
-  [[nodiscard]] const T & Get(const std::string & name)
+  [[nodiscard]] const T & Get(const std::string & name) const
   {
     return std::any_cast<const T &>(_params.at(name));
   }
