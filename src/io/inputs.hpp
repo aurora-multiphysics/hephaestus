@@ -22,23 +22,15 @@ public:
   /// Removes all parameters.
   void Clear() { _params.clear(); }
 
-  /// Adds a new parameter matching the name.
-  template <typename T>
-  void AddParam(const std::string & name, T & value)
-  {
-    CheckForDuplicateParam(name);
-
-    _params[name] = std::any(value);
-  }
-
   /// Sets an existing parameter.
   template <typename T>
   void Set(const std::string & name, T & value)
   {
-    CheckForMissingParam(name);
-
-    _params[name] = std::any(value);
+    SetParam(name, std::any(value));
   }
+
+  /// Sets an existing parameter.
+  void SetParam(const std::string & name, std::any value) { _params[name] = value; }
 
   /// Returns a copy of the stored parameter.
   template <typename T>
@@ -49,6 +41,13 @@ public:
     return std::any_cast<T>(_params.at(name));
   }
 
+  /// Returns the stored parameter or a default if not found.
+  template <typename T>
+  [[nodiscard]] T GetOptionalParam(const std::string & name, T default_value) const
+  {
+    return Has(name) ? Get<T>(name) : default_value;
+  }
+
   /// Returns true if there exists a parameter matching the name.
   [[nodiscard]] bool Has(const std::string & name) const
   {
@@ -56,35 +55,7 @@ public:
     return (it != _params.end());
   }
 
-  void SetParam(std::string param_name, std::any value) { _params[param_name] = value; }
-
-  template <typename T>
-  [[nodiscard]] T GetOptionalParam(std::string param_name, T value) const
-  {
-    T param;
-
-    try
-    {
-      param = std::any_cast<T>(_params.at(param_name));
-    }
-    catch (...)
-    {
-      param = value;
-    }
-
-    return param;
-  }
-
 protected:
-  /// Performs a check for an existing parameter to avoid overwriting it.
-  void CheckForDuplicateParam(const std::string & name) const
-  {
-    if (Has(name))
-    {
-      MFEM_ABORT("Duplicate parameter with name '" << name << "'.");
-    }
-  }
-
   /// Checks for a missing parameter.
   void CheckForMissingParam(const std::string & name) const
   {
