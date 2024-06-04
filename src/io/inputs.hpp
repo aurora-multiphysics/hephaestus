@@ -32,13 +32,24 @@ public:
   /// Sets an existing parameter.
   void Set(const std::string & name, std::any value) { _params[name] = value; }
 
-  /// Returns a copy of the stored parameter.
+  /// Returns the stored parameter.
   template <typename T>
   [[nodiscard]] T Get(const std::string & name) const
   {
     CheckForMissingParam(name);
 
-    return std::any_cast<T>(_params.at(name));
+    T param;
+
+    try
+    {
+      param = std::any_cast<T>(_params.at(name));
+    }
+    catch (const std::exception & e)
+    {
+      MFEM_ABORT("Exception raised when trying to cast parameter '" << name << "': " << e.what());
+    }
+
+    return param;
   }
 
   /// Returns the stored parameter or a default if not found.
