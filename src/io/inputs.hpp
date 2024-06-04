@@ -35,25 +35,18 @@ public:
   template <typename T>
   void Set(const std::string & name, T & value)
   {
-    Set<T>(name) = value;
+    CheckForMissingParam(name);
+
+    _params[name] = std::any(value);
   }
 
-  /// Returns a reference to the parameter matching the name.
+  /// Returns a reference to the parameter.
   template <typename T>
-  [[nodiscard]] T & Set(const std::string & name)
+  [[nodiscard]] T Get(const std::string & name) const
   {
     CheckForMissingParam(name);
 
-    return std::any_cast<T &>(_params.at(name));
-  }
-
-  /// Returns a non-writable reference to the parameter.
-  template <typename T>
-  [[nodiscard]] const T & Get(const std::string & name) const
-  {
-    CheckForMissingParam(name);
-
-    return std::any_cast<const T &>(_params.at(name));
+    return std::any_cast<T>(_params.at(name));
   }
 
   /// Returns true if there exists a parameter matching the name.
