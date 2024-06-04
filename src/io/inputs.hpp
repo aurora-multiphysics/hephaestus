@@ -22,6 +22,14 @@ public:
   /// Removes all parameters.
   void Clear() { _params.clear(); }
 
+  /// Removes an existing parameter.
+  void Remove(const std::string & name)
+  {
+    CheckForMissingParam(name);
+
+    _params.erase(name);
+  }
+
   /// Sets an existing parameter.
   template <typename T>
   void Set(const std::string & name, T & value)
