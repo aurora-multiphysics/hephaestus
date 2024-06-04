@@ -116,6 +116,7 @@ protected:
     }
   }
 
+private:
   std::unordered_map<std::string, std::any> _params;
 };
 
