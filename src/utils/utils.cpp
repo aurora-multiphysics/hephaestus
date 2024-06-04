@@ -58,8 +58,8 @@ CleanDivergence(std::shared_ptr<mfem::ParGridFunction> Vec_GF,
   hephaestus::BCMap bcs;
 
   gfs.Register("Vector_GF", Vec_GF);
-  pars.SetParam("VectorGridFunctionName", std::string("Vector_GF"));
-  pars.SetParam("SolverOptions", solve_pars);
+  pars.Set("VectorGridFunctionName", std::string("Vector_GF"));
+  pars.Set("SolverOptions", solve_pars);
   hephaestus::HelmholtzProjector projector(pars);
   projector.Project(gfs, fes, bcs);
 }
@@ -75,9 +75,9 @@ CleanDivergence(hephaestus::GridFunctions & gfs,
   hephaestus::InputParameters pars;
   hephaestus::FESpaces fes;
 
-  pars.SetParam("VectorGridFunctionName", vec_gf_name);
-  pars.SetParam("ScalarGridFunctionName", scalar_gf_name);
-  pars.SetParam("SolverOptions", solve_pars);
+  pars.Set("VectorGridFunctionName", vec_gf_name);
+  pars.Set("ScalarGridFunctionName", scalar_gf_name);
+  pars.Set("SolverOptions", solve_pars);
   hephaestus::HelmholtzProjector projector(pars);
   projector.Project(gfs, fes, bcs);
 }

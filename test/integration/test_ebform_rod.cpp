@@ -92,8 +92,8 @@ protected:
     hephaestus::Sources sources;
 
     hephaestus::InputParameters current_solver_options;
-    current_solver_options.SetParam("Tolerance", float(1.0e-9));
-    current_solver_options.SetParam("MaxIter", (unsigned int)1000);
+    current_solver_options.Set("Tolerance", float(1.0e-9));
+    current_solver_options.Set("MaxIter", (unsigned int)1000);
     sources.Register("source",
                      std::make_shared<hephaestus::ScalarPotentialSource>("source",
                                                                          "electric_potential",
@@ -104,14 +104,14 @@ protected:
                                                                          current_solver_options));
 
     hephaestus::InputParameters params;
-    params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
-    params.SetParam("BoundaryConditions", bc_map);
-    params.SetParam("Coefficients", coefficients);
-    params.SetParam("GridFunctions", gridfunctions);
-    params.SetParam("PreProcessors", preprocessors);
-    params.SetParam("PostProcessors", postprocessors);
-    params.SetParam("Sources", sources);
-    params.SetParam("Outputs", outputs);
+    params.Set("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
+    params.Set("BoundaryConditions", bc_map);
+    params.Set("Coefficients", coefficients);
+    params.Set("GridFunctions", gridfunctions);
+    params.Set("PreProcessors", preprocessors);
+    params.Set("PostProcessors", postprocessors);
+    params.Set("Sources", sources);
+    params.Set("Outputs", outputs);
 
     return params;
   }
@@ -127,15 +127,15 @@ TEST_CASE_METHOD(TestEBFormRod, "TestEBFormRod", "[CheckRun]")
                                                                          "electric_field",
                                                                          "magnetic_flux_density");
 
-  auto bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-  auto coefficients(params.GetParam<hephaestus::Coefficients>("Coefficients"));
-  auto preprocessors(params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
-  auto postprocessors(params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
-  auto sources(params.GetParam<hephaestus::Sources>("Sources"));
-  auto outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
+  auto bc_map(params.Get<hephaestus::BCMap>("BoundaryConditions"));
+  auto coefficients(params.Get<hephaestus::Coefficients>("Coefficients"));
+  auto preprocessors(params.Get<hephaestus::AuxSolvers>("PreProcessors"));
+  auto postprocessors(params.Get<hephaestus::AuxSolvers>("PostProcessors"));
+  auto sources(params.Get<hephaestus::Sources>("Sources"));
+  auto outputs(params.Get<hephaestus::Outputs>("Outputs"));
 
   std::shared_ptr<mfem::ParMesh> pmesh =
-      std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
+      std::make_shared<mfem::ParMesh>(params.Get<mfem::ParMesh>("Mesh"));
   problem_builder->SetMesh(pmesh);
   problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P2"));
   problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P2"));
@@ -154,11 +154,11 @@ TEST_CASE_METHOD(TestEBFormRod, "TestEBFormRod", "[CheckRun]")
   problem->GetOperator()->SetSolverOptions({._tolerance = 1.0e-9, ._max_iteration = 1000});
 
   hephaestus::InputParameters exec_params;
-  exec_params.SetParam("TimeStep", float(0.5));
-  exec_params.SetParam("StartTime", float(0.00));
-  exec_params.SetParam("EndTime", float(2.5));
-  exec_params.SetParam("VisualisationSteps", int(1));
-  exec_params.SetParam("Problem", static_cast<hephaestus::TimeDomainProblem *>(problem.get()));
+  exec_params.Set("TimeStep", float(0.5));
+  exec_params.Set("StartTime", float(0.00));
+  exec_params.Set("EndTime", float(2.5));
+  exec_params.Set("VisualisationSteps", int(1));
+  exec_params.Set("Problem", static_cast<hephaestus::TimeDomainProblem *>(problem.get()));
 
   auto executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
 

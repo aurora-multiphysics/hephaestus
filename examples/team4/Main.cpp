@@ -69,8 +69,8 @@ hephaestus::Sources
 defineSources()
 {
   hephaestus::InputParameters source_solver_options;
-  source_solver_options.SetParam("Tolerance", float(1.0e-20));
-  source_solver_options.SetParam("MaxIter", (unsigned int)2000);
+  source_solver_options.Set("Tolerance", float(1.0e-20));
+  source_solver_options.Set("MaxIter", (unsigned int)2000);
 
   hephaestus::Sources sources;
   sources.Register("source",
@@ -161,11 +161,11 @@ main(int argc, char * argv[])
       {._tolerance = 1.0e-20, ._abs_tolerance = 1.0e-20, ._max_iteration = 500});
 
   hephaestus::InputParameters exec_params;
-  exec_params.SetParam("TimeStep", float(0.001));
-  exec_params.SetParam("StartTime", float(0.00));
-  exec_params.SetParam("EndTime", float(0.02));
-  exec_params.SetParam("VisualisationSteps", int(1));
-  exec_params.SetParam("Problem", static_cast<hephaestus::TimeDomainProblem *>(problem.get()));
+  exec_params.Set("TimeStep", float(0.001));
+  exec_params.Set("StartTime", float(0.00));
+  exec_params.Set("EndTime", float(0.02));
+  exec_params.Set("VisualisationSteps", int(1));
+  exec_params.Set("Problem", static_cast<hephaestus::TimeDomainProblem *>(problem.get()));
 
   auto executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
 

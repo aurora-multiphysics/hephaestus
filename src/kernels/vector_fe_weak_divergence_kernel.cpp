@@ -5,7 +5,7 @@ namespace hephaestus
 
 VectorFEWeakDivergenceKernel::VectorFEWeakDivergenceKernel(
     const hephaestus::InputParameters & params)
-  : Kernel(params), _coef_name(params.GetParam<std::string>("CoefficientName"))
+  : Kernel(params), _coef_name(params.Get<std::string>("CoefficientName"))
 {
 }
 

@@ -107,8 +107,8 @@ hephaestus::Sources
 defineSources()
 {
   hephaestus::InputParameters current_solver_options;
-  current_solver_options.SetParam("Tolerance", float(1.0e-12));
-  current_solver_options.SetParam("MaxIter", (unsigned int)200);
+  current_solver_options.Set("Tolerance", float(1.0e-12));
+  current_solver_options.Set("MaxIter", (unsigned int)200);
 
   hephaestus::Sources sources;
   sources.Register(
@@ -167,9 +167,9 @@ main(int argc, char * argv[])
   problem->GetOperator()->SetSolverOptions({._tolerance = 1.0e-16, ._max_iteration = 1000});
 
   hephaestus::InputParameters exec_params;
-  exec_params.SetParam("VisualisationSteps", int(1));
-  exec_params.SetParam("UseGLVis", true);
-  exec_params.SetParam("Problem", static_cast<hephaestus::SteadyStateProblem *>(problem.get()));
+  exec_params.Set("VisualisationSteps", int(1));
+  exec_params.Set("UseGLVis", true);
+  exec_params.Set("Problem", static_cast<hephaestus::SteadyStateProblem *>(problem.get()));
 
   auto executioner = std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
 

@@ -11,10 +11,10 @@ public:
   DefaultH1PCGSolver(const hephaestus::InputParameters & params, const mfem::HypreParMatrix & M)
     : mfem::HyprePCG(M),
       _amg(M),
-      _tol(params.GetOptionalParam<float>("Tolerance", 1.0e-9)),
-      _abstol(params.GetOptionalParam<float>("AbsTolerance", 1e-16)),
-      _max_iter(params.GetOptionalParam<unsigned int>("MaxIter", 1000)),
-      _print_level(params.GetOptionalParam<int>("PrintLevel", GetGlobalPrintLevel()))
+      _tol(params.GetOptional<float>("Tolerance", 1.0e-9)),
+      _abstol(params.GetOptional<float>("AbsTolerance", 1e-16)),
+      _max_iter(params.GetOptional<unsigned int>("MaxIter", 1000)),
+      _print_level(params.GetOptional<int>("PrintLevel", GetGlobalPrintLevel()))
   {
 
     _amg.SetPrintLevel(_print_level);
@@ -37,10 +37,10 @@ public:
   DefaultJacobiPCGSolver(const hephaestus::InputParameters & params, const mfem::HypreParMatrix & M)
     : mfem::HyprePCG(M),
       _jacobi(M),
-      _tol(params.GetOptionalParam<float>("Tolerance", 1.0e-9)),
-      _abstol(params.GetOptionalParam<float>("AbsTolerance", 1e-16)),
-      _max_iter(params.GetOptionalParam<unsigned int>("MaxIter", 1000)),
-      _print_level(params.GetOptionalParam<int>("PrintLevel", GetGlobalPrintLevel()))
+      _tol(params.GetOptional<float>("Tolerance", 1.0e-9)),
+      _abstol(params.GetOptional<float>("AbsTolerance", 1e-16)),
+      _max_iter(params.GetOptional<unsigned int>("MaxIter", 1000)),
+      _print_level(params.GetOptional<int>("PrintLevel", GetGlobalPrintLevel()))
   {
 
     SetTol(_tol);
@@ -64,10 +64,10 @@ public:
                         mfem::ParFiniteElementSpace * edge_fespace)
     : mfem::HyprePCG(M),
       _ams(M, edge_fespace),
-      _tol(params.GetOptionalParam<float>("Tolerance", 1.0e-16)),
-      _abstol(params.GetOptionalParam<float>("AbsTolerance", 1e-16)),
-      _max_iter(params.GetOptionalParam<unsigned int>("MaxIter", 1000)),
-      _print_level(params.GetOptionalParam<int>("PrintLevel", GetGlobalPrintLevel()))
+      _tol(params.GetOptional<float>("Tolerance", 1.0e-16)),
+      _abstol(params.GetOptional<float>("AbsTolerance", 1e-16)),
+      _max_iter(params.GetOptional<unsigned int>("MaxIter", 1000)),
+      _print_level(params.GetOptional<int>("PrintLevel", GetGlobalPrintLevel()))
   {
 
     _ams.SetSingularProblem();
@@ -93,10 +93,10 @@ public:
                            mfem::ParFiniteElementSpace * edge_fespace)
     : mfem::HypreFGMRES(M),
       _ams(M, edge_fespace),
-      _tol(params.GetOptionalParam<float>("Tolerance", 1e-16)),
-      _max_iter(params.GetOptionalParam<unsigned int>("MaxIter", 100)),
-      _k_dim(params.GetOptionalParam<unsigned int>("KDim", 10)),
-      _print_level(params.GetOptionalParam<int>("PrintLevel", GetGlobalPrintLevel()))
+      _tol(params.GetOptional<float>("Tolerance", 1e-16)),
+      _max_iter(params.GetOptional<unsigned int>("MaxIter", 100)),
+      _k_dim(params.GetOptional<unsigned int>("KDim", 10)),
+      _print_level(params.GetOptional<int>("PrintLevel", GetGlobalPrintLevel()))
   {
 
     _ams.SetSingularProblem();
@@ -120,10 +120,10 @@ public:
   DefaultGMRESSolver(const hephaestus::InputParameters & params, const mfem::HypreParMatrix & M)
     : mfem::HypreGMRES(M),
       _amg(M),
-      _tol(params.GetOptionalParam<float>("Tolerance", 1e-16)),
-      _abstol(params.GetOptionalParam<float>("AbsTolerance", 1e-16)),
-      _max_iter(params.GetOptionalParam<unsigned int>("MaxIter", 1000)),
-      _print_level(params.GetOptionalParam<int>("PrintLevel", GetGlobalPrintLevel()))
+      _tol(params.GetOptional<float>("Tolerance", 1e-16)),
+      _abstol(params.GetOptional<float>("AbsTolerance", 1e-16)),
+      _max_iter(params.GetOptional<unsigned int>("MaxIter", 1000)),
+      _print_level(params.GetOptional<int>("PrintLevel", GetGlobalPrintLevel()))
   {
 
     _amg.SetPrintLevel(_print_level);

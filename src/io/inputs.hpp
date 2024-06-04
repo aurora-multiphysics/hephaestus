@@ -22,38 +22,49 @@ public:
   /// Removes all parameters.
   void Clear() { _params.clear(); }
 
-  /// Adds a new parameter matching the name.
-  template <typename T>
-  void AddParam(const std::string & name, T & value)
+  /// Removes an existing parameter.
+  void Remove(const std::string & name)
   {
-    CheckForDuplicateParam(name);
+    CheckForMissingParam(name);
 
-    _params[name] = std::any(value);
+    _params.erase(name);
   }
 
   /// Sets an existing parameter.
   template <typename T>
   void Set(const std::string & name, T & value)
   {
-    Set<T>(name) = value;
+    Set(name, std::any(value));
   }
 
-  /// Returns a reference to the parameter matching the name.
+  /// Sets an existing parameter.
+  void Set(const std::string & name, std::any value) { _params[name] = value; }
+
+  /// Returns the stored parameter.
   template <typename T>
-  [[nodiscard]] T & Set(const std::string & name)
+  [[nodiscard]] T Get(const std::string & name) const
   {
     CheckForMissingParam(name);
 
-    return std::any_cast<T &>(_params.at(name));
+    T param;
+
+    try
+    {
+      param = std::any_cast<T>(_params.at(name));
+    }
+    catch (const std::exception & e)
+    {
+      MFEM_ABORT("Exception raised when trying to cast parameter '" << name << "': " << e.what());
+    }
+
+    return param;
   }
 
-  /// Returns a non-writable reference to the parameter.
+  /// Returns the stored parameter or a default if not found.
   template <typename T>
-  [[nodiscard]] const T & Get(const std::string & name) const
+  [[nodiscard]] T GetOptional(const std::string & name, T default_value) const
   {
-    CheckForMissingParam(name);
-
-    return std::any_cast<const T &>(_params.at(name));
+    return Has(name) ? Get<T>(name) : default_value;
   }
 
   /// Returns true if there exists a parameter matching the name.
@@ -63,53 +74,7 @@ public:
     return (it != _params.end());
   }
 
-  void SetParam(std::string param_name, std::any value) { _params[param_name] = value; }
-
-  template <typename T>
-  [[nodiscard]] T GetParam(std::string param_name) const
-  {
-    T param;
-
-    try
-    {
-      param = std::any_cast<T>(_params.at(param_name));
-    }
-    catch (const std::exception & e)
-    {
-      MFEM_ABORT("Exception raised when trying to cast required parameter '" << param_name
-                                                                             << "': " << e.what());
-    }
-
-    return param;
-  }
-
-  template <typename T>
-  [[nodiscard]] T GetOptionalParam(std::string param_name, T value) const
-  {
-    T param;
-
-    try
-    {
-      param = std::any_cast<T>(_params.at(param_name));
-    }
-    catch (...)
-    {
-      param = value;
-    }
-
-    return param;
-  }
-
 protected:
-  /// Performs a check for an existing parameter to avoid overwriting it.
-  void CheckForDuplicateParam(const std::string & name) const
-  {
-    if (Has(name))
-    {
-      MFEM_ABORT("Duplicate parameter with name '" << name << "'.");
-    }
-  }
-
   /// Checks for a missing parameter.
   void CheckForMissingParam(const std::string & name) const
   {

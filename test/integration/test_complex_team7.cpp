@@ -127,8 +127,8 @@ protected:
     coefficients._vectors.Register("source", j_src_restricted);
 
     hephaestus::InputParameters current_solver_options;
-    current_solver_options.SetParam("Tolerance", float(1.0e-12));
-    current_solver_options.SetParam("MaxIter", (unsigned int)200);
+    current_solver_options.Set("Tolerance", float(1.0e-12));
+    current_solver_options.Set("MaxIter", (unsigned int)200);
 
     sources.Register(
         "source",
@@ -136,13 +136,13 @@ protected:
             "source", "source", "HCurl", "H1", "electric_potential", current_solver_options));
 
     hephaestus::InputParameters params;
-    params.SetParam("UseGLVis", true);
+    params.Set("UseGLVis", true);
 
-    params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
-    params.SetParam("BoundaryConditions", bc_map);
-    params.SetParam("Coefficients", coefficients);
-    params.SetParam("Outputs", outputs);
-    params.SetParam("Sources", sources);
+    params.Set("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
+    params.Set("BoundaryConditions", bc_map);
+    params.Set("Coefficients", coefficients);
+    params.Set("Outputs", outputs);
+    params.Set("Sources", sources);
     hephaestus::logger.info("Created params ");
     return params;
   }
@@ -151,16 +151,16 @@ protected:
 TEST_CASE_METHOD(TestComplexTeam7, "TestComplexTeam7", "[CheckRun]")
 {
   hephaestus::InputParameters params(TestParams());
-  auto pmesh = std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
+  auto pmesh = std::make_shared<mfem::ParMesh>(params.Get<mfem::ParMesh>("Mesh"));
   mfem::H1_FECollection fecm(1, 3);
   mfem::ParFiniteElementSpace pfespace(pmesh.get(), &fecm, 3);
   // Necessary, in case the nodal FE space is not set on the pmesh because it is lowest order.
   pmesh->SetNodalFESpace(&pfespace);
 
-  auto bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-  auto coefficients(params.GetParam<hephaestus::Coefficients>("Coefficients"));
-  auto sources(params.GetParam<hephaestus::Sources>("Sources"));
-  auto outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
+  auto bc_map(params.Get<hephaestus::BCMap>("BoundaryConditions"));
+  auto coefficients(params.Get<hephaestus::Coefficients>("Coefficients"));
+  auto sources(params.Get<hephaestus::Sources>("Sources"));
+  auto outputs(params.Get<hephaestus::Outputs>("Outputs"));
 
   auto problem_builder =
       std::make_unique<hephaestus::ComplexAFormulation>("magnetic_reluctivity",
@@ -215,7 +215,7 @@ TEST_CASE_METHOD(TestComplexTeam7, "TestComplexTeam7", "[CheckRun]")
   problem->GetOperator()->SetSolverOptions({._tolerance = 1.0e-16, ._max_iteration = 1000});
 
   hephaestus::InputParameters exec_params;
-  exec_params.SetParam("Problem", static_cast<hephaestus::SteadyStateProblem *>(problem.get()));
+  exec_params.Set("Problem", static_cast<hephaestus::SteadyStateProblem *>(problem.get()));
 
   auto executioner = std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
 

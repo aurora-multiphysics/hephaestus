@@ -4,7 +4,7 @@ namespace hephaestus
 {
 
 SteadyExecutioner::SteadyExecutioner(const hephaestus::InputParameters & params)
-  : Executioner(params), _problem(params.GetParam<hephaestus::SteadyStateProblem *>("Problem"))
+  : Executioner(params), _problem(params.Get<hephaestus::SteadyStateProblem *>("Problem"))
 {
 }
 

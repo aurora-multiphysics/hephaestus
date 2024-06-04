@@ -82,8 +82,8 @@ protected:
                      std::make_shared<mfem::VisItDataCollection>("AFormVisIt"));
 
     hephaestus::InputParameters l2errpostprocparams;
-    l2errpostprocparams.SetParam("VariableName", std::string("magnetic_vector_potential"));
-    l2errpostprocparams.SetParam("VectorCoefficientName", std::string("a_exact_coeff"));
+    l2errpostprocparams.Set("VariableName", std::string("magnetic_vector_potential"));
+    l2errpostprocparams.Set("VectorCoefficientName", std::string("a_exact_coeff"));
     hephaestus::AuxSolvers postprocessors;
     postprocessors.Register(
         "L2ErrorPostprocessor",
@@ -98,8 +98,8 @@ protected:
     auto j_src_coef = std::make_shared<mfem::VectorFunctionCoefficient>(3, SourceField);
     coefficients._vectors.Register("source", j_src_coef);
     hephaestus::InputParameters current_solver_options;
-    current_solver_options.SetParam("Tolerance", float(1.0e-12));
-    current_solver_options.SetParam("MaxIter", (unsigned int)200);
+    current_solver_options.Set("Tolerance", float(1.0e-12));
+    current_solver_options.Set("MaxIter", (unsigned int)200);
 
     sources.Register("source",
                      std::make_shared<hephaestus::DivFreeSource>("source",
@@ -111,12 +111,12 @@ protected:
                                                                  false));
 
     hephaestus::InputParameters params;
-    params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
-    params.SetParam("BoundaryConditions", bc_map);
-    params.SetParam("Coefficients", coefficients);
-    params.SetParam("PostProcessors", postprocessors);
-    params.SetParam("Outputs", outputs);
-    params.SetParam("Sources", sources);
+    params.Set("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
+    params.Set("BoundaryConditions", bc_map);
+    params.Set("Coefficients", coefficients);
+    params.Set("PostProcessors", postprocessors);
+    params.Set("Outputs", outputs);
+    params.Set("Sources", sources);
 
     return params;
   }
@@ -125,7 +125,7 @@ protected:
 TEST_CASE_METHOD(TestAFormSource, "TestAForm", "[CheckRun]")
 {
   hephaestus::InputParameters params(TestParams());
-  auto unrefined_pmesh(params.GetParam<mfem::ParMesh>("Mesh"));
+  auto unrefined_pmesh(params.Get<mfem::ParMesh>("Mesh"));
 
   int num_conv_refinements = 3;
   for (int par_ref_levels = 0; par_ref_levels < num_conv_refinements; ++par_ref_levels)
@@ -142,15 +142,15 @@ TEST_CASE_METHOD(TestAFormSource, "TestAForm", "[CheckRun]")
                                                                       "electrical_conductivity",
                                                                       "magnetic_vector_potential");
 
-    auto bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-    auto coefficients(params.GetParam<hephaestus::Coefficients>("Coefficients"));
+    auto bc_map(params.Get<hephaestus::BCMap>("BoundaryConditions"));
+    auto coefficients(params.Get<hephaestus::Coefficients>("Coefficients"));
     //   hephaestus::FESpaces fespaces(
-    //       params.GetParam<hephaestus::FESpaces>("FESpaces"));
+    //       params.Get<hephaestus::FESpaces>("FESpaces"));
     //   hephaestus::GridFunctions gridfunctions(
-    //       params.GetParam<hephaestus::GridFunctions>("GridFunctions"));
-    auto postprocessors(params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
-    auto sources(params.GetParam<hephaestus::Sources>("Sources"));
-    auto outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
+    //       params.Get<hephaestus::GridFunctions>("GridFunctions"));
+    auto postprocessors(params.Get<hephaestus::AuxSolvers>("PostProcessors"));
+    auto sources(params.Get<hephaestus::Sources>("Sources"));
+    auto outputs(params.Get<hephaestus::Outputs>("Outputs"));
 
     problem_builder->SetMesh(pmesh);
     problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P2"));
@@ -170,14 +170,14 @@ TEST_CASE_METHOD(TestAFormSource, "TestAForm", "[CheckRun]")
     problem->GetOperator()->SetSolverOptions({._tolerance = 1.0e-16, ._max_iteration = 1000});
 
     hephaestus::InputParameters exec_params;
-    exec_params.SetParam("TimeStep", float(0.05));
-    exec_params.SetParam("StartTime", float(0.00));
-    exec_params.SetParam("EndTime", float(0.05));
-    exec_params.SetParam("VisualisationSteps", int(1));
+    exec_params.Set("TimeStep", float(0.05));
+    exec_params.Set("StartTime", float(0.00));
+    exec_params.Set("EndTime", float(0.05));
+    exec_params.Set("VisualisationSteps", int(1));
 
     // NB: cast to TimeDomainProblem (TimeDomainEquationSystemProblem inherits from
     // TimeDomainProblem).
-    exec_params.SetParam("Problem", static_cast<hephaestus::TimeDomainProblem *>(problem.get()));
+    exec_params.Set("Problem", static_cast<hephaestus::TimeDomainProblem *>(problem.get()));
 
     auto executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
 
@@ -185,7 +185,7 @@ TEST_CASE_METHOD(TestAFormSource, "TestAForm", "[CheckRun]")
   }
 
   auto l2errpostprocessor =
-      params.GetParam<hephaestus::AuxSolvers>("PostProcessors")
+      params.Get<hephaestus::AuxSolvers>("PostProcessors")
           .Get<hephaestus::L2ErrorVectorPostprocessor>("L2ErrorPostprocessor");
 
   double r;

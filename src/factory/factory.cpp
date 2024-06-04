@@ -158,10 +158,10 @@ Factory::CreateTimeDomainEmFormulation(std::string & formulation)
 std::shared_ptr<mfem::ParFiniteElementSpace>
 Factory::CreateParFESpace(hephaestus::InputParameters params, mfem::ParMesh & pmesh)
 {
-  auto fe_type(params.GetParam<std::string>("FESpaceType"));
-  int order(params.GetParam<int>("order"));
-  int components(params.GetParam<int>("components")); // spatial dimension of mesh. Use
-                                                      // FiniteElementCollection::New instead
+  auto fe_type(params.Get<std::string>("FESpaceType"));
+  int order(params.Get<int>("order"));
+  int components(params.Get<int>("components")); // spatial dimension of mesh. Use
+                                                 // FiniteElementCollection::New instead
   if (fe_type == "H1")
   {
     return std::make_shared<mfem::common::H1_ParFESpace>(&pmesh, order, components);
