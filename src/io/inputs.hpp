@@ -32,6 +32,13 @@ public:
     return std::any_cast<T &>(_params.at(name));
   }
 
+  /// Returns a non-writable reference to the parameter.
+  template <typename T>
+  [[nodiscard]] const T & Get(const std::string & name)
+  {
+    return std::any_cast<const T &>(_params.at(name));
+  }
+
   /// Returns true if there exists a parameter matching the name.
   [[nodiscard]] bool Has(const std::string & name) const
   {
