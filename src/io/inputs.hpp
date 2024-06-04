@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <unordered_map>
 #include <utility>
 
 #include "boundary_conditions.hpp"
@@ -16,7 +17,7 @@ class InputParameters
 {
 public:
   InputParameters() = default;
-  InputParameters(std::map<std::string, std::any> params) : _params(std::move(params)) {}
+  InputParameters(std::unordered_map<std::string, std::any> params) : _params(std::move(params)) {}
 
   /// Adds a new parameter matching the name.
   template <typename T>
@@ -115,7 +116,7 @@ protected:
     }
   }
 
-  std::map<std::string, std::any> _params;
+  std::unordered_map<std::string, std::any> _params;
 };
 
 } // namespace hephaestus
