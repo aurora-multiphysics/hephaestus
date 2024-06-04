@@ -107,8 +107,8 @@ hephaestus::Sources
 defineSources()
 {
   hephaestus::InputParameters current_solver_options;
-  current_solver_options.SetParam("Tolerance", float(1.0e-12));
-  current_solver_options.SetParam("MaxIter", (unsigned int)200);
+  current_solver_options.Set("Tolerance", float(1.0e-12));
+  current_solver_options.Set("MaxIter", (unsigned int)200);
 
   hephaestus::Sources sources;
   sources.Register(
@@ -161,17 +161,17 @@ main(int argc, char * argv[])
   problem_builder->SetOutputs(outputs);
 
   hephaestus::InputParameters solver_options;
-  solver_options.SetParam("Tolerance", float(1.0e-16));
-  solver_options.SetParam("MaxIter", (unsigned int)1000);
+  solver_options.Set("Tolerance", float(1.0e-16));
+  solver_options.Set("MaxIter", (unsigned int)1000);
   problem_builder->SetSolverOptions(solver_options);
 
   problem_builder->FinalizeProblem();
 
   auto problem = problem_builder->ReturnProblem();
   hephaestus::InputParameters exec_params;
-  exec_params.SetParam("VisualisationSteps", int(1));
-  exec_params.SetParam("UseGLVis", true);
-  exec_params.SetParam("Problem", static_cast<hephaestus::SteadyStateProblem *>(problem.get()));
+  exec_params.Set("VisualisationSteps", int(1));
+  exec_params.Set("UseGLVis", true);
+  exec_params.Set("Problem", static_cast<hephaestus::SteadyStateProblem *>(problem.get()));
 
   auto executioner = std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
 

@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <unordered_map>
 #include <utility>
 
 #include "boundary_conditions.hpp"
@@ -14,44 +15,77 @@ namespace hephaestus
 
 class InputParameters
 {
-
-protected:
-  std::map<std::string, std::any> _params;
-
 public:
   InputParameters() = default;
-  InputParameters(std::map<std::string, std::any> _params) : _params(std::move(_params)) {}
-  void SetParam(std::string param_name, std::any value) { _params[param_name] = value; };
-  template <typename T>
-  [[nodiscard]] [[nodiscard]] T GetParam(std::string param_name) const
+  InputParameters(std::unordered_map<std::string, std::any> params) : _params(std::move(params)) {}
+
+  /// Removes all parameters.
+  void Clear() { _params.clear(); }
+
+  /// Removes an existing parameter.
+  void Remove(const std::string & name)
   {
+    CheckForMissingParam(name);
+
+    _params.erase(name);
+  }
+
+  /// Sets an existing parameter.
+  template <typename T>
+  void Set(const std::string & name, T & value)
+  {
+    Set(name, std::any(value));
+  }
+
+  /// Sets an existing parameter.
+  void Set(const std::string & name, std::any value) { _params[name] = value; }
+
+  /// Returns the stored parameter.
+  template <typename T>
+  [[nodiscard]] T Get(const std::string & name) const
+  {
+    CheckForMissingParam(name);
+
     T param;
+
     try
     {
-      param = std::any_cast<T>(_params.at(param_name));
+      param = std::any_cast<T>(_params.at(name));
     }
     catch (const std::exception & e)
     {
-      MFEM_ABORT("Exception raised when trying to cast required parameter '" << param_name
-                                                                             << "': " << e.what());
+      MFEM_ABORT("Exception raised when trying to cast parameter '" << name << "': " << e.what());
     }
+
     return param;
-  };
+  }
+
+  /// Returns the stored parameter or a default if not found.
   template <typename T>
-  [[nodiscard]] [[nodiscard]] [[nodiscard]] T GetOptionalParam(std::string param_name,
-                                                               T value) const
+  [[nodiscard]] T GetOptional(const std::string & name, T default_value) const
   {
-    T param;
-    try
+    return Has(name) ? Get<T>(name) : default_value;
+  }
+
+  /// Returns true if there exists a parameter matching the name.
+  [[nodiscard]] bool Has(const std::string & name) const
+  {
+    auto it = _params.find(name);
+    return (it != _params.end());
+  }
+
+protected:
+  /// Checks for a missing parameter.
+  void CheckForMissingParam(const std::string & name) const
+  {
+    if (!Has(name))
     {
-      param = std::any_cast<T>(_params.at(param_name));
+      MFEM_ABORT("No parameter with name '" << name << "'.");
     }
-    catch (...)
-    {
-      param = value;
-    }
-    return param;
-  };
+  }
+
+private:
+  std::unordered_map<std::string, std::any> _params;
 };
 
 } // namespace hephaestus

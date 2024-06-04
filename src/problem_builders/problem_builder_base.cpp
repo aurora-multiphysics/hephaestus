@@ -222,15 +222,14 @@ ProblemBuilder::ConstructJacobianSolverWithOptions(SolverType type, SolverParams
 {
   const auto & solver_options = GetProblem()->_solver_options;
 
-  const auto tolerance =
-      solver_options.GetOptionalParam<float>("Tolerance", default_params._tolerance);
+  const auto tolerance = solver_options.GetOptional<float>("Tolerance", default_params._tolerance);
   const auto abs_tolerance =
-      solver_options.GetOptionalParam<float>("AbsTolerance", default_params._abs_tolerance);
+      solver_options.GetOptional<float>("AbsTolerance", default_params._abs_tolerance);
   const auto max_iter =
-      solver_options.GetOptionalParam<unsigned int>("MaxIter", default_params._max_iteration);
+      solver_options.GetOptional<unsigned int>("MaxIter", default_params._max_iteration);
   const auto print_level =
-      solver_options.GetOptionalParam<int>("PrintLevel", default_params._print_level);
-  const auto k_dim = solver_options.GetOptionalParam<unsigned int>("KDim", default_params._k_dim);
+      solver_options.GetOptional<int>("PrintLevel", default_params._print_level);
+  const auto k_dim = solver_options.GetOptional<unsigned int>("KDim", default_params._k_dim);
 
   auto preconditioner =
       std::dynamic_pointer_cast<mfem::HypreSolver>(GetProblem()->_jacobian_preconditioner);

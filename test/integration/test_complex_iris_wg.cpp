@@ -100,22 +100,22 @@ protected:
     hephaestus::Sources sources;
 
     hephaestus::InputParameters solver_options;
-    solver_options.SetParam("Tolerance", float(1.0e-16));
-    solver_options.SetParam("MaxIter", (unsigned int)1000);
+    solver_options.Set("Tolerance", float(1.0e-16));
+    solver_options.Set("MaxIter", (unsigned int)1000);
 
     hephaestus::InputParameters params;
-    params.SetParam("UseGLVis", true);
+    params.Set("UseGLVis", true);
 
-    params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
-    params.SetParam("BoundaryConditions", bc_map);
-    params.SetParam("Coefficients", coefficients);
-    params.SetParam("FESpaces", fespaces);
-    params.SetParam("GridFunctions", gridfunctions);
-    params.SetParam("PreProcessors", preprocessors);
-    params.SetParam("PostProcessors", postprocessors);
-    params.SetParam("Outputs", outputs);
-    params.SetParam("Sources", sources);
-    params.SetParam("SolverOptions", solver_options);
+    params.Set("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
+    params.Set("BoundaryConditions", bc_map);
+    params.Set("Coefficients", coefficients);
+    params.Set("FESpaces", fespaces);
+    params.Set("GridFunctions", gridfunctions);
+    params.Set("PreProcessors", preprocessors);
+    params.Set("PostProcessors", postprocessors);
+    params.Set("Outputs", outputs);
+    params.Set("Sources", sources);
+    params.Set("SolverOptions", solver_options);
 
     return params;
   }
@@ -125,7 +125,7 @@ TEST_CASE_METHOD(TestComplexIrisWaveguide, "TestComplexIrisWaveguide", "[CheckRu
 {
   hephaestus::InputParameters params(TestParams());
   std::shared_ptr<mfem::ParMesh> pmesh =
-      std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
+      std::make_shared<mfem::ParMesh>(params.Get<mfem::ParMesh>("Mesh"));
 
   auto problem_builder =
       std::make_unique<hephaestus::ComplexEFormulation>("magnetic_reluctivity",
@@ -136,13 +136,13 @@ TEST_CASE_METHOD(TestComplexIrisWaveguide, "TestComplexIrisWaveguide", "[CheckRu
                                                         "electric_field_real",
                                                         "electric_field_imag");
 
-  auto bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-  auto coefficients(params.GetParam<hephaestus::Coefficients>("Coefficients"));
-  auto preprocessors(params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
-  auto postprocessors(params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
-  auto sources(params.GetParam<hephaestus::Sources>("Sources"));
-  auto outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
-  auto solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
+  auto bc_map(params.Get<hephaestus::BCMap>("BoundaryConditions"));
+  auto coefficients(params.Get<hephaestus::Coefficients>("Coefficients"));
+  auto preprocessors(params.Get<hephaestus::AuxSolvers>("PreProcessors"));
+  auto postprocessors(params.Get<hephaestus::AuxSolvers>("PostProcessors"));
+  auto sources(params.Get<hephaestus::Sources>("Sources"));
+  auto outputs(params.Get<hephaestus::Outputs>("Outputs"));
+  auto solver_options(params.GetOptional<hephaestus::InputParameters>(
       "SolverOptions", hephaestus::InputParameters()));
 
   problem_builder->SetMesh(pmesh);
@@ -179,7 +179,7 @@ TEST_CASE_METHOD(TestComplexIrisWaveguide, "TestComplexIrisWaveguide", "[CheckRu
   auto problem = problem_builder->ReturnProblem();
 
   hephaestus::InputParameters exec_params;
-  exec_params.SetParam("Problem", static_cast<hephaestus::SteadyStateProblem *>(problem.get()));
+  exec_params.Set("Problem", static_cast<hephaestus::SteadyStateProblem *>(problem.get()));
 
   auto executioner = std::make_unique<hephaestus::SteadyExecutioner>(exec_params);
 

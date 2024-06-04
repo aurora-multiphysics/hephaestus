@@ -47,7 +47,7 @@ protected:
     // all...
     // CoupledCoefficients must also be added to AuxSolvers
     hephaestus::InputParameters copper_conductivity_params;
-    copper_conductivity_params.SetParam("CoupledVariableName", std::string("temperature"));
+    copper_conductivity_params.Set("CoupledVariableName", std::string("temperature"));
 
     std::shared_ptr<hephaestus::CoupledCoefficient> wire_conductivity =
         std::make_shared<CopperConductivityCoefficient>(copper_conductivity_params);
@@ -114,8 +114,8 @@ protected:
     hephaestus::Sources sources;
 
     hephaestus::InputParameters current_solver_options;
-    current_solver_options.SetParam("Tolerance", float(1.0e-9));
-    current_solver_options.SetParam("MaxIter", (unsigned int)1000);
+    current_solver_options.Set("Tolerance", float(1.0e-9));
+    current_solver_options.Set("MaxIter", (unsigned int)1000);
     sources.Register("source",
                      std::make_shared<hephaestus::ScalarPotentialSource>("source",
                                                                          "electric_potential",
@@ -126,20 +126,20 @@ protected:
                                                                          current_solver_options));
 
     hephaestus::InputParameters solver_options;
-    solver_options.SetParam("Tolerance", float(1.0e-9));
-    solver_options.SetParam("MaxIter", (unsigned int)1000);
+    solver_options.Set("Tolerance", float(1.0e-9));
+    solver_options.Set("MaxIter", (unsigned int)1000);
 
     hephaestus::InputParameters params;
-    params.SetParam("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
-    params.SetParam("BoundaryConditions", bc_map);
-    params.SetParam("Coefficients", coefficients);
-    params.SetParam("FESpaces", fespaces);
-    params.SetParam("GridFunctions", gridfunctions);
-    params.SetParam("PreProcessors", preprocessors);
-    params.SetParam("PostProcessors", postprocessors);
-    params.SetParam("Sources", sources);
-    params.SetParam("Outputs", outputs);
-    params.SetParam("SolverOptions", solver_options);
+    params.Set("Mesh", mfem::ParMesh(MPI_COMM_WORLD, mesh));
+    params.Set("BoundaryConditions", bc_map);
+    params.Set("Coefficients", coefficients);
+    params.Set("FESpaces", fespaces);
+    params.Set("GridFunctions", gridfunctions);
+    params.Set("PreProcessors", preprocessors);
+    params.Set("PostProcessors", postprocessors);
+    params.Set("Sources", sources);
+    params.Set("Outputs", outputs);
+    params.Set("SolverOptions", solver_options);
 
     return params;
   }
@@ -155,17 +155,17 @@ TEST_CASE_METHOD(TestEBFormCoupled, "TestEBFormCoupled", "[CheckRun]")
                                                                          "electric_field",
                                                                          "magnetic_flux_density");
 
-  auto bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-  auto coefficients(params.GetParam<hephaestus::Coefficients>("Coefficients"));
-  auto preprocessors(params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
-  auto postprocessors(params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
-  auto sources(params.GetParam<hephaestus::Sources>("Sources"));
-  auto outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
-  auto solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
+  auto bc_map(params.Get<hephaestus::BCMap>("BoundaryConditions"));
+  auto coefficients(params.Get<hephaestus::Coefficients>("Coefficients"));
+  auto preprocessors(params.Get<hephaestus::AuxSolvers>("PreProcessors"));
+  auto postprocessors(params.Get<hephaestus::AuxSolvers>("PostProcessors"));
+  auto sources(params.Get<hephaestus::Sources>("Sources"));
+  auto outputs(params.Get<hephaestus::Outputs>("Outputs"));
+  auto solver_options(params.GetOptional<hephaestus::InputParameters>(
       "SolverOptions", hephaestus::InputParameters()));
 
   std::shared_ptr<mfem::ParMesh> pmesh =
-      std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
+      std::make_shared<mfem::ParMesh>(params.Get<mfem::ParMesh>("Mesh"));
   problem_builder->SetMesh(pmesh);
   problem_builder->AddFESpace(std::string("L2"), std::string("L2_3D_P1"));
   problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P1"));
@@ -191,11 +191,11 @@ TEST_CASE_METHOD(TestEBFormCoupled, "TestEBFormCoupled", "[CheckRun]")
 
   auto problem = problem_builder->ReturnProblem();
   hephaestus::InputParameters exec_params;
-  exec_params.SetParam("TimeStep", float(0.5));
-  exec_params.SetParam("StartTime", float(0.00));
-  exec_params.SetParam("EndTime", float(2.5));
-  exec_params.SetParam("VisualisationSteps", int(1));
-  exec_params.SetParam("Problem", static_cast<hephaestus::TimeDomainProblem *>(problem.get()));
+  exec_params.Set("TimeStep", float(0.5));
+  exec_params.Set("StartTime", float(0.00));
+  exec_params.Set("EndTime", float(2.5));
+  exec_params.Set("VisualisationSteps", int(1));
+  exec_params.Set("Problem", static_cast<hephaestus::TimeDomainProblem *>(problem.get()));
 
   auto executioner = std::make_unique<hephaestus::TransientExecutioner>(exec_params);
 
