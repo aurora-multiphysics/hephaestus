@@ -5,10 +5,10 @@ namespace hephaestus
 
 TransientExecutioner::TransientExecutioner(const hephaestus::InputParameters & params)
   : Executioner(params),
-    _problem(params.GetParam<hephaestus::TimeDomainProblem *>("Problem")),
-    _t_step(params.GetParam<float>("TimeStep")),
-    _t_initial(params.GetParam<float>("StartTime")),
-    _t_final(params.GetParam<float>("EndTime")),
+    _problem(params.Get<hephaestus::TimeDomainProblem *>("Problem")),
+    _t_step(params.Get<float>("TimeStep")),
+    _t_initial(params.Get<float>("StartTime")),
+    _t_final(params.Get<float>("EndTime")),
     _t(_t_initial),
     _it(0),
     _vis_steps(params.GetOptionalParam<int>("VisualisationSteps", 1)),

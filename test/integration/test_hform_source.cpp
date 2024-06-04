@@ -143,7 +143,7 @@ protected:
 TEST_CASE_METHOD(TestHFormSource, "TestHFormSource", "[CheckRun]")
 {
   hephaestus::InputParameters params(TestParams());
-  auto unrefined_pmesh(params.GetParam<mfem::ParMesh>("Mesh"));
+  auto unrefined_pmesh(params.Get<mfem::ParMesh>("Mesh"));
 
   int num_conv_refinements = 3;
   for (int par_ref_levels = 0; par_ref_levels < num_conv_refinements; ++par_ref_levels)
@@ -161,16 +161,16 @@ TEST_CASE_METHOD(TestHFormSource, "TestHFormSource", "[CheckRun]")
                                                                       "magnetic_permeability",
                                                                       "magnetic_field");
 
-    auto bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-    auto coefficients(params.GetParam<hephaestus::Coefficients>("Coefficients"));
+    auto bc_map(params.Get<hephaestus::BCMap>("BoundaryConditions"));
+    auto coefficients(params.Get<hephaestus::Coefficients>("Coefficients"));
     //   hephaestus::FESpaces fespaces(
-    //       params.GetParam<hephaestus::FESpaces>("FESpaces"));
+    //       params.Get<hephaestus::FESpaces>("FESpaces"));
     //   hephaestus::GridFunctions gridfunctions(
-    //       params.GetParam<hephaestus::GridFunctions>("GridFunctions"));
-    auto preprocessors(params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
-    auto postprocessors(params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
-    auto sources(params.GetParam<hephaestus::Sources>("Sources"));
-    auto outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
+    //       params.Get<hephaestus::GridFunctions>("GridFunctions"));
+    auto preprocessors(params.Get<hephaestus::AuxSolvers>("PreProcessors"));
+    auto postprocessors(params.Get<hephaestus::AuxSolvers>("PostProcessors"));
+    auto sources(params.Get<hephaestus::Sources>("Sources"));
+    auto outputs(params.Get<hephaestus::Outputs>("Outputs"));
     auto solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
         "SolverOptions", hephaestus::InputParameters()));
 
@@ -203,7 +203,7 @@ TEST_CASE_METHOD(TestHFormSource, "TestHFormSource", "[CheckRun]")
   }
 
   auto l2errpostprocessor =
-      params.GetParam<hephaestus::AuxSolvers>("PostProcessors")
+      params.Get<hephaestus::AuxSolvers>("PostProcessors")
           .Get<hephaestus::L2ErrorVectorPostprocessor>("L2ErrorPostprocessor");
 
   double r;

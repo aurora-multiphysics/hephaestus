@@ -40,7 +40,7 @@ public:
     _params[name] = std::any(value);
   }
 
-  /// Returns a reference to the parameter.
+  /// Returns a copy of the stored parameter.
   template <typename T>
   [[nodiscard]] T Get(const std::string & name) const
   {
@@ -57,24 +57,6 @@ public:
   }
 
   void SetParam(std::string param_name, std::any value) { _params[param_name] = value; }
-
-  template <typename T>
-  [[nodiscard]] T GetParam(std::string param_name) const
-  {
-    T param;
-
-    try
-    {
-      param = std::any_cast<T>(_params.at(param_name));
-    }
-    catch (const std::exception & e)
-    {
-      MFEM_ABORT("Exception raised when trying to cast required parameter '" << param_name
-                                                                             << "': " << e.what());
-    }
-
-    return param;
-  }
 
   template <typename T>
   [[nodiscard]] T GetOptionalParam(std::string param_name, T value) const

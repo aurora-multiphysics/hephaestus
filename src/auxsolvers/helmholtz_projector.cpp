@@ -6,7 +6,7 @@ namespace hephaestus
 HelmholtzProjector::HelmholtzProjector(const hephaestus::InputParameters & params)
   : _h1_fespace_name(params.GetOptionalParam<std::string>("H1FESpaceName", "H1FES_Name")),
     _hcurl_fespace_name(params.GetOptionalParam<std::string>("HCurlFESpaceName", "HCurlFES_Name")),
-    _gf_grad_name(params.GetParam<std::string>("VectorGridFunctionName")),
+    _gf_grad_name(params.Get<std::string>("VectorGridFunctionName")),
     _gf_name(params.GetOptionalParam<std::string>("ScalarGridFunctionName", "ScalarGF_Name")),
 
     _g(nullptr),

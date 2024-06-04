@@ -15,11 +15,11 @@ TEST_CASE("InputParametersTest", "[CheckData]")
   mfem::Array<int> example_array({1, 2, 3});
   params.SetParam("ArrayParam", example_array);
 
-  REQUIRE(params.GetParam<int>("IntegerParam") == example_int);
+  REQUIRE(params.Get<int>("IntegerParam") == example_int);
 
-  REQUIRE(params.GetParam<std::string>("StringParam") == example_string);
+  REQUIRE(params.Get<std::string>("StringParam") == example_string);
 
-  auto stored_array = params.GetParam<mfem::Array<int>>("ArrayParam");
+  auto stored_array = params.Get<mfem::Array<int>>("ArrayParam");
 
   for (int i = 0; i < example_array.Size(); ++i)
     REQUIRE(example_array[i] == stored_array[i]);

@@ -5,9 +5,9 @@ namespace hephaestus
 
 WeakCurlKernel::WeakCurlKernel(const hephaestus::InputParameters & params)
   : Kernel(params),
-    _hcurl_gf_name(params.GetParam<std::string>("HCurlVarName")),
-    _hdiv_gf_name(params.GetParam<std::string>("HDivVarName")),
-    _coef_name(params.GetParam<std::string>("CoefficientName"))
+    _hcurl_gf_name(params.Get<std::string>("HCurlVarName")),
+    _hdiv_gf_name(params.Get<std::string>("HDivVarName")),
+    _coef_name(params.Get<std::string>("CoefficientName"))
 {
 }
 

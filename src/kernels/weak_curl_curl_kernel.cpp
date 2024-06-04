@@ -5,8 +5,8 @@ namespace hephaestus
 
 WeakCurlCurlKernel::WeakCurlCurlKernel(const hephaestus::InputParameters & params)
   : Kernel(params),
-    _coupled_gf_name(params.GetParam<std::string>("CoupledVariableName")),
-    _coef_name(params.GetParam<std::string>("CoefficientName"))
+    _coupled_gf_name(params.Get<std::string>("CoupledVariableName")),
+    _coef_name(params.Get<std::string>("CoefficientName"))
 {
 }
 

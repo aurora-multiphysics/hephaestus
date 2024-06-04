@@ -104,7 +104,7 @@ TEST_CASE_METHOD(TestAVFormRod, "TestAVFormRod", "[CheckRun]")
 {
   hephaestus::InputParameters params(TestParams());
   std::shared_ptr<mfem::ParMesh> pmesh =
-      std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
+      std::make_shared<mfem::ParMesh>(params.Get<mfem::ParMesh>("Mesh"));
 
   auto problem_builder = std::make_unique<hephaestus::AVFormulation>("magnetic_reluctivity",
                                                                      "magnetic_permeability",
@@ -112,12 +112,12 @@ TEST_CASE_METHOD(TestAVFormRod, "TestAVFormRod", "[CheckRun]")
                                                                      "magnetic_vector_potential",
                                                                      "electric_potential");
 
-  auto bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-  auto coefficients(params.GetParam<hephaestus::Coefficients>("Coefficients"));
-  auto preprocessors(params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
-  auto postprocessors(params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
-  auto sources(params.GetParam<hephaestus::Sources>("Sources"));
-  auto outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
+  auto bc_map(params.Get<hephaestus::BCMap>("BoundaryConditions"));
+  auto coefficients(params.Get<hephaestus::Coefficients>("Coefficients"));
+  auto preprocessors(params.Get<hephaestus::AuxSolvers>("PreProcessors"));
+  auto postprocessors(params.Get<hephaestus::AuxSolvers>("PostProcessors"));
+  auto sources(params.Get<hephaestus::Sources>("Sources"));
+  auto outputs(params.Get<hephaestus::Outputs>("Outputs"));
   auto solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
       "SolverOptions", hephaestus::InputParameters()));
 

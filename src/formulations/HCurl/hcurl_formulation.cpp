@@ -107,9 +107,9 @@ HCurlFormulation::RegisterGridFunctions()
 };
 
 CurlCurlEquationSystem::CurlCurlEquationSystem(const hephaestus::InputParameters & params)
-  : _h_curl_var_name(params.GetParam<std::string>("HCurlVarName")),
-    _alpha_coef_name(params.GetParam<std::string>("AlphaCoefName")),
-    _beta_coef_name(params.GetParam<std::string>("BetaCoefName")),
+  : _h_curl_var_name(params.Get<std::string>("HCurlVarName")),
+    _alpha_coef_name(params.Get<std::string>("AlphaCoefName")),
+    _beta_coef_name(params.Get<std::string>("BetaCoefName")),
     _dtalpha_coef_name(std::string("dt_") + _alpha_coef_name)
 {
 }

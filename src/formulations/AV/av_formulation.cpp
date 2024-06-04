@@ -117,10 +117,10 @@ AVFormulation::RegisterCoefficients()
 }
 
 AVEquationSystem::AVEquationSystem(const hephaestus::InputParameters & params)
-  : _a_name(params.GetParam<std::string>("VectorPotentialName")),
-    _v_name(params.GetParam<std::string>("ScalarPotentialName")),
-    _alpha_coef_name(params.GetParam<std::string>("AlphaCoefName")),
-    _beta_coef_name(params.GetParam<std::string>("BetaCoefName")),
+  : _a_name(params.Get<std::string>("VectorPotentialName")),
+    _v_name(params.Get<std::string>("ScalarPotentialName")),
+    _alpha_coef_name(params.Get<std::string>("AlphaCoefName")),
+    _beta_coef_name(params.Get<std::string>("BetaCoefName")),
     _dtalpha_coef_name(std::string("dt_") + _alpha_coef_name),
     _neg_beta_coef_name(std::string("negative_") + _beta_coef_name),
     _neg_coef(-1.0)

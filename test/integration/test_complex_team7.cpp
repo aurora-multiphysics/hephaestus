@@ -156,16 +156,16 @@ protected:
 TEST_CASE_METHOD(TestComplexTeam7, "TestComplexTeam7", "[CheckRun]")
 {
   hephaestus::InputParameters params(TestParams());
-  auto pmesh = std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
+  auto pmesh = std::make_shared<mfem::ParMesh>(params.Get<mfem::ParMesh>("Mesh"));
   mfem::H1_FECollection fecm(1, 3);
   mfem::ParFiniteElementSpace pfespace(pmesh.get(), &fecm, 3);
   // Necessary, in case the nodal FE space is not set on the pmesh because it is lowest order.
   pmesh->SetNodalFESpace(&pfespace);
 
-  auto bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-  auto coefficients(params.GetParam<hephaestus::Coefficients>("Coefficients"));
-  auto sources(params.GetParam<hephaestus::Sources>("Sources"));
-  auto outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
+  auto bc_map(params.Get<hephaestus::BCMap>("BoundaryConditions"));
+  auto coefficients(params.Get<hephaestus::Coefficients>("Coefficients"));
+  auto sources(params.Get<hephaestus::Sources>("Sources"));
+  auto outputs(params.Get<hephaestus::Outputs>("Outputs"));
   auto solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
       "SolverOptions", hephaestus::InputParameters()));
 

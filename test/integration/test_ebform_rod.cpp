@@ -132,17 +132,17 @@ TEST_CASE_METHOD(TestEBFormRod, "TestEBFormRod", "[CheckRun]")
                                                                          "electric_field",
                                                                          "magnetic_flux_density");
 
-  auto bc_map(params.GetParam<hephaestus::BCMap>("BoundaryConditions"));
-  auto coefficients(params.GetParam<hephaestus::Coefficients>("Coefficients"));
-  auto preprocessors(params.GetParam<hephaestus::AuxSolvers>("PreProcessors"));
-  auto postprocessors(params.GetParam<hephaestus::AuxSolvers>("PostProcessors"));
-  auto sources(params.GetParam<hephaestus::Sources>("Sources"));
-  auto outputs(params.GetParam<hephaestus::Outputs>("Outputs"));
+  auto bc_map(params.Get<hephaestus::BCMap>("BoundaryConditions"));
+  auto coefficients(params.Get<hephaestus::Coefficients>("Coefficients"));
+  auto preprocessors(params.Get<hephaestus::AuxSolvers>("PreProcessors"));
+  auto postprocessors(params.Get<hephaestus::AuxSolvers>("PostProcessors"));
+  auto sources(params.Get<hephaestus::Sources>("Sources"));
+  auto outputs(params.Get<hephaestus::Outputs>("Outputs"));
   auto solver_options(params.GetOptionalParam<hephaestus::InputParameters>(
       "SolverOptions", hephaestus::InputParameters()));
 
   std::shared_ptr<mfem::ParMesh> pmesh =
-      std::make_shared<mfem::ParMesh>(params.GetParam<mfem::ParMesh>("Mesh"));
+      std::make_shared<mfem::ParMesh>(params.Get<mfem::ParMesh>("Mesh"));
   problem_builder->SetMesh(pmesh);
   problem_builder->AddFESpace(std::string("HCurl"), std::string("ND_3D_P2"));
   problem_builder->AddFESpace(std::string("H1"), std::string("H1_3D_P2"));
