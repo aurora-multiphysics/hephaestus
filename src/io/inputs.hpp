@@ -19,6 +19,9 @@ public:
   InputParameters() = default;
   InputParameters(std::unordered_map<std::string, std::any> params) : _params(std::move(params)) {}
 
+  /// Removes all parameters.
+  void Clear() { _params.clear(); }
+
   /// Adds a new parameter matching the name.
   template <typename T>
   void AddParam(const std::string & name, T & value)
