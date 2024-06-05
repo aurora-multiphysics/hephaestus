@@ -37,9 +37,8 @@ public:
   /// Sets the solver's options. Then calls ApplySolverOptions.
   void SetSolverOptions(SolverOptions options);
 
-  virtual void Solve() { Solve(*_block_vector); }
-
-  virtual void Solve(mfem::Vector & X) {}
+  /// Override in derived classes to set solve implementation.
+  virtual void Solve() {}
 
   void Mult(const mfem::Vector & x, mfem::Vector & y) const override {}
 

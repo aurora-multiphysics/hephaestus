@@ -36,7 +36,8 @@ public:
 
   void SetTrialVariableNames() override;
   void Init() override;
-  void Solve(mfem::Vector & X) override;
+
+  void Solve() override;
 
 protected:
   void ApplySolverOptions() override;
