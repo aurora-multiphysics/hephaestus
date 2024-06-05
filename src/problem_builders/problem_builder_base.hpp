@@ -119,6 +119,9 @@ protected:
     return static_cast<TDerivedProblem *>(_problem);
   }
 
+  /// Returns pointer to base Problem class.
+  [[nodiscard]] hephaestus::Problem * GetBaseProblem() const { return _problem; }
+
   /// Helper template for returning a unique pointer of the correct class.
   /// Sets _problem = nullptr to avoid double-free.
   template <class TDerivedProblem>
