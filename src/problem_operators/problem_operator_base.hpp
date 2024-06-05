@@ -7,13 +7,13 @@
 namespace hephaestus
 {
 /// Steady-State Problem Operator with no equation system.
-class ProblemOperatorBase : virtual public mfem::Operator
+class ProblemOperator : virtual public mfem::Operator
 {
 public:
-  // ProblemOperatorBase() = delete;
-  explicit ProblemOperatorBase(hephaestus::Problem & problem);
+  // ProblemOperator() = delete;
+  explicit ProblemOperator(hephaestus::Problem & problem);
 
-  ~ProblemOperatorBase() override = default;
+  ~ProblemOperator() override = default;
 
   /// Initialize the problem operator.
   virtual void Init();
@@ -46,7 +46,7 @@ protected:
   /// Use of protected constructor to only allow construction by derived classes.
   /// All problem operator classes are built on-top of this class and it should not
   /// be possible to use directly.
-  // explicit ProblemOperatorBase(hephaestus::Problem & problem);
+  // explicit ProblemOperator(hephaestus::Problem & problem);
 
   /// Override in derived classes to set default solver options. These will be
   /// applied following solver construction.
@@ -127,6 +127,4 @@ private:
   /// The current solver options.
   SolverOptions _solver_options;
 };
-
-using ProblemOperator = ProblemOperatorBase;
 }

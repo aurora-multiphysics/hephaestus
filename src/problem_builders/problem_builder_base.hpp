@@ -12,7 +12,7 @@ namespace hephaestus
 {
 
 /// Forwards declaration.
-class ProblemOperatorBase;
+class ProblemOperator;
 
 /// Base problem class.
 class Problem
@@ -38,7 +38,7 @@ public:
   int _num_procs;
 
   /// Returns a pointer to the operator. See derived classes.
-  [[nodiscard]] virtual hephaestus::ProblemOperatorBase * GetOperator() const = 0;
+  [[nodiscard]] virtual hephaestus::ProblemOperator * GetOperator() const = 0;
 
   /// Call to update on mesh change.
   virtual void Update();
