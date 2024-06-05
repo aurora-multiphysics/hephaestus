@@ -6,12 +6,14 @@
 
 namespace hephaestus
 {
-class ProblemOperatorBase
+/// Steady-State Problem Operator with no equation system.
+class ProblemOperatorBase : virtual public mfem::Operator
 {
 public:
-  ProblemOperatorBase() = delete;
+  // ProblemOperatorBase() = delete;
+  explicit ProblemOperatorBase(hephaestus::Problem & problem);
 
-  virtual ~ProblemOperatorBase() = default;
+  ~ProblemOperatorBase() override = default;
 
   /// Initialize the problem operator.
   virtual void Init();
@@ -34,11 +36,17 @@ public:
   /// Sets the solver's options. Then calls ApplySolverOptions.
   void SetSolverOptions(SolverOptions options);
 
+  virtual void Solve() { Solve(*_block_vector); }
+
+  virtual void Solve(mfem::Vector & X) {}
+
+  void Mult(const mfem::Vector & x, mfem::Vector & y) const override {}
+
 protected:
   /// Use of protected constructor to only allow construction by derived classes.
   /// All problem operator classes are built on-top of this class and it should not
   /// be possible to use directly.
-  explicit ProblemOperatorBase(hephaestus::Problem & problem);
+  // explicit ProblemOperatorBase(hephaestus::Problem & problem);
 
   /// Override in derived classes to set default solver options. These will be
   /// applied following solver construction.
@@ -62,10 +70,10 @@ protected:
   virtual void SetTrialVariables();
 
   /// Returns a reference to the operator's width.
-  virtual int & Width() = 0;
+  virtual int & Width() { return mfem::Operator::width; }
 
   /// Returns a reference to the operator's height.
-  virtual int & Height() = 0;
+  virtual int & Height() { return mfem::Operator::height; }
 
   /// Returns the solution vector size. By default this will be the same as the
   /// number of trial variables.

@@ -6,21 +6,6 @@
 
 namespace hephaestus
 {
-/// Steady-state problem operator with no equation system.
-class ProblemOperator : public mfem::Operator, public ProblemOperatorBase
-{
-public:
-  ProblemOperator(hephaestus::Problem & problem) : ProblemOperatorBase(problem) {}
-  ~ProblemOperator() override = default;
-
-  virtual void Solve() { Solve(*_block_vector); }
-
-  virtual void Solve(mfem::Vector & X) {}
-  void Mult(const mfem::Vector & x, mfem::Vector & y) const override {}
-
-protected:
-  int & Width() final { return mfem::Operator::width; }
-  int & Height() final { return mfem::Operator::height; }
-};
+using ProblemOperator = ProblemOperatorBase;
 
 } // namespace hephaestus
