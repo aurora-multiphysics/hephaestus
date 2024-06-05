@@ -42,10 +42,10 @@ StaticsFormulation::ConstructOperator()
 {
   InputParameters params;
   params.Set("Problem", GetBaseProblem());
+  params.Set("HCurlVarName", _h_curl_var_name);
+  params.Set("StiffnessCoefName", _alpha_coef_name);
 
-  auto new_operator =
-      std::make_unique<hephaestus::StaticsOperator>(params, _h_curl_var_name, _alpha_coef_name);
-
+  auto new_operator = std::make_unique<hephaestus::StaticsOperator>(params);
   GetProblem()->SetOperator(std::move(new_operator));
 }
 
@@ -79,12 +79,10 @@ StaticsFormulation::RegisterCoefficients()
   }
 }
 
-StaticsOperator::StaticsOperator(const hephaestus::InputParameters & params,
-                                 std::string h_curl_var_name,
-                                 std::string stiffness_coef_name)
+StaticsOperator::StaticsOperator(const hephaestus::InputParameters & params)
   : ProblemOperator(params),
-    _h_curl_var_name(std::move(h_curl_var_name)),
-    _stiffness_coef_name(std::move(stiffness_coef_name))
+    _h_curl_var_name(params.Get<std::string>("HCurlVarName")),
+    _stiffness_coef_name(params.Get<std::string>("StiffnessCoefName"))
 {
 }
 

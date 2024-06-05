@@ -60,13 +60,7 @@ protected:
 class ComplexMaxwellOperator : public ProblemOperator
 {
 public:
-  ComplexMaxwellOperator(const hephaestus::InputParameters & params,
-                         std::string h_curl_var_complex_name,
-                         std::string h_curl_var_real_name,
-                         std::string h_curl_var_imag_name,
-                         std::string stiffness_coef_name,
-                         std::string mass_coef_name,
-                         std::string loss_coef_name);
+  ComplexMaxwellOperator(const hephaestus::InputParameters & params);
 
   ~ComplexMaxwellOperator() override = default;
 

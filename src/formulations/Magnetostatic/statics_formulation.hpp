@@ -28,9 +28,7 @@ protected:
 class StaticsOperator : public ProblemOperator
 {
 public:
-  StaticsOperator(const InputParameters & params,
-                  std::string h_curl_var_name,
-                  std::string stiffness_coef_name);
+  StaticsOperator(const InputParameters & params);
 
   ~StaticsOperator() override = default;
 

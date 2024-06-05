@@ -29,15 +29,14 @@ ComplexMaxwellFormulation::ConstructOperator()
 {
   InputParameters params;
   params.Set("Problem", GetBaseProblem());
+  params.Set("HCurlVarComplexName", _h_curl_var_complex_name);
+  params.Set("HCurlVarRealName", _h_curl_var_real_name);
+  params.Set("HCurlVarImagName", _h_curl_var_imag_name);
+  params.Set("StiffnessCoefName", _alpha_coef_name);
+  params.Set("MassCoefName", _mass_coef_name);
+  params.Set("LossCoefName", _loss_coef_name);
 
-  auto new_operator = std::make_unique<hephaestus::ComplexMaxwellOperator>(params,
-                                                                           _h_curl_var_complex_name,
-                                                                           _h_curl_var_real_name,
-                                                                           _h_curl_var_imag_name,
-                                                                           _alpha_coef_name,
-                                                                           _mass_coef_name,
-                                                                           _loss_coef_name);
-
+  auto new_operator = std::make_unique<hephaestus::ComplexMaxwellOperator>(params);
   GetProblem()->SetOperator(std::move(new_operator));
 }
 
@@ -122,20 +121,14 @@ ComplexMaxwellFormulation::RegisterCoefficients()
           &_one_coef, coefficients._scalars.Get("magnetic_permeability"), fracFunc));
 }
 
-ComplexMaxwellOperator::ComplexMaxwellOperator(const hephaestus::InputParameters & params,
-                                               std::string h_curl_var_complex_name,
-                                               std::string h_curl_var_real_name,
-                                               std::string h_curl_var_imag_name,
-                                               std::string stiffness_coef_name,
-                                               std::string mass_coef_name,
-                                               std::string loss_coef_name)
+ComplexMaxwellOperator::ComplexMaxwellOperator(const hephaestus::InputParameters & params)
   : ProblemOperator(params),
-    _h_curl_var_complex_name(std::move(h_curl_var_complex_name)),
-    _h_curl_var_real_name(std::move(h_curl_var_real_name)),
-    _h_curl_var_imag_name(std::move(h_curl_var_imag_name)),
-    _stiffness_coef_name(std::move(stiffness_coef_name)),
-    _mass_coef_name(std::move(mass_coef_name)),
-    _loss_coef_name(std::move(loss_coef_name))
+    _h_curl_var_complex_name(params.Get<std::string>("HCurlVarComplexName")),
+    _h_curl_var_real_name(params.Get<std::string>("HCurlVarRealName")),
+    _h_curl_var_imag_name(params.Get<std::string>("HCurlVarImagName")),
+    _stiffness_coef_name(params.Get<std::string>("StiffnessCoefName")),
+    _mass_coef_name(params.Get<std::string>("MassCoefName")),
+    _loss_coef_name(params.Get<std::string>("LossCoefName"))
 {
 }
 
