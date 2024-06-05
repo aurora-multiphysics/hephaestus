@@ -40,6 +40,12 @@ TimeDomainProblemOperator::Solve()
 }
 
 void
+TimeDomainProblemOperator::Step(mfem::real_t & t, mfem::real_t & dt)
+{
+  _ode_solver->Step(*_block_vector, t, dt);
+}
+
+void
 TimeDomainProblemOperator::ConstructTimestepper()
 {
   _ode_solver = std::make_unique<mfem::BackwardEulerSolver>();

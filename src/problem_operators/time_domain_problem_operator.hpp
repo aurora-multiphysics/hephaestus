@@ -25,10 +25,7 @@ public:
   void Solve() final;
 
   /// Wrapper around the ODE solver's Step method using the block vector.
-  virtual void Step(mfem::real_t & t, mfem::real_t & dt)
-  {
-    _ode_solver->Step(*_block_vector, t, dt);
-  }
+  void Step(mfem::real_t & t, mfem::real_t & dt);
 
   void Init() override;
 
