@@ -38,9 +38,9 @@ public:
   void SetSolverOptions(SolverOptions options);
 
   /// Override in derived classes to set solve implementation.
-  virtual void Solve() {}
+  virtual void Solve();
 
-  void Mult(const mfem::Vector & x, mfem::Vector & y) const override {}
+  void Mult(const mfem::Vector & x, mfem::Vector & y) const override;
 
 protected:
   /// Override in derived classes to set default solver options. These will be

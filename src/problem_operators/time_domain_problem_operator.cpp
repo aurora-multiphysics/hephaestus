@@ -26,6 +26,20 @@ TimeDomainProblemOperator::TimeDomainProblemOperator(hephaestus::Problem & probl
 }
 
 void
+TimeDomainProblemOperator::ImplicitSolve(const double dt,
+                                         const mfem::Vector & X,
+                                         mfem::Vector & dX_dt)
+{
+  MFEM_ABORT("Not implemented.");
+}
+
+void
+TimeDomainProblemOperator::Solve()
+{
+  MFEM_ABORT("Not implemented for time-dependent problem operators.");
+}
+
+void
 TimeDomainProblemOperator::ConstructTimestepper()
 {
   _ode_solver = std::make_unique<mfem::BackwardEulerSolver>();

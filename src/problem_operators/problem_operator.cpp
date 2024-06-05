@@ -16,6 +16,18 @@ ProblemOperator::DefaultSolverOptions() const
 }
 
 void
+ProblemOperator::Solve()
+{
+  MFEM_ABORT("Not implemented.");
+}
+
+void
+ProblemOperator::Mult(const mfem::Vector & x, mfem::Vector & y) const
+{
+  MFEM_ABORT("Not implemented.");
+}
+
+void
 ProblemOperator::ConstructJacobianSolver()
 {
   auto precond = std::make_unique<mfem::HypreBoomerAMG>();

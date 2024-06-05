@@ -18,7 +18,11 @@ public:
   TimeDomainProblemOperator(hephaestus::Problem & problem);
   ~TimeDomainProblemOperator() override = default;
 
-  void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override {}
+  void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
+
+  /// @note Only valid for steady-state problems. Final prevents it being implemented
+  /// in a derived class.
+  void Solve() final;
 
   /// Wrapper around the ODE solver's Step method using the block vector.
   virtual void Step(mfem::real_t & t, mfem::real_t & dt)
