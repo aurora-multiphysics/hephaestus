@@ -10,7 +10,8 @@ namespace hephaestus
 class ProblemOperator : virtual public mfem::Operator
 {
 public:
-  // ProblemOperator() = delete;
+  ProblemOperator() = delete;
+
   explicit ProblemOperator(hephaestus::Problem & problem);
 
   ~ProblemOperator() override = default;
