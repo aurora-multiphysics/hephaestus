@@ -1,7 +1,7 @@
 #pragma once
 #include "../common/pfem_extras.hpp"
 #include "hephaestus_solvers.hpp"
-#include "problem_operator.hpp"
+#include "problem_operator_base.hpp"
 
 namespace hephaestus
 {

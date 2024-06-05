@@ -127,4 +127,6 @@ private:
   /// The current solver options.
   SolverOptions _solver_options;
 };
+
+using ProblemOperator = ProblemOperatorBase;
 }
