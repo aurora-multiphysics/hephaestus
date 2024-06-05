@@ -31,9 +31,9 @@ protected:
 class HCurlProblemOperator : public TimeDomainEquationSystemProblemOperator
 {
 public:
-  HCurlProblemOperator(hephaestus::Problem & problem,
+  HCurlProblemOperator(const hephaestus::InputParameters & params,
                        std::unique_ptr<hephaestus::TimeDependentEquationSystem> equation_system)
-    : TimeDomainEquationSystemProblemOperator(problem, std::move(equation_system))
+    : TimeDomainEquationSystemProblemOperator(params, std::move(equation_system))
   {
   }
 

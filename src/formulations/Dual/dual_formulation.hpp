@@ -49,9 +49,9 @@ public:
 class DualOperator : public TimeDomainEquationSystemProblemOperator
 {
 public:
-  DualOperator(hephaestus::Problem & problem,
+  DualOperator(const hephaestus::InputParameters & params,
                std::unique_ptr<TimeDependentEquationSystem> equation_system)
-    : TimeDomainEquationSystemProblemOperator(problem, std::move(equation_system))
+    : TimeDomainEquationSystemProblemOperator(params, std::move(equation_system))
   {
   }
 

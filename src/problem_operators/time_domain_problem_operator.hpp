@@ -16,7 +16,7 @@ std::vector<std::string> GetTimeDerivativeNames(std::vector<std::string> gridfun
 class TimeDomainProblemOperator : public mfem::TimeDependentOperator, public ProblemOperatorBase
 {
 public:
-  TimeDomainProblemOperator(hephaestus::Problem & problem);
+  TimeDomainProblemOperator(const hephaestus::InputParameters & params);
   ~TimeDomainProblemOperator() override = default;
 
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override {}

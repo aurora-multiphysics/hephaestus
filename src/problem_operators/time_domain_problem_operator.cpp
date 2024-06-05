@@ -20,8 +20,8 @@ GetTimeDerivativeNames(std::vector<std::string> gridfunction_names)
   return time_derivative_names;
 }
 
-TimeDomainProblemOperator::TimeDomainProblemOperator(hephaestus::Problem & problem)
-  : ProblemOperatorBase(problem)
+TimeDomainProblemOperator::TimeDomainProblemOperator(const InputParameters & params)
+  : ProblemOperatorBase(params)
 {
 }
 

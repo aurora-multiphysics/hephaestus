@@ -12,11 +12,11 @@ class TimeDomainEquationSystemProblemOperator : public TimeDomainProblemOperator
                                                 public EquationSystemInterface
 {
 public:
-  TimeDomainEquationSystemProblemOperator(hephaestus::Problem &) = delete;
+  TimeDomainEquationSystemProblemOperator(const hephaestus::InputParameters &) = delete;
   TimeDomainEquationSystemProblemOperator(
-      hephaestus::Problem & problem,
+      const hephaestus::InputParameters & params,
       std::unique_ptr<hephaestus::TimeDependentEquationSystem> equation_system)
-    : TimeDomainProblemOperator(problem), _equation_system{std::move(equation_system)}
+    : TimeDomainProblemOperator(params), _equation_system{std::move(equation_system)}
   {
   }
 

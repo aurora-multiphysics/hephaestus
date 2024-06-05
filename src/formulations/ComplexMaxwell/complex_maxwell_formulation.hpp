@@ -60,7 +60,7 @@ protected:
 class ComplexMaxwellOperator : public ProblemOperator
 {
 public:
-  ComplexMaxwellOperator(hephaestus::Problem & problem,
+  ComplexMaxwellOperator(const hephaestus::InputParameters & params,
                          std::string h_curl_var_complex_name,
                          std::string h_curl_var_real_name,
                          std::string h_curl_var_imag_name,

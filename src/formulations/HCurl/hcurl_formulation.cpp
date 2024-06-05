@@ -62,8 +62,11 @@ HCurlFormulation::ConstructOperator()
 
   auto equation_system = std::make_unique<hephaestus::CurlCurlEquationSystem>(weak_form_params);
 
-  GetProblem()->SetOperator(std::make_unique<hephaestus::HCurlProblemOperator>(
-      *GetProblem(), std::move(equation_system)));
+  InputParameters params;
+  params.Set("Problem", GetBaseProblem());
+
+  GetProblem()->SetOperator(
+      std::make_unique<hephaestus::HCurlProblemOperator>(params, std::move(equation_system)));
 }
 
 void

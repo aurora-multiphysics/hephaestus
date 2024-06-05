@@ -27,7 +27,10 @@ ComplexMaxwellFormulation::ComplexMaxwellFormulation(std::string alpha_coef_name
 void
 ComplexMaxwellFormulation::ConstructOperator()
 {
-  auto new_operator = std::make_unique<hephaestus::ComplexMaxwellOperator>(*GetProblem(),
+  InputParameters params;
+  params.Set("Problem", GetBaseProblem());
+
+  auto new_operator = std::make_unique<hephaestus::ComplexMaxwellOperator>(params,
                                                                            _h_curl_var_complex_name,
                                                                            _h_curl_var_real_name,
                                                                            _h_curl_var_imag_name,
@@ -119,14 +122,14 @@ ComplexMaxwellFormulation::RegisterCoefficients()
           &_one_coef, coefficients._scalars.Get("magnetic_permeability"), fracFunc));
 }
 
-ComplexMaxwellOperator::ComplexMaxwellOperator(hephaestus::Problem & problem,
+ComplexMaxwellOperator::ComplexMaxwellOperator(const hephaestus::InputParameters & params,
                                                std::string h_curl_var_complex_name,
                                                std::string h_curl_var_real_name,
                                                std::string h_curl_var_imag_name,
                                                std::string stiffness_coef_name,
                                                std::string mass_coef_name,
                                                std::string loss_coef_name)
-  : ProblemOperator(problem),
+  : ProblemOperator(params),
     _h_curl_var_complex_name(std::move(h_curl_var_complex_name)),
     _h_curl_var_real_name(std::move(h_curl_var_real_name)),
     _h_curl_var_imag_name(std::move(h_curl_var_imag_name)),

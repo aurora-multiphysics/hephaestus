@@ -35,7 +35,10 @@ TimeDomainProblemBuilder::RegisterGridFunctions()
 void
 TimeDomainProblemBuilder::ConstructOperator()
 {
-  auto problem_operator = std::make_unique<hephaestus::TimeDomainProblemOperator>(*GetProblem());
+  InputParameters params;
+  params.Set("Problem", GetBaseProblem());
+
+  auto problem_operator = std::make_unique<hephaestus::TimeDomainProblemOperator>(params);
   GetProblem()->SetOperator(std::move(problem_operator));
 }
 

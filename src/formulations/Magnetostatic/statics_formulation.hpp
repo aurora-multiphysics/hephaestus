@@ -28,7 +28,7 @@ protected:
 class StaticsOperator : public ProblemOperator
 {
 public:
-  StaticsOperator(hephaestus::Problem & problem,
+  StaticsOperator(const InputParameters & params,
                   std::string h_curl_var_name,
                   std::string stiffness_coef_name);
 

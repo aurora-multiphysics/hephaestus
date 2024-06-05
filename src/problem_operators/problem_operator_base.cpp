@@ -3,7 +3,10 @@
 namespace hephaestus
 {
 
-ProblemOperatorBase::ProblemOperatorBase(hephaestus::Problem & problem) : _problem{problem} {}
+ProblemOperatorBase::ProblemOperatorBase(const hephaestus::InputParameters & params)
+  : _problem{*params.Get<hephaestus::Problem *>("Problem")}
+{
+}
 
 ProblemOperatorBase::SolverOptions
 ProblemOperatorBase::DefaultSolverOptions() const

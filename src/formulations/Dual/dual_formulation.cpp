@@ -69,8 +69,11 @@ DualFormulation::ConstructOperator()
 
   auto equation_system = std::make_unique<hephaestus::WeakCurlEquationSystem>(weak_form_params);
 
+  InputParameters params;
+  params.Set("Problem", GetBaseProblem());
+
   GetProblem()->SetOperator(
-      std::make_unique<hephaestus::DualOperator>(*GetProblem(), std::move(equation_system)));
+      std::make_unique<hephaestus::DualOperator>(params, std::move(equation_system)));
 }
 
 void

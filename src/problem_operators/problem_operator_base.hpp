@@ -38,7 +38,7 @@ protected:
   /// Use of protected constructor to only allow construction by derived classes.
   /// All problem operator classes are built on-top of this class and it should not
   /// be possible to use directly.
-  explicit ProblemOperatorBase(hephaestus::Problem & problem);
+  explicit ProblemOperatorBase(const hephaestus::InputParameters & params);
 
   /// Override in derived classes to set default solver options. These will be
   /// applied following solver construction.

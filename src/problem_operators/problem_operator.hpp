@@ -10,7 +10,7 @@ namespace hephaestus
 class ProblemOperator : public mfem::Operator, public ProblemOperatorBase
 {
 public:
-  ProblemOperator(hephaestus::Problem & problem) : ProblemOperatorBase(problem) {}
+  ProblemOperator(const InputParameters & params) : ProblemOperatorBase(params) {}
   ~ProblemOperator() override = default;
 
   virtual void Solve() { Solve(*_block_vector); }

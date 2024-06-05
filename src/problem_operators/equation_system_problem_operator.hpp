@@ -9,11 +9,11 @@ namespace hephaestus
 class EquationSystemProblemOperator : public ProblemOperator, public EquationSystemInterface
 {
 public:
-  EquationSystemProblemOperator(hephaestus::Problem &) = delete;
+  EquationSystemProblemOperator(const hephaestus::InputParameters &) = delete;
 
-  EquationSystemProblemOperator(hephaestus::Problem & problem,
+  EquationSystemProblemOperator(const hephaestus::InputParameters & params,
                                 std::unique_ptr<hephaestus::EquationSystem> equation_system)
-    : ProblemOperator(problem), _equation_system(std::move(equation_system))
+    : ProblemOperator(params), _equation_system(std::move(equation_system))
   {
   }
 

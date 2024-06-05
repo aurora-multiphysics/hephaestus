@@ -6,7 +6,10 @@ namespace hephaestus
 void
 SteadyStateProblemBuilder::ConstructOperator()
 {
-  auto problem_operator = std::make_unique<hephaestus::ProblemOperator>(*GetProblem());
+  InputParameters params;
+  params.Set("Problem", GetBaseProblem());
+
+  auto problem_operator = std::make_unique<hephaestus::ProblemOperator>(params);
   GetProblem()->SetOperator(std::move(problem_operator));
 }
 
