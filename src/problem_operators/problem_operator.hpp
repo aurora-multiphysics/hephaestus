@@ -43,11 +43,6 @@ public:
   void Mult(const mfem::Vector & x, mfem::Vector & y) const override {}
 
 protected:
-  /// Use of protected constructor to only allow construction by derived classes.
-  /// All problem operator classes are built on-top of this class and it should not
-  /// be possible to use directly.
-  // explicit ProblemOperator(hephaestus::Problem & problem);
-
   /// Override in derived classes to set default solver options. These will be
   /// applied following solver construction.
   virtual SolverOptions DefaultSolverOptions() const;
