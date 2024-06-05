@@ -1,8 +1,7 @@
 #pragma once
 #include "../common/pfem_extras.hpp"
 #include "hephaestus_solvers.hpp"
-#include "problem_builder_base.hpp"
-#include "problem_operator_base.hpp"
+#include "problem_operator.hpp"
 
 namespace hephaestus
 {
@@ -13,19 +12,20 @@ std::vector<std::string> GetTimeDerivativeNames(std::vector<std::string> gridfun
 
 /// Problem operator for time-dependent problems with no equation system. The user will need to subclass this since the solve is not
 /// implemented.
-class TimeDomainProblemOperator : public mfem::TimeDependentOperator, public ProblemOperatorBase
+class TimeDomainProblemOperator : virtual public mfem::TimeDependentOperator, public ProblemOperator
 {
 public:
   TimeDomainProblemOperator(hephaestus::Problem & problem);
   ~TimeDomainProblemOperator() override = default;
 
-  void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override {}
+  void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
+
+  /// @note Only valid for steady-state problems. Final prevents it being implemented
+  /// in a derived class.
+  void Solve() final;
 
   /// Wrapper around the ODE solver's Step method using the block vector.
-  virtual void Step(mfem::real_t & t, mfem::real_t & dt)
-  {
-    _ode_solver->Step(*_block_vector, t, dt);
-  }
+  void Step(mfem::real_t & t, mfem::real_t & dt);
 
   void Init() override;
 

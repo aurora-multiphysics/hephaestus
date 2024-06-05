@@ -136,7 +136,7 @@ Fully discretised equations
 (α∇×u, ∇×u') - (s0, u') - <(α∇×u) × n, u'> = 0
 */
 void
-StaticsOperator::Solve(mfem::Vector & X)
+StaticsOperator::Solve()
 {
   spdlog::stopwatch sw;
 

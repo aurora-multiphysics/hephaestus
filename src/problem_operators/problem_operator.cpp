@@ -1,12 +1,12 @@
-#include "problem_operator_base.hpp"
+#include "problem_operator.hpp"
 
 namespace hephaestus
 {
 
-ProblemOperatorBase::ProblemOperatorBase(hephaestus::Problem & problem) : _problem{problem} {}
+ProblemOperator::ProblemOperator(hephaestus::Problem & problem) : _problem{problem} {}
 
-ProblemOperatorBase::SolverOptions
-ProblemOperatorBase::DefaultSolverOptions() const
+ProblemOperator::SolverOptions
+ProblemOperator::DefaultSolverOptions() const
 {
   return {._tolerance = 1e-16,
           ._abs_tolerance = 1e-16,
@@ -16,7 +16,19 @@ ProblemOperatorBase::DefaultSolverOptions() const
 }
 
 void
-ProblemOperatorBase::ConstructJacobianSolver()
+ProblemOperator::Solve()
+{
+  MFEM_ABORT("Not implemented.");
+}
+
+void
+ProblemOperator::Mult(const mfem::Vector & x, mfem::Vector & y) const
+{
+  MFEM_ABORT("Not implemented.");
+}
+
+void
+ProblemOperator::ConstructJacobianSolver()
 {
   auto precond = std::make_unique<mfem::HypreBoomerAMG>();
   precond->SetPrintLevel(GetGlobalPrintLevel());
@@ -29,14 +41,14 @@ ProblemOperatorBase::ConstructJacobianSolver()
 }
 
 void
-ProblemOperatorBase::ConstructJacobianSolverAndApplyOptions()
+ProblemOperator::ConstructJacobianSolverAndApplyOptions()
 {
   ConstructJacobianSolver();
   ApplySolverOptions();
 }
 
 void
-ProblemOperatorBase::SetSolverOptions(SolverOptions options)
+ProblemOperator::SetSolverOptions(SolverOptions options)
 {
   // Store the options for future.
   _solver_options = std::move(options);
@@ -44,7 +56,7 @@ ProblemOperatorBase::SetSolverOptions(SolverOptions options)
 }
 
 void
-ProblemOperatorBase::ApplySolverOptions()
+ProblemOperator::ApplySolverOptions()
 {
   auto & solver = static_cast<mfem::HypreGMRES &>(*_jacobian_solver);
 
@@ -56,7 +68,7 @@ ProblemOperatorBase::ApplySolverOptions()
 }
 
 void
-ProblemOperatorBase::ConstructNonlinearSolver()
+ProblemOperator::ConstructNonlinearSolver()
 {
   _nonlinear_solver = std::make_unique<mfem::NewtonSolver>(_problem._comm);
 
@@ -67,7 +79,7 @@ ProblemOperatorBase::ConstructNonlinearSolver()
 }
 
 void
-ProblemOperatorBase::SetTrialVariables()
+ProblemOperator::SetTrialVariables()
 {
   SetTrialVariableNames();
 
@@ -75,19 +87,19 @@ ProblemOperatorBase::SetTrialVariables()
 }
 
 int
-ProblemOperatorBase::GetSolutionVectorSize() const
+ProblemOperator::GetSolutionVectorSize() const
 {
   return static_cast<int>(GetTrialVariablesSize());
 }
 
 int
-ProblemOperatorBase::GetTrialVariablesSize() const
+ProblemOperator::GetTrialVariablesSize() const
 {
   return static_cast<int>(_trial_variables.size());
 }
 
 void
-ProblemOperatorBase::UpdateOffsets()
+ProblemOperator::UpdateOffsets()
 {
   if (GetSolutionVectorSize() > GetTrialVariablesSize())
   {
@@ -123,7 +135,7 @@ ProblemOperatorBase::UpdateOffsets()
 }
 
 void
-ProblemOperatorBase::UpdateBlockVector(mfem::BlockVector & X)
+ProblemOperator::UpdateBlockVector(mfem::BlockVector & X)
 {
   X.Update(_true_offsets);
 
@@ -137,7 +149,7 @@ ProblemOperatorBase::UpdateBlockVector(mfem::BlockVector & X)
 }
 
 void
-ProblemOperatorBase::Init()
+ProblemOperator::Init()
 {
   _block_vector = std::make_unique<mfem::BlockVector>();
   _solver_options = DefaultSolverOptions();
@@ -152,9 +164,9 @@ ProblemOperatorBase::Init()
 }
 
 void
-ProblemOperatorBase::Update()
+ProblemOperator::Update()
 {
-  logger.debug("Update called for ProblemOperatorBase.");
+  logger.debug("Update called for ProblemOperator.");
 
   // Recalculate the offsets from gridfunction trial variables.
   UpdateOffsets();

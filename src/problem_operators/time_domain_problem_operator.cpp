@@ -21,8 +21,28 @@ GetTimeDerivativeNames(std::vector<std::string> gridfunction_names)
 }
 
 TimeDomainProblemOperator::TimeDomainProblemOperator(hephaestus::Problem & problem)
-  : ProblemOperatorBase(problem)
+  : ProblemOperator(problem)
 {
+}
+
+void
+TimeDomainProblemOperator::ImplicitSolve(const double dt,
+                                         const mfem::Vector & X,
+                                         mfem::Vector & dX_dt)
+{
+  MFEM_ABORT("Not implemented.");
+}
+
+void
+TimeDomainProblemOperator::Solve()
+{
+  MFEM_ABORT("Not implemented for time-dependent problem operators.");
+}
+
+void
+TimeDomainProblemOperator::Step(mfem::real_t & t, mfem::real_t & dt)
+{
+  _ode_solver->Step(*_block_vector, t, dt);
 }
 
 void
@@ -35,14 +55,14 @@ TimeDomainProblemOperator::ConstructTimestepper()
 void
 TimeDomainProblemOperator::Init()
 {
-  ProblemOperatorBase::Init();
+  ProblemOperator::Init();
   ConstructTimestepper();
 }
 
 void
 TimeDomainProblemOperator::Update()
 {
-  ProblemOperatorBase::Update();
+  ProblemOperator::Update();
 
   // The dimensions of the problem operator have now changed. We must call the
   // ODE solver's Init method to resize its internal vector.
