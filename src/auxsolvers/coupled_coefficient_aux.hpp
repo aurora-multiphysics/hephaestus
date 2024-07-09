@@ -23,6 +23,8 @@ public:
   void Init(const hephaestus::GridFunctions & gridfunctions,
             hephaestus::Coefficients & coefficients) override;
 
+  void Update() override {}
+
   double Eval(mfem::ElementTransformation & T, const mfem::IntegrationPoint & ip) override;
 
   void Solve(double t = 0.0) override {}

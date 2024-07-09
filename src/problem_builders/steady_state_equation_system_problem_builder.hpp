@@ -52,10 +52,6 @@ public:
 
   ~SteadyStateEquationSystemProblemBuilder() override = default;
 
-  /// NB: use of final! This calls ProblemBuilder::InitializeKernels and also ensures that the
-  /// equation system is initialized.
-  void InitializeKernels() final;
-
   auto ReturnProblem() { return ProblemBuilder::ReturnProblem<SteadyStateEquationSystemProblem>(); }
 
 protected:

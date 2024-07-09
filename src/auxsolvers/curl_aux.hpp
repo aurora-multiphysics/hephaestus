@@ -15,6 +15,8 @@ public:
   void Init(const hephaestus::GridFunctions & gridfunctions,
             hephaestus::Coefficients & coefficients) override;
 
+  void Update() override;
+
   void Solve(double t = 0.0) override;
 
 private:

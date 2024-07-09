@@ -31,6 +31,8 @@ public:
     _problem_operator = std::make_unique<hephaestus::TimeDomainProblemOperator>(*this);
   }
 
+  void Update() override;
+
 private:
   std::unique_ptr<hephaestus::TimeDomainProblemOperator> _problem_operator{nullptr};
 };
@@ -57,11 +59,9 @@ public:
 
   void RegisterCoefficients() override {}
 
-  void SetOperatorGridFunctions() override;
-
   void ConstructOperator() override;
 
-  void ConstructState() override;
+  void InitializeOperator() override;
 
   void ConstructTimestepper() override;
 

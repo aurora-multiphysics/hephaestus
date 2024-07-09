@@ -4,27 +4,73 @@ namespace hephaestus
 {
 
 void
-TimeDomainEquationSystemProblemOperator::SetGridFunctions()
+TimeDomainEquationSystemProblemOperator::SetTrialVariableNames()
 {
   _trial_var_names = GetEquationSystem()->_trial_var_names;
-  _trial_variable_time_derivatives =
-      _problem._gridfunctions.Get(GetEquationSystem()->_trial_var_time_derivative_names);
-
-  TimeDomainProblemOperator::SetGridFunctions();
 }
 
 void
-TimeDomainEquationSystemProblemOperator::Init(mfem::Vector & X)
+TimeDomainEquationSystemProblemOperator::SetTrialVariables()
 {
-  TimeDomainProblemOperator::Init(X);
+  TimeDomainProblemOperator::SetTrialVariables();
+
+  _trial_variable_time_derivatives =
+      _problem._gridfunctions.Get(GetEquationSystem()->_trial_var_time_derivative_names);
 
   // Define material property coefficients
   for (size_t i = 0; i < _trial_variables.size(); ++i)
   {
     *(_trial_variable_time_derivatives.at(i)) = 0.0;
   }
+}
 
-  GetEquationSystem()->BuildEquationSystem(_problem._bc_map, _problem._sources);
+void
+TimeDomainEquationSystemProblemOperator::Init()
+{
+  GetEquationSystem()->Init(_problem._gridfunctions,
+                            _problem._fespaces,
+                            _problem._bc_map,
+                            _problem._coefficients,
+                            _problem._sources);
+
+  TimeDomainProblemOperator::Init();
+}
+
+void
+TimeDomainEquationSystemProblemOperator::Update()
+{
+  GetEquationSystem()->Update(_problem._bc_map, _problem._sources);
+
+  TimeDomainProblemOperator::Update();
+
+  // TODO: - we need to update the size of the jacobian_solver here after the parent class' Update
+  // method is called which ensures that we've updated the _true_x, _true_rhs. This is a hacky first
+  // attempt to avoid a segfault with test_mesh_updates. This is very bad code and basically
+  // copies methods from the AFormulation problem builder used. We need to generalize this.
+  // Note that this approach will only work for this specific problem! Static pointer casts
+  // have been used to ensure that this will fail if used on a different problem.
+  {
+    GetEquationSystem()->BuildJacobian(_true_x, _true_rhs);
+
+    // Rebuild the jacobian preconditioner.
+    auto first_pfespace = GetEquationSystem()->_test_pfespaces.at(0);
+
+    auto precond = std::make_shared<mfem::HypreAMS>(first_pfespace);
+
+    precond->SetSingularProblem();
+    precond->SetPrintLevel(-1);
+
+    _problem._jacobian_preconditioner = precond;
+
+    // Set new preconditioner.
+    std::static_pointer_cast<mfem::HyprePCG>(_problem._jacobian_solver)
+        ->SetPreconditioner(
+            *std::static_pointer_cast<mfem::HypreSolver>(_problem._jacobian_preconditioner));
+
+    // Set Jacobian matrix.
+    auto * matrix = GetEquationSystem()->JacobianOperatorHandle().As<mfem::HypreParMatrix>();
+    _problem._jacobian_solver->SetOperator(*matrix);
+  }
 }
 
 void
@@ -54,7 +100,7 @@ void
 TimeDomainEquationSystemProblemOperator::BuildEquationSystemOperator(double dt)
 {
   GetEquationSystem()->SetTimeStep(dt);
-  GetEquationSystem()->UpdateEquationSystem(_problem._bc_map, _problem._sources);
+  GetEquationSystem()->BuildEquationSystem(_problem._bc_map, _problem._sources);
   GetEquationSystem()->BuildJacobian(_true_x, _true_rhs);
 }
 

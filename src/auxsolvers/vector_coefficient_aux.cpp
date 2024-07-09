@@ -29,6 +29,23 @@ VectorCoefficientAux::Init(const hephaestus::GridFunctions & gridfunctions,
 }
 
 void
+VectorCoefficientAux::Update()
+{
+  _a->Update();
+  _a->Assemble();
+  _a->Finalize();
+
+  _b->Update();
+  _b->Assemble();
+
+  _a_mat.reset();
+  _a_mat = std::unique_ptr<mfem::HypreParMatrix>(_a->ParallelAssemble());
+
+  _solver.reset();
+  _solver = std::make_unique<hephaestus::DefaultJacobiPCGSolver>(_solver_options, *_a_mat);
+}
+
+void
 VectorCoefficientAux::BuildBilinearForm()
 {
   _a = std::make_unique<mfem::ParBilinearForm>(_test_fes);

@@ -25,6 +25,13 @@ WeakCurlCurlKernel::Init(hephaestus::GridFunctions & gridfunctions,
 }
 
 void
+WeakCurlCurlKernel::Update()
+{
+  _curl_curl->Update();
+  _curl_curl->Assemble();
+}
+
+void
 WeakCurlCurlKernel::Apply(mfem::ParLinearForm * lf)
 {
   _curl_curl->AddMultTranspose(*_u, *lf, -1.0);

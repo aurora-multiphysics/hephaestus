@@ -19,6 +19,16 @@ Sources::Init(hephaestus::GridFunctions & gridfunctions,
 }
 
 void
+Sources::Update()
+{
+  for ([[maybe_unused]] const auto & [name, source] : *this)
+  {
+    logger.debug("Update called for source '{}'.", name);
+    source->Update();
+  }
+}
+
+void
 Sources::Apply(mfem::ParLinearForm * lf)
 {
   for (const auto & [name, source] : *this)

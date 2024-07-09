@@ -101,6 +101,12 @@ HelmholtzProjector::Project(hephaestus::GridFunctions & gridfunctions,
 }
 
 void
+HelmholtzProjector::Update()
+{
+  MFEM_ABORT("Not implemented.");
+}
+
+void
 HelmholtzProjector::SetForms()
 {
   if (_g_div == nullptr)

@@ -2,7 +2,6 @@
 
 namespace hephaestus
 {
-
 mfem::Array<int>
 BCMap::GetEssentialBdrMarkers(const std::string & name_, mfem::Mesh * mesh_)
 {

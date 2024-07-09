@@ -160,6 +160,13 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
 }
 
 void
+ClosedCoilSolver::Update()
+{
+  // TODO: - Ensure all optional FE spaces are updated!
+  MFEM_ABORT("Not implemented.");
+}
+
+void
 ClosedCoilSolver::Apply(mfem::ParLinearForm * lf)
 {
   // The transformation and integration points themselves are not relevant, it's

@@ -20,8 +20,9 @@ public:
   {
   }
 
-  void SetGridFunctions() override;
-  void Init(mfem::Vector & X) override;
+  void Init() override;
+
+  void Update() override;
 
   void ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vector & dX_dt) override;
 
@@ -36,6 +37,9 @@ public:
   }
 
 protected:
+  void SetTrialVariableNames() override;
+  void SetTrialVariables() override;
+
   void BuildEquationSystemOperator(double dt);
 
 private:

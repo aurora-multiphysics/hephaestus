@@ -105,17 +105,16 @@ StaticsOperator::StaticsOperator(hephaestus::Problem & problem,
 }
 
 void
-StaticsOperator::SetGridFunctions()
+StaticsOperator::SetTrialVariableNames()
 {
   _trial_var_names.push_back(_h_curl_var_name);
-  ProblemOperator::SetGridFunctions();
-};
+}
 
 void
-StaticsOperator::Init(mfem::Vector & X)
+StaticsOperator::Init()
 {
-  ProblemOperator::Init(X);
   _stiff_coef = _problem._coefficients._scalars.Get(_stiffness_coef_name);
+  ProblemOperator::Init();
 }
 
 /*

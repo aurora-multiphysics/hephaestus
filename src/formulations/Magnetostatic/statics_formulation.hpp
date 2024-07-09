@@ -38,8 +38,8 @@ public:
 
   ~StaticsOperator() override = default;
 
-  void SetGridFunctions() override;
-  void Init(mfem::Vector & X) override;
+  void SetTrialVariableNames() override;
+  void Init() override;
   void Solve(mfem::Vector & X) override;
 
 private:

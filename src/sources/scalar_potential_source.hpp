@@ -22,12 +22,12 @@ public:
             const hephaestus::FESpaces & fespaces,
             hephaestus::BCMap & bc_map,
             hephaestus::Coefficients & coefficients) override;
+
+  void Update() override;
+
   void Apply(mfem::ParLinearForm * lf) override;
   void SubtractSource(mfem::ParGridFunction * gf) override;
-  void BuildH1Diffusion(mfem::Coefficient * Sigma);
   void BuildM1(mfem::Coefficient * Sigma);
-  void BuildHCurlMass();
-  void BuildWeakDiv();
   void BuildGrad();
 
   std::string _grad_phi_gf_name;

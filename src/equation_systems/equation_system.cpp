@@ -222,11 +222,71 @@ EquationSystem::RecoverFEMSolution(mfem::BlockVector & trueX,
 }
 
 void
+EquationSystem::UpdateKernels()
+{
+  auto update_kernels = [&](auto kernels)
+  {
+    for (auto & kernel : kernels)
+    {
+      kernel->Update();
+    }
+  };
+
+  auto update_kernels_map = [&](auto kernels_map)
+  {
+    for ([[maybe_unused]] const auto & [test_name, kernels_ptr] : kernels_map)
+    {
+      update_kernels(*kernels_ptr);
+    }
+  };
+
+  auto update_kernels_map_map = [&](auto kernels_map_map)
+  {
+    for ([[maybe_unused]] const auto & [test_name, kernels_map_ptr] : kernels_map_map)
+    {
+      update_kernels_map(*kernels_map_ptr);
+    }
+  };
+
+  update_kernels_map(_blf_kernels_map);
+  update_kernels_map(_lf_kernels_map);
+  update_kernels_map(_nlf_kernels_map);
+  update_kernels_map_map(_mblf_kernels_map_map);
+}
+
+void
+EquationSystem::Update(hephaestus::BCMap & bc_map, hephaestus::Sources & sources)
+{
+  UpdateKernels();
+
+  for (auto & gridfunction : _xs)
+  {
+    gridfunction->Update();
+  }
+
+  // NB: It is not required to rebuild the equation system entirely. In the future,
+  // a separate update method will be added.
+  BuildEquationSystem(bc_map, sources);
+}
+
+void
+EquationSystem::BuildEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sources & sources)
+{
+  BuildLinearForms(bc_map, sources);
+  BuildBilinearForms();
+  BuildMixedBilinearForms();
+}
+
+void
 EquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
                      const hephaestus::FESpaces & fespaces,
                      hephaestus::BCMap & bc_map,
-                     hephaestus::Coefficients & coefficients)
+                     hephaestus::Coefficients & coefficients,
+                     hephaestus::Sources & sources)
 {
+  // Clear so we don't add identical fespaces if Init called twice.
+  _test_pfespaces.clear();
+  _xs.clear();
 
   // Add optional kernels to the EquationSystem
   AddKernels();
@@ -247,7 +307,6 @@ EquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
   }
 
   // Initialise bilinear forms
-
   for (const auto & [test_var_name, blf_kernels] : _blf_kernels_map)
   {
     for (auto & i : *blf_kernels)
@@ -282,18 +341,34 @@ EquationSystem::Init(hephaestus::GridFunctions & gridfunctions,
       }
     }
   }
+
+  // Apply weak form components now. We're ready to go! No need to call Update
+  // unless the mesh changes.
+  BuildEquationSystem(bc_map, sources);
+}
+
+void
+EquationSystem::RegisterLinearForms()
+{
+  int iname = 0;
+  for (const auto & test_var_name : _test_var_names)
+  {
+    mfem::ParFiniteElementSpace * pfes = _test_pfespaces.at(iname);
+
+    auto lf = std::make_shared<mfem::ParLinearForm>(pfes);
+    *lf = 0.0;
+
+    _lfs.Register(test_var_name, std::move(lf));
+
+    iname++;
+  }
 }
 
 void
 EquationSystem::BuildLinearForms(hephaestus::BCMap & bc_map, hephaestus::Sources & sources)
 {
-  // Register linear forms
-  for (int i = 0; i < _test_var_names.size(); i++)
-  {
-    auto test_var_name = _test_var_names.at(i);
-    _lfs.Register(test_var_name, std::make_shared<mfem::ParLinearForm>(_test_pfespaces.at(i)));
-    _lfs.GetRef(test_var_name) = 0.0;
-  }
+  RegisterLinearForms();
+
   // Apply boundary conditions
   ApplyBoundaryConditions(bc_map);
 
@@ -387,14 +462,6 @@ EquationSystem::BuildMixedBilinearForms()
   }
 }
 
-void
-EquationSystem::BuildEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sources & sources)
-{
-  BuildLinearForms(bc_map, sources);
-  BuildBilinearForms();
-  BuildMixedBilinearForms();
-}
-
 TimeDependentEquationSystem::TimeDependentEquationSystem() : _dt_coef(1.0) {}
 
 void
@@ -423,15 +490,6 @@ TimeDependentEquationSystem::SetTimeStep(double dt)
       blf->Assemble();
     }
   }
-}
-
-void
-TimeDependentEquationSystem::UpdateEquationSystem(hephaestus::BCMap & bc_map,
-                                                  hephaestus::Sources & sources)
-{
-  BuildLinearForms(bc_map, sources);
-  BuildBilinearForms();
-  BuildMixedBilinearForms();
 }
 
 } // namespace hephaestus

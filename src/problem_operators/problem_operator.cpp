@@ -4,10 +4,9 @@ namespace hephaestus
 {
 
 void
-ProblemOperator::SetGridFunctions()
+ProblemOperator::UpdateOperatorWidthAndHeight()
 {
-  ProblemOperatorInterface::SetGridFunctions();
-  width = height = _true_offsets[_trial_variables.size()];
-};
+  width = height = _true_offsets.Last();
+}
 
 } // namespace hephaestus

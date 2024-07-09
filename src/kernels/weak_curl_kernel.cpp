@@ -24,13 +24,21 @@ WeakCurlKernel::Init(hephaestus::GridFunctions & gridfunctions,
 
   _weak_curl = std::make_unique<mfem::ParMixedBilinearForm>(_u->ParFESpace(), _v->ParFESpace());
   _weak_curl->AddDomainIntegrator(new mfem::VectorFECurlIntegrator(*_coef));
+  _weak_curl->Assemble();
+}
+
+void
+WeakCurlKernel::Update()
+{
+  // NB: we only have ownership of _weak_curl! _u, _v will be updated by the
+  // gridfunctions. Ensure gridfunctions are updated first.
+  _weak_curl->Update();
+  _weak_curl->Assemble();
 }
 
 void
 WeakCurlKernel::Apply(mfem::ParLinearForm * lf)
 {
-  _weak_curl->Update();
-  _weak_curl->Assemble();
   _weak_curl->AddMultTranspose(*_v, *lf);
 }
 

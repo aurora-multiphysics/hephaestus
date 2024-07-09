@@ -60,10 +60,33 @@ DivFreeSource::Init(hephaestus::GridFunctions & gridfunctions,
 }
 
 void
+DivFreeSource::Update()
+{
+  // NB: to figure-out updates, we need to work through the Init method and any
+  // methods called in it. Note that if an fespace or gridfunction is registered
+  // then we do not need to call update for it because the problem base class
+  // owns it and has already done so. Only protected/private member variables
+  // created here should be updated.
+
+  // _h_curl_fe_space owned by fespaces. Updated so we need to rebuild HCurlMass.
+  UpdateHCurlMass();
+}
+
+void
 DivFreeSource::BuildHCurlMass()
 {
   _h_curl_mass = std::make_unique<mfem::ParBilinearForm>(_h_curl_fe_space);
   _h_curl_mass->AddDomainIntegrator(new mfem::VectorFEMassIntegrator);
+  _h_curl_mass->Assemble();
+  _h_curl_mass->Finalize();
+}
+
+void
+DivFreeSource::UpdateHCurlMass()
+{
+  MFEM_ASSERT(_h_curl_mass != nullptr, "_h_curl_mass has not been built.");
+
+  _h_curl_mass->Update();
   _h_curl_mass->Assemble();
   _h_curl_mass->Finalize();
 }

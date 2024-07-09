@@ -63,15 +63,21 @@ public:
   // override to add kernels
   virtual void AddKernels() {}
 
-  // Build forms
+  /// Build forms. This should be called once.
+  virtual void BuildEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);
+
+  /// Update called on mesh change.
+  virtual void Update(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);
+
   virtual void Init(hephaestus::GridFunctions & gridfunctions,
                     const hephaestus::FESpaces & fespaces,
                     hephaestus::BCMap & bc_map,
-                    hephaestus::Coefficients & coefficients);
+                    hephaestus::Coefficients & coefficients,
+                    hephaestus::Sources & sources);
+
   virtual void BuildLinearForms(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);
   virtual void BuildBilinearForms();
   virtual void BuildMixedBilinearForms();
-  virtual void BuildEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);
 
   // Form linear system, with essential boundary conditions accounted for
   virtual void FormLinearSystem(mfem::OperatorHandle & op,
@@ -90,6 +96,9 @@ public:
   // Update variable from solution vector after solve
   virtual void RecoverFEMSolution(mfem::BlockVector & trueX,
                                   hephaestus::GridFunctions & gridfunctions);
+
+  /// Returns a reference to the jacobian operator handle.
+  [[nodiscard]] mfem::OperatorHandle & JacobianOperatorHandle() { return _jacobian; }
 
   std::vector<mfem::Array<int>> _ess_tdof_lists;
 
@@ -114,6 +123,13 @@ protected:
       hephaestus::NamedFieldsMap<std::vector<std::shared_ptr<ParMixedBilinearFormKernel>>>>
       _mblf_kernels_map_map;
 
+  /// Iterates over all kernels added to the equation system and calls their
+  /// Update method. Called internally.
+  virtual void UpdateKernels();
+
+  /// Creates linear forms. Called internally.
+  void RegisterLinearForms();
+
   mutable mfem::OperatorHandle _jacobian;
 };
 
@@ -134,7 +150,7 @@ public:
   void AddTrialVariableNameIfMissing(const std::string & trial_var_name) override;
 
   virtual void SetTimeStep(double dt);
-  virtual void UpdateEquationSystem(hephaestus::BCMap & bc_map, hephaestus::Sources & sources);
+
   mfem::ConstantCoefficient _dt_coef; // Coefficient for timestep scaling
   std::vector<std::string> _trial_var_time_derivative_names;
 };

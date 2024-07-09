@@ -17,8 +17,11 @@ public:
   {
   }
 
-  void SetGridFunctions() override;
-  void Init(mfem::Vector & X) override;
+  void SetTrialVariableNames() override;
+
+  void Init() override;
+
+  void Update() override;
 
   ~EquationSystemProblemOperator() override = default;
 

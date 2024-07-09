@@ -4,15 +4,12 @@
 namespace hephaestus
 {
 
-/*
-(α∇×u, ∇×u')
-*/
-class CurlCurlKernel : public Kernel<mfem::ParBilinearForm>
+class LinearKernel : public Kernel<mfem::ParLinearForm>
 {
 public:
-  CurlCurlKernel(const hephaestus::InputParameters & params);
+  LinearKernel(const hephaestus::InputParameters & params);
 
-  ~CurlCurlKernel() override = default;
+  ~LinearKernel() override = default;
 
   void Init(hephaestus::GridFunctions & gridfunctions,
             const hephaestus::FESpaces & fespaces,
@@ -21,7 +18,8 @@ public:
 
   void Update() override {}
 
-  void Apply(mfem::ParBilinearForm * blf) override;
+  void Apply(mfem::ParLinearForm * blf) override;
+
   std::string _coef_name;
   mfem::Coefficient * _coef{nullptr};
 };

@@ -18,6 +18,8 @@ public:
   void Init(const hephaestus::GridFunctions & gridfunctions,
             hephaestus::Coefficients & coefficients) override;
 
+  void Update() override;
+
   virtual void BuildBilinearForm();
   virtual void BuildLinearForm();
   void Solve(double t = 0.0) override;
