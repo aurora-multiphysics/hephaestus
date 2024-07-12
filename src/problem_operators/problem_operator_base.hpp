@@ -43,8 +43,12 @@ protected:
   /// Returns a reference to the operator's height.
   virtual int & Height() = 0;
 
-  /// Called by UpdateOffsets.
-  void UpdateOffsetsWithSize(size_t soln_vector_size);
+  /// Returns the solution vector size. By default this will be the same as the
+  /// number of trial variables.
+  virtual int GetSolutionVectorSize() const;
+
+  /// Returns the number of trial variables.
+  int GetTrialVariablesSize() const;
 
   // Reference to the current problem.
   hephaestus::Problem & _problem;

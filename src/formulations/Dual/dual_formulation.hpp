@@ -74,7 +74,7 @@ public:
   mfem::ParGridFunction * _dv{nullptr}; // HDiv vector field
 
 protected:
-  void UpdateOffsets() override;
+  int GetSolutionVectorSize() const override;
 
   std::unique_ptr<mfem::ParDiscreteLinearOperator> _curl;
 };
