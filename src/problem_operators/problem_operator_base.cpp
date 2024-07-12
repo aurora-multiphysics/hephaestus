@@ -1,10 +1,10 @@
-#include "problem_operator_interface.hpp"
+#include "problem_operator_base.hpp"
 
 namespace hephaestus
 {
 
 void
-ProblemOperatorInterface::SetTrialVariables()
+ProblemOperatorBase::SetTrialVariables()
 {
   SetTrialVariableNames();
 
@@ -12,13 +12,13 @@ ProblemOperatorInterface::SetTrialVariables()
 }
 
 void
-ProblemOperatorInterface::UpdateOffsets()
+ProblemOperatorBase::UpdateOffsets()
 {
   UpdateOffsetsWithSize(_trial_variables.size());
 }
 
 void
-ProblemOperatorInterface::UpdateOffsetsWithSize(const size_t block_vector_size)
+ProblemOperatorBase::UpdateOffsetsWithSize(const size_t block_vector_size)
 {
   if (block_vector_size > _trial_variables.size())
   {
@@ -54,7 +54,7 @@ ProblemOperatorInterface::UpdateOffsetsWithSize(const size_t block_vector_size)
 }
 
 void
-ProblemOperatorInterface::UpdateBlockVector(mfem::BlockVector & X)
+ProblemOperatorBase::UpdateBlockVector(mfem::BlockVector & X)
 {
   X.Update(_true_offsets);
 
@@ -68,7 +68,7 @@ ProblemOperatorInterface::UpdateBlockVector(mfem::BlockVector & X)
 }
 
 void
-ProblemOperatorInterface::Init()
+ProblemOperatorBase::Init()
 {
   SetTrialVariables();
 
@@ -77,9 +77,9 @@ ProblemOperatorInterface::Init()
 }
 
 void
-ProblemOperatorInterface::Update()
+ProblemOperatorBase::Update()
 {
-  logger.debug("Update called for ProblemOperatorInterface.");
+  logger.debug("Update called for ProblemOperatorBase.");
 
   // Recalculate the offsets from gridfunction trial variables.
   UpdateOffsets();
