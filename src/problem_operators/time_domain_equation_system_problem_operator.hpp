@@ -1,7 +1,7 @@
 #pragma once
 #include "../common/pfem_extras.hpp"
 #include "time_domain_problem_operator.hpp"
-#include "problem_operator_interface.hpp"
+#include "problem_operator_base.hpp"
 #include "equation_system_interface.hpp"
 
 namespace hephaestus
