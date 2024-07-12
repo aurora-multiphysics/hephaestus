@@ -9,7 +9,7 @@ namespace hephaestus
 class ProblemOperatorBase
 {
 public:
-  ProblemOperatorBase(hephaestus::Problem & problem) : _problem(problem) {}
+  ProblemOperatorBase() = delete;
 
   virtual ~ProblemOperatorBase() = default;
 
@@ -26,6 +26,11 @@ public:
   mfem::BlockVector _true_x, _true_rhs;
 
 protected:
+  /// Use of protected constructor to only allow construction by derived classes.
+  /// All problem operator classes are built on-top of this class and it should not
+  /// be possible to use directly.
+  explicit ProblemOperatorBase(hephaestus::Problem & problem) : _problem(problem) {}
+
   /// Set trial variables names. Override in derived classes.
   virtual void SetTrialVariableNames() {}
 
