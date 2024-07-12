@@ -50,7 +50,7 @@ ProblemOperatorBase::UpdateOffsetsWithSize(const size_t block_vector_size)
   _true_rhs.Update(_block_true_offsets);
 
   // Set width and height member variables.
-  UpdateOperatorWidthAndHeight();
+  Width() = Height() = _true_offsets.Last();
 }
 
 void

@@ -9,8 +9,6 @@ class ProblemOperatorInterface
 public:
   virtual ~ProblemOperatorInterface() = default;
 
-  virtual void UpdateOperatorWidthAndHeight() = 0;
-
   virtual void Init() = 0;
 
   virtual void Update() = 0;
@@ -23,5 +21,11 @@ protected:
   virtual void UpdateBlockVector(mfem::BlockVector & X) = 0;
 
   virtual void UpdateOffsetsWithSize(size_t soln_vector_size) = 0;
+
+  /// Returns a reference to the operator's width.
+  virtual int & Width() = 0;
+
+  /// Returns a reference to the operator's height.
+  virtual int & Height() = 0;
 };
 }
