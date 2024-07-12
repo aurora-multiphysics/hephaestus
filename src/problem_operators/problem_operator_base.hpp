@@ -31,12 +31,6 @@ protected:
   /// Set gridfunction of trial variables from the trial variable names.
   virtual void SetTrialVariables();
 
-  /// Update the block vectors and offsets after a mesh change.
-  virtual void UpdateOffsets();
-
-  /// Update a block vector. Should be called after the offsets have been updated.
-  virtual void UpdateBlockVector(mfem::BlockVector & X);
-
   /// Returns a reference to the operator's width.
   virtual int & Width() = 0;
 
@@ -65,5 +59,12 @@ protected:
 
   /// Block vectors.
   mfem::BlockVector _true_x, _true_rhs;
+
+private:
+  /// Update the block vectors and offsets after a mesh change.
+  void UpdateOffsets();
+
+  /// Update a block vector. Should be called after the offsets have been updated.
+  void UpdateBlockVector(mfem::BlockVector & X);
 };
 }
