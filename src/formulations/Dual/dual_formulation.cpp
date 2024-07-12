@@ -238,12 +238,12 @@ DualOperator::ImplicitSolve(const double dt, const mfem::Vector & X, mfem::Vecto
   logger.info("{} ImplicitSolve: {} seconds", typeid(this).name(), sw);
 }
 
-void
-DualOperator::UpdateOffsets()
+int
+DualOperator::GetSolutionVectorSize() const
 {
   // Blocks for solution vector are smaller than the operator size for DualOperator,
   // as curl is stored separately. Block operator only has the HCurl TrueVSize;
-  return UpdateOffsetsWithSize(_trial_variables.size() - 1);
+  return static_cast<int>(GetTrialVariablesSize() - 1);
 }
 
 } // namespace hephaestus
