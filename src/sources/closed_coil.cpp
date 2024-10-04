@@ -62,7 +62,6 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
 
   _mesh_parent = _h_curl_fe_space_parent->GetParMesh();
   _order_hcurl = _h_curl_fe_space_parent->FEColl()->GetOrder();
-  _order_h1 = _order_hcurl;
 
   // Optional FE Spaces and parameters
   if (!fespaces.Has(_h1_fespace_name))
@@ -70,6 +69,7 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
     logger.info("{} not found in fespaces when creating {}. Creating from mesh.",
                 _h1_fespace_name,
                 typeid(this).name());
+    _order_h1 = _order_hcurl;
 
     // Need to free this memory after use. FEC not freed by ParFiniteElementSpace destructor!
     _h1_fe_space_parent_fec =
@@ -81,6 +81,7 @@ ClosedCoilSolver::Init(hephaestus::GridFunctions & gridfunctions,
   else
   {
     _h1_fe_space_parent = fespaces.GetShared(_h1_fespace_name);
+    _order_h1 = _h1_fe_space_parent->FEColl()->GetOrder();
   }
 
   if (!gridfunctions.Has(_source_electric_field_name))
